@@ -585,14 +585,19 @@
 
       draggedElement.classList.remove('dragging');
 
-      // Find slot under touch
+      // Find element under touch
       const touch = e.changedTouches[0];
       const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
       const slot = elemBelow?.closest('.letter-slot');
-      const wordCard = slot?.closest('.word-card');
+      const wordCard = elemBelow?.closest('.word-card');
 
-      if (slot && wordCard) {
-        tryPlaceLetter(wordCard, slot);
+      if (wordCard) {
+        if (slot) {
+          tryPlaceLetter(wordCard, slot);
+        } else {
+          // Dropped on card/image - place in next slot
+          tryPlaceLetterOnCard(wordCard);
+        }
       }
 
       // Cleanup
@@ -617,27 +622,65 @@
     document.querySelectorAll('.word-card').forEach(card => {
       card.addEventListener('dragover', (e) => {
         e.preventDefault();
-        const slot = e.target.closest('.letter-slot');
-        if (slot && !slot.textContent) {
-          slot.classList.add('highlight');
+        // Highlight next available slot when hovering over card
+        const word = card.dataset.word;
+        const nextIndex = wordProgress[word];
+        const nextSlot = card.querySelector(`.letter-slot[data-index="${nextIndex}"]`);
+        if (nextSlot && !nextSlot.textContent) {
+          nextSlot.classList.add('highlight');
         }
       });
 
       card.addEventListener('dragleave', (e) => {
-        const slot = e.target.closest('.letter-slot');
-        if (slot) {
-          slot.classList.remove('highlight');
+        // Remove highlights when leaving card
+        if (!card.contains(e.relatedTarget)) {
+          card.querySelectorAll('.letter-slot').forEach(slot => {
+            slot.classList.remove('highlight');
+          });
         }
       });
 
       card.addEventListener('drop', (e) => {
         e.preventDefault();
-        const slot = e.target.closest('.letter-slot');
-        if (slot) {
-          tryPlaceLetter(card, slot);
-        }
+        // Drop anywhere on the card - goes to next slot
+        tryPlaceLetterOnCard(card);
       });
     });
+
+    function tryPlaceLetterOnCard(wordCard) {
+      const word = wordCard.dataset.word;
+      const nextIndex = wordProgress[word];
+      const expectedLetter = word[nextIndex];
+      const nextSlot = wordCard.querySelector(`.letter-slot[data-index="${nextIndex}"]`);
+
+      if (!nextSlot) return; // Word already complete
+
+      if (draggedLetter === expectedLetter) {
+        // Correct letter!
+        nextSlot.textContent = draggedLetter;
+        nextSlot.classList.add('filled');
+        wordProgress[word]++;
+
+        // Mark letter as used
+        if (draggedElement) {
+          draggedElement.classList.add('used');
+        }
+
+        // Check if word complete
+        if (wordProgress[word] === word.length) {
+          wordCard.classList.add('complete');
+        }
+
+        // Check if all words complete
+        checkAllComplete();
+      } else {
+        // Wrong letter - shake the next slot
+        nextSlot.classList.add('wrong');
+        setTimeout(() => nextSlot.classList.remove('wrong'), 300);
+      }
+
+      nextSlot.classList.remove('highlight');
+    }
 
     function tryPlaceLetter(wordCard, slot) {
       const word = wordCard.dataset.word;
