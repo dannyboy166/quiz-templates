@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Word Match - Quiz Template</title>
+  <link rel="stylesheet" href="css/base.css">
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+  <style>
+    body {
+      background: #F2ADE2;
+    }
+
+    .quiz-container {
+      background: #F2ADE2;
+    }
+
+    .quiz-header {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-back, .btn-help {
+      background: white;
+    }
+
+    .question-title h1 {
+      color: #333;
+      font-size: 28px;
+    }
+
+    .help-bar {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Main layout */
+    .match-container {
+      display: flex;
+      gap: 30px;
+      padding: 20px;
+    }
+
+    /* Word bank on the left */
+    .word-bank {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      width: 220px;
+      align-content: start;
+    }
+
+    .word-option {
+      background: white;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      padding: 12px 8px;
+      font-size: 20px;
+      font-weight: 600;
+      text-align: center;
+      cursor: grab;
+      transition: all 0.2s;
+      user-select: none;
+    }
+
+    .word-option:hover {
+      border-color: #999;
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .word-option.dragging {
+      opacity: 0.5;
+      cursor: grabbing;
+    }
+
+    .word-option.used {
+      opacity: 0.3;
+      cursor: not-allowed;
+      background: #f5f5f5;
+    }
+
+    /* Image grid */
+    .image-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      background: white;
+      border-radius: 16px;
+      padding: 25px;
+    }
+
+    .image-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .image-box {
+      width: 140px;
+      height: 110px;
+      background: #fafafa;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+    }
+
+    .image-box img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    /* Word drop zone */
+    .word-slot {
+      width: 100%;
+      min-height: 40px;
+      border-bottom: 3px solid #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .word-slot.highlight {
+      background: rgba(196, 227, 89, 0.3);
+      border-radius: 8px;
+      border-bottom-color: #C4E359;
+    }
+
+    .word-slot.filled {
+      color: #333;
+    }
+
+    .word-slot.correct {
+      color: #4CAF50;
+      border-bottom-color: #4CAF50;
+    }
+
+    .word-slot.incorrect {
+      color: #E53935;
+      border-bottom-color: #E53935;
+    }
+
+    .word-slot .placed-word {
+      background: white;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      padding: 8px 16px;
+      cursor: grab;
+    }
+
+    /* Image card complete state */
+    .image-card.complete .image-box {
+      box-shadow: 0 0 15px rgba(76, 175, 80, 0.4);
+    }
+
+    /* Modals */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      max-width: 400px;
+      margin: 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal h2 {
+      margin: 0 0 15px 0;
+      font-size: 22px;
+    }
+
+    .modal p {
+      margin: 0 0 10px 0;
+      line-height: 1.6;
+    }
+
+    .modal-close {
+      margin-top: 20px;
+      padding: 10px 24px;
+      background: #333;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .help-item {
+      cursor: pointer;
+      padding: 8px 12px;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+
+    .help-item:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    .btn-try-again {
+      background: #FF9800;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 25px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-try-again:hover {
+      background: #F57C00;
+      transform: scale(1.05);
+    }
+
+    .btn-next {
+      background: #4CAF50;
+      border: none;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    .btn-next:hover {
+      background: #43A047;
+      transform: scale(1.1);
+    }
+
+    .btn-next svg {
+      stroke: white;
+    }
+
+    .btn-check-answer {
+      background: #333;
+    }
+
+    @keyframes celebrate {
+      0%, 100% { transform: scale(1); }
+      25% { transform: scale(1.05) rotate(-2deg); }
+      75% { transform: scale(1.05) rotate(2deg); }
+    }
+
+    .celebrate {
+      animation: celebrate 0.5s ease-in-out;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    .shake {
+      animation: shake 0.3s ease-in-out;
+    }
+
+    .drag-ghost {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+    <!-- Header -->
+    <header class="quiz-header">
+      <button class="btn-back" onclick="window.location='index.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Back to Home
+      </button>
+
+      <div class="user-profile">
+        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=student" alt="Student Avatar" class="user-avatar">
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" style="width: 30%"></div>
+        </div>
+      </div>
+
+      <button class="btn-help" id="header-help">
+        <lottie-player
+          id="help-lottie"
+          background="transparent"
+          speed="1"
+          style="width: 28px; height: 28px;"
+          loop
+          autoplay
+        ></lottie-player>
+        Help
+      </button>
+    </header>
+
+    <!-- Question Meta -->
+    <div class="question-meta">
+      <span class="badge" style="background: #E91E63; color: white;">ENGLISH</span>
+      <span class="question-progress">Question 1 of 10</span>
+    </div>
+
+    <!-- Question Title -->
+    <div class="question-title">
+      <button class="btn-read-aloud" title="Read aloud">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 6c2.5 0 4.5 2 4.5 4.5S14.5 15 12 15"/>
+          <path d="M17 5c3 2 5 5 5 7s-2 5-5 7"/>
+          <path d="M9.5 9h-5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h5l5 4V5l-5 4z"/>
+        </svg>
+      </button>
+      <h1>Match the correct word to label the images</h1>
+    </div>
+
+    <!-- Help Bar -->
+    <div class="help-bar">
+      <div class="help-item" id="btn-read-aloud">
+        <span>Read Aloud</span>
+        <span class="help-item-icon">&#128483;</span>
+      </div>
+      <span class="help-item-line"></span>
+      <div class="help-item" id="btn-get-help">
+        <span>Get Help</span>
+        <span class="help-item-icon">?</span>
+      </div>
+      <span class="help-item-line"></span>
+      <div class="help-item" id="btn-get-hint">
+        <span>Get Hint</span>
+        <span class="help-item-icon">+</span>
+      </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div class="modal-overlay" id="help-modal">
+      <div class="modal">
+        <div style="font-size: 40px; text-align: center; margin-bottom: 10px;">🏷️</div>
+        <h2 style="text-align: center;">Match the Words!</h2>
+        <div style="background: #FFF9E6; padding: 15px; border-radius: 12px; margin: 15px 0;">
+          <p style="margin: 8px 0;"><strong>👀 Look</strong> at each picture carefully</p>
+          <p style="margin: 8px 0;"><strong>🎯 Drag</strong> the right word to match</p>
+          <p style="margin: 8px 0;"><strong>✅ Check</strong> your answers when done!</p>
+        </div>
+        <p style="text-align: center; font-size: 15px;">Match all 6 pictures with the correct word!</p>
+        <button class="modal-close" id="close-help">Let's go! ⭐</button>
+      </div>
+    </div>
+
+    <!-- Hint Modal -->
+    <div class="modal-overlay" id="hint-modal">
+      <div class="modal">
+        <div style="font-size: 40px; text-align: center; margin-bottom: 10px;">💡</div>
+        <h2 style="text-align: center;" id="hint-title">Here's a hint!</h2>
+        <p style="text-align: center; font-size: 18px; margin: 20px 0;" id="hint-text"></p>
+        <button class="modal-close" id="close-hint">Thanks! 👍</button>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="match-container">
+      <!-- Word Bank -->
+      <div class="word-bank" id="word-bank">
+        <!-- Generated by JS -->
+      </div>
+
+      <!-- Image Grid -->
+      <div class="image-grid" id="image-grid">
+        <!-- Generated by JS -->
+      </div>
+    </div>
+
+    <!-- Feedback -->
+    <div class="feedback" id="feedback" style="display: none;">
+      <span class="feedback-badge" id="feedback-badge"></span>
+      <button class="btn-try-again" id="btn-try-again" style="display: none;">
+        Try Again 🔄
+      </button>
+      <button class="btn-next" id="btn-next" style="display: none;" title="Next Question">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Check Answer Button -->
+    <button class="btn-check-answer" id="btn-check">Check Answer</button>
+  </div>
+
+  <script>
+    // Image-word pairs (answer key)
+    const imageWords = [
+      { image: 'https://images.emojiterra.com/google/noto-emoji/unicode-15.1/color/512px/1f442.png', word: 'Ear', hint: 'You hear with this!' },
+      { image: 'https://images.emojiterra.com/google/noto-emoji/unicode-15.1/color/512px/1f3cf.png', word: 'Bat', hint: 'You hit a ball with this!' },
+      { image: 'https://images.emojiterra.com/google/noto-emoji/unicode-15.1/color/512px/1f622.png', word: 'Sad', hint: 'A feeling when you\'re not happy' },
+      { image: 'https://images.emojiterra.com/google/noto-emoji/unicode-15.1/color/512px/1f969.png', word: 'Ham', hint: 'A type of meat' },
+      { image: 'https://images.emojiterra.com/google/noto-emoji/unicode-15.1/color/512px/1f6b0.png', word: 'Tap', hint: 'Water comes out of this' },
+      { image: 'https://images.emojiterra.com/google/noto-emoji/unicode-15.1/color/512px/1f5fa.png', word: 'Map', hint: 'Shows you where places are' }
+    ];
+
+    // All word options (correct + distractors)
+    const allWords = ['Cat', 'Tap', 'At', 'Man', 'Ham', 'Bat', 'Sad', 'Had', 'Am', 'Hat', 'Tag', 'Map', 'Ear'];
+
+    // Shuffle array
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    // Generate word bank
+    const wordBank = document.getElementById('word-bank');
+    shuffle(allWords).forEach(word => {
+      const option = document.createElement('div');
+      option.className = 'word-option';
+      option.textContent = word;
+      option.dataset.word = word;
+      option.draggable = true;
+
+      option.addEventListener('dragstart', onDragStart);
+      option.addEventListener('dragend', onDragEnd);
+      option.addEventListener('touchstart', onTouchStart, { passive: false });
+      option.addEventListener('touchmove', onTouchMove, { passive: false });
+      option.addEventListener('touchend', onTouchEnd);
+
+      wordBank.appendChild(option);
+    });
+
+    // Generate image grid
+    const imageGrid = document.getElementById('image-grid');
+    shuffle(imageWords).forEach((item, index) => {
+      const card = document.createElement('div');
+      card.className = 'image-card';
+      card.dataset.answer = item.word;
+      card.dataset.hint = item.hint;
+
+      card.innerHTML = `
+        <div class="image-box">
+          <img src="${item.image}" alt="Image ${index + 1}">
+        </div>
+        <div class="word-slot" data-filled=""></div>
+      `;
+
+      // Drop events
+      card.addEventListener('dragover', onDragOver);
+      card.addEventListener('dragleave', onDragLeave);
+      card.addEventListener('drop', onDrop);
+
+      imageGrid.appendChild(card);
+    });
+
+    // Track placements
+    let placements = {};
+    let draggedWord = null;
+    let draggedElement = null;
+    let ghostElement = null;
+
+    function onDragStart(e) {
+      if (e.target.classList.contains('used')) {
+        e.preventDefault();
+        return;
+      }
+      draggedWord = e.target.dataset.word;
+      draggedElement = e.target;
+      e.target.classList.add('dragging');
+      e.dataTransfer.setData('text/plain', draggedWord);
+    }
+
+    function onDragEnd(e) {
+      e.target.classList.remove('dragging');
+      document.querySelectorAll('.word-slot').forEach(s => s.classList.remove('highlight'));
+      draggedWord = null;
+      draggedElement = null;
+    }
+
+    function onDragOver(e) {
+      e.preventDefault();
+      const slot = e.currentTarget.querySelector('.word-slot');
+      if (slot && !slot.dataset.filled) {
+        slot.classList.add('highlight');
+      }
+    }
+
+    function onDragLeave(e) {
+      const slot = e.currentTarget.querySelector('.word-slot');
+      if (slot) slot.classList.remove('highlight');
+    }
+
+    function onDrop(e) {
+      e.preventDefault();
+      const card = e.currentTarget;
+      const slot = card.querySelector('.word-slot');
+
+      if (slot && draggedWord) {
+        placeWord(card, slot, draggedWord, draggedElement);
+      }
+
+      slot.classList.remove('highlight');
+    }
+
+    // Touch events
+    function onTouchStart(e) {
+      const target = e.target.closest('.word-option');
+      if (!target || target.classList.contains('used')) return;
+
+      e.preventDefault();
+      draggedWord = target.dataset.word;
+      draggedElement = target;
+      target.classList.add('dragging');
+
+      ghostElement = target.cloneNode(true);
+      ghostElement.classList.add('drag-ghost');
+      ghostElement.classList.remove('dragging');
+      document.body.appendChild(ghostElement);
+
+      updateGhostPosition(e.touches[0]);
+    }
+
+    function onTouchMove(e) {
+      if (!ghostElement) return;
+      e.preventDefault();
+      updateGhostPosition(e.touches[0]);
+
+      const touch = e.touches[0];
+      const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+      const card = elemBelow?.closest('.image-card');
+
+      document.querySelectorAll('.word-slot').forEach(s => s.classList.remove('highlight'));
+      if (card) {
+        const slot = card.querySelector('.word-slot');
+        if (slot && !slot.dataset.filled) {
+          slot.classList.add('highlight');
+        }
+      }
+    }
+
+    function onTouchEnd(e) {
+      if (!draggedElement) return;
+
+      draggedElement.classList.remove('dragging');
+
+      const touch = e.changedTouches[0];
+      const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+      const card = elemBelow?.closest('.image-card');
+
+      if (card && draggedWord) {
+        const slot = card.querySelector('.word-slot');
+        if (slot) {
+          placeWord(card, slot, draggedWord, draggedElement);
+        }
+      }
+
+      if (ghostElement) {
+        ghostElement.remove();
+        ghostElement = null;
+      }
+
+      document.querySelectorAll('.word-slot').forEach(s => s.classList.remove('highlight'));
+      draggedWord = null;
+      draggedElement = null;
+    }
+
+    function updateGhostPosition(touch) {
+      if (ghostElement) {
+        ghostElement.style.left = (touch.clientX - 40) + 'px';
+        ghostElement.style.top = (touch.clientY - 20) + 'px';
+      }
+    }
+
+    function placeWord(card, slot, word, sourceElement) {
+      // If slot already has a word, return it to bank
+      if (slot.dataset.filled) {
+        const oldWord = slot.dataset.filled;
+        const oldOption = document.querySelector(`.word-option[data-word="${oldWord}"]`);
+        if (oldOption) oldOption.classList.remove('used');
+        delete placements[card.dataset.answer];
+      }
+
+      // Place new word
+      slot.innerHTML = `<span class="placed-word">${word}</span>`;
+      slot.dataset.filled = word;
+      slot.classList.add('filled');
+      placements[card.dataset.answer] = word;
+
+      // Mark word as used
+      if (sourceElement) {
+        sourceElement.classList.add('used');
+      }
+    }
+
+    // Check answers
+    const btnCheck = document.getElementById('btn-check');
+    const feedback = document.getElementById('feedback');
+    const feedbackBadge = document.getElementById('feedback-badge');
+    const btnTryAgain = document.getElementById('btn-try-again');
+    const btnNext = document.getElementById('btn-next');
+    const progressFill = document.querySelector('.progress-bar-fill');
+
+    btnCheck.addEventListener('click', () => {
+      let correct = 0;
+      let total = imageWords.length;
+
+      document.querySelectorAll('.image-card').forEach(card => {
+        const answer = card.dataset.answer;
+        const slot = card.querySelector('.word-slot');
+        const placed = slot.dataset.filled;
+
+        slot.classList.remove('correct', 'incorrect');
+
+        if (placed) {
+          if (placed.toLowerCase() === answer.toLowerCase()) {
+            slot.classList.add('correct');
+            card.classList.add('complete');
+            correct++;
+          } else {
+            slot.classList.add('incorrect');
+            slot.classList.add('shake');
+            setTimeout(() => slot.classList.remove('shake'), 300);
+          }
+        }
+      });
+
+      feedback.style.display = 'flex';
+      feedbackBadge.classList.remove('correct', 'incorrect');
+
+      if (correct === total) {
+        feedbackBadge.classList.add('correct');
+        feedbackBadge.innerHTML = '🎉 Perfect! All words matched correctly!';
+        btnCheck.style.display = 'none';
+        btnTryAgain.style.display = 'none';
+        btnNext.style.display = 'flex';
+        progressFill.style.width = '50%';
+        document.querySelector('.image-grid').classList.add('celebrate');
+      } else {
+        feedbackBadge.classList.add('incorrect');
+        feedbackBadge.innerHTML = `💪 ${correct}/${total} correct - keep trying!`;
+        btnTryAgain.style.display = 'block';
+        btnNext.style.display = 'none';
+      }
+    });
+
+    // Try Again - clear incorrect answers
+    btnTryAgain.addEventListener('click', () => {
+      document.querySelectorAll('.image-card').forEach(card => {
+        const slot = card.querySelector('.word-slot');
+        if (slot.classList.contains('incorrect')) {
+          const word = slot.dataset.filled;
+          const option = document.querySelector(`.word-option[data-word="${word}"]`);
+          if (option) option.classList.remove('used');
+
+          slot.innerHTML = '';
+          slot.dataset.filled = '';
+          slot.classList.remove('filled', 'incorrect');
+          delete placements[card.dataset.answer];
+        }
+      });
+      feedback.style.display = 'none';
+      btnTryAgain.style.display = 'none';
+    });
+
+    // Next Question
+    btnNext.addEventListener('click', () => {
+      window.location.href = 'index.html';
+    });
+
+    // Read Aloud
+    const btnReadAloud = document.getElementById('btn-read-aloud');
+    const questionText = "Match the correct word to label the images. Look at each picture and drag the word that matches it.";
+
+    btnReadAloud.addEventListener('click', () => {
+      speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(questionText);
+      utterance.rate = 0.9;
+      btnReadAloud.classList.add('active');
+      utterance.onend = () => btnReadAloud.classList.remove('active');
+      speechSynthesis.speak(utterance);
+    });
+
+    document.querySelector('.btn-read-aloud').addEventListener('click', () => {
+      btnReadAloud.click();
+    });
+
+    // Help Modal
+    const btnGetHelp = document.getElementById('btn-get-help');
+    const helpModal = document.getElementById('help-modal');
+    const closeHelp = document.getElementById('close-help');
+
+    btnGetHelp.addEventListener('click', () => helpModal.classList.add('active'));
+    document.getElementById('header-help').addEventListener('click', () => helpModal.classList.add('active'));
+    closeHelp.addEventListener('click', () => helpModal.classList.remove('active'));
+    helpModal.addEventListener('click', (e) => {
+      if (e.target === helpModal) helpModal.classList.remove('active');
+    });
+
+    // Hint Modal
+    const btnGetHint = document.getElementById('btn-get-hint');
+    const hintModal = document.getElementById('hint-modal');
+    const hintTitle = document.getElementById('hint-title');
+    const hintText = document.getElementById('hint-text');
+    const closeHint = document.getElementById('close-hint');
+
+    btnGetHint.addEventListener('click', () => {
+      // Find first empty or incorrect slot
+      for (const card of document.querySelectorAll('.image-card')) {
+        const slot = card.querySelector('.word-slot');
+        if (!slot.dataset.filled || slot.classList.contains('incorrect')) {
+          const hint = card.dataset.hint;
+          hintTitle.innerHTML = "💡 Hint!";
+          hintText.innerHTML = hint;
+          hintModal.classList.add('active');
+          return;
+        }
+      }
+
+      hintTitle.innerHTML = "🎉 All done!";
+      hintText.innerHTML = "All images have words! Click Check Answer!";
+      hintModal.classList.add('active');
+    });
+
+    closeHint.addEventListener('click', () => hintModal.classList.remove('active'));
+    hintModal.addEventListener('click', (e) => {
+      if (e.target === hintModal) hintModal.classList.remove('active');
+    });
+
+    // Load Lottie
+    const helpLottie = document.getElementById('help-lottie');
+    const lottieData = {"v":"5.4.4","fr":60,"ip":0,"op":132,"w":100,"h":100,"nm":"Question 2","assets":[],"layers":[{"ind":1,"ty":4,"nm":"? Outlines","sr":1,"ks":{"o":{"a":0,"k":100},"r":{"a":0,"k":0},"p":{"a":0,"k":[50.713,49.149,0]},"a":{"a":0,"k":[-0.214,-10.242,0]},"s":{"a":1,"k":[{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":61,"s":[200,200,100],"e":[210,210,100]},{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":71,"s":[210,210,100],"e":[200,200,100]},{"t":80}]}},"ao":0,"shapes":[{"ty":"gr","it":[{"ind":0,"ty":"sh","ks":{"a":0,"k":{"i":[[0,0],[0,0],[0,0],[0,3.203],[4.23,0],[0.242,-3.897],[0,0],[-1.601,0],[0,-1.541],[1.692,0],[0,0]],"o":[[0,0],[0,0],[3.565,-0.483],[0,-3.988],[-4.592,0],[0,0],[0.121,-1.45],[1.601,0],[0,1.662],[0,0],[0,0]],"v":[[-2.556,-6.617],[1.16,-6.617],[1.311,-8.369],[7.142,-14.17],[-0.199,-20.816],[-7.571,-14.351],[-2.828,-14.351],[-0.048,-16.738],[2.61,-14.17],[-0.381,-11.541],[-2.858,-11.541]],"c":true}},"nm":"?"},{"ind":1,"ty":"sh","ks":{"a":0,"k":{"i":[[-1.42,0],[0,1.45],[1.45,0],[0,-1.45]],"o":[[1.45,0],[0,-1.45],[-1.42,0],[0,1.45]],"v":[[-0.834,0.332],[1.825,-2.206],[-0.834,-4.743],[-3.462,-2.206]],"c":true}},"nm":"?"},{"ty":"mm","mm":1,"nm":"Merge Paths 1"},{"ty":"fl","c":{"a":0,"k":[1,1,1,1]},"o":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":61,"s":[0],"e":[100]},{"t":71}]},"r":1,"nm":"Fill 1"},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":0},"o":{"a":0,"k":100},"sk":{"a":0,"k":0},"sa":{"a":0,"k":0},"nm":"Transform"}],"nm":"?"},{"ty":"tm","s":{"a":0,"k":0},"e":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":37,"s":[0],"e":[100]},{"t":61}]},"o":{"a":0,"k":0},"m":1,"nm":"Trim Paths 1"},{"ty":"st","c":{"a":0,"k":[1,1,1,1]},"o":{"a":0,"k":100},"w":{"a":0,"k":1},"lc":1,"lj":1,"ml":4,"nm":"Stroke 1"}],"ip":0,"op":132,"st":0},{"ind":3,"ty":3,"nm":"▽ Group 6","sr":1,"ks":{"o":{"a":0,"k":100},"r":{"a":0,"k":0},"p":{"a":0,"k":[50,50,0]},"a":{"a":0,"k":[42,42,0]},"s":{"a":0,"k":[100,100,100]}},"ao":0,"ip":0,"op":132,"st":0},{"ind":4,"ty":4,"nm":"Rectangle 6 Copy","parent":3,"sr":1,"ks":{"o":{"a":0,"k":100},"r":{"a":0,"k":0},"p":{"a":0,"k":[42,42,0]},"a":{"a":0,"k":[0,0,0]},"s":{"a":1,"k":[{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":21,"s":[100,100,100],"e":[110,110,100]},{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":29,"s":[110,110,100],"e":[100,100,100]},{"t":36}]}},"ao":0,"shapes":[{"ty":"gr","it":[{"ty":"rc","d":1,"s":{"a":0,"k":[42,42]},"p":{"a":0,"k":[0,0]},"r":{"a":0,"k":21},"nm":"Rectangle Path 1"},{"ty":"tm","s":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":0,"s":[0],"e":[100]},{"t":22}]},"e":{"a":0,"k":0},"o":{"a":0,"k":-90},"m":1,"nm":"Trim Paths 1"},{"ty":"st","c":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":13,"s":[0.74,0.729,0.709,1],"e":[0.961,0.694,0.196,1]},{"t":22}]},"o":{"a":0,"k":100},"w":{"a":0,"k":2},"lc":2,"lj":1,"ml":4,"nm":"Stroke 1"},{"ty":"fl","c":{"a":0,"k":[0.953,0.691,0.256,1]},"o":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":21,"s":[1],"e":[100]},{"t":26}]},"r":1,"nm":"Fill 1"},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[200,200]},"r":{"a":0,"k":0},"o":{"a":0,"k":100},"sk":{"a":0,"k":0},"sa":{"a":0,"k":0},"nm":"Transform"}],"nm":"Rectangle 6 Copy"}],"ip":0,"op":132,"st":0}],"markers":[]};
+    helpLottie.load(lottieData);
+  </script>
+</body>
+</html>
