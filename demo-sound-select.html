@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sound Select - Quiz Template</title>
+  <link rel="stylesheet" href="css/base.css">
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+  <style>
+    body {
+      background-color: #F2ADE2;
+    }
+
+    /* Image grid */
+    .image-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 15px;
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 600px) {
+      .image-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+      }
+    }
+
+    .image-card {
+      background: white;
+      border-radius: 16px;
+      padding: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 3px solid transparent;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .image-card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    }
+
+    .image-card.selected {
+      border-color: #7C4DFF;
+      background: #F3E5F5;
+      box-shadow: 0 0 0 3px rgba(124, 77, 255, 0.3);
+    }
+
+    .image-card.correct {
+      border-color: #4CAF50;
+      background: #E8F5E9;
+    }
+
+    .image-card.incorrect {
+      border-color: #F44336;
+      background: #FFEBEE;
+    }
+
+    .image-card.missed {
+      border-color: #FF9800;
+      background: #FFF3E0;
+    }
+
+    .image-card img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .image-card .emoji-img {
+      font-size: 60px;
+      line-height: 1;
+    }
+
+    @media (max-width: 600px) {
+      .image-card .emoji-img {
+        font-size: 40px;
+      }
+    }
+
+    /* Check button */
+    .check-btn {
+      display: block;
+      margin: 20px auto 40px;
+      padding: 16px 60px;
+      background: black;
+      color: white;
+      border: none;
+      border-radius: 30px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .check-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+
+    .check-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Feedback area */
+    .feedback-area {
+      text-align: center;
+      padding: 20px;
+      display: none;
+    }
+
+    .feedback-area.show {
+      display: block;
+    }
+
+    .feedback-message {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+
+    .feedback-message.correct {
+      color: #2E7D32;
+    }
+
+    .feedback-message.incorrect {
+      color: #C62828;
+    }
+
+    .try-again-btn, .next-btn {
+      padding: 14px 40px;
+      border: none;
+      border-radius: 25px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 5px;
+      transition: all 0.2s;
+    }
+
+    .try-again-btn {
+      background: #FF5722;
+      color: white;
+    }
+
+    .next-btn {
+      background: #4CAF50;
+      color: white;
+    }
+
+    .try-again-btn:hover, .next-btn:hover {
+      transform: scale(1.05);
+    }
+
+    /* Celebration */
+    @keyframes celebrate {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    .celebrating {
+      animation: celebrate 0.5s ease-in-out;
+    }
+
+    /* Score display */
+    .score-display {
+      text-align: center;
+      font-size: 16px;
+      color: #333;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+    <!-- Header -->
+    <header class="quiz-header">
+      <button class="btn-back" onclick="window.location='index.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Back to Home
+      </button>
+
+      <div class="user-profile">
+        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=student" alt="Student Avatar" class="user-avatar">
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" id="progress-fill" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <button class="btn-help" id="header-help">
+        <lottie-player
+          id="help-lottie"
+          background="transparent"
+          speed="1"
+          style="width: 28px; height: 28px;"
+          loop
+          autoplay
+        ></lottie-player>
+        Help
+      </button>
+    </header>
+
+    <!-- Question Meta -->
+    <div class="question-meta">
+      <span class="badge">English</span>
+      <span class="question-progress" id="question-progress">Question 1 of 10</span>
+    </div>
+
+    <!-- Question Title -->
+    <div class="question-title">
+      <button class="btn-read-aloud" id="btn-read-title" title="Read aloud">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 6c2.5 0 4.5 2 4.5 4.5S14.5 15 12 15"/>
+          <path d="M17 5c3 2 5 5 5 7s-2 5-5 7"/>
+          <path d="M9.5 9h-5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h5l5 4V5l-5 4z"/>
+        </svg>
+      </button>
+      <h1 id="question-text">Select the images that begin with the m sound.</h1>
+    </div>
+
+    <!-- Help Bar -->
+    <div class="help-bar">
+      <div class="help-item" id="btn-read-aloud">
+        <span>Read Aloud</span>
+        <span class="help-item-icon">&#128483;</span>
+      </div>
+      <span class="help-item-line"></span>
+      <div class="help-item" id="btn-get-help">
+        <span>Get Help</span>
+        <span class="help-item-icon">?</span>
+      </div>
+      <span class="help-item-line"></span>
+      <div class="help-item" id="btn-get-hint">
+        <span>Get Hint</span>
+        <span class="help-item-icon">+</span>
+      </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div class="modal-overlay" id="help-modal">
+      <div class="modal">
+        <div style="font-size: 40px; text-align: center; margin-bottom: 10px;">&#128264;</div>
+        <h2 style="text-align: center;">Sound Selection</h2>
+        <div style="background: var(--bg-primary); padding: 15px; border-radius: 12px; margin: 15px 0;">
+          <p style="margin: 8px 0;"><strong>&#128066; Listen</strong> to the target sound</p>
+          <p style="margin: 8px 0;"><strong>&#128065; Look</strong> at all the pictures</p>
+          <p style="margin: 8px 0;"><strong>&#128070; Tap</strong> pictures that start with that sound</p>
+          <p style="margin: 8px 0;"><strong>&#9989;</strong> Check your answer when ready!</p>
+        </div>
+        <p style="text-align: center; color: var(--text-secondary); font-size: 15px;">You can select multiple pictures!</p>
+        <button class="modal-close" id="close-help">Got it!</button>
+      </div>
+    </div>
+
+    <!-- Hint Modal -->
+    <div class="modal-overlay" id="hint-modal">
+      <div class="modal">
+        <div style="font-size: 40px; text-align: center; margin-bottom: 10px;">&#128161;</div>
+        <h2 style="text-align: center;" id="hint-title">Hint</h2>
+        <p style="text-align: center; font-size: 18px;" id="hint-text">Say each picture's name out loud. Does it start with "mmm"?</p>
+        <button class="modal-close" id="close-hint">Thanks!</button>
+      </div>
+    </div>
+
+    <!-- Image Grid -->
+    <div class="image-grid" id="image-grid">
+      <!-- Images will be generated by JS -->
+    </div>
+
+    <!-- Check Button -->
+    <button class="check-btn" id="check-btn">Check Answer</button>
+
+    <!-- Feedback Area -->
+    <div class="feedback-area" id="feedback-area">
+      <div class="feedback-message" id="feedback-message"></div>
+      <div class="score-display" id="score-display"></div>
+      <button class="try-again-btn" id="try-again-btn">Try Again</button>
+      <button class="next-btn" id="next-btn">Next Question</button>
+    </div>
+  </div>
+
+  <script>
+    // Question data - each question has a target sound and images
+    const questions = [
+      {
+        sound: 'm',
+        prompt: 'Select the images that begin with the m sound.',
+        hint: 'Say each picture\'s name out loud. Does it start with "mmm"?',
+        images: [
+          { emoji: '&#127936;', name: 'basketball', startsWithSound: false },
+          { emoji: '&#127908;', name: 'microphone', startsWithSound: true },
+          { emoji: '&#128054;', name: 'dog', startsWithSound: false },
+          { emoji: '&#128053;', name: 'monkey', startsWithSound: true },
+          { emoji: '&#128045;', name: 'mouse', startsWithSound: true },
+          { emoji: '&#128506;', name: 'map', startsWithSound: true },
+          { emoji: '&#127822;', name: 'apple', startsWithSound: false },
+          { emoji: '&#127769;', name: 'moon', startsWithSound: true },
+          { emoji: '&#127827;', name: 'strawberry', startsWithSound: false },
+          { emoji: '&#127812;', name: 'mushroom', startsWithSound: true }
+        ]
+      },
+      {
+        sound: 's',
+        prompt: 'Select the images that begin with the s sound.',
+        hint: 'Say each picture\'s name out loud. Does it start with "sss"?',
+        images: [
+          { emoji: '&#9728;', name: 'sun', startsWithSound: true },
+          { emoji: '&#128013;', name: 'snake', startsWithSound: true },
+          { emoji: '&#127794;', name: 'tree', startsWithSound: false },
+          { emoji: '&#11088;', name: 'star', startsWithSound: true },
+          { emoji: '&#128056;', name: 'frog', startsWithSound: false },
+          { emoji: '&#129409;', name: 'sock', startsWithSound: true },
+          { emoji: '&#127817;', name: 'banana', startsWithSound: false },
+          { emoji: '&#128375;', name: 'spider', startsWithSound: true },
+          { emoji: '&#128008;', name: 'cat', startsWithSound: false },
+          { emoji: '&#9924;', name: 'snowman', startsWithSound: true }
+        ]
+      },
+      {
+        sound: 'b',
+        prompt: 'Select the images that begin with the b sound.',
+        hint: 'Say each picture\'s name out loud. Does it start with "buh"?',
+        images: [
+          { emoji: '&#127880;', name: 'balloon', startsWithSound: true },
+          { emoji: '&#128038;', name: 'bird', startsWithSound: true },
+          { emoji: '&#127822;', name: 'apple', startsWithSound: false },
+          { emoji: '&#128218;', name: 'book', startsWithSound: true },
+          { emoji: '&#128704;', name: 'bed', startsWithSound: true },
+          { emoji: '&#127825;', name: 'cherry', startsWithSound: false },
+          { emoji: '&#128052;', name: 'horse', startsWithSound: false },
+          { emoji: '&#129419;', name: 'butterfly', startsWithSound: true },
+          { emoji: '&#127936;', name: 'basketball', startsWithSound: true },
+          { emoji: '&#127968;', name: 'house', startsWithSound: false }
+        ]
+      }
+    ];
+
+    // Game state
+    let currentQuestion = 0;
+    let selectedImages = new Set();
+    let answered = false;
+
+    // DOM elements
+    const imageGrid = document.getElementById('image-grid');
+    const checkBtn = document.getElementById('check-btn');
+    const feedbackArea = document.getElementById('feedback-area');
+    const feedbackMessage = document.getElementById('feedback-message');
+    const scoreDisplay = document.getElementById('score-display');
+    const tryAgainBtn = document.getElementById('try-again-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const questionText = document.getElementById('question-text');
+    const hintText = document.getElementById('hint-text');
+    const progressFill = document.getElementById('progress-fill');
+    const questionProgress = document.getElementById('question-progress');
+
+    // Load question
+    function loadQuestion() {
+      const q = questions[currentQuestion];
+      questionText.textContent = q.prompt;
+      hintText.textContent = q.hint;
+
+      // Update progress
+      questionProgress.textContent = `Question ${currentQuestion + 1} of ${questions.length}`;
+      progressFill.style.width = (currentQuestion / questions.length * 100) + '%';
+
+      // Clear state
+      selectedImages.clear();
+      answered = false;
+      feedbackArea.classList.remove('show');
+      checkBtn.style.display = 'block';
+      checkBtn.disabled = false;
+
+      // Generate image cards
+      imageGrid.innerHTML = '';
+      q.images.forEach((img, index) => {
+        const card = document.createElement('div');
+        card.className = 'image-card';
+        card.dataset.index = index;
+        card.innerHTML = `<span class="emoji-img">${img.emoji}</span>`;
+        card.addEventListener('click', () => toggleSelection(index, card));
+        imageGrid.appendChild(card);
+      });
+    }
+
+    // Toggle image selection
+    function toggleSelection(index, card) {
+      if (answered) return;
+
+      if (selectedImages.has(index)) {
+        selectedImages.delete(index);
+        card.classList.remove('selected');
+      } else {
+        selectedImages.add(index);
+        card.classList.add('selected');
+      }
+    }
+
+    // Check answer
+    checkBtn.addEventListener('click', () => {
+      if (selectedImages.size === 0) {
+        alert('Please select at least one image!');
+        return;
+      }
+
+      answered = true;
+      checkBtn.style.display = 'none';
+
+      const q = questions[currentQuestion];
+      const correctIndices = q.images
+        .map((img, i) => img.startsWithSound ? i : -1)
+        .filter(i => i !== -1);
+
+      let correctCount = 0;
+      let incorrectCount = 0;
+      let missedCount = 0;
+
+      // Mark each card
+      document.querySelectorAll('.image-card').forEach((card, index) => {
+        const isCorrectAnswer = q.images[index].startsWithSound;
+        const wasSelected = selectedImages.has(index);
+
+        if (wasSelected && isCorrectAnswer) {
+          card.classList.add('correct');
+          correctCount++;
+        } else if (wasSelected && !isCorrectAnswer) {
+          card.classList.add('incorrect');
+          incorrectCount++;
+        } else if (!wasSelected && isCorrectAnswer) {
+          card.classList.add('missed');
+          missedCount++;
+        }
+      });
+
+      // Show feedback
+      const isAllCorrect = incorrectCount === 0 && missedCount === 0;
+
+      if (isAllCorrect) {
+        feedbackMessage.textContent = 'Perfect! Well done!';
+        feedbackMessage.className = 'feedback-message correct';
+        tryAgainBtn.style.display = 'none';
+        nextBtn.style.display = 'inline-block';
+
+        // Celebration
+        imageGrid.classList.add('celebrating');
+        setTimeout(() => imageGrid.classList.remove('celebrating'), 500);
+      } else {
+        feedbackMessage.textContent = 'Not quite right!';
+        feedbackMessage.className = 'feedback-message incorrect';
+        tryAgainBtn.style.display = 'inline-block';
+        nextBtn.style.display = 'inline-block';
+
+        scoreDisplay.textContent = `You got ${correctCount} of ${correctIndices.length} correct.`;
+      }
+
+      feedbackArea.classList.add('show');
+    });
+
+    // Try again
+    tryAgainBtn.addEventListener('click', () => {
+      document.querySelectorAll('.image-card').forEach(card => {
+        card.classList.remove('selected', 'correct', 'incorrect', 'missed');
+      });
+      selectedImages.clear();
+      answered = false;
+      feedbackArea.classList.remove('show');
+      checkBtn.style.display = 'block';
+      scoreDisplay.textContent = '';
+    });
+
+    // Next question
+    nextBtn.addEventListener('click', () => {
+      currentQuestion++;
+      if (currentQuestion < questions.length) {
+        loadQuestion();
+      } else {
+        // Quiz complete
+        imageGrid.innerHTML = `
+          <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
+            <div style="font-size: 60px; margin-bottom: 20px;">&#127881;</div>
+            <h2 style="font-size: 28px; margin-bottom: 10px;">Quiz Complete!</h2>
+            <p style="font-size: 18px; color: #666;">Great job with your sounds!</p>
+            <button onclick="window.location='index.html'" style="margin-top: 20px; padding: 15px 40px; background: black; color: white; border: none; border-radius: 25px; font-size: 16px; cursor: pointer;">Back to Home</button>
+          </div>
+        `;
+        checkBtn.style.display = 'none';
+        feedbackArea.classList.remove('show');
+        progressFill.style.width = '100%';
+      }
+    });
+
+    // Read Aloud
+    function readQuestion() {
+      speechSynthesis.cancel();
+      const q = questions[currentQuestion];
+      const utterance = new SpeechSynthesisUtterance(q.prompt);
+      utterance.rate = 0.9;
+      speechSynthesis.speak(utterance);
+    }
+
+    document.getElementById('btn-read-aloud').addEventListener('click', readQuestion);
+    document.getElementById('btn-read-title').addEventListener('click', readQuestion);
+
+    // Help Modal
+    const helpModal = document.getElementById('help-modal');
+    document.getElementById('btn-get-help').addEventListener('click', () => helpModal.classList.add('active'));
+    document.getElementById('header-help').addEventListener('click', () => helpModal.classList.add('active'));
+    document.getElementById('close-help').addEventListener('click', () => helpModal.classList.remove('active'));
+    helpModal.addEventListener('click', (e) => {
+      if (e.target === helpModal) helpModal.classList.remove('active');
+    });
+
+    // Hint Modal
+    const hintModal = document.getElementById('hint-modal');
+    document.getElementById('btn-get-hint').addEventListener('click', () => hintModal.classList.add('active'));
+    document.getElementById('close-hint').addEventListener('click', () => hintModal.classList.remove('active'));
+    hintModal.addEventListener('click', (e) => {
+      if (e.target === hintModal) hintModal.classList.remove('active');
+    });
+
+    // Load Lottie animation for help button
+    const helpLottie = document.getElementById('help-lottie');
+    const lottieData = {"v":"5.4.4","fr":60,"ip":0,"op":132,"w":100,"h":100,"nm":"Question 2","assets":[],"layers":[{"ind":1,"ty":4,"nm":"? Outlines","sr":1,"ks":{"o":{"a":0,"k":100},"r":{"a":0,"k":0},"p":{"a":0,"k":[50.713,49.149,0]},"a":{"a":0,"k":[-0.214,-10.242,0]},"s":{"a":1,"k":[{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":61,"s":[200,200,100],"e":[210,210,100]},{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":71,"s":[210,210,100],"e":[200,200,100]},{"t":80}]}},"ao":0,"shapes":[{"ty":"gr","it":[{"ind":0,"ty":"sh","ks":{"a":0,"k":{"i":[[0,0],[0,0],[0,0],[0,3.203],[4.23,0],[0.242,-3.897],[0,0],[-1.601,0],[0,-1.541],[1.692,0],[0,0]],"o":[[0,0],[0,0],[3.565,-0.483],[0,-3.988],[-4.592,0],[0,0],[0.121,-1.45],[1.601,0],[0,1.662],[0,0],[0,0]],"v":[[-2.556,-6.617],[1.16,-6.617],[1.311,-8.369],[7.142,-14.17],[-0.199,-20.816],[-7.571,-14.351],[-2.828,-14.351],[-0.048,-16.738],[2.61,-14.17],[-0.381,-11.541],[-2.858,-11.541]],"c":true}},"nm":"?"},{"ind":1,"ty":"sh","ks":{"a":0,"k":{"i":[[-1.42,0],[0,1.45],[1.45,0],[0,-1.45]],"o":[[1.45,0],[0,-1.45],[-1.42,0],[0,1.45]],"v":[[-0.834,0.332],[1.825,-2.206],[-0.834,-4.743],[-3.462,-2.206]],"c":true}},"nm":"?"},{"ty":"mm","mm":1,"nm":"Merge Paths 1"},{"ty":"fl","c":{"a":0,"k":[1,1,1,1]},"o":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":61,"s":[0],"e":[100]},{"t":71}]},"r":1,"nm":"Fill 1"},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":0},"o":{"a":0,"k":100},"sk":{"a":0,"k":0},"sa":{"a":0,"k":0},"nm":"Transform"}],"nm":"?"},{"ty":"tm","s":{"a":0,"k":0},"e":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":37,"s":[0],"e":[100]},{"t":61}]},"o":{"a":0,"k":0},"m":1,"nm":"Trim Paths 1"},{"ty":"st","c":{"a":0,"k":[1,1,1,1]},"o":{"a":0,"k":100},"w":{"a":0,"k":1},"lc":1,"lj":1,"ml":4,"nm":"Stroke 1"}],"ip":0,"op":132,"st":0},{"ind":3,"ty":3,"nm":"▽ Group 6","sr":1,"ks":{"o":{"a":0,"k":100},"r":{"a":0,"k":0},"p":{"a":0,"k":[50,50,0]},"a":{"a":0,"k":[42,42,0]},"s":{"a":0,"k":[100,100,100]}},"ao":0,"ip":0,"op":132,"st":0},{"ind":4,"ty":4,"nm":"Rectangle 6 Copy","parent":3,"sr":1,"ks":{"o":{"a":0,"k":100},"r":{"a":0,"k":0},"p":{"a":0,"k":[42,42,0]},"a":{"a":0,"k":[0,0,0]},"s":{"a":1,"k":[{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":21,"s":[100,100,100],"e":[110,110,100]},{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":29,"s":[110,110,100],"e":[100,100,100]},{"t":36}]}},"ao":0,"shapes":[{"ty":"gr","it":[{"ty":"rc","d":1,"s":{"a":0,"k":[42,42]},"p":{"a":0,"k":[0,0]},"r":{"a":0,"k":21},"nm":"Rectangle Path 1"},{"ty":"tm","s":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":0,"s":[0],"e":[100]},{"t":22}]},"e":{"a":0,"k":0},"o":{"a":0,"k":-90},"m":1,"nm":"Trim Paths 1"},{"ty":"st","c":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":13,"s":[0.74,0.729,0.709,1],"e":[0.961,0.694,0.196,1]},{"t":22}]},"o":{"a":0,"k":100},"w":{"a":0,"k":2},"lc":2,"lj":1,"ml":4,"nm":"Stroke 1"},{"ty":"fl","c":{"a":0,"k":[0.953,0.691,0.256,1]},"o":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":21,"s":[1],"e":[100]},{"t":26}]},"r":1,"nm":"Fill 1"},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[200,200]},"r":{"a":0,"k":0},"o":{"a":0,"k":100},"sk":{"a":0,"k":0},"sa":{"a":0,"k":0},"nm":"Transform"}],"nm":"Rectangle 6 Copy"}],"ip":0,"op":132,"st":0}],"markers":[]};
+    helpLottie.load(lottieData);
+
+    // Start
+    loadQuestion();
+  </script>
+</body>
+</html>

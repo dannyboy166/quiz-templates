@@ -176,6 +176,31 @@ order: ascending
 
 ---
 
+### 8. Sound Select (`sound-select`)
+
+Select all images that begin with a target letter sound (phonics). Multi-select.
+
+| Column | Type | Required | Description |
+|--------|------|----------|-------------|
+| `template_type` | string | Yes | `"sound-select"` |
+| `target_sound` | string | Yes | The letter/sound (e.g., "m", "s", "b") |
+| `question_text` | string | Yes | e.g., "Select images that begin with the m sound" |
+| `images` | JSON array | Yes | `[{"name": "moon", "image_url": "/img/moon.png", "starts_with_sound": true}]` |
+| `hint` | string | No | Hint text for the sound |
+
+**Example Excel Row:**
+```
+template_type: sound-select
+target_sound: m
+question_text: Select the images that begin with the m sound.
+images: [{"name":"mouse","image_url":"/img/mouse.png","starts_with_sound":true},{"name":"apple","image_url":"/img/apple.png","starts_with_sound":false},{"name":"moon","image_url":"/img/moon.png","starts_with_sound":true}]
+hint: Say each picture's name out loud. Does it start with "mmm"?
+```
+
+**Note:** `starts_with_sound: true` marks correct answers. Students must select ALL correct images.
+
+---
+
 ## Suggested Excel Import Structure
 
 ### Option A: Single Table (Simple)
@@ -264,7 +289,8 @@ public abstract class QuestionComponentBase : ComponentBase
 ├── ColorBlocksQuestion.razor
 ├── SpellingQuestion.razor
 ├── WordMatchQuestion.razor
-└── NumberOrderQuestion.razor
+├── NumberOrderQuestion.razor
+└── SoundSelectQuestion.razor
 ```
 
 ### 3. Dynamic Component Loader
@@ -320,6 +346,7 @@ public class QuestionImportService
 | `demo-spelling.html` | `spelling` | Inline styles |
 | `demo-word-match.html` | `word-match` | Inline styles |
 | `demo-number-order.html` | `number-order` | Inline styles |
+| `demo-sound-select.html` | `sound-select` | Inline styles |
 
 ---
 
