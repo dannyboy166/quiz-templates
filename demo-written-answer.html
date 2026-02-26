@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Written Answer - Quiz Template</title>
+  <link rel="stylesheet" href="css/base.css">
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+  <style>
+    /* Modal styles */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      max-width: 400px;
+      margin: 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal h2 {
+      margin: 0 0 15px 0;
+      font-size: 22px;
+    }
+
+    .modal p {
+      margin: 0 0 10px 0;
+      line-height: 1.6;
+    }
+
+    .modal-close {
+      margin-top: 20px;
+      padding: 10px 24px;
+      background: #333;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* Help bar clickable */
+    .help-item {
+      cursor: pointer;
+      padding: 8px 12px;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+
+    .help-item:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    .help-item.active {
+      background: rgba(0, 0, 0, 0.1);
+    }
+
+    /* Help button with Lottie */
+    .btn-help {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .btn-help lottie-player {
+      pointer-events: none;
+    }
+
+    /* Try Again button */
+    .btn-try-again {
+      background: #FF9800;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 25px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    .btn-try-again:hover {
+      background: #F57C00;
+      transform: scale(1.05);
+    }
+
+    /* Next button styling - circular arrow */
+    .btn-next {
+      background: #4CAF50;
+      border: none;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s, background 0.2s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    .btn-next:hover {
+      background: #43A047;
+      transform: scale(1.1);
+    }
+
+    .btn-next svg {
+      stroke: white;
+    }
+
+    /* Success animation */
+    @keyframes celebrate {
+      0%, 100% { transform: scale(1); }
+      25% { transform: scale(1.1) rotate(-5deg); }
+      75% { transform: scale(1.1) rotate(5deg); }
+    }
+
+    .celebrate {
+      animation: celebrate 0.5s ease-in-out;
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+    <!-- Header -->
+    <header class="quiz-header">
+      <button class="btn-back" onclick="window.location='index.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Back to Home
+      </button>
+
+      <div class="user-profile">
+        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=student" alt="Student Avatar" class="user-avatar">
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" style="width: 25%"></div>
+        </div>
+      </div>
+
+      <button class="btn-help" id="header-help">
+        <lottie-player
+          id="help-lottie"
+          background="transparent"
+          speed="1"
+          style="width: 28px; height: 28px;"
+          loop
+          autoplay
+        ></lottie-player>
+        Help
+      </button>
+    </header>
+
+    <!-- Question Meta -->
+    <div class="question-meta">
+      <span class="badge">MATH</span>
+      <span class="question-progress">Question 1 of 4</span>
+    </div>
+
+    <!-- Question Title -->
+    <div class="question-title">
+      <button class="btn-read-aloud" title="Read aloud">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 6c2.5 0 4.5 2 4.5 4.5S14.5 15 12 15"/>
+          <path d="M17 5c3 2 5 5 5 7s-2 5-5 7"/>
+          <path d="M9.5 9h-5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h5l5 4V5l-5 4z"/>
+        </svg>
+      </button>
+      <h1>How many blocks are there?</h1>
+    </div>
+
+    <!-- Help Bar -->
+    <div class="help-bar">
+      <div class="help-item" id="btn-read-aloud">
+        <span>Read Aloud</span>
+        <span class="help-item-icon">&#128483;</span>
+      </div>
+      <span class="help-item-line"></span>
+      <div class="help-item" id="btn-get-help">
+        <span>Get Help</span>
+        <span class="help-item-icon">?</span>
+      </div>
+      <span class="help-item-line"></span>
+      <div class="help-item" id="btn-get-hint">
+        <span>Get Hint</span>
+        <span class="help-item-icon">+</span>
+      </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div class="modal-overlay" id="help-modal">
+      <div class="modal">
+        <div style="font-size: 40px; text-align: center; margin-bottom: 10px;">&#129518;</div>
+        <h2 style="text-align: center;">Counting Blocks!</h2>
+        <div style="background: #FFF9E6; padding: 15px; border-radius: 12px; margin: 15px 0;">
+          <p style="margin: 8px 0;"><strong>&#128998; Tall stack</strong> = 10 blocks</p>
+          <p style="margin: 8px 0;"><strong>&#128999; Small cubes</strong> = 1 block each</p>
+        </div>
+        <p style="text-align: center; font-size: 15px;">Count the tall stack (10) and add the small cubes!</p>
+        <button class="modal-close" id="close-help">I'm ready! &#127775;</button>
+      </div>
+    </div>
+
+    <!-- Hint Modal -->
+    <div class="modal-overlay" id="hint-modal">
+      <div class="modal">
+        <div style="font-size: 40px; text-align: center; margin-bottom: 10px;">&#128161;</div>
+        <h2 style="text-align: center;" id="hint-title">Here's a hint!</h2>
+        <p style="text-align: center; font-size: 18px; margin: 20px 0;" id="hint-text"></p>
+        <button class="modal-close" id="close-hint">Thanks! &#128077;</button>
+      </div>
+    </div>
+
+    <!-- Content Card -->
+    <div class="content-card">
+      <div class="content-card-inner">
+        <!-- This would be replaced with actual question image -->
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250' viewBox='0 0 400 250'%3E%3Crect fill='%23fff' width='400' height='250'/%3E%3C!-- Ten block (vertical stack) --%3E%3Cg transform='translate(80,20)'%3E%3Crect x='0' y='0' width='30' height='20' fill='%235C6BC0' stroke='%23333' stroke-width='1'/%3E%3Crect x='0' y='20' width='30' height='20' fill='%235C6BC0' stroke='%23333' stroke-width='1'/%3E%3Crect x='0' y='40' width='30' height='20' fill='%235C6BC0' stroke='%23333' stroke-width='1'/%3E%3Crect x='0' y='60' width='30' height='20' fill='%235C6BC0' stroke='%23333' stroke-width='1'/%3E%3Crect x='0' y='80' width='30' height='20' fill='%235C6BC0' stroke='%23333' stroke-width='1'/%3E%3Crect x='0' y='100' width='30' height='20' fill='%235C6BC0' stroke='%23333' stroke-width='1'/%3E%3Crect x='0' y='120' width='30' height='20' fill='%235C6BC0' stroke='%23333' stroke-width='1'/%3E%3Crect x='0' y='140' width='30' height='20' fill='%235C6BC0' stroke='%23333' stroke-width='1'/%3E%3Crect x='0' y='160' width='30' height='20' fill='%235C6BC0' stroke='%23333' stroke-width='1'/%3E%3Crect x='0' y='180' width='30' height='20' fill='%235C6BC0' stroke='%23333' stroke-width='1'/%3E%3C/g%3E%3Ctext x='145' y='125' font-size='32' font-weight='bold'%3E+%3C/text%3E%3C!-- Nine unit blocks --%3E%3Cg transform='translate(180,50)'%3E%3Crect x='0' y='0' width='25' height='25' fill='%2390CAF9' stroke='%23333' stroke-width='1' rx='2'/%3E%3Crect x='30' y='0' width='25' height='25' fill='%2390CAF9' stroke='%23333' stroke-width='1' rx='2'/%3E%3Crect x='0' y='35' width='25' height='25' fill='%2390CAF9' stroke='%23333' stroke-width='1' rx='2'/%3E%3Crect x='30' y='35' width='25' height='25' fill='%2390CAF9' stroke='%23333' stroke-width='1' rx='2'/%3E%3Crect x='0' y='70' width='25' height='25' fill='%2390CAF9' stroke='%23333' stroke-width='1' rx='2'/%3E%3Crect x='30' y='70' width='25' height='25' fill='%2390CAF9' stroke='%23333' stroke-width='1' rx='2'/%3E%3Crect x='0' y='105' width='25' height='25' fill='%2390CAF9' stroke='%23333' stroke-width='1' rx='2'/%3E%3Crect x='30' y='105' width='25' height='25' fill='%2390CAF9' stroke='%23333' stroke-width='1' rx='2'/%3E%3Crect x='0' y='140' width='25' height='25' fill='%2390CAF9' stroke='%23333' stroke-width='1' rx='2'/%3E%3C/g%3E%3Ctext x='280' y='125' font-size='32' font-weight='bold'%3E=%3C/text%3E%3C/svg%3E" alt="Base 10 blocks showing 10 + 9" style="max-width: 100%;">
+      </div>
+    </div>
+
+    <!-- Answer Input -->
+    <div class="answer-area">
+      <input type="text" class="answer-input" id="answer" placeholder="Type your answer" autocomplete="off">
+    </div>
+
+    <!-- Feedback (hidden initially) -->
+    <div class="feedback" id="feedback" style="display: none;">
+      <span class="feedback-badge" id="feedback-badge"></span>
+      <button class="btn-try-again" id="btn-try-again" style="display: none;">
+        Try Again &#128260;
+      </button>
+      <button class="btn-next" id="btn-next" style="display: none;" title="Next Question">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Check Answer Button -->
+    <button class="btn-check-answer" id="btn-check">Check Answer</button>
+  </div>
+
+  <script>
+    // Answer logic
+    const correctAnswer = '19';
+    const answerInput = document.getElementById('answer');
+    const btnCheck = document.getElementById('btn-check');
+    const feedback = document.getElementById('feedback');
+    const feedbackBadge = document.getElementById('feedback-badge');
+    const btnTryAgain = document.getElementById('btn-try-again');
+    const btnNext = document.getElementById('btn-next');
+    const progressFill = document.querySelector('.progress-bar-fill');
+
+    btnCheck.addEventListener('click', () => {
+      const userAnswer = answerInput.value.trim();
+      const isCorrect = userAnswer === correctAnswer;
+
+      // Show feedback
+      feedback.style.display = 'flex';
+      answerInput.classList.remove('correct', 'incorrect');
+      answerInput.classList.add(isCorrect ? 'correct' : 'incorrect');
+
+      feedbackBadge.classList.remove('correct', 'incorrect');
+      feedbackBadge.classList.add(isCorrect ? 'correct' : 'incorrect');
+
+      if (isCorrect) {
+        feedbackBadge.innerHTML = '&#127881; Awesome! That\'s right!';
+        answerInput.disabled = true;
+        btnCheck.style.display = 'none';
+        btnTryAgain.style.display = 'none';
+        btnNext.style.display = 'flex';
+        progressFill.style.width = '50%';
+        document.querySelector('.content-card').classList.add('celebrate');
+      } else {
+        feedbackBadge.innerHTML = '&#128170; Not quite - give it another go!';
+        btnTryAgain.style.display = 'block';
+        btnNext.style.display = 'none';
+      }
+    });
+
+    // Allow Enter key to submit
+    answerInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        btnCheck.click();
+      }
+    });
+
+    // Try Again
+    btnTryAgain.addEventListener('click', () => {
+      answerInput.value = '';
+      answerInput.classList.remove('correct', 'incorrect');
+      answerInput.disabled = false;
+      answerInput.focus();
+      feedback.style.display = 'none';
+      btnTryAgain.style.display = 'none';
+    });
+
+    // Next Question
+    btnNext.addEventListener('click', () => {
+      window.location.href = 'demo-clock.html';
+    });
+
+    // ==========================================
+    // Read Aloud
+    // ==========================================
+    const btnReadAloud = document.getElementById('btn-read-aloud');
+    const questionText = "How many blocks are there? Count the tall stack of 10 and add the small cubes.";
+
+    btnReadAloud.addEventListener('click', () => {
+      speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(questionText);
+      utterance.rate = 0.9;
+      btnReadAloud.classList.add('active');
+      utterance.onend = () => btnReadAloud.classList.remove('active');
+      speechSynthesis.speak(utterance);
+    });
+
+    document.querySelector('.btn-read-aloud').addEventListener('click', () => {
+      btnReadAloud.click();
+    });
+
+    // ==========================================
+    // Get Help
+    // ==========================================
+    const btnGetHelp = document.getElementById('btn-get-help');
+    const helpModal = document.getElementById('help-modal');
+    const closeHelp = document.getElementById('close-help');
+
+    btnGetHelp.addEventListener('click', () => {
+      helpModal.classList.add('active');
+    });
+
+    document.getElementById('header-help').addEventListener('click', () => {
+      helpModal.classList.add('active');
+    });
+
+    closeHelp.addEventListener('click', () => {
+      helpModal.classList.remove('active');
+    });
+
+    helpModal.addEventListener('click', (e) => {
+      if (e.target === helpModal) helpModal.classList.remove('active');
+    });
+
+    // ==========================================
+    // Get Hint
+    // ==========================================
+    const btnGetHint = document.getElementById('btn-get-hint');
+    const hintModal = document.getElementById('hint-modal');
+    const hintTitle = document.getElementById('hint-title');
+    const hintText = document.getElementById('hint-text');
+    const closeHint = document.getElementById('close-hint');
+
+    const hints = [
+      "The tall stack has <strong>10 blocks</strong>!",
+      "Count the small cubes: there are <strong>9</strong> of them!",
+      "10 + 9 = ?"
+    ];
+    let hintIndex = 0;
+
+    btnGetHint.addEventListener('click', () => {
+      hintTitle.innerHTML = "&#128161; Hint " + (hintIndex + 1) + "!";
+      hintText.innerHTML = hints[hintIndex];
+      hintModal.classList.add('active');
+      hintIndex = (hintIndex + 1) % hints.length;
+    });
+
+    closeHint.addEventListener('click', () => {
+      hintModal.classList.remove('active');
+    });
+
+    hintModal.addEventListener('click', (e) => {
+      if (e.target === hintModal) hintModal.classList.remove('active');
+    });
+
+    // Load Lottie animation inline
+    const helpLottie = document.getElementById('help-lottie');
+    const lottieData = {"v":"5.4.4","fr":60,"ip":0,"op":132,"w":100,"h":100,"nm":"Question 2","assets":[],"layers":[{"ind":1,"ty":4,"nm":"? Outlines","sr":1,"ks":{"o":{"a":0,"k":100},"r":{"a":0,"k":0},"p":{"a":0,"k":[50.713,49.149,0]},"a":{"a":0,"k":[-0.214,-10.242,0]},"s":{"a":1,"k":[{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":61,"s":[200,200,100],"e":[210,210,100]},{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":71,"s":[210,210,100],"e":[200,200,100]},{"t":80}]}},"ao":0,"shapes":[{"ty":"gr","it":[{"ind":0,"ty":"sh","ks":{"a":0,"k":{"i":[[0,0],[0,0],[0,0],[0,3.203],[4.23,0],[0.242,-3.897],[0,0],[-1.601,0],[0,-1.541],[1.692,0],[0,0]],"o":[[0,0],[0,0],[3.565,-0.483],[0,-3.988],[-4.592,0],[0,0],[0.121,-1.45],[1.601,0],[0,1.662],[0,0],[0,0]],"v":[[-2.556,-6.617],[1.16,-6.617],[1.311,-8.369],[7.142,-14.17],[-0.199,-20.816],[-7.571,-14.351],[-2.828,-14.351],[-0.048,-16.738],[2.61,-14.17],[-0.381,-11.541],[-2.858,-11.541]],"c":true}},"nm":"?"},{"ind":1,"ty":"sh","ks":{"a":0,"k":{"i":[[-1.42,0],[0,1.45],[1.45,0],[0,-1.45]],"o":[[1.45,0],[0,-1.45],[-1.42,0],[0,1.45]],"v":[[-0.834,0.332],[1.825,-2.206],[-0.834,-4.743],[-3.462,-2.206]],"c":true}},"nm":"?"},{"ty":"mm","mm":1,"nm":"Merge Paths 1"},{"ty":"fl","c":{"a":0,"k":[1,1,1,1]},"o":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":61,"s":[0],"e":[100]},{"t":71}]},"r":1,"nm":"Fill 1"},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":0},"o":{"a":0,"k":100},"sk":{"a":0,"k":0},"sa":{"a":0,"k":0},"nm":"Transform"}],"nm":"?"},{"ty":"tm","s":{"a":0,"k":0},"e":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":37,"s":[0],"e":[100]},{"t":61}]},"o":{"a":0,"k":0},"m":1,"nm":"Trim Paths 1"},{"ty":"st","c":{"a":0,"k":[1,1,1,1]},"o":{"a":0,"k":100},"w":{"a":0,"k":1},"lc":1,"lj":1,"ml":4,"nm":"Stroke 1"}],"ip":0,"op":132,"st":0},{"ind":3,"ty":3,"nm":"▽ Group 6","sr":1,"ks":{"o":{"a":0,"k":100},"r":{"a":0,"k":0},"p":{"a":0,"k":[50,50,0]},"a":{"a":0,"k":[42,42,0]},"s":{"a":0,"k":[100,100,100]}},"ao":0,"ip":0,"op":132,"st":0},{"ind":4,"ty":4,"nm":"Rectangle 6 Copy","parent":3,"sr":1,"ks":{"o":{"a":0,"k":100},"r":{"a":0,"k":0},"p":{"a":0,"k":[42,42,0]},"a":{"a":0,"k":[0,0,0]},"s":{"a":1,"k":[{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":21,"s":[100,100,100],"e":[110,110,100]},{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":29,"s":[110,110,100],"e":[100,100,100]},{"t":36}]}},"ao":0,"shapes":[{"ty":"gr","it":[{"ty":"rc","d":1,"s":{"a":0,"k":[42,42]},"p":{"a":0,"k":[0,0]},"r":{"a":0,"k":21},"nm":"Rectangle Path 1"},{"ty":"tm","s":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":0,"s":[0],"e":[100]},{"t":22}]},"e":{"a":0,"k":0},"o":{"a":0,"k":-90},"m":1,"nm":"Trim Paths 1"},{"ty":"st","c":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":13,"s":[0.74,0.729,0.709,1],"e":[0.961,0.694,0.196,1]},{"t":22}]},"o":{"a":0,"k":100},"w":{"a":0,"k":2},"lc":2,"lj":1,"ml":4,"nm":"Stroke 1"},{"ty":"fl","c":{"a":0,"k":[0.953,0.691,0.256,1]},"o":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":21,"s":[1],"e":[100]},{"t":26}]},"r":1,"nm":"Fill 1"},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[200,200]},"r":{"a":0,"k":0},"o":{"a":0,"k":100},"sk":{"a":0,"k":0},"sa":{"a":0,"k":0},"nm":"Transform"}],"nm":"Rectangle 6 Copy"}],"ip":0,"op":132,"st":0}],"markers":[]};
+    helpLottie.load(lottieData);
+  </script>
+</body>
+</html>

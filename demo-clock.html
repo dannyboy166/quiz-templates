@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Draggable Clock - Quiz Template</title>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/clock.css">
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+  <style>
+    .clocks-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 30px;
+      padding: 20px;
+    }
+
+    .clock-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .target-time {
+      background: #D4A574;
+      padding: 8px 20px;
+      border-radius: 20px;
+      font-size: 18px;
+      font-weight: 700;
+      color: #333;
+      text-align: center;
+    }
+
+    .target-time.correct {
+      background: var(--correct-bg);
+      border: 2px solid var(--correct-border);
+    }
+
+    .target-time.incorrect {
+      background: var(--incorrect-bg);
+      border: 2px solid var(--incorrect-border);
+    }
+
+    @media (max-width: 500px) {
+      .clocks-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Modal styles */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      max-width: 400px;
+      margin: 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal h2 {
+      margin: 0 0 15px 0;
+      font-size: 22px;
+    }
+
+    .modal p {
+      margin: 0 0 10px 0;
+      line-height: 1.6;
+    }
+
+    .modal ul {
+      margin: 10px 0;
+      padding-left: 20px;
+    }
+
+    .modal li {
+      margin: 8px 0;
+    }
+
+    .modal-close {
+      margin-top: 20px;
+      padding: 10px 24px;
+      background: #333;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* Hint highlight */
+    .clock-item.hint-highlight {
+      animation: pulseHint 1s ease-in-out 3;
+    }
+
+    @keyframes pulseHint {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    /* Help bar clickable */
+    .help-item {
+      cursor: pointer;
+      padding: 8px 12px;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+
+    .help-item:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    .help-item.active {
+      background: rgba(0, 0, 0, 0.1);
+    }
+
+    /* Help button with Lottie */
+    .btn-help {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .btn-help lottie-player {
+      pointer-events: none;
+    }
+
+    /* Try Again button */
+    .btn-try-again {
+      background: #FF9800;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 25px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    .btn-try-again:hover {
+      background: #F57C00;
+      transform: scale(1.05);
+    }
+
+    /* Next button styling - circular arrow */
+    .btn-next {
+      background: #4CAF50;
+      border: none;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s, background 0.2s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    .btn-next:hover {
+      background: #43A047;
+      transform: scale(1.1);
+    }
+
+    .btn-next svg {
+      stroke: white;
+    }
+
+    /* Success animation */
+    @keyframes celebrate {
+      0%, 100% { transform: scale(1); }
+      25% { transform: scale(1.1) rotate(-5deg); }
+      75% { transform: scale(1.1) rotate(5deg); }
+    }
+
+    .celebrate {
+      animation: celebrate 0.5s ease-in-out;
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+    <!-- Header -->
+    <header class="quiz-header">
+      <button class="btn-back" onclick="window.location='index.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Back to Home
+      </button>
+
+      <div class="user-profile">
+        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=student" alt="Student Avatar" class="user-avatar">
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" style="width: 50%"></div>
+        </div>
+      </div>
+
+      <button class="btn-help">
+        <lottie-player
+          id="help-lottie"
+          background="transparent"
+          speed="1"
+          style="width: 28px; height: 28px;"
+          loop
+          autoplay
+        ></lottie-player>
+        Help
+      </button>
+    </header>
+
+    <!-- Question Meta -->
+    <div class="question-meta">
+      <span class="badge">MATH</span>
+      <span class="question-progress">Question 2 of 4</span>
+    </div>
+
+    <!-- Question Title -->
+    <div class="question-title">
+      <button class="btn-read-aloud" title="Read aloud">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 6c2.5 0 4.5 2 4.5 4.5S14.5 15 12 15"/>
+          <path d="M17 5c3 2 5 5 5 7s-2 5-5 7"/>
+          <path d="M9.5 9h-5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h5l5 4V5l-5 4z"/>
+        </svg>
+      </button>
+      <h1>Set each clock to show the time below it</h1>
+    </div>
+
+    <!-- Help Bar -->
+    <div class="help-bar">
+      <div class="help-item" id="btn-read-aloud">
+        <span>Read Aloud</span>
+        <span class="help-item-icon">&#128483;</span>
+      </div>
+      <span class="help-item-line"></span>
+      <div class="help-item" id="btn-get-help">
+        <span>Get Help</span>
+        <span class="help-item-icon">?</span>
+      </div>
+      <span class="help-item-line"></span>
+      <div class="help-item" id="btn-get-hint">
+        <span>Get Hint</span>
+        <span class="help-item-icon">+</span>
+      </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div class="modal-overlay" id="help-modal">
+      <div class="modal">
+        <div style="font-size: 40px; text-align: center; margin-bottom: 10px;">&#128368;</div>
+        <h2 style="text-align: center;">How to Read a Clock!</h2>
+        <div style="background: #FFF9E6; padding: 15px; border-radius: 12px; margin: 15px 0;">
+          <p style="margin: 8px 0;"><strong>&#128072; Short hand</strong> = What HOUR is it?</p>
+          <p style="margin: 8px 0;"><strong>&#128070; Long hand</strong> = What MINUTE is it?</p>
+        </div>
+        <p style="text-align: center; font-size: 15px;">For times like "3 o'clock", the long hand always points to <strong>12</strong>!</p>
+        <p style="text-align: center; font-size: 15px;">Just drag the hands with your finger or mouse!</p>
+        <button class="modal-close" id="close-help">I'm ready! &#127775;</button>
+      </div>
+    </div>
+
+    <!-- Hint Modal -->
+    <div class="modal-overlay" id="hint-modal">
+      <div class="modal">
+        <div style="font-size: 40px; text-align: center; margin-bottom: 10px;">&#128161;</div>
+        <h2 style="text-align: center;" id="hint-title">Here's a hint!</h2>
+        <p style="text-align: center; font-size: 18px; margin: 20px 0;" id="hint-text"></p>
+        <button class="modal-close" id="close-hint">Thanks! &#128077;</button>
+      </div>
+    </div>
+
+    <!-- Content Card -->
+    <div class="content-card">
+      <div class="content-card-inner">
+        <div class="clocks-grid">
+          <!-- Clock 1 -->
+          <div class="clock-item">
+            <div id="clock-1"></div>
+            <div class="target-time" id="target-1">3 o'clock</div>
+          </div>
+
+          <!-- Clock 2 -->
+          <div class="clock-item">
+            <div id="clock-2"></div>
+            <div class="target-time" id="target-2">9 o'clock</div>
+          </div>
+
+          <!-- Clock 3 -->
+          <div class="clock-item">
+            <div id="clock-3"></div>
+            <div class="target-time" id="target-3">6 o'clock</div>
+          </div>
+
+          <!-- Clock 4 -->
+          <div class="clock-item">
+            <div id="clock-4"></div>
+            <div class="target-time" id="target-4">12 o'clock</div>
+          </div>
+        </div>
+
+        <p class="clock-instructions">Drag the short hand for hours, long hand for minutes</p>
+      </div>
+    </div>
+
+    <!-- Feedback -->
+    <div class="feedback" id="feedback" style="display: none;">
+      <span class="feedback-badge" id="feedback-badge"></span>
+      <button class="btn-try-again" id="btn-try-again" style="display: none;">
+        Try Again &#128260;
+      </button>
+      <button class="btn-next" id="btn-next" style="display: none;" title="Next Question">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Check Answer Button -->
+    <button class="btn-check-answer" id="btn-check">Check All Answers</button>
+  </div>
+
+  <script src="js/clock.js"></script>
+  <script>
+    // Target times for each clock [hour, minute]
+    const targets = [
+      { hour: 3, minute: 0 },
+      { hour: 9, minute: 0 },
+      { hour: 6, minute: 0 },
+      { hour: 12, minute: 0 }
+    ];
+
+    // Create 4 clocks - start at 3 o'clock so hands aren't overlapping
+    const clocks = [];
+    for (let i = 0; i < 4; i++) {
+      const clock = new DraggableClock(`#clock-${i + 1}`, {
+        size: 160,
+        interactive: true,
+        showMinuteHand: true,
+        snapToHour: true,
+        snapToFiveMinutes: true,
+        initialHour: 3,
+        initialMinute: 0
+      });
+      clocks.push(clock);
+    }
+
+    // Check all answers
+    const btnCheck = document.getElementById('btn-check');
+    const feedback = document.getElementById('feedback');
+    const feedbackBadge = document.getElementById('feedback-badge');
+    const btnTryAgain = document.getElementById('btn-try-again');
+    const btnNext = document.getElementById('btn-next');
+    const progressFill = document.querySelector('.progress-bar-fill');
+
+    btnCheck.addEventListener('click', () => {
+      let correctCount = 0;
+
+      // Check each clock
+      clocks.forEach((clock, i) => {
+        const isCorrect = clock.checkAnswer(targets[i].hour, targets[i].minute);
+        const targetEl = document.getElementById(`target-${i + 1}`);
+
+        targetEl.classList.remove('correct', 'incorrect');
+        targetEl.classList.add(isCorrect ? 'correct' : 'incorrect');
+        clock.setFeedback(isCorrect);
+
+        if (isCorrect) correctCount++;
+      });
+
+      // Show overall feedback
+      const allCorrect = correctCount === 4;
+      feedback.style.display = 'flex';
+      feedbackBadge.classList.remove('correct', 'incorrect');
+      feedbackBadge.classList.add(allCorrect ? 'correct' : 'incorrect');
+
+      if (allCorrect) {
+        feedbackBadge.innerHTML = '&#127881; Awesome! You got them all right!';
+        clocks.forEach(c => c.disable());
+        btnCheck.style.display = 'none';
+        btnTryAgain.style.display = 'none';
+        btnNext.style.display = 'flex';
+
+        // Update progress bar
+        progressFill.style.width = '75%';
+
+        // Celebrate animation
+        document.querySelector('.content-card').classList.add('celebrate');
+      } else {
+        feedbackBadge.innerHTML = `&#128170; ${correctCount}/4 correct - Keep trying, you've got this!`;
+        btnTryAgain.style.display = 'block';
+        btnNext.style.display = 'none';
+      }
+    });
+
+    // Try Again - reset incorrect clocks
+    btnTryAgain.addEventListener('click', () => {
+      // Reset all clocks to 12 o'clock
+      clocks.forEach((clock, i) => {
+        const targetEl = document.getElementById(`target-${i + 1}`);
+        const isCorrect = clock.checkAnswer(targets[i].hour, targets[i].minute);
+
+        // Only reset incorrect ones
+        if (!isCorrect) {
+          clock.setTime(3, 0);
+          clock.svg.classList.remove('correct', 'incorrect');
+          targetEl.classList.remove('correct', 'incorrect');
+        }
+        clock.enable();
+      });
+
+      // Hide feedback
+      feedback.style.display = 'none';
+      btnTryAgain.style.display = 'none';
+    });
+
+    // Next Question - go to next demo
+    btnNext.addEventListener('click', () => {
+      // Go to the next demo (drag-drop)
+      window.location.href = 'demo-drag-drop.html';
+    });
+
+    // ==========================================
+    // Read Aloud - Uses Web Speech API
+    // ==========================================
+    const btnReadAloud = document.getElementById('btn-read-aloud');
+    const questionText = document.querySelector('.question-title h1').textContent;
+    const targetTimes = ['3 o\'clock', '9 o\'clock', '6 o\'clock', '12 o\'clock'];
+
+    btnReadAloud.addEventListener('click', () => {
+      // Stop any current speech
+      speechSynthesis.cancel();
+
+      // Build the text to read
+      const textToRead = `${questionText}. The four times are: ${targetTimes.join(', ')}.`;
+
+      const utterance = new SpeechSynthesisUtterance(textToRead);
+      utterance.rate = 0.9;
+      utterance.pitch = 1;
+
+      // Visual feedback
+      btnReadAloud.classList.add('active');
+      utterance.onend = () => btnReadAloud.classList.remove('active');
+
+      speechSynthesis.speak(utterance);
+    });
+
+    // Also wire up the button in the question title
+    document.querySelector('.btn-read-aloud').addEventListener('click', () => {
+      btnReadAloud.click();
+    });
+
+    // ==========================================
+    // Get Help - Shows modal with instructions
+    // ==========================================
+    const btnGetHelp = document.getElementById('btn-get-help');
+    const helpModal = document.getElementById('help-modal');
+    const closeHelp = document.getElementById('close-help');
+
+    btnGetHelp.addEventListener('click', () => {
+      helpModal.classList.add('active');
+    });
+
+    // Header help button also opens modal
+    document.querySelector('.btn-help').addEventListener('click', () => {
+      helpModal.classList.add('active');
+    });
+
+    closeHelp.addEventListener('click', () => {
+      helpModal.classList.remove('active');
+    });
+
+    helpModal.addEventListener('click', (e) => {
+      if (e.target === helpModal) {
+        helpModal.classList.remove('active');
+      }
+    });
+
+    // ==========================================
+    // Get Hint - Highlights a clock that needs fixing
+    // ==========================================
+    const btnGetHint = document.getElementById('btn-get-hint');
+    const hintModal = document.getElementById('hint-modal');
+    const hintTitle = document.getElementById('hint-title');
+    const hintText = document.getElementById('hint-text');
+    const closeHint = document.getElementById('close-hint');
+    let hintIndex = 0;
+
+    const encouragements = [
+      "You're doing great! ",
+      "Almost there! ",
+      "Keep going! ",
+      "You can do it! "
+    ];
+
+    btnGetHint.addEventListener('click', () => {
+      // Find first incorrect clock
+      let foundIncorrect = false;
+      for (let i = 0; i < 4; i++) {
+        const checkIndex = (hintIndex + i) % 4;
+        const isCorrect = clocks[checkIndex].checkAnswer(targets[checkIndex].hour, targets[checkIndex].minute);
+
+        if (!isCorrect) {
+          // Highlight this clock
+          const clockItem = document.querySelectorAll('.clock-item')[checkIndex];
+          clockItem.classList.remove('hint-highlight');
+          void clockItem.offsetWidth; // Trigger reflow
+          clockItem.classList.add('hint-highlight');
+
+          // Show friendly hint modal
+          const targetTime = targetTimes[checkIndex];
+          const encourage = encouragements[Math.floor(Math.random() * encouragements.length)];
+
+          hintTitle.innerHTML = `&#128161; Look at clock ${checkIndex + 1}!`;
+          hintText.innerHTML = `${encourage}<br><br>This clock should show <strong>${targetTime}</strong><br><br>&#128072; Move the <strong>short hand</strong> to point at the <strong>${targets[checkIndex].hour}</strong>!`;
+
+          hintModal.classList.add('active');
+
+          hintIndex = (checkIndex + 1) % 4;
+          foundIncorrect = true;
+          break;
+        }
+      }
+
+      if (!foundIncorrect) {
+        hintTitle.innerHTML = "&#127881; Amazing!";
+        hintText.innerHTML = "All your clocks look right!<br><br>Click <strong>Check All Answers</strong> to see if you got them all!";
+        hintModal.classList.add('active');
+      }
+    });
+
+    closeHint.addEventListener('click', () => {
+      hintModal.classList.remove('active');
+    });
+
+    hintModal.addEventListener('click', (e) => {
+      if (e.target === hintModal) {
+        hintModal.classList.remove('active');
+      }
+    });
+
+    // Load Lottie animation inline (avoids CORS issues)
+    const helpLottie = document.getElementById('help-lottie');
+    const lottieData = {"v":"5.4.4","fr":60,"ip":0,"op":132,"w":100,"h":100,"nm":"Question 2","assets":[],"layers":[{"ind":1,"ty":4,"nm":"? Outlines","sr":1,"ks":{"o":{"a":0,"k":100},"r":{"a":0,"k":0},"p":{"a":0,"k":[50.713,49.149,0]},"a":{"a":0,"k":[-0.214,-10.242,0]},"s":{"a":1,"k":[{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":61,"s":[200,200,100],"e":[210,210,100]},{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":71,"s":[210,210,100],"e":[200,200,100]},{"t":80}]}},"ao":0,"shapes":[{"ty":"gr","it":[{"ind":0,"ty":"sh","ks":{"a":0,"k":{"i":[[0,0],[0,0],[0,0],[0,3.203],[4.23,0],[0.242,-3.897],[0,0],[-1.601,0],[0,-1.541],[1.692,0],[0,0]],"o":[[0,0],[0,0],[3.565,-0.483],[0,-3.988],[-4.592,0],[0,0],[0.121,-1.45],[1.601,0],[0,1.662],[0,0],[0,0]],"v":[[-2.556,-6.617],[1.16,-6.617],[1.311,-8.369],[7.142,-14.17],[-0.199,-20.816],[-7.571,-14.351],[-2.828,-14.351],[-0.048,-16.738],[2.61,-14.17],[-0.381,-11.541],[-2.858,-11.541]],"c":true}},"nm":"?"},{"ind":1,"ty":"sh","ks":{"a":0,"k":{"i":[[-1.42,0],[0,1.45],[1.45,0],[0,-1.45]],"o":[[1.45,0],[0,-1.45],[-1.42,0],[0,1.45]],"v":[[-0.834,0.332],[1.825,-2.206],[-0.834,-4.743],[-3.462,-2.206]],"c":true}},"nm":"?"},{"ty":"mm","mm":1,"nm":"Merge Paths 1"},{"ty":"fl","c":{"a":0,"k":[1,1,1,1]},"o":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":61,"s":[0],"e":[100]},{"t":71}]},"r":1,"nm":"Fill 1"},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":0},"o":{"a":0,"k":100},"sk":{"a":0,"k":0},"sa":{"a":0,"k":0},"nm":"Transform"}],"nm":"?"},{"ty":"tm","s":{"a":0,"k":0},"e":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":37,"s":[0],"e":[100]},{"t":61}]},"o":{"a":0,"k":0},"m":1,"nm":"Trim Paths 1"},{"ty":"st","c":{"a":0,"k":[1,1,1,1]},"o":{"a":0,"k":100},"w":{"a":0,"k":1},"lc":1,"lj":1,"ml":4,"nm":"Stroke 1"}],"ip":0,"op":132,"st":0},{"ind":3,"ty":3,"nm":"▽ Group 6","sr":1,"ks":{"o":{"a":0,"k":100},"r":{"a":0,"k":0},"p":{"a":0,"k":[50,50,0]},"a":{"a":0,"k":[42,42,0]},"s":{"a":0,"k":[100,100,100]}},"ao":0,"ip":0,"op":132,"st":0},{"ind":4,"ty":4,"nm":"Rectangle 6 Copy","parent":3,"sr":1,"ks":{"o":{"a":0,"k":100},"r":{"a":0,"k":0},"p":{"a":0,"k":[42,42,0]},"a":{"a":0,"k":[0,0,0]},"s":{"a":1,"k":[{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":21,"s":[100,100,100],"e":[110,110,100]},{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":29,"s":[110,110,100],"e":[100,100,100]},{"t":36}]}},"ao":0,"shapes":[{"ty":"gr","it":[{"ty":"rc","d":1,"s":{"a":0,"k":[42,42]},"p":{"a":0,"k":[0,0]},"r":{"a":0,"k":21},"nm":"Rectangle Path 1"},{"ty":"tm","s":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":0,"s":[0],"e":[100]},{"t":22}]},"e":{"a":0,"k":0},"o":{"a":0,"k":-90},"m":1,"nm":"Trim Paths 1"},{"ty":"st","c":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":13,"s":[0.74,0.729,0.709,1],"e":[0.961,0.694,0.196,1]},{"t":22}]},"o":{"a":0,"k":100},"w":{"a":0,"k":2},"lc":2,"lj":1,"ml":4,"nm":"Stroke 1"},{"ty":"fl","c":{"a":0,"k":[0.953,0.691,0.256,1]},"o":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":21,"s":[1],"e":[100]},{"t":26}]},"r":1,"nm":"Fill 1"},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[200,200]},"r":{"a":0,"k":0},"o":{"a":0,"k":100},"sk":{"a":0,"k":0},"sa":{"a":0,"k":0},"nm":"Transform"}],"nm":"Rectangle 6 Copy"}],"ip":0,"op":132,"st":0}],"markers":[]};
+    helpLottie.load(lottieData);
+  </script>
+</body>
+</html>

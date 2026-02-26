@@ -1,0 +1,387 @@
+/* ==========================================
+   Drag and Drop Component
+   ========================================== */
+
+/* Container for drag-drop questions */
+.drag-drop-container {
+  padding: 20px;
+  background: #FFFFFF;
+  border-radius: var(--radius-lg);
+}
+
+/* Drop Zones (Jars, Boxes, Categories) */
+.drop-zones {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.drop-zone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 120px;
+  min-height: 220px;
+  padding: 15px;
+  padding-top: 90px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.drop-zone.hover {
+  transform: scale(1.05);
+}
+
+/* Jar Style Drop Zone */
+.drop-zone.jar {
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 180"><ellipse cx="60" cy="20" rx="45" ry="15" fill="%2396CEB4" stroke="%23333" stroke-width="2"/><path d="M15 20 Q10 40 15 60 L15 160 Q15 175 30 175 L90 175 Q105 175 105 160 L105 60 Q110 40 105 20" fill="%2396CEB4" stroke="%23333" stroke-width="2"/><ellipse cx="60" cy="20" rx="35" ry="10" fill="%23B8E0C8"/></svg>') no-repeat center;
+  background-size: contain;
+}
+
+.drop-zone-label {
+  position: absolute;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.95);
+  padding: 6px 16px;
+  border-radius: 15px;
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+  z-index: 10;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  border: 1px solid rgba(0,0,0,0.08);
+}
+
+.drop-zone-items {
+  position: absolute;
+  top: 80px;
+  left: 15px;
+  width: 90px;
+  height: 120px;
+  z-index: 5;
+}
+
+.drop-zone-items .draggable-item.placed {
+  position: absolute;
+}
+
+/* Highlight when dragging over */
+.drop-zone.drag-over {
+  background-color: rgba(76, 175, 80, 0.1);
+  border: 3px dashed var(--correct-border);
+  border-radius: var(--radius-md);
+}
+
+.drop-zone.drag-over .drop-zone-label {
+  color: var(--correct-text);
+}
+
+/* Draggable Items */
+.draggable-items {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  flex-wrap: wrap;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: var(--radius-md);
+  min-height: 100px;
+}
+
+.draggable-item {
+  cursor: grab;
+  transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+  user-select: none;
+  touch-action: none;
+}
+
+.draggable-item:hover {
+  transform: scale(1.1);
+}
+
+.draggable-item.dragging {
+  opacity: 0.8;
+  cursor: grabbing;
+  transform: scale(1.15);
+  z-index: 1000;
+}
+
+.draggable-item.placed {
+  transform: scale(0.7);
+  transition: transform 0.2s ease;
+}
+
+.draggable-item.placed:hover {
+  transform: scale(0.8);
+  z-index: 10;
+}
+
+/* Shape Items */
+.shape-item {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.shape-item svg {
+  width: 100%;
+  height: 100%;
+}
+
+.shape-item svg path,
+.shape-item svg polygon,
+.shape-item svg rect {
+  fill: none;
+  stroke: #C62828;
+  stroke-width: 3;
+}
+
+/* Feedback on items */
+.draggable-item.correct {
+  opacity: 1;
+}
+
+.draggable-item.correct svg path,
+.draggable-item.correct svg polygon,
+.draggable-item.correct svg rect {
+  stroke: var(--correct-border);
+  fill: var(--correct-bg);
+}
+
+.draggable-item.incorrect svg path,
+.draggable-item.incorrect svg polygon,
+.draggable-item.incorrect svg rect {
+  stroke: var(--incorrect-border);
+  fill: var(--incorrect-bg);
+}
+
+/* Image-based draggable items */
+.draggable-item.image-item {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+
+.draggable-item.image-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Text-based draggable items */
+.draggable-item.text-item {
+  padding: 10px 20px;
+  background: var(--bg-card);
+  border: 2px solid var(--border-card);
+  border-radius: var(--radius-md);
+  font-size: 18px;
+  font-weight: 600;
+  box-shadow: var(--shadow-card);
+}
+
+/* Number items (for number sorting) */
+.draggable-item.number-item {
+  width: 50px;
+  height: 50px;
+  background: var(--bg-card);
+  border: 3px solid var(--btn-primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 700;
+  box-shadow: var(--shadow-card);
+}
+
+/* Drop Zone Styles */
+.drop-zone.box-style {
+  background: var(--bg-card);
+  border: 3px dashed var(--border-card);
+  border-radius: var(--radius-lg);
+  min-height: 150px;
+  padding: 20px;
+}
+
+.drop-zone.box-style.drag-over {
+  border-color: var(--correct-border);
+  background: var(--correct-bg);
+}
+
+/* Matching/Sorting Results */
+.sort-result {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: var(--radius-md);
+  margin: 5px 0;
+}
+
+.sort-result.correct {
+  background: var(--correct-bg);
+}
+
+.sort-result.incorrect {
+  background: var(--incorrect-bg);
+}
+
+/* Animation for dropping */
+@keyframes dropBounce {
+  0% { transform: scale(0.8); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.draggable-item.just-dropped {
+  animation: dropBounce 0.3s ease;
+}
+
+/* Ghost element while dragging */
+.drag-ghost {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.9;
+  transform: rotate(5deg);
+}
+
+/* Placeholder in original position */
+.drag-placeholder {
+  opacity: 0.3;
+  border: 2px dashed var(--border-card);
+  background: transparent !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .drop-zones {
+    gap: 10px;
+  }
+
+  .drop-zone {
+    min-width: 90px;
+    min-height: 160px;
+  }
+
+  .drop-zone-label {
+    font-size: 12px;
+    padding: 3px 10px;
+  }
+
+  .shape-item {
+    width: 45px;
+    height: 45px;
+  }
+
+  .draggable-item.number-item {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+}
+
+/* ==========================================
+   Line Drawing Component (for matching)
+   ========================================== */
+
+.line-match-container {
+  position: relative;
+  padding: 20px;
+}
+
+.line-match-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.line-match-canvas.drawing {
+  pointer-events: auto;
+}
+
+.match-columns {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  z-index: 2;
+}
+
+.match-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.match-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.match-item:hover {
+  background: #F5F5F5;
+  transform: scale(1.02);
+}
+
+.match-item.selected {
+  background: #E3F2FD;
+  border: 2px solid #2196F3;
+}
+
+.match-item.matched {
+  background: var(--correct-bg);
+  border: 2px solid var(--correct-border);
+}
+
+.match-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--btn-primary);
+  flex-shrink: 0;
+}
+
+/* SVG Lines for matching */
+.match-line {
+  stroke: #2196F3;
+  stroke-width: 3;
+  fill: none;
+  stroke-linecap: round;
+}
+
+.match-line.correct {
+  stroke: var(--correct-border);
+}
+
+.match-line.incorrect {
+  stroke: var(--incorrect-border);
+}
+
+.match-line.drawing {
+  stroke-dasharray: 5, 5;
+  animation: dashMove 0.5s linear infinite;
+}
+
+@keyframes dashMove {
+  to {
+    stroke-dashoffset: -10;
+  }
+}
