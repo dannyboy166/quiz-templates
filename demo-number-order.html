@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Number Order - Quiz Template</title>
+  <link rel="stylesheet" href="css/base.css">
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+  <style>
+    body {
+      background: #87CEEB;
+    }
+
+    .quiz-container {
+      background: #87CEEB;
+    }
+
+    .quiz-header {
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    .btn-back, .btn-help {
+      background: white;
+    }
+
+    .question-title h1 {
+      color: #333;
+      font-size: 28px;
+    }
+
+    .help-bar {
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    /* Main layout */
+    .order-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 40px;
+      padding: 30px;
+    }
+
+    /* Number bubbles to drag */
+    .number-pool {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 20px;
+      min-height: 100px;
+    }
+
+    .number-bubble {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      font-weight: bold;
+      color: white;
+      cursor: grab;
+      transition: transform 0.2s, box-shadow 0.2s;
+      user-select: none;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    .number-bubble:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+    }
+
+    .number-bubble.dragging {
+      opacity: 0.5;
+      cursor: grabbing;
+    }
+
+    .number-bubble.placed {
+      cursor: grab;
+    }
+
+    /* Colorful bubbles */
+    .bubble-red { background: linear-gradient(135deg, #FF6B6B, #EE5A5A); }
+    .bubble-orange { background: linear-gradient(135deg, #FFA94D, #FF922B); }
+    .bubble-yellow { background: linear-gradient(135deg, #FFD93D, #FCC419); }
+    .bubble-green { background: linear-gradient(135deg, #69DB7C, #51CF66); }
+    .bubble-blue { background: linear-gradient(135deg, #74C0FC, #4DABF7); }
+    .bubble-purple { background: linear-gradient(135deg, #B197FC, #9775FA); }
+    .bubble-pink { background: linear-gradient(135deg, #F783AC, #E64980); }
+    .bubble-teal { background: linear-gradient(135deg, #63E6BE, #38D9A9); }
+
+    /* Order slots */
+    .order-slots {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: white;
+      padding: 30px 40px;
+      border-radius: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+
+    .order-slot {
+      width: 80px;
+      height: 80px;
+      border: 4px dashed #ccc;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: #999;
+      transition: all 0.2s;
+      background: #f9f9f9;
+    }
+
+    .order-slot.highlight {
+      border-color: #4CAF50;
+      background: rgba(76, 175, 80, 0.1);
+      transform: scale(1.05);
+    }
+
+    .order-slot.filled {
+      border: none;
+      background: transparent;
+    }
+
+    .order-slot.correct {
+      box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+    }
+
+    .order-slot.incorrect {
+      box-shadow: 0 0 20px rgba(244, 67, 54, 0.5);
+    }
+
+    .arrow {
+      font-size: 28px;
+      color: #666;
+    }
+
+    /* Direction indicator */
+    .direction-label {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      font-size: 20px;
+      font-weight: 600;
+      color: #555;
+      background: white;
+      padding: 12px 25px;
+      border-radius: 30px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .direction-label .arrow-icon {
+      font-size: 24px;
+    }
+
+    /* Modals */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      max-width: 400px;
+      margin: 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal h2 {
+      margin: 0 0 15px 0;
+      font-size: 22px;
+    }
+
+    .modal p {
+      margin: 0 0 10px 0;
+      line-height: 1.6;
+    }
+
+    .modal-close {
+      margin-top: 20px;
+      padding: 10px 24px;
+      background: #333;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .help-item {
+      cursor: pointer;
+      padding: 8px 12px;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+
+    .help-item:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    .btn-try-again {
+      background: #FF9800;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 25px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-try-again:hover {
+      background: #F57C00;
+      transform: scale(1.05);
+    }
+
+    .btn-next {
+      background: #4CAF50;
+      border: none;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    .btn-next:hover {
+      background: #43A047;
+      transform: scale(1.1);
+    }
+
+    .btn-next svg {
+      stroke: white;
+    }
+
+    .btn-check-answer {
+      background: #333;
+    }
+
+    @keyframes celebrate {
+      0%, 100% { transform: scale(1); }
+      25% { transform: scale(1.05) rotate(-2deg); }
+      75% { transform: scale(1.05) rotate(2deg); }
+    }
+
+    .celebrate {
+      animation: celebrate 0.5s ease-in-out;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .bounce {
+      animation: bounce 0.4s ease-in-out;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-8px); }
+      75% { transform: translateX(8px); }
+    }
+
+    .shake {
+      animation: shake 0.3s ease-in-out;
+    }
+
+    .drag-ghost {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.9;
+    }
+
+    /* Badge override */
+    .badge {
+      background: #2196F3;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+    <!-- Header -->
+    <header class="quiz-header">
+      <button class="btn-back" onclick="window.location='index.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Back to Home
+      </button>
+
+      <div class="user-profile">
+        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=student" alt="Student Avatar" class="user-avatar">
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" style="width: 40%"></div>
+        </div>
+      </div>
+
+      <button class="btn-help" id="header-help">
+        <lottie-player
+          id="help-lottie"
+          background="transparent"
+          speed="1"
+          style="width: 28px; height: 28px;"
+          loop
+          autoplay
+        ></lottie-player>
+        Help
+      </button>
+    </header>
+
+    <!-- Question Meta -->
+    <div class="question-meta">
+      <span class="badge">MATH</span>
+      <span class="question-progress">Question 1 of 10</span>
+    </div>
+
+    <!-- Question Title -->
+    <div class="question-title">
+      <button class="btn-read-aloud" title="Read aloud">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 6c2.5 0 4.5 2 4.5 4.5S14.5 15 12 15"/>
+          <path d="M17 5c3 2 5 5 5 7s-2 5-5 7"/>
+          <path d="M9.5 9h-5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h5l5 4V5l-5 4z"/>
+        </svg>
+      </button>
+      <h1>Put the numbers in order</h1>
+    </div>
+
+    <!-- Help Bar -->
+    <div class="help-bar">
+      <div class="help-item" id="btn-read-aloud">
+        <span>Read Aloud</span>
+        <span class="help-item-icon">&#128483;</span>
+      </div>
+      <span class="help-item-line"></span>
+      <div class="help-item" id="btn-get-help">
+        <span>Get Help</span>
+        <span class="help-item-icon">?</span>
+      </div>
+      <span class="help-item-line"></span>
+      <div class="help-item" id="btn-get-hint">
+        <span>Get Hint</span>
+        <span class="help-item-icon">+</span>
+      </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div class="modal-overlay" id="help-modal">
+      <div class="modal">
+        <div style="font-size: 40px; text-align: center; margin-bottom: 10px;">🔢</div>
+        <h2 style="text-align: center;">Number Order!</h2>
+        <div style="background: #E3F2FD; padding: 15px; border-radius: 12px; margin: 15px 0;">
+          <p style="margin: 8px 0;"><strong>👀 Look</strong> at the numbers</p>
+          <p style="margin: 8px 0;"><strong>🎯 Drag</strong> them into the circles</p>
+          <p style="margin: 8px 0;"><strong>📊 Order</strong> from smallest to biggest!</p>
+        </div>
+        <p style="text-align: center; font-size: 15px;">The smallest number goes first (on the left)!</p>
+        <button class="modal-close" id="close-help">Got it! ⭐</button>
+      </div>
+    </div>
+
+    <!-- Hint Modal -->
+    <div class="modal-overlay" id="hint-modal">
+      <div class="modal">
+        <div style="font-size: 40px; text-align: center; margin-bottom: 10px;">💡</div>
+        <h2 style="text-align: center;" id="hint-title">Here's a hint!</h2>
+        <p style="text-align: center; font-size: 18px; margin: 20px 0;" id="hint-text"></p>
+        <button class="modal-close" id="close-hint">Thanks! 👍</button>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="order-container">
+      <!-- Direction Label -->
+      <div class="direction-label">
+        <span>Smallest</span>
+        <span class="arrow-icon">➡️</span>
+        <span>Biggest</span>
+      </div>
+
+      <!-- Order Slots -->
+      <div class="order-slots" id="order-slots">
+        <!-- Generated by JS -->
+      </div>
+
+      <!-- Number Pool -->
+      <div class="number-pool" id="number-pool">
+        <!-- Generated by JS -->
+      </div>
+    </div>
+
+    <!-- Feedback -->
+    <div class="feedback" id="feedback" style="display: none;">
+      <span class="feedback-badge" id="feedback-badge"></span>
+      <button class="btn-try-again" id="btn-try-again" style="display: none;">
+        Try Again 🔄
+      </button>
+      <button class="btn-next" id="btn-next" style="display: none;" title="Next Question">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Check Answer Button -->
+    <button class="btn-check-answer" id="btn-check">Check Answer</button>
+  </div>
+
+  <script>
+    // Generate random numbers
+    const count = 5;
+    const numbers = [];
+    const used = new Set();
+
+    while (numbers.length < count) {
+      const num = Math.floor(Math.random() * 20) + 1;
+      if (!used.has(num)) {
+        used.add(num);
+        numbers.push(num);
+      }
+    }
+
+    const sortedNumbers = [...numbers].sort((a, b) => a - b);
+    const colorClasses = ['bubble-red', 'bubble-orange', 'bubble-yellow', 'bubble-green', 'bubble-blue', 'bubble-purple', 'bubble-pink', 'bubble-teal'];
+
+    // Shuffle for display
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    // Create slots
+    const orderSlots = document.getElementById('order-slots');
+    for (let i = 0; i < count; i++) {
+      const slot = document.createElement('div');
+      slot.className = 'order-slot';
+      slot.dataset.index = i;
+      slot.dataset.expected = sortedNumbers[i];
+      slot.innerHTML = '?';
+
+      slot.addEventListener('dragover', onDragOver);
+      slot.addEventListener('dragleave', onDragLeave);
+      slot.addEventListener('drop', onDrop);
+
+      orderSlots.appendChild(slot);
+
+      // Add arrow between slots
+      if (i < count - 1) {
+        const arrow = document.createElement('span');
+        arrow.className = 'arrow';
+        arrow.textContent = '→';
+        orderSlots.appendChild(arrow);
+      }
+    }
+
+    // Create number bubbles
+    const numberPool = document.getElementById('number-pool');
+    const shuffledNumbers = shuffle(numbers);
+    const numberColors = {};
+
+    shuffledNumbers.forEach((num, index) => {
+      const colorClass = colorClasses[index % colorClasses.length];
+      numberColors[num] = colorClass;
+
+      const bubble = document.createElement('div');
+      bubble.className = `number-bubble ${colorClass}`;
+      bubble.textContent = num;
+      bubble.dataset.number = num;
+      bubble.draggable = true;
+
+      bubble.addEventListener('dragstart', onDragStart);
+      bubble.addEventListener('dragend', onDragEnd);
+      bubble.addEventListener('touchstart', onTouchStart, { passive: false });
+      bubble.addEventListener('touchmove', onTouchMove, { passive: false });
+      bubble.addEventListener('touchend', onTouchEnd);
+
+      numberPool.appendChild(bubble);
+    });
+
+    // Track state
+    let placements = new Array(count).fill(null);
+    let draggedNumber = null;
+    let draggedElement = null;
+    let ghostElement = null;
+
+    function onDragStart(e) {
+      draggedNumber = parseInt(e.target.dataset.number);
+      draggedElement = e.target;
+      e.target.classList.add('dragging');
+      e.dataTransfer.setData('text/plain', draggedNumber);
+    }
+
+    function onDragEnd(e) {
+      e.target.classList.remove('dragging');
+      document.querySelectorAll('.order-slot').forEach(s => s.classList.remove('highlight'));
+      draggedNumber = null;
+      draggedElement = null;
+    }
+
+    function onDragOver(e) {
+      e.preventDefault();
+      e.currentTarget.classList.add('highlight');
+    }
+
+    function onDragLeave(e) {
+      e.currentTarget.classList.remove('highlight');
+    }
+
+    function onDrop(e) {
+      e.preventDefault();
+      const slot = e.currentTarget;
+      placeNumber(slot);
+      slot.classList.remove('highlight');
+    }
+
+    // Touch events
+    function onTouchStart(e) {
+      const target = e.target.closest('.number-bubble');
+      if (!target) return;
+
+      e.preventDefault();
+      draggedNumber = parseInt(target.dataset.number);
+      draggedElement = target;
+      target.classList.add('dragging');
+
+      ghostElement = target.cloneNode(true);
+      ghostElement.classList.add('drag-ghost');
+      ghostElement.classList.remove('dragging');
+      document.body.appendChild(ghostElement);
+
+      updateGhostPosition(e.touches[0]);
+    }
+
+    function onTouchMove(e) {
+      if (!ghostElement) return;
+      e.preventDefault();
+      updateGhostPosition(e.touches[0]);
+
+      const touch = e.touches[0];
+      const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+      const slot = elemBelow?.closest('.order-slot');
+
+      document.querySelectorAll('.order-slot').forEach(s => s.classList.remove('highlight'));
+      if (slot) {
+        slot.classList.add('highlight');
+      }
+    }
+
+    function onTouchEnd(e) {
+      if (!draggedElement) return;
+
+      draggedElement.classList.remove('dragging');
+
+      const touch = e.changedTouches[0];
+      const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+      const slot = elemBelow?.closest('.order-slot');
+
+      if (slot) {
+        placeNumber(slot);
+      }
+
+      if (ghostElement) {
+        ghostElement.remove();
+        ghostElement = null;
+      }
+
+      document.querySelectorAll('.order-slot').forEach(s => s.classList.remove('highlight'));
+      draggedNumber = null;
+      draggedElement = null;
+    }
+
+    function updateGhostPosition(touch) {
+      if (ghostElement) {
+        ghostElement.style.left = (touch.clientX - 35) + 'px';
+        ghostElement.style.top = (touch.clientY - 35) + 'px';
+      }
+    }
+
+    function placeNumber(slot) {
+      const index = parseInt(slot.dataset.index);
+
+      // If slot has a number, return it to pool
+      if (placements[index] !== null) {
+        const oldNum = placements[index];
+        returnToPool(oldNum);
+      }
+
+      // Place new number
+      placements[index] = draggedNumber;
+      const colorClass = numberColors[draggedNumber];
+
+      slot.innerHTML = '';
+      const bubble = document.createElement('div');
+      bubble.className = `number-bubble ${colorClass} placed`;
+      bubble.textContent = draggedNumber;
+      bubble.dataset.number = draggedNumber;
+      bubble.draggable = true;
+
+      bubble.addEventListener('dragstart', onDragStart);
+      bubble.addEventListener('dragend', onDragEnd);
+      bubble.addEventListener('touchstart', onTouchStart, { passive: false });
+      bubble.addEventListener('touchmove', onTouchMove, { passive: false });
+      bubble.addEventListener('touchend', onTouchEnd);
+
+      slot.appendChild(bubble);
+      slot.classList.add('filled');
+
+      // Remove from pool
+      if (draggedElement && draggedElement.parentElement === numberPool) {
+        draggedElement.remove();
+      }
+
+      // Bounce animation
+      bubble.classList.add('bounce');
+      setTimeout(() => bubble.classList.remove('bounce'), 400);
+    }
+
+    function returnToPool(num) {
+      const colorClass = numberColors[num];
+      const bubble = document.createElement('div');
+      bubble.className = `number-bubble ${colorClass}`;
+      bubble.textContent = num;
+      bubble.dataset.number = num;
+      bubble.draggable = true;
+
+      bubble.addEventListener('dragstart', onDragStart);
+      bubble.addEventListener('dragend', onDragEnd);
+      bubble.addEventListener('touchstart', onTouchStart, { passive: false });
+      bubble.addEventListener('touchmove', onTouchMove, { passive: false });
+      bubble.addEventListener('touchend', onTouchEnd);
+
+      numberPool.appendChild(bubble);
+    }
+
+    // Check answers
+    const btnCheck = document.getElementById('btn-check');
+    const feedback = document.getElementById('feedback');
+    const feedbackBadge = document.getElementById('feedback-badge');
+    const btnTryAgain = document.getElementById('btn-try-again');
+    const btnNext = document.getElementById('btn-next');
+    const progressFill = document.querySelector('.progress-bar-fill');
+
+    btnCheck.addEventListener('click', () => {
+      let allCorrect = true;
+      let correctCount = 0;
+
+      document.querySelectorAll('.order-slot').forEach((slot, index) => {
+        slot.classList.remove('correct', 'incorrect');
+        const expected = parseInt(slot.dataset.expected);
+
+        if (placements[index] === expected) {
+          slot.classList.add('correct');
+          correctCount++;
+        } else if (placements[index] !== null) {
+          slot.classList.add('incorrect');
+          slot.classList.add('shake');
+          setTimeout(() => slot.classList.remove('shake'), 300);
+          allCorrect = false;
+        } else {
+          allCorrect = false;
+        }
+      });
+
+      feedback.style.display = 'flex';
+      feedbackBadge.classList.remove('correct', 'incorrect');
+
+      if (allCorrect) {
+        feedbackBadge.classList.add('correct');
+        feedbackBadge.innerHTML = '🎉 Perfect! Numbers are in order!';
+        btnCheck.style.display = 'none';
+        btnTryAgain.style.display = 'none';
+        btnNext.style.display = 'flex';
+        progressFill.style.width = '60%';
+        document.querySelector('.order-slots').classList.add('celebrate');
+      } else {
+        feedbackBadge.classList.add('incorrect');
+        feedbackBadge.innerHTML = `💪 ${correctCount}/${count} correct - keep trying!`;
+        btnTryAgain.style.display = 'block';
+        btnNext.style.display = 'none';
+      }
+    });
+
+    // Try Again
+    btnTryAgain.addEventListener('click', () => {
+      document.querySelectorAll('.order-slot').forEach((slot, index) => {
+        if (slot.classList.contains('incorrect')) {
+          const num = placements[index];
+          if (num !== null) {
+            returnToPool(num);
+            placements[index] = null;
+          }
+          slot.innerHTML = '?';
+          slot.classList.remove('filled', 'incorrect');
+        }
+      });
+      feedback.style.display = 'none';
+      btnTryAgain.style.display = 'none';
+    });
+
+    // Next Question
+    btnNext.addEventListener('click', () => {
+      window.location.href = 'index.html';
+    });
+
+    // Read Aloud
+    const btnReadAloud = document.getElementById('btn-read-aloud');
+    const questionText = `Put the numbers in order from smallest to biggest. The numbers are ${numbers.join(', ')}. Drag them into the circles starting with the smallest number.`;
+
+    btnReadAloud.addEventListener('click', () => {
+      speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(questionText);
+      utterance.rate = 0.9;
+      btnReadAloud.classList.add('active');
+      utterance.onend = () => btnReadAloud.classList.remove('active');
+      speechSynthesis.speak(utterance);
+    });
+
+    document.querySelector('.btn-read-aloud').addEventListener('click', () => {
+      btnReadAloud.click();
+    });
+
+    // Help Modal
+    const btnGetHelp = document.getElementById('btn-get-help');
+    const helpModal = document.getElementById('help-modal');
+    const closeHelp = document.getElementById('close-help');
+
+    btnGetHelp.addEventListener('click', () => helpModal.classList.add('active'));
+    document.getElementById('header-help').addEventListener('click', () => helpModal.classList.add('active'));
+    closeHelp.addEventListener('click', () => helpModal.classList.remove('active'));
+    helpModal.addEventListener('click', (e) => {
+      if (e.target === helpModal) helpModal.classList.remove('active');
+    });
+
+    // Hint Modal
+    const btnGetHint = document.getElementById('btn-get-hint');
+    const hintModal = document.getElementById('hint-modal');
+    const hintTitle = document.getElementById('hint-title');
+    const hintText = document.getElementById('hint-text');
+    const closeHint = document.getElementById('close-hint');
+
+    btnGetHint.addEventListener('click', () => {
+      // Find first empty or incorrect slot
+      for (let i = 0; i < count; i++) {
+        const slot = document.querySelector(`.order-slot[data-index="${i}"]`);
+        if (placements[i] === null || slot.classList.contains('incorrect')) {
+          const expected = sortedNumbers[i];
+          hintTitle.innerHTML = "💡 Hint!";
+          if (i === 0) {
+            hintText.innerHTML = `The <strong>smallest</strong> number is <strong style="font-size: 32px; color: #4CAF50;">${expected}</strong>`;
+          } else {
+            hintText.innerHTML = `Position ${i + 1} should be <strong style="font-size: 32px; color: #4CAF50;">${expected}</strong>`;
+          }
+          hintModal.classList.add('active');
+          return;
+        }
+      }
+
+      hintTitle.innerHTML = "🎉 All filled!";
+      hintText.innerHTML = "Check your answer to see if they're all correct!";
+      hintModal.classList.add('active');
+    });
+
+    closeHint.addEventListener('click', () => hintModal.classList.remove('active'));
+    hintModal.addEventListener('click', (e) => {
+      if (e.target === hintModal) hintModal.classList.remove('active');
+    });
+
+    // Load Lottie
+    const helpLottie = document.getElementById('help-lottie');
+    const lottieData = {"v":"5.4.4","fr":60,"ip":0,"op":132,"w":100,"h":100,"nm":"Question 2","assets":[],"layers":[{"ind":1,"ty":4,"nm":"? Outlines","sr":1,"ks":{"o":{"a":0,"k":100},"r":{"a":0,"k":0},"p":{"a":0,"k":[50.713,49.149,0]},"a":{"a":0,"k":[-0.214,-10.242,0]},"s":{"a":1,"k":[{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":61,"s":[200,200,100],"e":[210,210,100]},{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":71,"s":[210,210,100],"e":[200,200,100]},{"t":80}]}},"ao":0,"shapes":[{"ty":"gr","it":[{"ind":0,"ty":"sh","ks":{"a":0,"k":{"i":[[0,0],[0,0],[0,0],[0,3.203],[4.23,0],[0.242,-3.897],[0,0],[-1.601,0],[0,-1.541],[1.692,0],[0,0]],"o":[[0,0],[0,0],[3.565,-0.483],[0,-3.988],[-4.592,0],[0,0],[0.121,-1.45],[1.601,0],[0,1.662],[0,0],[0,0]],"v":[[-2.556,-6.617],[1.16,-6.617],[1.311,-8.369],[7.142,-14.17],[-0.199,-20.816],[-7.571,-14.351],[-2.828,-14.351],[-0.048,-16.738],[2.61,-14.17],[-0.381,-11.541],[-2.858,-11.541]],"c":true}},"nm":"?"},{"ind":1,"ty":"sh","ks":{"a":0,"k":{"i":[[-1.42,0],[0,1.45],[1.45,0],[0,-1.45]],"o":[[1.45,0],[0,-1.45],[-1.42,0],[0,1.45]],"v":[[-0.834,0.332],[1.825,-2.206],[-0.834,-4.743],[-3.462,-2.206]],"c":true}},"nm":"?"},{"ty":"mm","mm":1,"nm":"Merge Paths 1"},{"ty":"fl","c":{"a":0,"k":[1,1,1,1]},"o":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":61,"s":[0],"e":[100]},{"t":71}]},"r":1,"nm":"Fill 1"},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":0},"o":{"a":0,"k":100},"sk":{"a":0,"k":0},"sa":{"a":0,"k":0},"nm":"Transform"}],"nm":"?"},{"ty":"tm","s":{"a":0,"k":0},"e":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":37,"s":[0],"e":[100]},{"t":61}]},"o":{"a":0,"k":0},"m":1,"nm":"Trim Paths 1"},{"ty":"st","c":{"a":0,"k":[1,1,1,1]},"o":{"a":0,"k":100},"w":{"a":0,"k":1},"lc":1,"lj":1,"ml":4,"nm":"Stroke 1"}],"ip":0,"op":132,"st":0},{"ind":3,"ty":3,"nm":"▽ Group 6","sr":1,"ks":{"o":{"a":0,"k":100},"r":{"a":0,"k":0},"p":{"a":0,"k":[50,50,0]},"a":{"a":0,"k":[42,42,0]},"s":{"a":0,"k":[100,100,100]}},"ao":0,"ip":0,"op":132,"st":0},{"ind":4,"ty":4,"nm":"Rectangle 6 Copy","parent":3,"sr":1,"ks":{"o":{"a":0,"k":100},"r":{"a":0,"k":0},"p":{"a":0,"k":[42,42,0]},"a":{"a":0,"k":[0,0,0]},"s":{"a":1,"k":[{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":21,"s":[100,100,100],"e":[110,110,100]},{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":29,"s":[110,110,100],"e":[100,100,100]},{"t":36}]}},"ao":0,"shapes":[{"ty":"gr","it":[{"ty":"rc","d":1,"s":{"a":0,"k":[42,42]},"p":{"a":0,"k":[0,0]},"r":{"a":0,"k":21},"nm":"Rectangle Path 1"},{"ty":"tm","s":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":0,"s":[0],"e":[100]},{"t":22}]},"e":{"a":0,"k":0},"o":{"a":0,"k":-90},"m":1,"nm":"Trim Paths 1"},{"ty":"st","c":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":13,"s":[0.74,0.729,0.709,1],"e":[0.961,0.694,0.196,1]},{"t":22}]},"o":{"a":0,"k":100},"w":{"a":0,"k":2},"lc":2,"lj":1,"ml":4,"nm":"Stroke 1"},{"ty":"fl","c":{"a":0,"k":[0.953,0.691,0.256,1]},"o":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":21,"s":[1],"e":[100]},{"t":26}]},"r":1,"nm":"Fill 1"},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[200,200]},"r":{"a":0,"k":0},"o":{"a":0,"k":100},"sk":{"a":0,"k":0},"sa":{"a":0,"k":0},"nm":"Transform"}],"nm":"Rectangle 6 Copy"}],"ip":0,"op":132,"st":0}],"markers":[]};
+    helpLottie.load(lottieData);
+  </script>
+</body>
+</html>
