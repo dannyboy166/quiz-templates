@@ -8,8 +8,9 @@
   <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
   <style>
     body {
-      background: linear-gradient(180deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+      background: #0B0B2B;
       min-height: 100vh;
+      overflow-x: hidden;
     }
 
     .quiz-container {
@@ -46,8 +47,8 @@
       background: #FF6B6B;
     }
 
-    /* Stars background */
-    .stars {
+    /* Space background with stars */
+    .space-bg {
       position: fixed;
       top: 0;
       left: 0;
@@ -56,18 +57,55 @@
       pointer-events: none;
       overflow: hidden;
       z-index: 0;
+      background: radial-gradient(ellipse at bottom, #1B2838 0%, #0B0B2B 100%);
     }
 
     .star {
       position: absolute;
       background: white;
       border-radius: 50%;
-      animation: twinkle 2s infinite;
+      animation: twinkle 3s infinite;
+    }
+
+    .star.big {
+      box-shadow: 0 0 6px 2px rgba(255, 255, 255, 0.3);
     }
 
     @keyframes twinkle {
-      0%, 100% { opacity: 0.3; }
+      0%, 100% { opacity: 0.2; }
       50% { opacity: 1; }
+    }
+
+    /* Distant planets */
+    .planet {
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0.6;
+    }
+
+    .planet-1 {
+      width: 80px;
+      height: 80px;
+      background: radial-gradient(circle at 30% 30%, #FF9966, #FF5E62);
+      top: 15%;
+      right: 10%;
+    }
+
+    .planet-2 {
+      width: 40px;
+      height: 40px;
+      background: radial-gradient(circle at 30% 30%, #a8edea, #fed6e3);
+      top: 60%;
+      left: 5%;
+    }
+
+    .planet-3 {
+      width: 120px;
+      height: 120px;
+      background: radial-gradient(circle at 30% 30%, #667eea, #764ba2);
+      bottom: 10%;
+      right: 5%;
+      opacity: 0.3;
     }
 
     /* Main game area */
@@ -118,59 +156,52 @@
       50% { transform: scale(1.1); }
     }
 
-    /* Rocket container */
-    .rocket-container {
-      position: relative;
-      width: 120px;
-      height: 200px;
-    }
-
-    .rocket {
-      font-size: 100px;
-      text-align: center;
-      filter: drop-shadow(0 0 20px rgba(255, 200, 100, 0.5));
-      transition: transform 0.3s;
-    }
-
-    .rocket.shake {
-      animation: rocketShake 0.3s ease-in-out;
-    }
-
-    @keyframes rocketShake {
-      0%, 100% { transform: translateX(0) rotate(0); }
-      25% { transform: translateX(-10px) rotate(-5deg); }
-      75% { transform: translateX(10px) rotate(5deg); }
-    }
-
-    .rocket.launch {
-      animation: rocketLaunch 1.5s ease-in forwards;
-    }
-
-    @keyframes rocketLaunch {
-      0% { transform: translateY(0) scale(1); }
-      20% { transform: translateY(10px) scale(1.1); }
-      100% { transform: translateY(-500px) scale(0.3); opacity: 0; }
-    }
-
-    /* Flame */
-    .flame {
-      position: absolute;
-      bottom: -30px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 50px;
+    /* Flying rocket */
+    .flying-rocket {
+      position: fixed;
+      font-size: 60px;
+      z-index: 1000;
+      pointer-events: none;
       opacity: 0;
-      transition: opacity 0.2s;
+      transform: rotate(-30deg);
     }
 
-    .flame.active {
-      opacity: 1;
-      animation: flicker 0.1s infinite;
+    .flying-rocket.fly {
+      animation: rocketFly 1.2s ease-in-out forwards;
     }
 
-    @keyframes flicker {
-      0%, 100% { transform: translateX(-50%) scale(1); }
-      50% { transform: translateX(-50%) scale(1.1, 0.9); }
+    @keyframes rocketFly {
+      0% {
+        left: -100px;
+        top: 70%;
+        opacity: 1;
+        transform: rotate(-30deg) scale(1);
+      }
+      50% {
+        left: 50%;
+        top: 30%;
+        opacity: 1;
+        transform: rotate(-30deg) scale(1.3);
+      }
+      100% {
+        left: 110%;
+        top: -10%;
+        opacity: 0;
+        transform: rotate(-30deg) scale(0.8);
+      }
+    }
+
+    /* Shake animation for wrong answer */
+    .problem-display.shake {
+      animation: problemShake 0.4s ease-out;
+    }
+
+    @keyframes problemShake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-15px); }
+      40% { transform: translateX(15px); }
+      60% { transform: translateX(-10px); }
+      80% { transform: translateX(10px); }
     }
 
     /* Answer options */
@@ -409,8 +440,15 @@
   </style>
 </head>
 <body>
-  <!-- Stars background -->
-  <div class="stars" id="stars"></div>
+  <!-- Space background -->
+  <div class="space-bg" id="space-bg">
+    <div class="planet planet-1"></div>
+    <div class="planet planet-2"></div>
+    <div class="planet planet-3"></div>
+  </div>
+
+  <!-- Flying rocket (hidden until correct answer) -->
+  <div class="flying-rocket" id="flying-rocket">&#128640;</div>
 
   <!-- Particles container -->
   <div class="particles" id="particles"></div>
@@ -524,12 +562,6 @@
         </div>
       </div>
 
-      <!-- Rocket -->
-      <div class="rocket-container">
-        <div class="rocket" id="rocket">🚀</div>
-        <div class="flame" id="flame">🔥</div>
-      </div>
-
       <!-- Answer Options -->
       <div class="answers-container" id="answers">
         <!-- Generated by JS -->
@@ -556,8 +588,8 @@
     const num2El = document.getElementById('num2');
     const answerDisplay = document.getElementById('answer-display');
     const answersContainer = document.getElementById('answers');
-    const rocket = document.getElementById('rocket');
-    const flame = document.getElementById('flame');
+    const problemDisplay = document.querySelector('.problem-display');
+    const flyingRocket = document.getElementById('flying-rocket');
     const nextArea = document.getElementById('next-area');
     const nextBtn = document.getElementById('next-btn');
     const streakMsg = document.getElementById('streak-msg');
@@ -566,16 +598,19 @@
     const questionProgress = document.getElementById('question-progress');
     const particles = document.getElementById('particles');
 
-    // Generate stars
-    const starsContainer = document.getElementById('stars');
-    for (let i = 0; i < 100; i++) {
+    // Generate stars in space background
+    const spaceBg = document.getElementById('space-bg');
+    for (let i = 0; i < 150; i++) {
       const star = document.createElement('div');
-      star.className = 'star';
+      star.className = 'star' + (Math.random() > 0.9 ? ' big' : '');
       star.style.left = Math.random() * 100 + '%';
       star.style.top = Math.random() * 100 + '%';
-      star.style.width = star.style.height = (Math.random() * 3 + 1) + 'px';
-      star.style.animationDelay = Math.random() * 2 + 's';
-      starsContainer.appendChild(star);
+      const size = Math.random() * 3 + 1;
+      star.style.width = size + 'px';
+      star.style.height = size + 'px';
+      star.style.animationDelay = Math.random() * 3 + 's';
+      star.style.animationDuration = (Math.random() * 2 + 2) + 's';
+      spaceBg.appendChild(star);
     }
 
     // Generate question
@@ -615,8 +650,8 @@
       });
 
       // Reset UI
-      rocket.className = 'rocket';
-      flame.classList.remove('active');
+      problemDisplay.classList.remove('shake');
+      flyingRocket.classList.remove('fly');
       nextArea.classList.remove('show');
 
       // Update progress
@@ -636,12 +671,11 @@
         answerDisplay.className = '';
         answerDisplay.style.color = '#69DB7C';
 
-        // Rocket launch!
-        flame.classList.add('active');
-        setTimeout(() => {
-          rocket.classList.add('launch');
-          createParticles();
-        }, 300);
+        // Launch flying rocket across screen!
+        flyingRocket.classList.remove('fly');
+        void flyingRocket.offsetWidth; // Force reflow
+        flyingRocket.classList.add('fly');
+        createParticles();
 
         // Update score
         streak++;
@@ -663,7 +697,7 @@
       } else {
         // Incorrect
         btn.classList.add('incorrect');
-        rocket.classList.add('shake');
+        problemDisplay.classList.add('shake');
         streak = 0;
 
         // Show correct answer
@@ -712,15 +746,14 @@
 
     function showFinalScore() {
       answersContainer.innerHTML = '';
-      document.querySelector('.problem-display').innerHTML = `
+      problemDisplay.innerHTML = `
         <div style="text-align: center;">
-          <div style="font-size: 60px; margin-bottom: 20px;">🏆</div>
+          <div style="font-size: 60px; margin-bottom: 20px;">&#127942;</div>
           <div style="font-size: 24px; color: white; margin-bottom: 10px;">Quiz Complete!</div>
           <div style="font-size: 48px; color: #FFD93D; font-weight: bold;">Score: ${score}</div>
           <div style="font-size: 18px; color: rgba(255,255,255,0.8); margin-top: 15px;">Great job with your times tables!</div>
         </div>
       `;
-      rocket.style.display = 'none';
       nextArea.innerHTML = `<button class="next-btn" onclick="window.location='index.html'">Back to Home</button>`;
       nextArea.classList.add('show');
       progressFill.style.width = '100%';
