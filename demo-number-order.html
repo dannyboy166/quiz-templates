@@ -513,6 +513,7 @@
     let placements = new Array(count).fill(null);
     let draggedNumber = null;
     let draggedElement = null;
+    let draggedFromSlot = null;
     let ghostElement = null;
 
     function onDragStart(e) {
@@ -520,6 +521,14 @@
       draggedElement = e.target;
       e.target.classList.add('dragging');
       e.dataTransfer.setData('text/plain', draggedNumber);
+
+      // Check if dragging from a slot
+      const parentSlot = e.target.closest('.order-slot');
+      if (parentSlot) {
+        draggedFromSlot = parseInt(parentSlot.dataset.index);
+      } else {
+        draggedFromSlot = null;
+      }
     }
 
     function onDragEnd(e) {
@@ -527,6 +536,7 @@
       document.querySelectorAll('.order-slot').forEach(s => s.classList.remove('highlight'));
       draggedNumber = null;
       draggedElement = null;
+      draggedFromSlot = null;
     }
 
     function onDragOver(e) {
@@ -554,6 +564,14 @@
       draggedNumber = parseInt(target.dataset.number);
       draggedElement = target;
       target.classList.add('dragging');
+
+      // Check if dragging from a slot
+      const parentSlot = target.closest('.order-slot');
+      if (parentSlot) {
+        draggedFromSlot = parseInt(parentSlot.dataset.index);
+      } else {
+        draggedFromSlot = null;
+      }
 
       ghostElement = target.cloneNode(true);
       ghostElement.classList.add('drag-ghost');
@@ -599,6 +617,7 @@
       document.querySelectorAll('.order-slot').forEach(s => s.classList.remove('highlight'));
       draggedNumber = null;
       draggedElement = null;
+      draggedFromSlot = null;
     }
 
     function updateGhostPosition(touch) {
@@ -611,7 +630,20 @@
     function placeNumber(slot) {
       const index = parseInt(slot.dataset.index);
 
-      // If slot has a number, return it to pool
+      // If dropping on the same slot, do nothing
+      if (draggedFromSlot === index) {
+        return;
+      }
+
+      // If dragging from another slot, clear that slot first
+      if (draggedFromSlot !== null) {
+        const sourceSlot = document.querySelector(`.order-slot[data-index="${draggedFromSlot}"]`);
+        sourceSlot.innerHTML = '?';
+        sourceSlot.classList.remove('filled', 'correct', 'incorrect');
+        placements[draggedFromSlot] = null;
+      }
+
+      // If target slot has a number, return it to pool
       if (placements[index] !== null) {
         const oldNum = placements[index];
         returnToPool(oldNum);
@@ -636,9 +668,10 @@
 
       slot.appendChild(bubble);
       slot.classList.add('filled');
+      slot.classList.remove('correct', 'incorrect');
 
-      // Remove from pool
-      if (draggedElement && draggedElement.parentElement === numberPool) {
+      // Remove from pool (only if it came from pool)
+      if (draggedFromSlot === null && draggedElement && draggedElement.parentElement === numberPool) {
         draggedElement.remove();
       }
 
