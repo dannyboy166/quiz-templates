@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spelling - Quiz Template</title>
+  <link rel="stylesheet" href="css/base.css">
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+  <style>
+    body {
+      background: #F2ADE2;
+    }
+
+    .quiz-container {
+      background: #F2ADE2;
+    }
+
+    /* Override header for pink theme */
+    .quiz-header {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-back {
+      background: white;
+    }
+
+    .btn-help {
+      background: white;
+    }
+
+    /* Question title */
+    .question-title h1 {
+      color: #333;
+      font-size: 32px;
+    }
+
+    /* Help bar override */
+    .help-bar {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Main content layout */
+    .spelling-container {
+      display: flex;
+      gap: 20px;
+      padding: 20px;
+    }
+
+    /* Letter pool on the left */
+    .letter-pool {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 180px;
+    }
+
+    .letter-row {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    .letter-bubble {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: bold;
+      color: #333;
+      cursor: grab;
+      transition: transform 0.2s, box-shadow 0.2s;
+      border: 3px solid rgba(0,0,0,0.1);
+      user-select: none;
+    }
+
+    .letter-bubble:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .letter-bubble.dragging {
+      opacity: 0.5;
+      cursor: grabbing;
+    }
+
+    .letter-bubble.used {
+      opacity: 0.3;
+      cursor: not-allowed;
+      transform: scale(0.9);
+    }
+
+    /* Color classes */
+    .letter-green { background: #C4E359; }
+    .letter-blue { background: #96DDF5; }
+    .letter-orange { background: #FFB366; }
+    .letter-yellow { background: #FAE48A; }
+
+    /* Image cards area */
+    .image-cards {
+      flex: 1;
+      background: white;
+      border-radius: 20px;
+      padding: 25px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 25px;
+    }
+
+    .word-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .word-image {
+      width: 160px;
+      height: 130px;
+      object-fit: contain;
+      border-radius: 12px;
+      background: #f5f5f5;
+      padding: 10px;
+    }
+
+    /* Letter slots */
+    .letter-slots {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    .letter-slot {
+      width: 40px;
+      height: 45px;
+      border-bottom: 3px solid #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: bold;
+      color: #333;
+      transition: all 0.2s;
+    }
+
+    .letter-slot.highlight {
+      background: rgba(196, 227, 89, 0.3);
+      border-radius: 8px;
+      border-bottom-color: #C4E359;
+    }
+
+    .letter-slot.filled {
+      color: #4CAF50;
+    }
+
+    .letter-slot.wrong {
+      animation: shake 0.3s ease-in-out;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    /* Word complete */
+    .word-card.complete .word-image {
+      box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+    }
+
+    .word-card.complete .letter-slot {
+      color: #4CAF50;
+      border-bottom-color: #4CAF50;
+    }
+
+    /* Modal styles */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      max-width: 400px;
+      margin: 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal h2 {
+      margin: 0 0 15px 0;
+      font-size: 22px;
+    }
+
+    .modal p {
+      margin: 0 0 10px 0;
+      line-height: 1.6;
+    }
+
+    .modal-close {
+      margin-top: 20px;
+      padding: 10px 24px;
+      background: #333;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* Help bar clickable */
+    .help-item {
+      cursor: pointer;
+      padding: 8px 12px;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+
+    .help-item:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    /* Try Again button */
+    .btn-try-again {
+      background: #FF9800;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 25px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    .btn-try-again:hover {
+      background: #F57C00;
+      transform: scale(1.05);
+    }
+
+    /* Next button */
+    .btn-next {
+      background: #4CAF50;
+      border: none;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s, background 0.2s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    .btn-next:hover {
+      background: #43A047;
+      transform: scale(1.1);
+    }
+
+    .btn-next svg {
+      stroke: white;
+    }
+
+    /* Check button override */
+    .btn-check-answer {
+      background: #333;
+    }
+
+    /* Success animation */
+    @keyframes celebrate {
+      0%, 100% { transform: scale(1); }
+      25% { transform: scale(1.1) rotate(-5deg); }
+      75% { transform: scale(1.1) rotate(5deg); }
+    }
+
+    .celebrate {
+      animation: celebrate 0.5s ease-in-out;
+    }
+
+    /* Drag ghost */
+    .drag-ghost {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+    <!-- Header -->
+    <header class="quiz-header">
+      <button class="btn-back" onclick="window.location='index.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Back to Home
+      </button>
+
+      <div class="user-profile">
+        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=student" alt="Student Avatar" class="user-avatar">
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" style="width: 20%"></div>
+        </div>
+      </div>
+
+      <button class="btn-help" id="header-help">
+        <lottie-player
+          id="help-lottie"
+          background="transparent"
+          speed="1"
+          style="width: 28px; height: 28px;"
+          loop
+          autoplay
+        ></lottie-player>
+        Help
+      </button>
+    </header>
+
+    <!-- Question Meta -->
+    <div class="question-meta">
+      <span class="badge" style="background: #E91E63; color: white;">ENGLISH</span>
+      <span class="question-progress">Question 1 of 10</span>
+    </div>
+
+    <!-- Question Title -->
+    <div class="question-title">
+      <button class="btn-read-aloud" title="Read aloud">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 6c2.5 0 4.5 2 4.5 4.5S14.5 15 12 15"/>
+          <path d="M17 5c3 2 5 5 5 7s-2 5-5 7"/>
+          <path d="M9.5 9h-5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h5l5 4V5l-5 4z"/>
+        </svg>
+      </button>
+      <h1>Join the letters to write the word</h1>
+    </div>
+
+    <!-- Help Bar -->
+    <div class="help-bar">
+      <div class="help-item" id="btn-read-aloud">
+        <span>Read Aloud</span>
+        <span class="help-item-icon">&#128483;</span>
+      </div>
+      <span class="help-item-line"></span>
+      <div class="help-item" id="btn-get-help">
+        <span>Get Help</span>
+        <span class="help-item-icon">?</span>
+      </div>
+      <span class="help-item-line"></span>
+      <div class="help-item" id="btn-get-hint">
+        <span>Get Hint</span>
+        <span class="help-item-icon">+</span>
+      </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div class="modal-overlay" id="help-modal">
+      <div class="modal">
+        <div style="font-size: 40px; text-align: center; margin-bottom: 10px;">🔤</div>
+        <h2 style="text-align: center;">Spelling Time!</h2>
+        <div style="background: #FFF9E6; padding: 15px; border-radius: 12px; margin: 15px 0;">
+          <p style="margin: 8px 0;"><strong>👀 Look</strong> at each picture</p>
+          <p style="margin: 8px 0;"><strong>🎯 Drag</strong> the letters to spell the word</p>
+          <p style="margin: 8px 0;"><strong>📝 Spell</strong> in order - first letter first!</p>
+        </div>
+        <p style="text-align: center; font-size: 15px;">Find the right letters for each picture!</p>
+        <button class="modal-close" id="close-help">Let's spell! ⭐</button>
+      </div>
+    </div>
+
+    <!-- Hint Modal -->
+    <div class="modal-overlay" id="hint-modal">
+      <div class="modal">
+        <div style="font-size: 40px; text-align: center; margin-bottom: 10px;">💡</div>
+        <h2 style="text-align: center;" id="hint-title">Here's a hint!</h2>
+        <p style="text-align: center; font-size: 18px; margin: 20px 0;" id="hint-text"></p>
+        <button class="modal-close" id="close-hint">Thanks! 👍</button>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="spelling-container">
+      <!-- Letter Pool -->
+      <div class="letter-pool" id="letter-pool">
+        <!-- Letters will be generated by JS -->
+      </div>
+
+      <!-- Image Cards -->
+      <div class="image-cards">
+        <div class="word-card" data-word="dog">
+          <img src="https://images.emojiterra.com/google/noto-emoji/unicode-15.1/color/512px/1f415.png" alt="Dog" class="word-image">
+          <div class="letter-slots">
+            <div class="letter-slot" data-index="0"></div>
+            <div class="letter-slot" data-index="1"></div>
+            <div class="letter-slot" data-index="2"></div>
+          </div>
+        </div>
+
+        <div class="word-card" data-word="ant">
+          <img src="https://images.emojiterra.com/google/noto-emoji/unicode-15.1/color/512px/1f41c.png" alt="Ant" class="word-image">
+          <div class="letter-slots">
+            <div class="letter-slot" data-index="0"></div>
+            <div class="letter-slot" data-index="1"></div>
+            <div class="letter-slot" data-index="2"></div>
+          </div>
+        </div>
+
+        <div class="word-card" data-word="tree">
+          <img src="https://images.emojiterra.com/google/noto-emoji/unicode-15.1/color/512px/1f333.png" alt="Tree" class="word-image">
+          <div class="letter-slots">
+            <div class="letter-slot" data-index="0"></div>
+            <div class="letter-slot" data-index="1"></div>
+            <div class="letter-slot" data-index="2"></div>
+            <div class="letter-slot" data-index="3"></div>
+          </div>
+        </div>
+
+        <div class="word-card" data-word="car">
+          <img src="https://images.emojiterra.com/google/noto-emoji/unicode-15.1/color/512px/1f697.png" alt="Car" class="word-image">
+          <div class="letter-slots">
+            <div class="letter-slot" data-index="0"></div>
+            <div class="letter-slot" data-index="1"></div>
+            <div class="letter-slot" data-index="2"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feedback -->
+    <div class="feedback" id="feedback" style="display: none;">
+      <span class="feedback-badge" id="feedback-badge"></span>
+      <button class="btn-try-again" id="btn-try-again" style="display: none;">
+        Try Again 🔄
+      </button>
+      <button class="btn-next" id="btn-next" style="display: none;" title="Next Question">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Check Answer Button -->
+    <button class="btn-check-answer" id="btn-check">Check Answer</button>
+  </div>
+
+  <script>
+    // Words and their letters
+    const words = ['dog', 'ant', 'tree', 'car'];
+    const allLetters = 'dog ant tree car'.replace(/ /g, '').split('');
+
+    // Add some extra distractor letters
+    const distractors = ['b', 'h', 'n', 'i'];
+    const letterPool = [...allLetters, ...distractors];
+
+    // Shuffle letters
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    // Color classes for letters
+    const colorClasses = ['letter-green', 'letter-blue', 'letter-orange', 'letter-yellow'];
+
+    // Generate letter bubbles
+    const letterPoolEl = document.getElementById('letter-pool');
+    const shuffledLetters = shuffle([...letterPool]);
+
+    // Create rows of letters
+    let currentRow;
+    shuffledLetters.forEach((letter, index) => {
+      if (index % 3 === 0) {
+        currentRow = document.createElement('div');
+        currentRow.className = 'letter-row';
+        letterPoolEl.appendChild(currentRow);
+      }
+
+      const bubble = document.createElement('div');
+      bubble.className = `letter-bubble ${colorClasses[index % colorClasses.length]}`;
+      bubble.textContent = letter;
+      bubble.dataset.letter = letter;
+      bubble.draggable = true;
+
+      // Drag events
+      bubble.addEventListener('dragstart', onDragStart);
+      bubble.addEventListener('dragend', onDragEnd);
+
+      // Touch events
+      bubble.addEventListener('touchstart', onTouchStart, { passive: false });
+      bubble.addEventListener('touchmove', onTouchMove, { passive: false });
+      bubble.addEventListener('touchend', onTouchEnd);
+
+      currentRow.appendChild(bubble);
+    });
+
+    // Track current word progress
+    const wordProgress = {};
+    words.forEach(word => {
+      wordProgress[word] = 0; // Index of next letter needed
+    });
+
+    let draggedLetter = null;
+    let draggedElement = null;
+    let ghostElement = null;
+
+    // Drag and Drop
+    function onDragStart(e) {
+      if (e.target.classList.contains('used')) {
+        e.preventDefault();
+        return;
+      }
+      draggedLetter = e.target.dataset.letter;
+      draggedElement = e.target;
+      e.target.classList.add('dragging');
+      e.dataTransfer.setData('text/plain', draggedLetter);
+    }
+
+    function onDragEnd(e) {
+      e.target.classList.remove('dragging');
+      draggedLetter = null;
+      draggedElement = null;
+
+      // Remove all highlights
+      document.querySelectorAll('.letter-slot').forEach(slot => {
+        slot.classList.remove('highlight');
+      });
+    }
+
+    // Touch events
+    function onTouchStart(e) {
+      const target = e.target.closest('.letter-bubble');
+      if (!target || target.classList.contains('used')) return;
+
+      e.preventDefault();
+      draggedLetter = target.dataset.letter;
+      draggedElement = target;
+      target.classList.add('dragging');
+
+      // Create ghost
+      ghostElement = target.cloneNode(true);
+      ghostElement.classList.add('drag-ghost');
+      ghostElement.classList.remove('dragging');
+      document.body.appendChild(ghostElement);
+
+      updateGhostPosition(e.touches[0]);
+    }
+
+    function onTouchMove(e) {
+      if (!ghostElement) return;
+      e.preventDefault();
+      updateGhostPosition(e.touches[0]);
+
+      // Highlight slot under touch
+      const touch = e.touches[0];
+      const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+      const slot = elemBelow?.closest('.letter-slot');
+
+      document.querySelectorAll('.letter-slot').forEach(s => s.classList.remove('highlight'));
+      if (slot && !slot.textContent) {
+        slot.classList.add('highlight');
+      }
+    }
+
+    function onTouchEnd(e) {
+      if (!draggedElement) return;
+
+      draggedElement.classList.remove('dragging');
+
+      // Find slot under touch
+      const touch = e.changedTouches[0];
+      const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+      const slot = elemBelow?.closest('.letter-slot');
+      const wordCard = slot?.closest('.word-card');
+
+      if (slot && wordCard) {
+        tryPlaceLetter(wordCard, slot);
+      }
+
+      // Cleanup
+      if (ghostElement) {
+        ghostElement.remove();
+        ghostElement = null;
+      }
+
+      document.querySelectorAll('.letter-slot').forEach(s => s.classList.remove('highlight'));
+      draggedLetter = null;
+      draggedElement = null;
+    }
+
+    function updateGhostPosition(touch) {
+      if (ghostElement) {
+        ghostElement.style.left = (touch.clientX - 25) + 'px';
+        ghostElement.style.top = (touch.clientY - 25) + 'px';
+      }
+    }
+
+    // Set up drop zones
+    document.querySelectorAll('.word-card').forEach(card => {
+      card.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        const slot = e.target.closest('.letter-slot');
+        if (slot && !slot.textContent) {
+          slot.classList.add('highlight');
+        }
+      });
+
+      card.addEventListener('dragleave', (e) => {
+        const slot = e.target.closest('.letter-slot');
+        if (slot) {
+          slot.classList.remove('highlight');
+        }
+      });
+
+      card.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const slot = e.target.closest('.letter-slot');
+        if (slot) {
+          tryPlaceLetter(card, slot);
+        }
+      });
+    });
+
+    function tryPlaceLetter(wordCard, slot) {
+      const word = wordCard.dataset.word;
+      const nextIndex = wordProgress[word];
+      const expectedLetter = word[nextIndex];
+
+      // Check if this is the next slot needed
+      const slotIndex = parseInt(slot.dataset.index);
+
+      if (slotIndex !== nextIndex) {
+        // Wrong slot - need to fill in order
+        slot.classList.add('wrong');
+        setTimeout(() => slot.classList.remove('wrong'), 300);
+        return;
+      }
+
+      if (draggedLetter === expectedLetter) {
+        // Correct letter!
+        slot.textContent = draggedLetter;
+        slot.classList.add('filled');
+        wordProgress[word]++;
+
+        // Mark letter as used
+        if (draggedElement) {
+          draggedElement.classList.add('used');
+        }
+
+        // Check if word complete
+        if (wordProgress[word] === word.length) {
+          wordCard.classList.add('complete');
+        }
+
+        // Check if all words complete
+        checkAllComplete();
+      } else {
+        // Wrong letter
+        slot.classList.add('wrong');
+        setTimeout(() => slot.classList.remove('wrong'), 300);
+      }
+
+      slot.classList.remove('highlight');
+    }
+
+    function checkAllComplete() {
+      const allDone = words.every(word => wordProgress[word] === word.length);
+      if (allDone) {
+        // Auto-show success
+        setTimeout(() => {
+          document.getElementById('btn-check').click();
+        }, 500);
+      }
+    }
+
+    // Check answers
+    const btnCheck = document.getElementById('btn-check');
+    const feedback = document.getElementById('feedback');
+    const feedbackBadge = document.getElementById('feedback-badge');
+    const btnTryAgain = document.getElementById('btn-try-again');
+    const btnNext = document.getElementById('btn-next');
+    const progressFill = document.querySelector('.progress-bar-fill');
+
+    btnCheck.addEventListener('click', () => {
+      const allDone = words.every(word => wordProgress[word] === word.length);
+
+      feedback.style.display = 'flex';
+      feedbackBadge.classList.remove('correct', 'incorrect');
+
+      if (allDone) {
+        feedbackBadge.classList.add('correct');
+        feedbackBadge.innerHTML = '🎉 Amazing! You spelled all the words!';
+        btnCheck.style.display = 'none';
+        btnTryAgain.style.display = 'none';
+        btnNext.style.display = 'flex';
+        progressFill.style.width = '40%';
+        document.querySelector('.image-cards').classList.add('celebrate');
+      } else {
+        const completed = words.filter(word => wordProgress[word] === word.length).length;
+        feedbackBadge.classList.add('incorrect');
+        feedbackBadge.innerHTML = `💪 ${completed}/${words.length} words done - keep going!`;
+        btnTryAgain.style.display = 'none';
+      }
+    });
+
+    // Next Question
+    btnNext.addEventListener('click', () => {
+      window.location.href = 'index.html';
+    });
+
+    // Read Aloud
+    const btnReadAloud = document.getElementById('btn-read-aloud');
+    const questionText = "Join the letters to write the word. Look at each picture and drag the letters to spell what you see. Spell dog, ant, tree, and car.";
+
+    btnReadAloud.addEventListener('click', () => {
+      speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(questionText);
+      utterance.rate = 0.9;
+      btnReadAloud.classList.add('active');
+      utterance.onend = () => btnReadAloud.classList.remove('active');
+      speechSynthesis.speak(utterance);
+    });
+
+    document.querySelector('.btn-read-aloud').addEventListener('click', () => {
+      btnReadAloud.click();
+    });
+
+    // Get Help
+    const btnGetHelp = document.getElementById('btn-get-help');
+    const helpModal = document.getElementById('help-modal');
+    const closeHelp = document.getElementById('close-help');
+
+    btnGetHelp.addEventListener('click', () => helpModal.classList.add('active'));
+    document.getElementById('header-help').addEventListener('click', () => helpModal.classList.add('active'));
+    closeHelp.addEventListener('click', () => helpModal.classList.remove('active'));
+    helpModal.addEventListener('click', (e) => {
+      if (e.target === helpModal) helpModal.classList.remove('active');
+    });
+
+    // Get Hint
+    const btnGetHint = document.getElementById('btn-get-hint');
+    const hintModal = document.getElementById('hint-modal');
+    const hintTitle = document.getElementById('hint-title');
+    const hintText = document.getElementById('hint-text');
+    const closeHint = document.getElementById('close-hint');
+
+    btnGetHint.addEventListener('click', () => {
+      // Find first incomplete word
+      for (const word of words) {
+        if (wordProgress[word] < word.length) {
+          const nextLetter = word[wordProgress[word]];
+          hintTitle.innerHTML = "💡 Hint!";
+          hintText.innerHTML = `The next letter for <strong>${word.toUpperCase()}</strong> is <strong style="font-size: 32px;">${nextLetter.toUpperCase()}</strong>`;
+          hintModal.classList.add('active');
+
+          // Highlight the letter in the pool
+          document.querySelectorAll('.letter-bubble').forEach(bubble => {
+            if (bubble.dataset.letter === nextLetter && !bubble.classList.contains('used')) {
+              bubble.style.animation = 'pulse 0.5s ease-in-out 3';
+              setTimeout(() => bubble.style.animation = '', 1500);
+            }
+          });
+          return;
+        }
+      }
+
+      hintTitle.innerHTML = "🎉 All done!";
+      hintText.innerHTML = "You've spelled all the words! Click Check Answer!";
+      hintModal.classList.add('active');
+    });
+
+    closeHint.addEventListener('click', () => hintModal.classList.remove('active'));
+    hintModal.addEventListener('click', (e) => {
+      if (e.target === hintModal) hintModal.classList.remove('active');
+    });
+
+    // Load Lottie animation
+    const helpLottie = document.getElementById('help-lottie');
+    const lottieData = {"v":"5.4.4","fr":60,"ip":0,"op":132,"w":100,"h":100,"nm":"Question 2","assets":[],"layers":[{"ind":1,"ty":4,"nm":"? Outlines","sr":1,"ks":{"o":{"a":0,"k":100},"r":{"a":0,"k":0},"p":{"a":0,"k":[50.713,49.149,0]},"a":{"a":0,"k":[-0.214,-10.242,0]},"s":{"a":1,"k":[{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":61,"s":[200,200,100],"e":[210,210,100]},{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":71,"s":[210,210,100],"e":[200,200,100]},{"t":80}]}},"ao":0,"shapes":[{"ty":"gr","it":[{"ind":0,"ty":"sh","ks":{"a":0,"k":{"i":[[0,0],[0,0],[0,0],[0,3.203],[4.23,0],[0.242,-3.897],[0,0],[-1.601,0],[0,-1.541],[1.692,0],[0,0]],"o":[[0,0],[0,0],[3.565,-0.483],[0,-3.988],[-4.592,0],[0,0],[0.121,-1.45],[1.601,0],[0,1.662],[0,0],[0,0]],"v":[[-2.556,-6.617],[1.16,-6.617],[1.311,-8.369],[7.142,-14.17],[-0.199,-20.816],[-7.571,-14.351],[-2.828,-14.351],[-0.048,-16.738],[2.61,-14.17],[-0.381,-11.541],[-2.858,-11.541]],"c":true}},"nm":"?"},{"ind":1,"ty":"sh","ks":{"a":0,"k":{"i":[[-1.42,0],[0,1.45],[1.45,0],[0,-1.45]],"o":[[1.45,0],[0,-1.45],[-1.42,0],[0,1.45]],"v":[[-0.834,0.332],[1.825,-2.206],[-0.834,-4.743],[-3.462,-2.206]],"c":true}},"nm":"?"},{"ty":"mm","mm":1,"nm":"Merge Paths 1"},{"ty":"fl","c":{"a":0,"k":[1,1,1,1]},"o":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":61,"s":[0],"e":[100]},{"t":71}]},"r":1,"nm":"Fill 1"},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":0},"o":{"a":0,"k":100},"sk":{"a":0,"k":0},"sa":{"a":0,"k":0},"nm":"Transform"}],"nm":"?"},{"ty":"tm","s":{"a":0,"k":0},"e":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":37,"s":[0],"e":[100]},{"t":61}]},"o":{"a":0,"k":0},"m":1,"nm":"Trim Paths 1"},{"ty":"st","c":{"a":0,"k":[1,1,1,1]},"o":{"a":0,"k":100},"w":{"a":0,"k":1},"lc":1,"lj":1,"ml":4,"nm":"Stroke 1"}],"ip":0,"op":132,"st":0},{"ind":3,"ty":3,"nm":"▽ Group 6","sr":1,"ks":{"o":{"a":0,"k":100},"r":{"a":0,"k":0},"p":{"a":0,"k":[50,50,0]},"a":{"a":0,"k":[42,42,0]},"s":{"a":0,"k":[100,100,100]}},"ao":0,"ip":0,"op":132,"st":0},{"ind":4,"ty":4,"nm":"Rectangle 6 Copy","parent":3,"sr":1,"ks":{"o":{"a":0,"k":100},"r":{"a":0,"k":0},"p":{"a":0,"k":[42,42,0]},"a":{"a":0,"k":[0,0,0]},"s":{"a":1,"k":[{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":21,"s":[100,100,100],"e":[110,110,100]},{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":29,"s":[110,110,100],"e":[100,100,100]},{"t":36}]}},"ao":0,"shapes":[{"ty":"gr","it":[{"ty":"rc","d":1,"s":{"a":0,"k":[42,42]},"p":{"a":0,"k":[0,0]},"r":{"a":0,"k":21},"nm":"Rectangle Path 1"},{"ty":"tm","s":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":0,"s":[0],"e":[100]},{"t":22}]},"e":{"a":0,"k":0},"o":{"a":0,"k":-90},"m":1,"nm":"Trim Paths 1"},{"ty":"st","c":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":13,"s":[0.74,0.729,0.709,1],"e":[0.961,0.694,0.196,1]},{"t":22}]},"o":{"a":0,"k":100},"w":{"a":0,"k":2},"lc":2,"lj":1,"ml":4,"nm":"Stroke 1"},{"ty":"fl","c":{"a":0,"k":[0.953,0.691,0.256,1]},"o":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":21,"s":[1],"e":[100]},{"t":26}]},"r":1,"nm":"Fill 1"},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[200,200]},"r":{"a":0,"k":0},"o":{"a":0,"k":100},"sk":{"a":0,"k":0},"sa":{"a":0,"k":0},"nm":"Transform"}],"nm":"Rectangle 6 Copy"}],"ip":0,"op":132,"st":0}],"markers":[]};
+    helpLottie.load(lottieData);
+  </script>
+</body>
+</html>
