@@ -693,6 +693,11 @@
 
         el.innerHTML += '<div class="connection-dot"></div>';
         el.addEventListener('click', () => handleItemClick(el, 'left'));
+
+        // Drag to connect
+        el.addEventListener('mousedown', (e) => startDrag(e, el, 'left'));
+        el.addEventListener('touchstart', (e) => startDrag(e, el, 'left'), { passive: false });
+
         leftItemsEl.appendChild(el);
       });
 
@@ -710,6 +715,118 @@
       });
     }
 
+    // Drag to draw line
+    let isDragging = false;
+    let dragStartEl = null;
+    let tempLine = null;
+
+    function startDrag(e, el, side) {
+      if (feedback.style.display !== 'none') return;
+      if (side !== 'left') return; // Only drag from left items
+
+      e.preventDefault();
+      isDragging = true;
+      dragStartEl = el;
+      el.classList.add('selected');
+
+      // Create temporary line
+      tempLine = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      tempLine.setAttribute('stroke', selectedColor);
+      tempLine.setAttribute('stroke-width', '4');
+      tempLine.setAttribute('stroke-linecap', 'round');
+      tempLine.setAttribute('fill', 'none');
+      tempLine.setAttribute('stroke-dasharray', '8,8');
+      linesSvg.appendChild(tempLine);
+
+      updateDragLine(e);
+
+      document.addEventListener('mousemove', updateDragLine);
+      document.addEventListener('mouseup', endDrag);
+      document.addEventListener('touchmove', updateDragLine, { passive: false });
+      document.addEventListener('touchend', endDrag);
+    }
+
+    function updateDragLine(e) {
+      if (!isDragging || !tempLine || !dragStartEl) return;
+
+      e.preventDefault();
+
+      const touch = e.touches ? e.touches[0] : e;
+      const areaRect = matchArea.getBoundingClientRect();
+      const startRect = dragStartEl.getBoundingClientRect();
+
+      const x1 = startRect.right - areaRect.left;
+      const y1 = startRect.top + startRect.height / 2 - areaRect.top;
+      const x2 = touch.clientX - areaRect.left;
+      const y2 = touch.clientY - areaRect.top;
+
+      const midX = (x1 + x2) / 2;
+      const d = `M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`;
+      tempLine.setAttribute('d', d);
+
+      // Highlight right items on hover
+      document.querySelectorAll('.right-items .match-item').forEach(item => {
+        const rect = item.getBoundingClientRect();
+        if (touch.clientX >= rect.left && touch.clientX <= rect.right &&
+            touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+          item.classList.add('selected');
+        } else {
+          item.classList.remove('selected');
+        }
+      });
+    }
+
+    function endDrag(e) {
+      if (!isDragging) return;
+
+      const touch = e.changedTouches ? e.changedTouches[0] : e;
+
+      // Find if we're over a right item
+      const rightItems = document.querySelectorAll('.right-items .match-item');
+      let targetEl = null;
+
+      rightItems.forEach(item => {
+        const rect = item.getBoundingClientRect();
+        if (touch.clientX >= rect.left && touch.clientX <= rect.right &&
+            touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+          targetEl = item;
+        }
+        item.classList.remove('selected');
+      });
+
+      // Create connection if dropped on right item
+      if (targetEl && dragStartEl) {
+        const leftId = dragStartEl.dataset.id;
+        const rightId = targetEl.dataset.id;
+
+        // Remove existing connection for this left item
+        const existingLeft = connections.find(c => c.leftId === leftId);
+        if (existingLeft) {
+          connections = connections.filter(c => c !== existingLeft);
+        }
+
+        connections.push({ leftId, rightId, color: selectedColor });
+        redrawLines();
+        updateItemStates();
+      }
+
+      // Cleanup
+      if (tempLine) {
+        tempLine.remove();
+        tempLine = null;
+      }
+      if (dragStartEl) {
+        dragStartEl.classList.remove('selected');
+        dragStartEl = null;
+      }
+      isDragging = false;
+
+      document.removeEventListener('mousemove', updateDragLine);
+      document.removeEventListener('mouseup', endDrag);
+      document.removeEventListener('touchmove', updateDragLine);
+      document.removeEventListener('touchend', endDrag);
+    }
+
     // Handle item click
     function handleItemClick(el, side) {
       // If already checked, do nothing
@@ -717,18 +834,17 @@
 
       const id = el.dataset.id;
 
-      // Check if this item is already connected
-      const existingConnection = connections.find(c =>
-        (side === 'left' && c.leftId === id) ||
-        (side === 'right' && c.rightId === id)
-      );
-
-      if (existingConnection) {
-        // Remove the connection
-        connections = connections.filter(c => c !== existingConnection);
-        redrawLines();
-        updateItemStates();
-        return;
+      // Check if this LEFT item is already connected (left items can only connect once)
+      // RIGHT items can have multiple connections (e.g., square AND rectangle → 4 sides)
+      if (side === 'left') {
+        const existingConnection = connections.find(c => c.leftId === id);
+        if (existingConnection) {
+          // Remove the connection for this left item
+          connections = connections.filter(c => c !== existingConnection);
+          redrawLines();
+          updateItemStates();
+          return;
+        }
       }
 
       if (!selectedItem) {
@@ -744,6 +860,12 @@
         // Different side - create connection
         const leftId = side === 'left' ? id : selectedItem.id;
         const rightId = side === 'right' ? id : selectedItem.id;
+
+        // Check if this left item already has a connection
+        const existingLeft = connections.find(c => c.leftId === leftId);
+        if (existingLeft) {
+          connections = connections.filter(c => c !== existingLeft);
+        }
 
         connections.push({ leftId, rightId, color: selectedColor });
 
