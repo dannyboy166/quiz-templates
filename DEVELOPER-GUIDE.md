@@ -293,6 +293,43 @@ hint: Look at where the 'st' appears in each word!
 
 ---
 
+### 11. Missing Letters (`missing-letters`)
+
+Choose missing letters to complete a word. Great for spelling rules like "i before e except after c".
+
+| Column | Type | Required | Description |
+|--------|------|----------|-------------|
+| `template_type` | string | Yes | `"missing-letters"` |
+| `question_text` | string | Yes | Instructions |
+| `word` | string | Yes | The complete word (e.g., "believe") |
+| `blank_positions` | JSON array | Yes | 0-indexed positions of missing letters: `[3, 4]` |
+| `options` | JSON array | Yes | Letter choices: `["ie", "ei"]` |
+| `correct_option` | string | Yes | The correct choice (e.g., "ie") |
+| `meaning` | string | No | Definition/hint about the word |
+| `hint` | string | No | Hint text for the spelling rule |
+| `rule` | string | No | The spelling rule being practiced |
+
+**Example Excel Row:**
+```
+template_type: missing-letters
+question_text: Choose the missing letters!
+word: believe
+blank_positions: [3, 4]
+options: ["ie", "ei"]
+correct_option: ie
+meaning: to think something is true
+hint: There's no 'c' before the blank!
+rule: i before e, except after c
+```
+
+**Common Spelling Rules to Practice:**
+- "i before e, except after c" - believe/receive, thief/ceiling
+- Silent letters - kn_ght (knight), wr_te (write)
+- Double letters - happ_ness (happiness), runn_ng (running)
+- Vowel patterns - b_at (boat/beat), r_in (rain/ruin)
+
+---
+
 ## Suggested Excel Import Structure
 
 ### Option A: Single Table (Simple)
@@ -384,7 +421,8 @@ public abstract class QuestionComponentBase : ComponentBase
 ├── NumberOrderQuestion.razor
 ├── SoundSelectQuestion.razor
 ├── LineMatchQuestion.razor
-└── WordSortQuestion.razor
+├── WordSortQuestion.razor
+└── MissingLettersQuestion.razor
 ```
 
 ### 3. Dynamic Component Loader
@@ -443,6 +481,7 @@ public class QuestionImportService
 | `demo-sound-select.html` | `sound-select` | Inline styles |
 | `demo-line-match.html` | `line-match` | Inline styles |
 | `demo-word-sort.html` | `word-sort` | Inline styles |
+| `demo-missing-letters.html` | `missing-letters` | Inline styles |
 
 ---
 
