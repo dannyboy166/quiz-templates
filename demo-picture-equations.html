@@ -272,49 +272,28 @@
       cursor: pointer;
     }
 
-    /* Number pad for touch */
-    .number-pad {
-      display: none;
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: white;
-      border-radius: 16px;
-      padding: 15px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-      z-index: 100;
+    /* Addition with two picture boxes */
+    .addition-pictures {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      flex-wrap: wrap;
+      justify-content: center;
     }
 
-    .number-pad.show {
-      display: block;
+    .addition-pictures .picture-box {
+      min-width: 120px;
+      max-width: 180px;
     }
 
-    .number-pad-grid {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 8px;
-    }
-
-    .num-btn {
-      width: 50px;
-      height: 50px;
-      font-size: 24px;
+    .addition-symbol {
+      font-size: 40px;
       font-weight: 700;
-      border: 2px solid #ddd;
-      border-radius: 10px;
-      background: white;
-      cursor: pointer;
+      color: #333;
     }
 
-    .num-btn:hover {
-      background: #E3F2FD;
-      border-color: #2196F3;
-    }
-
-    .num-btn.clear {
-      background: #FFCDD2;
-      border-color: #E57373;
+    .btn-check-answer {
+      margin-top: 30px;
     }
   </style>
 </head>
@@ -415,26 +394,6 @@
     </div>
   </div>
 
-  <!-- Number Pad -->
-  <div class="number-pad" id="number-pad">
-    <div class="number-pad-grid">
-      <button class="num-btn" data-num="0">0</button>
-      <button class="num-btn" data-num="1">1</button>
-      <button class="num-btn" data-num="2">2</button>
-      <button class="num-btn" data-num="3">3</button>
-      <button class="num-btn" data-num="4">4</button>
-      <button class="num-btn" data-num="5">5</button>
-      <button class="num-btn" data-num="6">6</button>
-      <button class="num-btn" data-num="7">7</button>
-      <button class="num-btn" data-num="8">8</button>
-      <button class="num-btn" data-num="9">9</button>
-      <button class="num-btn" data-num="10">10</button>
-      <button class="num-btn" data-num="11">11</button>
-      <button class="num-btn" data-num="12">12</button>
-      <button class="num-btn clear" data-num="clear">✕</button>
-      <button class="num-btn" data-num="done">✓</button>
-    </div>
-  </div>
 
   <!-- Help Modal -->
   <div class="modal-overlay" id="help-modal">
@@ -546,7 +505,6 @@
     let currentOperation = 'subtraction';
     let currentQuestionIndex = 0;
     let correctCount = 0;
-    let activeInput = null;
 
     function init() {
       loadQuestion();
@@ -597,8 +555,14 @@
       } else {
         container.innerHTML = `
           <div class="equation-row">
-            <div class="picture-box">
-              ${renderAdditionPictures(q.emoji, q.num1, q.num2)}
+            <div class="addition-pictures">
+              <div class="picture-box">
+                ${renderPicturesSimple(q.emoji, q.num1)}
+              </div>
+              <span class="addition-symbol">+</span>
+              <div class="picture-box">
+                ${renderPicturesSimple(q.emoji, q.num2)}
+              </div>
             </div>
             <div class="equation-inputs">
               ${renderBox('num1', q.num1, q.given.includes('num1'))}
@@ -611,14 +575,10 @@
         `;
       }
 
-      // Setup input events
+      // Setup input events - just allow number typing
       document.querySelectorAll('.equation-box:not(.given)').forEach(input => {
-        input.addEventListener('focus', () => {
-          activeInput = input;
-          document.getElementById('number-pad').classList.add('show');
-        });
         input.addEventListener('input', (e) => {
-          // Only allow numbers
+          // Only allow numbers, max 2 digits
           e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 2);
         });
       });
@@ -633,16 +593,9 @@
       return html;
     }
 
-    function renderAdditionPictures(emoji, num1, num2) {
+    function renderPicturesSimple(emoji, count) {
       let html = '';
-      // First group
-      for (let i = 0; i < num1; i++) {
-        html += `<span class="picture-item">${emoji}</span>`;
-      }
-      // Separator
-      html += `<span class="picture-item" style="opacity:0.3;font-size:24px;">|</span>`;
-      // Second group
-      for (let i = 0; i < num2; i++) {
+      for (let i = 0; i < count; i++) {
         html += `<span class="picture-item">${emoji}</span>`;
       }
       return html;
@@ -673,9 +626,6 @@
         }
         input.readOnly = true;
       });
-
-      // Hide number pad
-      document.getElementById('number-pad').classList.remove('show');
 
       // Show feedback
       const feedback = document.getElementById('feedback');
@@ -795,31 +745,6 @@
       // Operation switcher
       document.querySelectorAll('.op-btn').forEach(btn => {
         btn.addEventListener('click', () => switchOperation(btn.dataset.op));
-      });
-
-      // Number pad
-      document.querySelectorAll('.num-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          if (!activeInput) return;
-          const num = btn.dataset.num;
-          if (num === 'clear') {
-            activeInput.value = '';
-          } else if (num === 'done') {
-            document.getElementById('number-pad').classList.remove('show');
-            activeInput.blur();
-          } else {
-            if (activeInput.value.length < 2) {
-              activeInput.value += num;
-            }
-          }
-        });
-      });
-
-      // Close number pad when clicking outside
-      document.addEventListener('click', (e) => {
-        if (!e.target.closest('.number-pad') && !e.target.closest('.equation-box')) {
-          document.getElementById('number-pad').classList.remove('show');
-        }
       });
 
       // Modal close on overlay click
