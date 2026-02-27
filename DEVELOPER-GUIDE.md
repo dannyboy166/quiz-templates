@@ -403,6 +403,61 @@ questions: [{"word":"colour","blank":[3,4,5],"options":["our","or"],"correct":"o
 
 ---
 
+### 13. Picture Equations (`picture-equations`)
+
+Visual maths with pictures showing addition/subtraction. Some pictures are crossed out to show subtraction.
+
+| Column | Type | Required | Description |
+|--------|------|----------|-------------|
+| `template_type` | string | Yes | `"picture-equations"` |
+| `operation` | string | Yes | `"addition"`, `"subtraction"`, or `"mixed"` |
+| `emoji` | string | Yes | The emoji/picture to use (e.g., "🍎") |
+| `equations` | JSON array | Yes | Array of equation objects |
+
+**Subtraction Equation Structure:**
+```json
+{
+  "type": "subtraction",
+  "total": 8,
+  "subtract": 3,
+  "result": 5,
+  "given": ["total"],
+  "blanks": ["subtract", "result"]
+}
+```
+
+**Addition Equation Structure:**
+```json
+{
+  "type": "addition",
+  "num1": 4,
+  "num2": 3,
+  "result": 7,
+  "given": ["num1", "num2"],
+  "blanks": ["result"]
+}
+```
+
+**given/blanks options:**
+- Subtraction: `total`, `subtract`, `result`
+- Addition: `num1`, `num2`, `result`
+
+**Example Excel Row:**
+```
+template_type: picture-equations
+operation: subtraction
+emoji: 🍐
+equations: [{"type":"subtraction","total":8,"subtract":3,"result":5,"given":["total"],"blanks":["subtract","result"]}]
+```
+
+**Features:**
+- Pictures with red line through crossed-out items
+- Number pad for touch input
+- Subtraction, Addition, or Mixed modes
+- Random equation generation
+
+---
+
 ## Suggested Excel Import Structure
 
 ### Option A: Single Table (Simple)
@@ -496,7 +551,8 @@ public abstract class QuestionComponentBase : ComponentBase
 ├── LineMatchQuestion.razor
 ├── WordSortQuestion.razor
 ├── MissingLettersQuestion.razor
-└── SpellingRulesQuestion.razor
+├── SpellingRulesQuestion.razor
+└── PictureEquationsQuestion.razor
 ```
 
 ### 3. Dynamic Component Loader
@@ -557,6 +613,7 @@ public class QuestionImportService
 | `demo-word-sort.html` | `word-sort` | Inline styles |
 | `demo-missing-letters.html` | `missing-letters` | Inline styles |
 | `demo-spelling-rules.html` | `spelling-rules` | Inline styles |
+| `demo-picture-equations.html` | `picture-equations` | Inline styles |
 
 ---
 

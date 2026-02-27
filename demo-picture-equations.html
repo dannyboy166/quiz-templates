@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Picture Equations - Quiz Template</title>
+  <link rel="stylesheet" href="css/base.css">
+  <style>
+    body {
+      background: #FAE38E;
+    }
+
+    .equations-container {
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+    }
+
+    .equation-row {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .picture-box {
+      background: white;
+      border: 3px solid #4FC3F7;
+      border-radius: 20px;
+      padding: 15px 25px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      align-items: center;
+      min-width: 200px;
+      max-width: 350px;
+    }
+
+    .picture-item {
+      font-size: 36px;
+      position: relative;
+      transition: all 0.2s;
+    }
+
+    .picture-item.crossed-out {
+      opacity: 0.5;
+    }
+
+    .picture-item.crossed-out::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: -5px;
+      right: -5px;
+      height: 6px;
+      background: #E53935;
+      transform: rotate(-30deg);
+      border-radius: 3px;
+    }
+
+    .equation-inputs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .equation-box {
+      width: 60px;
+      height: 60px;
+      border: 3px solid #4CAF50;
+      border-radius: 10px;
+      font-size: 32px;
+      font-weight: 700;
+      text-align: center;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      background: white;
+    }
+
+    .equation-box:focus {
+      outline: none;
+      border-color: #2196F3;
+      box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.3);
+    }
+
+    .equation-box.correct {
+      background: #C8E6C9;
+      border-color: #4CAF50;
+    }
+
+    .equation-box.incorrect {
+      background: #FFCDD2;
+      border-color: #F44336;
+    }
+
+    .equation-box.given {
+      background: #F5F5F5;
+      border-style: solid;
+      color: #333;
+    }
+
+    .equation-symbol {
+      font-size: 36px;
+      font-weight: 700;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      color: #333;
+    }
+
+    /* Operation selector */
+    .operation-selector {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .op-btn {
+      padding: 10px 24px;
+      font-size: 20px;
+      font-weight: 700;
+      background: white;
+      border: 3px solid #2196F3;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .op-btn:hover {
+      background: #E3F2FD;
+    }
+
+    .op-btn.active {
+      background: #2196F3;
+      color: white;
+    }
+
+    /* Feedback */
+    .feedback {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .feedback.show {
+      display: flex;
+    }
+
+    .feedback-badge {
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .feedback-badge.correct {
+      background: #C8E6C9;
+      border: 2px solid #66BB6A;
+      color: #2E7D32;
+    }
+
+    .feedback-badge.incorrect {
+      background: #FFCDD2;
+      border: 2px solid #E57373;
+      color: #C62828;
+    }
+
+    .btn-try-again {
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      background: #FF9800;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .btn-try-again:hover {
+      background: #F57C00;
+    }
+
+    .btn-next {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #4CAF50;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+
+    .btn-next:hover {
+      background: #43A047;
+    }
+
+    .score-display {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 16px;
+      color: #666;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.show { display: flex; }
+
+    .modal-content {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 500px;
+      width: 90%;
+      text-align: center;
+      position: relative;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      width: 30px;
+      height: 30px;
+      border: none;
+      background: #eee;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    .modal-content h2 { margin-bottom: 20px; }
+
+    .modal-instruction {
+      background: #FFF9E6;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .modal-instruction p { margin-bottom: 10px; }
+
+    .modal-btn {
+      padding: 12px 30px;
+      font-size: 16px;
+      font-weight: 600;
+      background: #333;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    /* Number pad for touch */
+    .number-pad {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      border-radius: 16px;
+      padding: 15px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      z-index: 100;
+    }
+
+    .number-pad.show {
+      display: block;
+    }
+
+    .number-pad-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+    }
+
+    .num-btn {
+      width: 50px;
+      height: 50px;
+      font-size: 24px;
+      font-weight: 700;
+      border: 2px solid #ddd;
+      border-radius: 10px;
+      background: white;
+      cursor: pointer;
+    }
+
+    .num-btn:hover {
+      background: #E3F2FD;
+      border-color: #2196F3;
+    }
+
+    .num-btn.clear {
+      background: #FFCDD2;
+      border-color: #E57373;
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+    <!-- Header -->
+    <header class="quiz-header">
+      <button class="btn-back" onclick="window.location.href='index.html'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Back
+      </button>
+
+      <div class="user-profile">
+        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User" class="user-avatar">
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" style="width: 30%"></div>
+        </div>
+      </div>
+
+      <button class="btn-help" id="header-help">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        Help
+      </button>
+    </header>
+
+    <!-- Operation Selector -->
+    <div class="operation-selector">
+      <button class="op-btn active" data-op="subtraction">➖ Subtraction</button>
+      <button class="op-btn" data-op="addition">➕ Addition</button>
+      <button class="op-btn" data-op="mixed">🔀 Mixed</button>
+    </div>
+
+    <!-- Question Meta -->
+    <div class="question-meta">
+      <span class="badge badge-math">Maths</span>
+      <span class="question-progress">Question <span id="current-q">1</span> of <span id="total-q">6</span></span>
+    </div>
+
+    <!-- Question Title -->
+    <div class="question-title">
+      <button class="btn-read-aloud" id="btn-read-title">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+        </svg>
+      </button>
+      <h1 id="question-text">Complete the subtraction sentences</h1>
+    </div>
+
+    <!-- Help Bar -->
+    <div class="help-bar">
+      <div class="help-item" id="btn-read-aloud">
+        <span class="help-item-icon">🔊</span>
+        <span>Read Aloud</span>
+      </div>
+      <span class="help-item-line"></span>
+      <div class="help-item" id="btn-get-help">
+        <span class="help-item-icon">❓</span>
+        <span>Get Help</span>
+      </div>
+      <span class="help-item-line"></span>
+      <div class="help-item" id="btn-get-hint">
+        <span class="help-item-icon">💡</span>
+        <span>Get Hint</span>
+      </div>
+    </div>
+
+    <!-- Content Card -->
+    <div class="content-card">
+      <div class="content-card-inner">
+        <div class="equations-container" id="equations-container">
+          <!-- Equations will be inserted here -->
+        </div>
+
+        <button class="btn-check-answer" id="btn-check">Check Answer</button>
+
+        <div class="feedback" id="feedback">
+          <div class="feedback-badge" id="feedback-badge">
+            <span id="feedback-icon">✓</span>
+            <span id="feedback-text">Correct!</span>
+          </div>
+          <button class="btn-try-again" id="btn-try-again">Try Again</button>
+          <button class="btn-next" id="btn-next">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="score-display" id="score-display"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Number Pad -->
+  <div class="number-pad" id="number-pad">
+    <div class="number-pad-grid">
+      <button class="num-btn" data-num="0">0</button>
+      <button class="num-btn" data-num="1">1</button>
+      <button class="num-btn" data-num="2">2</button>
+      <button class="num-btn" data-num="3">3</button>
+      <button class="num-btn" data-num="4">4</button>
+      <button class="num-btn" data-num="5">5</button>
+      <button class="num-btn" data-num="6">6</button>
+      <button class="num-btn" data-num="7">7</button>
+      <button class="num-btn" data-num="8">8</button>
+      <button class="num-btn" data-num="9">9</button>
+      <button class="num-btn" data-num="10">10</button>
+      <button class="num-btn" data-num="11">11</button>
+      <button class="num-btn" data-num="12">12</button>
+      <button class="num-btn clear" data-num="clear">✕</button>
+      <button class="num-btn" data-num="done">✓</button>
+    </div>
+  </div>
+
+  <!-- Help Modal -->
+  <div class="modal-overlay" id="help-modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal('help-modal')">×</button>
+      <h2>How to Play</h2>
+      <div class="modal-instruction">
+        <p>🖼️ Look at the pictures - some have a red line through them!</p>
+        <p>➖ <strong>Subtraction:</strong> Count all items, then count crossed-out ones. Fill in: total - crossed = remaining</p>
+        <p>➕ <strong>Addition:</strong> Count items in each group. Fill in: group1 + group2 = total</p>
+        <p>✏️ Type numbers in the empty boxes to complete each equation.</p>
+        <p>✅ Press "Check Answer" when you're done!</p>
+      </div>
+      <button class="modal-btn" onclick="closeModal('help-modal')">Got it!</button>
+    </div>
+  </div>
+
+  <!-- Hint Modal -->
+  <div class="modal-overlay" id="hint-modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal('hint-modal')">×</button>
+      <h2>💡 Hint</h2>
+      <div class="modal-instruction">
+        <p id="hint-text">Count the pictures carefully! The crossed-out ones are being taken away.</p>
+      </div>
+      <button class="modal-btn" onclick="closeModal('hint-modal')">Thanks!</button>
+    </div>
+  </div>
+
+  <script>
+    // Emojis for pictures
+    const pictureTypes = ['🍎', '🍐', '🐟', '🏀', '⭐', '🌸', '🦋', '🐸', '🍪', '🧁', '🍓', '🍌', '🚗', '✏️', '📚'];
+
+    // Question sets by operation type
+    const questionSets = {
+      subtraction: generateSubtractionQuestions(),
+      addition: generateAdditionQuestions(),
+      mixed: generateMixedQuestions()
+    };
+
+    function generateSubtractionQuestions() {
+      const questions = [];
+      const emojis = ['🍐', '🐟', '🏀', '🍎', '⭐', '🦋'];
+
+      for (let i = 0; i < 6; i++) {
+        const total = Math.floor(Math.random() * 8) + 5; // 5-12
+        const subtract = Math.floor(Math.random() * (total - 2)) + 1; // 1 to total-2
+        const result = total - subtract;
+
+        // Decide which boxes are given vs blank
+        const patterns = [
+          { given: ['total'], blanks: ['subtract', 'result'] },
+          { given: ['subtract'], blanks: ['total', 'result'] },
+          { given: ['result'], blanks: ['total', 'subtract'] },
+          { given: ['total', 'subtract'], blanks: ['result'] },
+          { given: ['total', 'result'], blanks: ['subtract'] },
+        ];
+        const pattern = patterns[Math.floor(Math.random() * patterns.length)];
+
+        questions.push({
+          type: 'subtraction',
+          emoji: emojis[i % emojis.length],
+          total,
+          subtract,
+          result,
+          given: pattern.given,
+          blanks: pattern.blanks
+        });
+      }
+      return questions;
+    }
+
+    function generateAdditionQuestions() {
+      const questions = [];
+      const emojis = ['🍪', '🧁', '🍓', '🌸', '📚', '🚗'];
+
+      for (let i = 0; i < 6; i++) {
+        const num1 = Math.floor(Math.random() * 6) + 2; // 2-7
+        const num2 = Math.floor(Math.random() * 6) + 2; // 2-7
+        const result = num1 + num2;
+
+        const patterns = [
+          { given: ['num1', 'num2'], blanks: ['result'] },
+          { given: ['num1', 'result'], blanks: ['num2'] },
+          { given: ['num2', 'result'], blanks: ['num1'] },
+          { given: ['result'], blanks: ['num1', 'num2'] },
+        ];
+        const pattern = patterns[Math.floor(Math.random() * patterns.length)];
+
+        questions.push({
+          type: 'addition',
+          emoji: emojis[i % emojis.length],
+          num1,
+          num2,
+          result,
+          given: pattern.given,
+          blanks: pattern.blanks
+        });
+      }
+      return questions;
+    }
+
+    function generateMixedQuestions() {
+      const sub = generateSubtractionQuestions().slice(0, 3);
+      const add = generateAdditionQuestions().slice(0, 3);
+      return [...sub, ...add].sort(() => Math.random() - 0.5);
+    }
+
+    let currentOperation = 'subtraction';
+    let currentQuestionIndex = 0;
+    let correctCount = 0;
+    let activeInput = null;
+
+    function init() {
+      loadQuestion();
+      setupEventListeners();
+    }
+
+    function loadQuestion() {
+      const questions = questionSets[currentOperation];
+      const q = questions[currentQuestionIndex];
+
+      document.getElementById('current-q').textContent = currentQuestionIndex + 1;
+      document.getElementById('total-q').textContent = questions.length;
+
+      // Update title based on operation
+      const titles = {
+        subtraction: 'Complete the subtraction sentences',
+        addition: 'Complete the addition sentences',
+        mixed: 'Complete the number sentences'
+      };
+      document.getElementById('question-text').textContent = titles[currentOperation];
+
+      renderEquation(q);
+
+      // Reset UI
+      document.getElementById('btn-check').style.display = 'block';
+      document.getElementById('feedback').classList.remove('show');
+      updateScore();
+    }
+
+    function renderEquation(q) {
+      const container = document.getElementById('equations-container');
+
+      if (q.type === 'subtraction') {
+        container.innerHTML = `
+          <div class="equation-row">
+            <div class="picture-box">
+              ${renderPictures(q.emoji, q.total, q.subtract)}
+            </div>
+            <div class="equation-inputs">
+              ${renderBox('total', q.total, q.given.includes('total'))}
+              <span class="equation-symbol">−</span>
+              ${renderBox('subtract', q.subtract, q.given.includes('subtract'))}
+              <span class="equation-symbol">=</span>
+              ${renderBox('result', q.result, q.given.includes('result'))}
+            </div>
+          </div>
+        `;
+      } else {
+        container.innerHTML = `
+          <div class="equation-row">
+            <div class="picture-box">
+              ${renderAdditionPictures(q.emoji, q.num1, q.num2)}
+            </div>
+            <div class="equation-inputs">
+              ${renderBox('num1', q.num1, q.given.includes('num1'))}
+              <span class="equation-symbol">+</span>
+              ${renderBox('num2', q.num2, q.given.includes('num2'))}
+              <span class="equation-symbol">=</span>
+              ${renderBox('result', q.result, q.given.includes('result'))}
+            </div>
+          </div>
+        `;
+      }
+
+      // Setup input events
+      document.querySelectorAll('.equation-box:not(.given)').forEach(input => {
+        input.addEventListener('focus', () => {
+          activeInput = input;
+          document.getElementById('number-pad').classList.add('show');
+        });
+        input.addEventListener('input', (e) => {
+          // Only allow numbers
+          e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 2);
+        });
+      });
+    }
+
+    function renderPictures(emoji, total, crossedOut) {
+      let html = '';
+      for (let i = 0; i < total; i++) {
+        const crossed = i < crossedOut ? 'crossed-out' : '';
+        html += `<span class="picture-item ${crossed}">${emoji}</span>`;
+      }
+      return html;
+    }
+
+    function renderAdditionPictures(emoji, num1, num2) {
+      let html = '';
+      // First group
+      for (let i = 0; i < num1; i++) {
+        html += `<span class="picture-item">${emoji}</span>`;
+      }
+      // Separator
+      html += `<span class="picture-item" style="opacity:0.3;font-size:24px;">|</span>`;
+      // Second group
+      for (let i = 0; i < num2; i++) {
+        html += `<span class="picture-item">${emoji}</span>`;
+      }
+      return html;
+    }
+
+    function renderBox(name, value, isGiven) {
+      if (isGiven) {
+        return `<input type="text" class="equation-box given" value="${value}" readonly data-name="${name}" data-answer="${value}">`;
+      }
+      return `<input type="text" class="equation-box" placeholder="?" data-name="${name}" data-answer="${value}" inputmode="numeric">`;
+    }
+
+    function checkAnswer() {
+      const inputs = document.querySelectorAll('.equation-box:not(.given)');
+      let allCorrect = true;
+
+      inputs.forEach(input => {
+        const userAnswer = parseInt(input.value);
+        const correctAnswer = parseInt(input.dataset.answer);
+
+        if (userAnswer === correctAnswer) {
+          input.classList.add('correct');
+          input.classList.remove('incorrect');
+        } else {
+          input.classList.add('incorrect');
+          input.classList.remove('correct');
+          allCorrect = false;
+        }
+        input.readOnly = true;
+      });
+
+      // Hide number pad
+      document.getElementById('number-pad').classList.remove('show');
+
+      // Show feedback
+      const feedback = document.getElementById('feedback');
+      const badge = document.getElementById('feedback-badge');
+      const icon = document.getElementById('feedback-icon');
+      const text = document.getElementById('feedback-text');
+      const tryAgain = document.getElementById('btn-try-again');
+      const next = document.getElementById('btn-next');
+
+      if (allCorrect) {
+        correctCount++;
+        badge.className = 'feedback-badge correct';
+        icon.textContent = '✓';
+        text.textContent = 'Correct!';
+        tryAgain.style.display = 'none';
+        next.style.display = 'flex';
+      } else {
+        badge.className = 'feedback-badge incorrect';
+        icon.textContent = '✗';
+        text.textContent = 'Not quite right';
+        tryAgain.style.display = 'inline-block';
+        next.style.display = 'flex';
+
+        // Show correct answers
+        inputs.forEach(input => {
+          if (input.classList.contains('incorrect')) {
+            input.value = input.dataset.answer;
+          }
+        });
+      }
+
+      document.getElementById('btn-check').style.display = 'none';
+      feedback.classList.add('show');
+      updateScore();
+    }
+
+    function tryAgain() {
+      loadQuestion();
+    }
+
+    function nextQuestion() {
+      const questions = questionSets[currentOperation];
+      if (currentQuestionIndex < questions.length - 1) {
+        currentQuestionIndex++;
+        loadQuestion();
+      } else {
+        alert(`🎉 Well done!\n\nYou got ${correctCount} out of ${questions.length} correct!`);
+        // Reset for new round
+        currentQuestionIndex = 0;
+        correctCount = 0;
+        questionSets[currentOperation] = currentOperation === 'subtraction'
+          ? generateSubtractionQuestions()
+          : currentOperation === 'addition'
+            ? generateAdditionQuestions()
+            : generateMixedQuestions();
+        loadQuestion();
+      }
+    }
+
+    function switchOperation(op) {
+      currentOperation = op;
+      currentQuestionIndex = 0;
+      correctCount = 0;
+
+      // Update buttons
+      document.querySelectorAll('.op-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.op === op);
+      });
+
+      // Generate fresh questions
+      questionSets[op] = op === 'subtraction'
+        ? generateSubtractionQuestions()
+        : op === 'addition'
+          ? generateAdditionQuestions()
+          : generateMixedQuestions();
+
+      loadQuestion();
+    }
+
+    function updateScore() {
+      const total = currentQuestionIndex + (document.getElementById('feedback').classList.contains('show') ? 1 : 0);
+      if (total > 0) {
+        document.getElementById('score-display').textContent = `Score: ${correctCount}/${total}`;
+      } else {
+        document.getElementById('score-display').textContent = '';
+      }
+    }
+
+    function readAloud() {
+      if ('speechSynthesis' in window) {
+        const q = questionSets[currentOperation][currentQuestionIndex];
+        let text = '';
+        if (q.type === 'subtraction') {
+          text = `Look at the ${q.emoji}. There are ${q.total} altogether. ${q.subtract} are crossed out. How many are left?`;
+        } else {
+          text = `Count the ${q.emoji}. There are ${q.num1} in the first group and ${q.num2} in the second group. How many altogether?`;
+        }
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 0.8;
+        speechSynthesis.speak(utterance);
+      }
+    }
+
+    function openModal(id) { document.getElementById(id).classList.add('show'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+    function setupEventListeners() {
+      document.getElementById('btn-check').addEventListener('click', checkAnswer);
+      document.getElementById('btn-try-again').addEventListener('click', tryAgain);
+      document.getElementById('btn-next').addEventListener('click', nextQuestion);
+      document.getElementById('btn-read-aloud').addEventListener('click', readAloud);
+      document.getElementById('btn-read-title').addEventListener('click', readAloud);
+      document.getElementById('btn-get-help').addEventListener('click', () => openModal('help-modal'));
+      document.getElementById('header-help').addEventListener('click', () => openModal('help-modal'));
+      document.getElementById('btn-get-hint').addEventListener('click', () => openModal('hint-modal'));
+
+      // Operation switcher
+      document.querySelectorAll('.op-btn').forEach(btn => {
+        btn.addEventListener('click', () => switchOperation(btn.dataset.op));
+      });
+
+      // Number pad
+      document.querySelectorAll('.num-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (!activeInput) return;
+          const num = btn.dataset.num;
+          if (num === 'clear') {
+            activeInput.value = '';
+          } else if (num === 'done') {
+            document.getElementById('number-pad').classList.remove('show');
+            activeInput.blur();
+          } else {
+            if (activeInput.value.length < 2) {
+              activeInput.value += num;
+            }
+          }
+        });
+      });
+
+      // Close number pad when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.number-pad') && !e.target.closest('.equation-box')) {
+          document.getElementById('number-pad').classList.remove('show');
+        }
+      });
+
+      // Modal close on overlay click
+      document.querySelectorAll('.modal-overlay').forEach(modal => {
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) closeModal(modal.id);
+        });
+      });
+    }
+
+    init();
+  </script>
+</body>
+</html>
