@@ -14,23 +14,30 @@
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 10px;
-      margin-bottom: 20px;
+      gap: 6px;
+      margin-bottom: 16px;
+      max-height: 120px;
+      overflow-y: auto;
+      padding: 8px;
+      background: rgba(255,255,255,0.3);
+      border-radius: 12px;
     }
 
     .rule-btn {
-      padding: 8px 16px;
-      font-size: 14px;
+      padding: 6px 12px;
+      font-size: 12px;
       font-weight: 600;
       background: white;
       border: 2px solid #E91E63;
-      border-radius: 20px;
+      border-radius: 16px;
       cursor: pointer;
       transition: all 0.2s;
+      white-space: nowrap;
     }
 
     .rule-btn:hover {
       background: #FCE4EC;
+      transform: scale(1.05);
     }
 
     .rule-btn.active {
@@ -371,14 +378,34 @@
 
     <!-- Rule Selector -->
     <div class="rule-selector" id="rule-selector">
-      <button class="rule-btn active" data-rule="ie-ei">i before e</button>
-      <button class="rule-btn" data-rule="aus-our">-our 🇦🇺</button>
+      <!-- Australian Spelling -->
+      <button class="rule-btn active" data-rule="aus-our">-our 🇦🇺</button>
       <button class="rule-btn" data-rule="aus-ise">-ise 🇦🇺</button>
       <button class="rule-btn" data-rule="aus-re">-re 🇦🇺</button>
+      <!-- Classic Rules -->
+      <button class="rule-btn" data-rule="ie-ei">i before e</button>
+      <button class="rule-btn" data-rule="magic-e">Magic E</button>
       <button class="rule-btn" data-rule="silent">Silent Letters</button>
       <button class="rule-btn" data-rule="soft-c">Soft c & g</button>
-      <button class="rule-btn" data-rule="double">Double Letters</button>
+      <!-- Consonant Rules -->
       <button class="rule-btn" data-rule="ck-k">ck vs k</button>
+      <button class="rule-btn" data-rule="tch">-tch</button>
+      <button class="rule-btn" data-rule="dge">-dge</button>
+      <button class="rule-btn" data-rule="floss">FLOSS</button>
+      <button class="rule-btn" data-rule="double">Doubling</button>
+      <!-- Suffix Rules -->
+      <button class="rule-btn" data-rule="drop-e">Drop the E</button>
+      <button class="rule-btn" data-rule="change-y">Change Y to I</button>
+      <button class="rule-btn" data-rule="ful">-ful</button>
+      <!-- Plurals -->
+      <button class="rule-btn" data-rule="plural-es">Plurals -es</button>
+      <button class="rule-btn" data-rule="plural-ies">Plurals -ies</button>
+      <!-- Sound Patterns -->
+      <button class="rule-btn" data-rule="ph-f">ph = f</button>
+      <button class="rule-btn" data-rule="qu">Q + U</button>
+      <button class="rule-btn" data-rule="tion-sion">-tion/-sion</button>
+      <!-- Homophones -->
+      <button class="rule-btn" data-rule="homophones">Homophones</button>
     </div>
 
     <!-- Question Meta -->
@@ -655,10 +682,292 @@
           { word: "clock", blank: [3,4], options: ["ck","k"], correct: "ck", meaning: "tells time", context: '"Look at the clock."' },
           { word: "poke", blank: [2], options: ["k","ck"], correct: "k", meaning: "to push with finger", context: '"Don\'t poke me!"', blankSize: 1 }
         ]
+      },
+      "magic-e": {
+        name: "Magic E (Silent E)",
+        hint: "Magic E makes the vowel say its name!",
+        helpContent: `
+          <p>✨ <strong>Magic E Rule:</strong></p>
+          <ul>
+            <li>When a word ends in silent <strong>e</strong>, the vowel before it says its name (long sound)</li>
+            <li>hat → hat<strong>e</strong> (short a → long a)</li>
+            <li>bit → bit<strong>e</strong> (short i → long i)</li>
+            <li>hop → hop<strong>e</strong> (short o → long o)</li>
+          </ul>
+          <p>The E is silent but it changes the vowel sound!</p>
+        `,
+        questions: [
+          { word: "hate", blank: [3], options: ["e",""], correct: "e", meaning: "to really dislike", context: '"I hate spinach!"' },
+          { word: "bite", blank: [3], options: ["e",""], correct: "e", meaning: "to use teeth", context: '"Don\'t bite!"' },
+          { word: "hope", blank: [3], options: ["e",""], correct: "e", meaning: "to wish for", context: '"I hope it\'s sunny."' },
+          { word: "cute", blank: [3], options: ["e",""], correct: "e", meaning: "adorable", context: '"What a cute puppy!"' },
+          { word: "make", blank: [3], options: ["e",""], correct: "e", meaning: "to create", context: '"Let\'s make a cake."' },
+          { word: "time", blank: [3], options: ["e",""], correct: "e", meaning: "hours and minutes", context: '"What time is it?"' }
+        ]
+      },
+      "tch": {
+        name: "-tch after short vowels",
+        hint: "Use -tch after a short vowel for the /ch/ sound",
+        helpContent: `
+          <p>🔤 <strong>-tch Rule:</strong></p>
+          <ul>
+            <li>After a <strong>short vowel</strong>, use <strong>-tch</strong>: catch, fetch, witch</li>
+            <li>After other sounds, use <strong>-ch</strong>: much, rich, lunch</li>
+          </ul>
+          <p>Exceptions: much, such, rich, which (memorise these!)</p>
+        `,
+        questions: [
+          { word: "catch", blank: [2,3,4], options: ["tch","ch"], correct: "tch", meaning: "to grab", context: '"Catch the ball!"' },
+          { word: "watch", blank: [2,3,4], options: ["tch","ch"], correct: "tch", meaning: "to look at", context: '"Watch this!"' },
+          { word: "witch", blank: [2,3,4], options: ["tch","ch"], correct: "tch", meaning: "magical woman", context: '"The witch flew away."' },
+          { word: "fetch", blank: [2,3,4], options: ["tch","ch"], correct: "tch", meaning: "to go get", context: '"Fetch the ball!"' },
+          { word: "match", blank: [2,3,4], options: ["tch","ch"], correct: "tch", meaning: "to be the same", context: '"These socks match."' },
+          { word: "patch", blank: [2,3,4], options: ["tch","ch"], correct: "tch", meaning: "a piece of fabric", context: '"Sew on a patch."' }
+        ]
+      },
+      "dge": {
+        name: "-dge after short vowels",
+        hint: "Use -dge after a short vowel for the /j/ sound",
+        helpContent: `
+          <p>🔤 <strong>-dge Rule:</strong></p>
+          <ul>
+            <li>After a <strong>short vowel</strong>, use <strong>-dge</strong>: badge, bridge, fudge</li>
+            <li>After other sounds, use <strong>-ge</strong>: huge, page, cage</li>
+          </ul>
+          <p>The d is silent but shows the vowel is short!</p>
+        `,
+        questions: [
+          { word: "badge", blank: [2,3,4], options: ["dge","ge"], correct: "dge", meaning: "a pin or emblem", context: '"Earn your badge!"' },
+          { word: "bridge", blank: [3,4,5], options: ["dge","ge"], correct: "dge", meaning: "over a river", context: '"Cross the bridge."' },
+          { word: "fudge", blank: [2,3,4], options: ["dge","ge"], correct: "dge", meaning: "chocolate treat", context: '"Yummy fudge!"' },
+          { word: "judge", blank: [2,3,4], options: ["dge","ge"], correct: "dge", meaning: "decides in court", context: '"The judge spoke."' },
+          { word: "ridge", blank: [2,3,4], options: ["dge","ge"], correct: "dge", meaning: "top of a hill", context: '"Walk along the ridge."' },
+          { word: "wedge", blank: [2,3,4], options: ["dge","ge"], correct: "dge", meaning: "triangle shape", context: '"A wedge of cheese."' }
+        ]
+      },
+      "floss": {
+        name: "FLOSS Rule (ff, ll, ss, zz)",
+        hint: "Double f, l, s, z after a short vowel in one-syllable words",
+        helpContent: `
+          <p>🦷 <strong>FLOSS Rule:</strong></p>
+          <ul>
+            <li>In one-syllable words with a <strong>short vowel</strong></li>
+            <li>Double the <strong>f, l, s,</strong> or <strong>z</strong> at the end</li>
+            <li>Examples: stu<strong>ff</strong>, be<strong>ll</strong>, mi<strong>ss</strong>, bu<strong>zz</strong></li>
+          </ul>
+          <p>FLOSS = F, L, O, S, S (the letters that double!)</p>
+        `,
+        questions: [
+          { word: "stuff", blank: [3,4], options: ["ff","f"], correct: "ff", meaning: "things", context: '"Pack your stuff."' },
+          { word: "bell", blank: [2,3], options: ["ll","l"], correct: "ll", meaning: "rings", context: '"Ring the bell!"' },
+          { word: "miss", blank: [2,3], options: ["ss","s"], correct: "ss", meaning: "to fail to hit", context: '"Don\'t miss!"' },
+          { word: "buzz", blank: [2,3], options: ["zz","z"], correct: "zz", meaning: "bee sound", context: '"Bees buzz."' },
+          { word: "spell", blank: [3,4], options: ["ll","l"], correct: "ll", meaning: "write letters", context: '"Spell the word."' },
+          { word: "grass", blank: [3,4], options: ["ss","s"], correct: "ss", meaning: "green plants", context: '"Mow the grass."' }
+        ]
+      },
+      "drop-e": {
+        name: "Drop the E",
+        hint: "Drop silent E before adding -ing or -ed",
+        helpContent: `
+          <p>✂️ <strong>Drop the E Rule:</strong></p>
+          <ul>
+            <li>When adding a suffix starting with a vowel (-ing, -ed, -er)</li>
+            <li><strong>Drop</strong> the silent e at the end</li>
+            <li>make → mak<strong>ing</strong> (not makeing)</li>
+            <li>hope → hop<strong>ed</strong> (not hopeed)</li>
+          </ul>
+        `,
+        questions: [
+          { word: "making", blank: [3,4,5,6], options: ["king","eing"], correct: "king", meaning: "creating", context: '"I am making a cake."' },
+          { word: "hoping", blank: [3,4,5,6], options: ["ping","eing"], correct: "ping", meaning: "wishing", context: '"I am hoping for sun."' },
+          { word: "baking", blank: [3,4,5,6], options: ["king","eing"], correct: "king", meaning: "cooking in oven", context: '"Mum is baking."' },
+          { word: "giving", blank: [3,4,5,6], options: ["ving","eing"], correct: "ving", meaning: "handing over", context: '"I am giving a gift."' },
+          { word: "coming", blank: [3,4,5,6], options: ["ming","eing"], correct: "ming", meaning: "arriving", context: '"Dad is coming home."' },
+          { word: "taking", blank: [3,4,5,6], options: ["king","eing"], correct: "king", meaning: "grabbing", context: '"Taking the bus."' }
+        ]
+      },
+      "change-y": {
+        name: "Change Y to I",
+        hint: "Change y to i before adding -ed, -es, or -er",
+        helpContent: `
+          <p>🔄 <strong>Change Y to I Rule:</strong></p>
+          <ul>
+            <li>When a word ends in <strong>consonant + y</strong></li>
+            <li>Change the y to <strong>i</strong> before adding suffixes</li>
+            <li>happy → happ<strong>ier</strong>, happ<strong>iest</strong></li>
+            <li>carry → carr<strong>ied</strong></li>
+            <li>baby → bab<strong>ies</strong></li>
+          </ul>
+          <p>But keep y before -ing: carrying, crying</p>
+        `,
+        questions: [
+          { word: "happier", blank: [4,5,6], options: ["ier","yer"], correct: "ier", meaning: "more happy", context: '"I feel happier now."' },
+          { word: "carried", blank: [4,5,6], options: ["ied","yed"], correct: "ied", meaning: "past of carry", context: '"She carried the bag."' },
+          { word: "cried", blank: [2,3,4], options: ["ied","yed"], correct: "ied", meaning: "past of cry", context: '"The baby cried."' },
+          { word: "tried", blank: [2,3,4], options: ["ied","yed"], correct: "ied", meaning: "past of try", context: '"I tried my best."' },
+          { word: "easier", blank: [3,4,5], options: ["ier","yer"], correct: "ier", meaning: "more easy", context: '"This is easier."' },
+          { word: "funnier", blank: [4,5,6], options: ["ier","yer"], correct: "ier", meaning: "more funny", context: '"That joke is funnier!"' }
+        ]
+      },
+      "ful": {
+        name: "-ful has one L",
+        hint: "The suffix -ful only has ONE L!",
+        helpContent: `
+          <p>1️⃣ <strong>-ful Rule:</strong></p>
+          <ul>
+            <li>The suffix <strong>-ful</strong> only has <strong>one L</strong></li>
+            <li>Even though "full" has two L's!</li>
+            <li>beauti<strong>ful</strong> (not beautifull)</li>
+            <li>care<strong>ful</strong> (not carefull)</li>
+            <li>wonder<strong>ful</strong> (not wonderfull)</li>
+          </ul>
+        `,
+        questions: [
+          { word: "beautiful", blank: [6,7,8], options: ["ful","full"], correct: "ful", meaning: "very pretty", context: '"What a beautiful day!"' },
+          { word: "careful", blank: [4,5,6], options: ["ful","full"], correct: "ful", meaning: "with care", context: '"Be careful!"' },
+          { word: "wonderful", blank: [6,7,8], options: ["ful","full"], correct: "ful", meaning: "amazing", context: '"That\'s wonderful!"' },
+          { word: "helpful", blank: [4,5,6], options: ["ful","full"], correct: "ful", meaning: "gives help", context: '"You are so helpful."' },
+          { word: "thankful", blank: [5,6,7], options: ["ful","full"], correct: "ful", meaning: "grateful", context: '"I am thankful."' },
+          { word: "powerful", blank: [5,6,7], options: ["ful","full"], correct: "ful", meaning: "very strong", context: '"A powerful storm."' }
+        ]
+      },
+      "plural-es": {
+        name: "Plurals: add -es",
+        hint: "Add -es to words ending in s, x, z, ch, sh",
+        helpContent: `
+          <p>📦 <strong>Add -es Rule:</strong></p>
+          <ul>
+            <li>Add <strong>-es</strong> (not just -s) to words ending in:</li>
+            <li><strong>s</strong>: bus → bus<strong>es</strong></li>
+            <li><strong>x</strong>: box → box<strong>es</strong></li>
+            <li><strong>z</strong>: quiz → quiz<strong>zes</strong></li>
+            <li><strong>ch</strong>: watch → watch<strong>es</strong></li>
+            <li><strong>sh</strong>: brush → brush<strong>es</strong></li>
+          </ul>
+        `,
+        questions: [
+          { word: "boxes", blank: [3,4], options: ["es","s"], correct: "es", meaning: "more than one box", context: '"Stack the boxes."' },
+          { word: "buses", blank: [3,4], options: ["es","s"], correct: "es", meaning: "more than one bus", context: '"The buses are late."' },
+          { word: "watches", blank: [5,6], options: ["es","s"], correct: "es", meaning: "more than one watch", context: '"I collect watches."' },
+          { word: "brushes", blank: [5,6], options: ["es","s"], correct: "es", meaning: "more than one brush", context: '"Get the brushes."' },
+          { word: "foxes", blank: [3,4], options: ["es","s"], correct: "es", meaning: "more than one fox", context: '"Two foxes ran by."' },
+          { word: "classes", blank: [5,6], options: ["es","s"], correct: "es", meaning: "more than one class", context: '"I have three classes."' }
+        ]
+      },
+      "plural-ies": {
+        name: "Plurals: change y to -ies",
+        hint: "Change y to i and add -es for consonant + y words",
+        helpContent: `
+          <p>👶 <strong>Change Y to IES Rule:</strong></p>
+          <ul>
+            <li>Words ending in <strong>consonant + y</strong>:</li>
+            <li>Change y to i, then add -es</li>
+            <li>baby → bab<strong>ies</strong></li>
+            <li>city → cit<strong>ies</strong></li>
+            <li>fly → fl<strong>ies</strong></li>
+          </ul>
+          <p>But vowel + y just adds s: toys, keys, boys</p>
+        `,
+        questions: [
+          { word: "babies", blank: [3,4,5], options: ["ies","ys"], correct: "ies", meaning: "more than one baby", context: '"The babies are cute."' },
+          { word: "cities", blank: [3,4,5], options: ["ies","ys"], correct: "ies", meaning: "more than one city", context: '"Big cities are busy."' },
+          { word: "flies", blank: [2,3,4], options: ["ies","ys"], correct: "ies", meaning: "more than one fly", context: '"Flies buzz around."' },
+          { word: "stories", blank: [4,5,6], options: ["ies","ys"], correct: "ies", meaning: "more than one story", context: '"Read me stories!"' },
+          { word: "parties", blank: [4,5,6], options: ["ies","ys"], correct: "ies", meaning: "more than one party", context: '"Birthday parties are fun."' },
+          { word: "families", blank: [5,6,7], options: ["ies","ys"], correct: "ies", meaning: "more than one family", context: '"Many families came."' }
+        ]
+      },
+      "ph-f": {
+        name: "ph makes the /f/ sound",
+        hint: "The letters ph together make an /f/ sound",
+        helpContent: `
+          <p>📞 <strong>PH = F Rule:</strong></p>
+          <ul>
+            <li>The letters <strong>ph</strong> make the /f/ sound</li>
+            <li><strong>ph</strong>one sounds like "fone"</li>
+            <li>ele<strong>ph</strong>ant sounds like "elefant"</li>
+            <li>al<strong>ph</strong>abet sounds like "alfabet"</li>
+          </ul>
+          <p>This comes from Greek words!</p>
+        `,
+        questions: [
+          { word: "phone", blank: [0,1], options: ["ph","f"], correct: "ph", meaning: "to call someone", context: '"Answer the phone!"' },
+          { word: "elephant", blank: [3,4], options: ["ph","f"], correct: "ph", meaning: "big grey animal", context: '"The elephant trumpets."' },
+          { word: "photo", blank: [0,1], options: ["ph","f"], correct: "ph", meaning: "a picture", context: '"Take a photo!"' },
+          { word: "alphabet", blank: [2,3], options: ["ph","f"], correct: "ph", meaning: "A to Z", context: '"Learn the alphabet."' },
+          { word: "dolphin", blank: [3,4], options: ["ph","f"], correct: "ph", meaning: "smart sea animal", context: '"The dolphin jumped!"' },
+          { word: "graph", blank: [3,4], options: ["ph","f"], correct: "ph", meaning: "a chart", context: '"Draw a graph."' }
+        ]
+      },
+      "qu": {
+        name: "Q is always followed by U",
+        hint: "In English, Q is always followed by U!",
+        helpContent: `
+          <p>👑 <strong>Q + U Rule:</strong></p>
+          <ul>
+            <li>The letter <strong>Q</strong> is <strong>always</strong> followed by <strong>U</strong></li>
+            <li><strong>qu</strong>een, <strong>qu</strong>iet, <strong>qu</strong>ick</li>
+            <li>They make a /kw/ sound together</li>
+            <li>Never write just "q" alone in English!</li>
+          </ul>
+        `,
+        questions: [
+          { word: "queen", blank: [0,1], options: ["qu","q"], correct: "qu", meaning: "female ruler", context: '"The Queen waved."' },
+          { word: "quiet", blank: [0,1], options: ["qu","q"], correct: "qu", meaning: "not loud", context: '"Please be quiet."' },
+          { word: "quick", blank: [0,1], options: ["qu","q"], correct: "qu", meaning: "fast", context: '"Be quick!"' },
+          { word: "question", blank: [0,1], options: ["qu","q"], correct: "qu", meaning: "asking something", context: '"I have a question."' },
+          { word: "square", blank: [1,2], options: ["qu","q"], correct: "qu", meaning: "four equal sides", context: '"Draw a square."' },
+          { word: "quilt", blank: [0,1], options: ["qu","q"], correct: "qu", meaning: "warm blanket", context: '"Snuggle in the quilt."' }
+        ]
+      },
+      "tion-sion": {
+        name: "-tion and -sion endings",
+        hint: "-tion is more common, -sion after certain letters",
+        helpContent: `
+          <p>📝 <strong>-tion vs -sion:</strong></p>
+          <ul>
+            <li><strong>-tion</strong> is more common: station, nation, action</li>
+            <li><strong>-sion</strong> after l, n, r, s: television, extension</li>
+            <li>Both make a /shun/ sound</li>
+            <li>-sion can also sound like /zhun/: vision, decision</li>
+          </ul>
+        `,
+        questions: [
+          { word: "station", blank: [3,4,5,6], options: ["tion","sion"], correct: "tion", meaning: "train stop", context: '"Meet at the station."' },
+          { word: "television", blank: [6,7,8,9], options: ["sion","tion"], correct: "sion", meaning: "TV", context: '"Watch television."' },
+          { word: "action", blank: [2,3,4,5], options: ["tion","sion"], correct: "tion", meaning: "doing something", context: '"Lights, camera, action!"' },
+          { word: "decision", blank: [4,5,6,7], options: ["sion","tion"], correct: "sion", meaning: "a choice", context: '"Make a decision."' },
+          { word: "question", blank: [4,5,6,7], options: ["tion","sion"], correct: "tion", meaning: "asking", context: '"Good question!"' },
+          { word: "vision", blank: [2,3,4,5], options: ["sion","tion"], correct: "sion", meaning: "sight", context: '"Perfect vision."' }
+        ]
+      },
+      "homophones": {
+        name: "Homophones",
+        hint: "Words that sound the same but have different meanings and spellings",
+        helpContent: `
+          <p>👂 <strong>Homophones:</strong></p>
+          <ul>
+            <li>Words that <strong>sound the same</strong> but are spelled differently</li>
+            <li><strong>their</strong> = belonging to them</li>
+            <li><strong>there</strong> = a place</li>
+            <li><strong>they're</strong> = they are</li>
+            <li><strong>your</strong> = belonging to you</li>
+            <li><strong>you're</strong> = you are</li>
+          </ul>
+        `,
+        questions: [
+          { word: "their", blank: [0,1,2,3,4], options: ["their","there","they're"], correct: "their", meaning: "belonging to them", context: '"It\'s ___ house." (belongs to them)' },
+          { word: "there", blank: [0,1,2,3,4], options: ["their","there","they're"], correct: "there", meaning: "a place", context: '"Look over ___." (a place)' },
+          { word: "your", blank: [0,1,2,3], options: ["your","you're"], correct: "your", meaning: "belonging to you", context: '"Is this ___ book?" (belongs to you)' },
+          { word: "you're", blank: [0,1,2,3,4,5], options: ["your","you're"], correct: "you're", meaning: "you are", context: '"___ amazing!" (you are)' },
+          { word: "to", blank: [0,1], options: ["to","too","two"], correct: "to", meaning: "direction", context: '"Go ___ school." (direction)' },
+          { word: "two", blank: [0,1,2], options: ["to","too","two"], correct: "two", meaning: "the number 2", context: '"I have ___ cats." (number)' }
+        ]
       }
     };
 
-    let currentRule = "ie-ei";
+    let currentRule = "aus-our";
     let currentQuestion = 0;
     let selectedOption = null;
     let results = [];
