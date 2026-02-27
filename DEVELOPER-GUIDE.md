@@ -343,15 +343,42 @@ Comprehensive spelling rules practice with multiple rule categories. Students sw
 | `rule_help` | string | Yes | Detailed explanation (HTML allowed) |
 | `questions` | JSON array | Yes | Array of question objects |
 
-**Rule Categories (Australian English):**
-- `ie-ei` - i before e, except after c
-- `aus-our` - Australian -our spelling (colour, favour)
+**Rule Categories (20 rules, 120 questions total):**
+
+*Australian Spelling:*
+- `aus-our` - Australian -our spelling (colour, favour, neighbour)
 - `aus-ise` - Australian -ise spelling (organise, realise)
-- `aus-re` - Australian -re spelling (centre, metre)
-- `silent` - Silent letters (knight, write, gnome)
-- `soft-c` - Soft c and g (city, giant)
-- `double` - Double letters (running, hopping)
-- `ck-k` - ck vs k (back, bake)
+- `aus-re` - Australian -re spelling (centre, metre, theatre)
+
+*Classic Rules:*
+- `ie-ei` - i before e, except after c (believe, receive)
+- `magic-e` - Magic E makes vowel long (hat→hate, bit→bite)
+- `silent` - Silent letters (knight, write, gnome, thumb)
+- `soft-c` - Soft c and g before e/i/y (city, giant)
+
+*Consonant Rules:*
+- `ck-k` - ck vs k (back vs bake)
+- `tch` - -tch after short vowels (catch, witch)
+- `dge` - -dge after short vowels (badge, fudge)
+- `floss` - FLOSS rule ff/ll/ss/zz (stuff, bell, miss, buzz)
+- `double` - Double consonants before -ing (running, hopping)
+
+*Suffix Rules:*
+- `drop-e` - Drop the E before -ing (make→making)
+- `change-y` - Change Y to I (happy→happier, cry→cried)
+- `ful` - -ful has one L (beautiful, careful)
+
+*Plural Rules:*
+- `plural-es` - Add -es for s/x/z/ch/sh (boxes, buses)
+- `plural-ies` - Change y to -ies (baby→babies)
+
+*Sound Patterns:*
+- `ph-f` - ph makes /f/ sound (phone, elephant)
+- `qu` - Q always with U (queen, quiet)
+- `tion-sion` - -tion vs -sion endings (station, television)
+
+*Homophones:*
+- `homophones` - their/there/they're, your/you're, to/too/two
 
 **Question Structure:**
 ```json
