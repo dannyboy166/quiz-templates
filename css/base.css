@@ -191,6 +191,27 @@ html, body {
   letter-spacing: 0.5px;
 }
 
+/* Subject-specific badge colors */
+.badge-math {
+  background: #2196F3;
+  color: white;
+}
+
+.badge-english {
+  background: #E91E63;
+  color: white;
+}
+
+.badge-science {
+  background: #4CAF50;
+  color: white;
+}
+
+.badge-art {
+  background: #FF9800;
+  color: white;
+}
+
 .question-progress {
   font-size: 14px;
   color: var(--text-secondary);

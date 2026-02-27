@@ -120,7 +120,7 @@
     .image-card {
       background: white;
       border-radius: 16px;
-      padding: 12px;
+      padding: 15px;
       cursor: pointer;
       transition: all 0.2s ease;
       border: 3px solid transparent;
@@ -129,6 +129,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      min-height: 100px;
     }
 
     .image-card:hover {
@@ -164,13 +165,13 @@
     }
 
     .image-card .emoji-img {
-      font-size: 60px;
+      font-size: 80px;
       line-height: 1;
     }
 
     @media (max-width: 600px) {
       .image-card .emoji-img {
-        font-size: 40px;
+        font-size: 55px;
       }
     }
 
@@ -237,17 +238,36 @@
     }
 
     .try-again-btn {
-      background: #FF5722;
+      background: #FF9800;
       color: white;
+    }
+
+    .try-again-btn:hover {
+      background: #F57C00;
+      transform: scale(1.05);
     }
 
     .next-btn {
       background: #4CAF50;
-      color: white;
+      border: none;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s, background 0.2s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     }
 
-    .try-again-btn:hover, .next-btn:hover {
-      transform: scale(1.05);
+    .next-btn:hover {
+      background: #43A047;
+      transform: scale(1.1);
+    }
+
+    .next-btn svg {
+      stroke: white;
     }
 
     /* Celebration */
@@ -374,7 +394,11 @@
       <div class="feedback-message" id="feedback-message"></div>
       <div class="score-display" id="score-display"></div>
       <button class="try-again-btn" id="try-again-btn">Try Again</button>
-      <button class="next-btn" id="next-btn">Next Question</button>
+      <button class="next-btn" id="btn-next" title="Next Question">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </button>
     </div>
   </div>
 
@@ -386,16 +410,16 @@
         prompt: 'Select the images that begin with the m sound.',
         hint: 'Say each picture\'s name out loud. Does it start with "mmm"?',
         images: [
-          { emoji: '&#127936;', name: 'basketball', startsWithSound: false },
-          { emoji: '&#127908;', name: 'microphone', startsWithSound: true },
-          { emoji: '&#128054;', name: 'dog', startsWithSound: false },
-          { emoji: '&#128053;', name: 'monkey', startsWithSound: true },
-          { emoji: '&#128045;', name: 'mouse', startsWithSound: true },
-          { emoji: '&#128506;', name: 'map', startsWithSound: true },
-          { emoji: '&#127822;', name: 'apple', startsWithSound: false },
-          { emoji: '&#127769;', name: 'moon', startsWithSound: true },
-          { emoji: '&#127827;', name: 'strawberry', startsWithSound: false },
-          { emoji: '&#127812;', name: 'mushroom', startsWithSound: true }
+          { emoji: '🏀', name: 'basketball', startsWithSound: false },
+          { emoji: '🎤', name: 'microphone', startsWithSound: true },
+          { emoji: '🐶', name: 'dog', startsWithSound: false },
+          { emoji: '🐵', name: 'monkey', startsWithSound: true },
+          { emoji: '🐭', name: 'mouse', startsWithSound: true },
+          { emoji: '🗺️', name: 'map', startsWithSound: true },
+          { emoji: '🍎', name: 'apple', startsWithSound: false },
+          { emoji: '🌙', name: 'moon', startsWithSound: true },
+          { emoji: '🍓', name: 'strawberry', startsWithSound: false },
+          { emoji: '🍄', name: 'mushroom', startsWithSound: true }
         ]
       },
       {
@@ -403,16 +427,16 @@
         prompt: 'Select the images that begin with the s sound.',
         hint: 'Say each picture\'s name out loud. Does it start with "sss"?',
         images: [
-          { emoji: '&#9728;', name: 'sun', startsWithSound: true },
-          { emoji: '&#128013;', name: 'snake', startsWithSound: true },
-          { emoji: '&#127794;', name: 'tree', startsWithSound: false },
-          { emoji: '&#11088;', name: 'star', startsWithSound: true },
-          { emoji: '&#128056;', name: 'frog', startsWithSound: false },
-          { emoji: '&#129409;', name: 'sock', startsWithSound: true },
-          { emoji: '&#127817;', name: 'banana', startsWithSound: false },
-          { emoji: '&#128375;', name: 'spider', startsWithSound: true },
-          { emoji: '&#128008;', name: 'cat', startsWithSound: false },
-          { emoji: '&#9924;', name: 'snowman', startsWithSound: true }
+          { emoji: '☀️', name: 'sun', startsWithSound: true },
+          { emoji: '🐍', name: 'snake', startsWithSound: true },
+          { emoji: '🌲', name: 'tree', startsWithSound: false },
+          { emoji: '⭐', name: 'star', startsWithSound: true },
+          { emoji: '🐸', name: 'frog', startsWithSound: false },
+          { emoji: '🧦', name: 'sock', startsWithSound: true },
+          { emoji: '🍌', name: 'banana', startsWithSound: false },
+          { emoji: '🕷️', name: 'spider', startsWithSound: true },
+          { emoji: '🐱', name: 'cat', startsWithSound: false },
+          { emoji: '⛄', name: 'snowman', startsWithSound: true }
         ]
       },
       {
@@ -420,16 +444,16 @@
         prompt: 'Select the images that begin with the b sound.',
         hint: 'Say each picture\'s name out loud. Does it start with "buh"?',
         images: [
-          { emoji: '&#127880;', name: 'balloon', startsWithSound: true },
-          { emoji: '&#128038;', name: 'bird', startsWithSound: true },
-          { emoji: '&#127822;', name: 'apple', startsWithSound: false },
-          { emoji: '&#128218;', name: 'book', startsWithSound: true },
-          { emoji: '&#128704;', name: 'bed', startsWithSound: true },
-          { emoji: '&#127825;', name: 'cherry', startsWithSound: false },
-          { emoji: '&#128052;', name: 'horse', startsWithSound: false },
-          { emoji: '&#129419;', name: 'butterfly', startsWithSound: true },
-          { emoji: '&#127936;', name: 'basketball', startsWithSound: true },
-          { emoji: '&#127968;', name: 'house', startsWithSound: false }
+          { emoji: '🎈', name: 'balloon', startsWithSound: true },
+          { emoji: '🐦', name: 'bird', startsWithSound: true },
+          { emoji: '🍎', name: 'apple', startsWithSound: false },
+          { emoji: '📖', name: 'book', startsWithSound: true },
+          { emoji: '🛏️', name: 'bed', startsWithSound: true },
+          { emoji: '🍒', name: 'cherry', startsWithSound: false },
+          { emoji: '🐴', name: 'horse', startsWithSound: false },
+          { emoji: '🦋', name: 'butterfly', startsWithSound: true },
+          { emoji: '🏀', name: 'basketball', startsWithSound: true },
+          { emoji: '🏠', name: 'house', startsWithSound: false }
         ]
       }
     ];
@@ -446,7 +470,7 @@
     const feedbackMessage = document.getElementById('feedback-message');
     const scoreDisplay = document.getElementById('score-display');
     const tryAgainBtn = document.getElementById('try-again-btn');
-    const nextBtn = document.getElementById('next-btn');
+    const nextBtn = document.getElementById('btn-next');
     const questionText = document.getElementById('question-text');
     const hintText = document.getElementById('hint-text');
     const progressFill = document.getElementById('progress-fill');
@@ -537,7 +561,7 @@
         feedbackMessage.textContent = 'Perfect! Well done!';
         feedbackMessage.className = 'feedback-message correct';
         tryAgainBtn.style.display = 'none';
-        nextBtn.style.display = 'inline-block';
+        nextBtn.style.display = 'flex';
 
         // Celebration
         imageGrid.classList.add('celebrating');
@@ -546,7 +570,7 @@
         feedbackMessage.textContent = 'Not quite right!';
         feedbackMessage.className = 'feedback-message incorrect';
         tryAgainBtn.style.display = 'inline-block';
-        nextBtn.style.display = 'inline-block';
+        nextBtn.style.display = 'flex';
 
         scoreDisplay.textContent = `You got ${correctCount} of ${correctIndices.length} correct.`;
       }

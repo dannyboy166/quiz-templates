@@ -201,6 +201,54 @@ hint: Say each picture's name out loud. Does it start with "mmm"?
 
 ---
 
+### 9. Line Match (`line-match`)
+
+Draw lines to connect matching pairs (shapes to sides, animals to sounds, numbers to words, etc.).
+
+| Column | Type | Required | Description |
+|--------|------|----------|-------------|
+| `template_type` | string | Yes | `"line-match"` |
+| `question_text` | string | Yes | Instructions for the matching |
+| `left_items` | JSON array | Yes | Items on left side with match IDs |
+| `right_items` | JSON array | Yes | Items on right side |
+| `hint` | string | No | Hint text |
+
+**Left Items Structure:**
+```json
+[
+  {"id": "triangle", "type": "shape", "shape": "triangle", "color": "#CDDC39", "match": "3"},
+  {"id": "dog", "type": "emoji", "emoji": "🐕", "match": "woof"},
+  {"id": "n1", "type": "number", "text": "1", "match": "one"}
+]
+```
+
+**Right Items Structure:**
+```json
+[
+  {"id": "3", "type": "label", "text": "3 sides"},
+  {"id": "woof", "type": "label", "text": "Woof!"}
+]
+```
+
+**Item Types:**
+- `shape`: SVG shape (triangle, square, rectangle, oval, semicircle)
+- `emoji`: Emoji character
+- `number`: Number display
+- `label`: Text label (typically for right side)
+
+**Example Excel Row:**
+```
+template_type: line-match
+question_text: Match each animal to its sound
+left_items: [{"id":"dog","type":"emoji","emoji":"🐕","match":"woof"},{"id":"cat","type":"emoji","emoji":"🐱","match":"meow"}]
+right_items: [{"id":"woof","type":"label","text":"Woof!"},{"id":"meow","type":"label","text":"Meow!"}]
+hint: Think about what sound each animal makes!
+```
+
+**Note:** The `match` field in left_items must correspond to an `id` in right_items.
+
+---
+
 ## Suggested Excel Import Structure
 
 ### Option A: Single Table (Simple)
@@ -290,7 +338,8 @@ public abstract class QuestionComponentBase : ComponentBase
 ├── SpellingQuestion.razor
 ├── WordMatchQuestion.razor
 ├── NumberOrderQuestion.razor
-└── SoundSelectQuestion.razor
+├── SoundSelectQuestion.razor
+└── LineMatchQuestion.razor
 ```
 
 ### 3. Dynamic Component Loader
@@ -347,6 +396,7 @@ public class QuestionImportService
 | `demo-word-match.html` | `word-match` | Inline styles |
 | `demo-number-order.html` | `number-order` | Inline styles |
 | `demo-sound-select.html` | `sound-select` | Inline styles |
+| `demo-line-match.html` | `line-match` | Inline styles |
 
 ---
 
@@ -365,6 +415,54 @@ All templates use consistent styling:
 | Primary button | `#000000` |
 | Border radius | `12px` (cards), `8px` (buttons) |
 | Font | System fonts |
+
+---
+
+## Standard Template Structure
+
+Every template should include these elements for consistency:
+
+### HTML Structure
+```
+├── Header
+│   ├── Back button (onclick → index.html)
+│   ├── User profile (avatar + progress bar)
+│   └── Help button (id="header-help", wired to modal)
+├── Question Meta
+│   ├── Badge (class="badge badge-math" or "badge badge-english")
+│   └── Progress text ("Question X of Y")
+├── Question Title
+│   ├── Read-aloud button
+│   └── H1 with question text
+├── Help Bar
+│   ├── Read Aloud (id="btn-read-aloud")
+│   ├── Get Help (id="btn-get-help")
+│   └── Get Hint (id="btn-get-hint")
+├── Help Modal (id="help-modal")
+├── Hint Modal (id="hint-modal")
+├── Main Content Area (template-specific)
+├── Check Answer Button (class="btn-check-answer")
+└── Feedback Section
+    ├── Feedback badge (class="feedback-badge correct/incorrect")
+    ├── Try Again button (class="btn-try-again", orange #FF9800)
+    └── Next button (class="btn-next", green #4CAF50, circular)
+```
+
+### Button Colors
+- **Check Answer**: Black `#333`
+- **Try Again**: Orange `#FF9800`, hover `#F57C00`
+- **Next**: Green `#4CAF50`, circular 48px, hover `#43A047`
+
+### Badge Classes (in base.css)
+- `.badge-math` - Blue #2196F3
+- `.badge-english` - Pink #E91E63
+- `.badge-science` - Green #4CAF50
+- `.badge-art` - Orange #FF9800
+
+### Background Colors by Subject
+- Default (Math): Yellow `#FAE38E`
+- English/Phonics: Pink `#F2ADE2`
+- Some templates: Sky Blue `#87CEEB`
 
 ---
 
