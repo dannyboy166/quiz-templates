@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Word Sort - Quiz Template</title>
+  <link rel="stylesheet" href="css/base.css">
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+  <style>
+    body {
+      background-color: #F2ADE2;
+    }
+
+    .quiz-container {
+      background: #F2ADE2;
+    }
+
+    /* Override header for pink theme */
+    .quiz-header {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-back, .btn-help {
+      background: white;
+    }
+
+    /* Question title */
+    .question-title h1 {
+      color: #333;
+      font-size: 32px;
+    }
+
+    /* Help bar override */
+    .help-bar {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Main layout */
+    .sort-layout {
+      display: flex;
+      gap: 30px;
+      padding: 20px;
+      align-items: flex-start;
+    }
+
+    @media (max-width: 800px) {
+      .sort-layout {
+        flex-direction: column;
+      }
+    }
+
+    /* Word bank */
+    .word-bank {
+      flex: 1;
+      max-width: 400px;
+    }
+
+    .word-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      list-style: disc;
+      padding-left: 25px;
+    }
+
+    .word-list li {
+      width: calc(33% - 10px);
+      min-width: 100px;
+    }
+
+    .word-item {
+      font-size: 24px;
+      font-weight: 500;
+      color: #333;
+      cursor: grab;
+      padding: 8px 12px;
+      border-radius: 8px;
+      transition: all 0.2s;
+      display: inline-block;
+      user-select: none;
+    }
+
+    .word-item:hover {
+      background: rgba(255, 255, 255, 0.5);
+      transform: scale(1.05);
+    }
+
+    .word-item.dragging {
+      opacity: 0.5;
+      cursor: grabbing;
+    }
+
+    .word-item.placed {
+      opacity: 0.3;
+      text-decoration: line-through;
+      cursor: not-allowed;
+    }
+
+    /* Sort lists container */
+    .sort-lists {
+      display: flex;
+      gap: 20px;
+      flex: 1;
+    }
+
+    /* Notebook style list */
+    .notebook {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      width: 200px;
+      min-height: 400px;
+      box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+      position: relative;
+      border: 1px solid #ddd;
+    }
+
+    .notebook::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 15px;
+      width: 30px;
+      height: 30px;
+      background: linear-gradient(135deg, transparent 50%, #e0e0e0 50%);
+      border-bottom-left-radius: 8px;
+    }
+
+    .notebook-header {
+      font-size: 28px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 10px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #333;
+    }
+
+    .notebook-example {
+      font-size: 18px;
+      color: #999;
+      font-style: italic;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .notebook-lines {
+      position: relative;
+    }
+
+    .notebook-line {
+      height: 40px;
+      border-bottom: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      padding: 0 5px;
+      transition: background 0.2s;
+    }
+
+    .notebook-line.highlight {
+      background: rgba(139, 195, 74, 0.2);
+    }
+
+    .notebook-line .sorted-word {
+      font-size: 20px;
+      color: #333;
+      cursor: pointer;
+    }
+
+    .notebook-line .sorted-word:hover {
+      color: #F44336;
+      text-decoration: line-through;
+    }
+
+    /* Drop zone styling */
+    .notebook.drag-over {
+      box-shadow: 0 0 0 3px #8BC34A;
+    }
+
+    /* Modal styles */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      max-width: 400px;
+      margin: 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal h2 {
+      margin: 0 0 15px 0;
+      font-size: 22px;
+    }
+
+    .modal p {
+      margin: 0 0 10px 0;
+      line-height: 1.6;
+    }
+
+    .modal-close {
+      margin-top: 20px;
+      padding: 10px 24px;
+      background: #333;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* Help bar clickable */
+    .help-item {
+      cursor: pointer;
+      padding: 8px 12px;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+
+    .help-item:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    /* Feedback */
+    .feedback {
+      margin-top: 15px;
+    }
+
+    .btn-try-again {
+      background: #FF9800;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 25px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-try-again:hover {
+      background: #F57C00;
+      transform: scale(1.05);
+    }
+
+    .btn-next {
+      background: #4CAF50;
+      border: none;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s, background 0.2s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    .btn-next:hover {
+      background: #43A047;
+      transform: scale(1.1);
+    }
+
+    .btn-next svg {
+      stroke: white;
+    }
+
+    /* Correct/incorrect highlighting */
+    .notebook-line.correct .sorted-word {
+      color: #4CAF50;
+    }
+
+    .notebook-line.incorrect .sorted-word {
+      color: #F44336;
+      text-decoration: line-through;
+    }
+
+    /* Check answer button */
+    .btn-check-answer {
+      display: block;
+      margin: 20px auto;
+    }
+
+    /* Drag ghost */
+    .drag-ghost {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      font-size: 24px;
+      font-weight: 500;
+      background: white;
+      padding: 8px 16px;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+    <!-- Header -->
+    <header class="quiz-header">
+      <button class="btn-back" onclick="window.location='index.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Back to Home
+      </button>
+
+      <div class="user-profile">
+        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=student" alt="Student Avatar" class="user-avatar">
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" id="progress-fill" style="width: 10%"></div>
+        </div>
+      </div>
+
+      <button class="btn-help" id="header-help">
+        <lottie-player
+          id="help-lottie"
+          background="transparent"
+          speed="1"
+          style="width: 28px; height: 28px;"
+          loop
+          autoplay
+        ></lottie-player>
+        Help
+      </button>
+    </header>
+
+    <!-- Question Meta -->
+    <div class="question-meta">
+      <span class="badge badge-english">ENGLISH</span>
+      <span class="question-progress" id="question-progress">Question 1 of 10</span>
+    </div>
+
+    <!-- Question Title -->
+    <div class="question-title">
+      <button class="btn-read-aloud" id="btn-read-title" title="Read aloud">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 6c2.5 0 4.5 2 4.5 4.5S14.5 15 12 15"/>
+          <path d="M17 5c3 2 5 5 5 7s-2 5-5 7"/>
+          <path d="M9.5 9h-5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h5l5 4V5l-5 4z"/>
+        </svg>
+      </button>
+      <h1 id="question-text">Drag the words onto the correct list</h1>
+    </div>
+
+    <!-- Help Bar -->
+    <div class="help-bar">
+      <div class="help-item" id="btn-read-aloud">
+        <span>Read Aloud</span>
+        <span class="help-item-icon">🗣</span>
+      </div>
+      <span class="help-item-line"></span>
+      <div class="help-item" id="btn-get-help">
+        <span>Get Help</span>
+        <span class="help-item-icon">?</span>
+      </div>
+      <span class="help-item-line"></span>
+      <div class="help-item" id="btn-get-hint">
+        <span>Get Hint</span>
+        <span class="help-item-icon">+</span>
+      </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div class="modal-overlay" id="help-modal">
+      <div class="modal">
+        <div style="font-size: 40px; text-align: center; margin-bottom: 10px;">📝</div>
+        <h2 style="text-align: center;">Word Sorting!</h2>
+        <div style="background: #FFF9E6; padding: 15px; border-radius: 12px; margin: 15px 0;">
+          <p style="margin: 8px 0;"><strong>👀 Look</strong> at the word pattern</p>
+          <p style="margin: 8px 0;"><strong>🎯 Drag</strong> each word to the right list</p>
+          <p style="margin: 8px 0;"><strong>❌ Click</strong> a word to remove it</p>
+        </div>
+        <p style="text-align: center; font-size: 15px;">Sort all the words correctly!</p>
+        <button class="modal-close" id="close-help">Let's go! ⭐</button>
+      </div>
+    </div>
+
+    <!-- Hint Modal -->
+    <div class="modal-overlay" id="hint-modal">
+      <div class="modal">
+        <div style="font-size: 40px; text-align: center; margin-bottom: 10px;">💡</div>
+        <h2 style="text-align: center;" id="hint-title">Here's a hint!</h2>
+        <p style="text-align: center; font-size: 18px; margin: 20px 0;" id="hint-text">Look at where "st" appears in each word - at the start or at the end?</p>
+        <button class="modal-close" id="close-hint">Thanks! 👍</button>
+      </div>
+    </div>
+
+    <!-- Main Layout -->
+    <div class="sort-layout">
+      <!-- Word Bank -->
+      <div class="word-bank">
+        <ul class="word-list" id="word-list">
+          <!-- Generated by JS -->
+        </ul>
+      </div>
+
+      <!-- Sort Lists -->
+      <div class="sort-lists" id="sort-lists">
+        <!-- Generated by JS -->
+      </div>
+    </div>
+
+    <!-- Check Answer Button -->
+    <button class="btn-check-answer" id="btn-check">Check Answer</button>
+
+    <!-- Feedback -->
+    <div class="feedback" id="feedback" style="display: none;">
+      <span class="feedback-badge" id="feedback-badge"></span>
+      <button class="btn-try-again" id="btn-try-again" style="display: none;">Try Again 🔄</button>
+      <button class="btn-next" id="btn-next" style="display: none;" title="Next Question">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Question data
+    const questions = [
+      {
+        prompt: 'Drag the words onto the correct list',
+        hint: 'Look at where "st" appears in each word - at the start or at the end?',
+        words: ['Lost', 'Just', 'Star', 'Stamp', 'Stay', 'Dentist', 'Stop', 'List', 'Stand', 'Storm', 'Toast', 'Nest', 'Story', 'Best'],
+        categories: [
+          { id: 'st-start', header: 'st__', example: 'stop', pattern: /^st/i },
+          { id: 'st-end', header: '__st', example: 'nest', pattern: /st$/i }
+        ]
+      },
+      {
+        prompt: 'Sort the words by their ending sound',
+        hint: 'Listen to how each word ends - does it end with "ing" or "ed"?',
+        words: ['Walking', 'Jumped', 'Running', 'Played', 'Singing', 'Wanted', 'Dancing', 'Helped', 'Swimming', 'Called'],
+        categories: [
+          { id: 'ing', header: '__ing', example: 'walking', pattern: /ing$/i },
+          { id: 'ed', header: '__ed', example: 'jumped', pattern: /ed$/i }
+        ]
+      },
+      {
+        prompt: 'Sort the words by their beginning blend',
+        hint: 'Look at the first two letters of each word!',
+        words: ['Bring', 'Crown', 'Brown', 'Crab', 'Brush', 'Crisp', 'Brick', 'Cream', 'Bread', 'Cross'],
+        categories: [
+          { id: 'br', header: 'br__', example: 'bring', pattern: /^br/i },
+          { id: 'cr', header: 'cr__', example: 'crown', pattern: /^cr/i }
+        ]
+      }
+    ];
+
+    // Game state
+    let currentQuestion = 0;
+    let sortedWords = {}; // { categoryId: [words] }
+    let draggedWord = null;
+    let ghostElement = null;
+
+    // DOM elements
+    const wordListEl = document.getElementById('word-list');
+    const sortListsEl = document.getElementById('sort-lists');
+    const questionText = document.getElementById('question-text');
+    const hintText = document.getElementById('hint-text');
+    const feedback = document.getElementById('feedback');
+    const feedbackBadge = document.getElementById('feedback-badge');
+    const btnCheck = document.getElementById('btn-check');
+    const btnTryAgain = document.getElementById('btn-try-again');
+    const btnNext = document.getElementById('btn-next');
+    const progressFill = document.getElementById('progress-fill');
+    const questionProgress = document.getElementById('question-progress');
+
+    // Load question
+    function loadQuestion() {
+      const q = questions[currentQuestion];
+      questionText.textContent = q.prompt;
+      hintText.textContent = q.hint;
+      questionProgress.textContent = `Question ${currentQuestion + 1} of ${questions.length}`;
+      progressFill.style.width = `${(currentQuestion / questions.length) * 100}%`;
+
+      // Reset state
+      sortedWords = {};
+      q.categories.forEach(cat => sortedWords[cat.id] = []);
+      feedback.style.display = 'none';
+      btnCheck.style.display = 'block';
+      btnTryAgain.style.display = 'none';
+      btnNext.style.display = 'none';
+
+      // Shuffle words
+      const shuffledWords = [...q.words].sort(() => Math.random() - 0.5);
+
+      // Generate word bank
+      wordListEl.innerHTML = '';
+      shuffledWords.forEach(word => {
+        const li = document.createElement('li');
+        const span = document.createElement('span');
+        span.className = 'word-item';
+        span.textContent = word;
+        span.dataset.word = word;
+        span.draggable = true;
+
+        // Drag events
+        span.addEventListener('dragstart', onDragStart);
+        span.addEventListener('dragend', onDragEnd);
+
+        // Touch events
+        span.addEventListener('touchstart', onTouchStart, { passive: false });
+        span.addEventListener('touchmove', onTouchMove, { passive: false });
+        span.addEventListener('touchend', onTouchEnd);
+
+        li.appendChild(span);
+        wordListEl.appendChild(li);
+      });
+
+      // Generate category notebooks
+      sortListsEl.innerHTML = '';
+      q.categories.forEach(cat => {
+        const notebook = document.createElement('div');
+        notebook.className = 'notebook';
+        notebook.dataset.category = cat.id;
+
+        notebook.innerHTML = `
+          <div class="notebook-header">${cat.header}</div>
+          <div class="notebook-example">${cat.example}</div>
+          <div class="notebook-lines">
+            ${Array(8).fill('<div class="notebook-line"></div>').join('')}
+          </div>
+        `;
+
+        // Drop events
+        notebook.addEventListener('dragover', onDragOver);
+        notebook.addEventListener('dragleave', onDragLeave);
+        notebook.addEventListener('drop', onDrop);
+
+        sortListsEl.appendChild(notebook);
+      });
+    }
+
+    // Drag and Drop handlers
+    function onDragStart(e) {
+      if (e.target.classList.contains('placed')) {
+        e.preventDefault();
+        return;
+      }
+      draggedWord = e.target.dataset.word;
+      e.target.classList.add('dragging');
+      e.dataTransfer.setData('text/plain', draggedWord);
+    }
+
+    function onDragEnd(e) {
+      e.target.classList.remove('dragging');
+      document.querySelectorAll('.notebook').forEach(n => n.classList.remove('drag-over'));
+    }
+
+    function onDragOver(e) {
+      e.preventDefault();
+      e.currentTarget.classList.add('drag-over');
+    }
+
+    function onDragLeave(e) {
+      e.currentTarget.classList.remove('drag-over');
+    }
+
+    function onDrop(e) {
+      e.preventDefault();
+      const notebook = e.currentTarget;
+      notebook.classList.remove('drag-over');
+
+      const word = e.dataTransfer.getData('text/plain');
+      const categoryId = notebook.dataset.category;
+
+      placeWord(word, categoryId);
+    }
+
+    // Touch handlers
+    function onTouchStart(e) {
+      const target = e.target.closest('.word-item');
+      if (!target || target.classList.contains('placed')) return;
+
+      e.preventDefault();
+      draggedWord = target.dataset.word;
+      target.classList.add('dragging');
+
+      // Create ghost
+      ghostElement = document.createElement('div');
+      ghostElement.className = 'drag-ghost';
+      ghostElement.textContent = draggedWord;
+      document.body.appendChild(ghostElement);
+      updateGhostPosition(e.touches[0]);
+    }
+
+    function onTouchMove(e) {
+      if (!ghostElement) return;
+      e.preventDefault();
+      updateGhostPosition(e.touches[0]);
+
+      // Highlight notebook under touch
+      const touch = e.touches[0];
+      document.querySelectorAll('.notebook').forEach(notebook => {
+        const rect = notebook.getBoundingClientRect();
+        if (touch.clientX >= rect.left && touch.clientX <= rect.right &&
+            touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+          notebook.classList.add('drag-over');
+        } else {
+          notebook.classList.remove('drag-over');
+        }
+      });
+    }
+
+    function onTouchEnd(e) {
+      if (!draggedWord) return;
+
+      const touch = e.changedTouches[0];
+      let targetNotebook = null;
+
+      document.querySelectorAll('.notebook').forEach(notebook => {
+        const rect = notebook.getBoundingClientRect();
+        if (touch.clientX >= rect.left && touch.clientX <= rect.right &&
+            touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+          targetNotebook = notebook;
+        }
+        notebook.classList.remove('drag-over');
+      });
+
+      if (targetNotebook) {
+        placeWord(draggedWord, targetNotebook.dataset.category);
+      }
+
+      // Cleanup
+      document.querySelectorAll('.word-item.dragging').forEach(el => el.classList.remove('dragging'));
+      if (ghostElement) {
+        ghostElement.remove();
+        ghostElement = null;
+      }
+      draggedWord = null;
+    }
+
+    function updateGhostPosition(touch) {
+      if (ghostElement) {
+        ghostElement.style.left = (touch.clientX - 40) + 'px';
+        ghostElement.style.top = (touch.clientY - 20) + 'px';
+      }
+    }
+
+    // Place word in category
+    function placeWord(word, categoryId) {
+      // Remove from any existing category
+      Object.keys(sortedWords).forEach(catId => {
+        sortedWords[catId] = sortedWords[catId].filter(w => w !== word);
+      });
+
+      // Add to new category
+      sortedWords[categoryId].push(word);
+
+      // Update UI
+      updateNotebooks();
+      updateWordBank();
+    }
+
+    // Remove word from category
+    function removeWord(word, categoryId) {
+      sortedWords[categoryId] = sortedWords[categoryId].filter(w => w !== word);
+      updateNotebooks();
+      updateWordBank();
+    }
+
+    // Update notebook displays
+    function updateNotebooks() {
+      document.querySelectorAll('.notebook').forEach(notebook => {
+        const categoryId = notebook.dataset.category;
+        const words = sortedWords[categoryId] || [];
+        const lines = notebook.querySelectorAll('.notebook-line');
+
+        lines.forEach((line, i) => {
+          line.innerHTML = '';
+          line.classList.remove('correct', 'incorrect');
+          if (words[i]) {
+            const wordSpan = document.createElement('span');
+            wordSpan.className = 'sorted-word';
+            wordSpan.textContent = words[i];
+            wordSpan.addEventListener('click', () => removeWord(words[i], categoryId));
+            line.appendChild(wordSpan);
+          }
+        });
+      });
+    }
+
+    // Update word bank (mark placed words)
+    function updateWordBank() {
+      const allPlaced = Object.values(sortedWords).flat();
+
+      document.querySelectorAll('.word-item').forEach(item => {
+        if (allPlaced.includes(item.dataset.word)) {
+          item.classList.add('placed');
+        } else {
+          item.classList.remove('placed');
+        }
+      });
+    }
+
+    // Check answer
+    btnCheck.addEventListener('click', () => {
+      const q = questions[currentQuestion];
+      let correctCount = 0;
+      let totalWords = 0;
+
+      // Check each category
+      q.categories.forEach(cat => {
+        const words = sortedWords[cat.id] || [];
+        const notebook = document.querySelector(`.notebook[data-category="${cat.id}"]`);
+        const lines = notebook.querySelectorAll('.notebook-line');
+
+        words.forEach((word, i) => {
+          totalWords++;
+          const isCorrect = cat.pattern.test(word);
+          if (isCorrect) {
+            correctCount++;
+            lines[i].classList.add('correct');
+          } else {
+            lines[i].classList.add('incorrect');
+          }
+        });
+      });
+
+      // Show feedback
+      feedback.style.display = 'flex';
+      feedbackBadge.classList.remove('correct', 'incorrect');
+
+      const allPlaced = Object.values(sortedWords).flat();
+      const allCorrect = correctCount === totalWords && totalWords === q.words.length;
+
+      if (allCorrect) {
+        feedbackBadge.classList.add('correct');
+        feedbackBadge.innerHTML = '🎉 Perfect! All words sorted correctly!';
+        btnCheck.style.display = 'none';
+        btnTryAgain.style.display = 'none';
+        btnNext.style.display = 'flex';
+      } else if (totalWords < q.words.length) {
+        feedbackBadge.classList.add('incorrect');
+        feedbackBadge.innerHTML = `📝 ${allPlaced.length}/${q.words.length} words placed. Keep going!`;
+        btnTryAgain.style.display = 'none';
+      } else {
+        feedbackBadge.classList.add('incorrect');
+        feedbackBadge.innerHTML = `💪 ${correctCount}/${totalWords} correct - try again!`;
+        btnTryAgain.style.display = 'inline-block';
+      }
+    });
+
+    // Try again
+    btnTryAgain.addEventListener('click', () => {
+      // Reset sorted words but keep current question
+      const q = questions[currentQuestion];
+      sortedWords = {};
+      q.categories.forEach(cat => sortedWords[cat.id] = []);
+      updateNotebooks();
+      updateWordBank();
+      feedback.style.display = 'none';
+      btnTryAgain.style.display = 'none';
+
+      // Remove correct/incorrect classes
+      document.querySelectorAll('.notebook-line').forEach(line => {
+        line.classList.remove('correct', 'incorrect');
+      });
+    });
+
+    // Next question
+    btnNext.addEventListener('click', () => {
+      currentQuestion++;
+      if (currentQuestion < questions.length) {
+        loadQuestion();
+      } else {
+        // Quiz complete
+        sortListsEl.innerHTML = `
+          <div style="text-align: center; padding: 60px 20px; background: white; border-radius: 16px; width: 100%;">
+            <div style="font-size: 80px; margin-bottom: 20px;">🎉</div>
+            <h2 style="font-size: 32px; margin-bottom: 15px;">Quiz Complete!</h2>
+            <p style="font-size: 18px; color: #666; margin-bottom: 30px;">Great job sorting words!</p>
+            <button onclick="window.location='index.html'" style="padding: 15px 40px; background: black; color: white; border: none; border-radius: 25px; font-size: 18px; cursor: pointer;">Back to Home</button>
+          </div>
+        `;
+        wordListEl.innerHTML = '';
+        btnCheck.style.display = 'none';
+        feedback.style.display = 'none';
+        progressFill.style.width = '100%';
+      }
+    });
+
+    // Read Aloud
+    function readQuestion() {
+      speechSynthesis.cancel();
+      const q = questions[currentQuestion];
+      const utterance = new SpeechSynthesisUtterance(q.prompt);
+      utterance.rate = 0.9;
+      speechSynthesis.speak(utterance);
+    }
+
+    document.getElementById('btn-read-aloud').addEventListener('click', readQuestion);
+    document.getElementById('btn-read-title').addEventListener('click', readQuestion);
+
+    // Help Modal
+    const helpModal = document.getElementById('help-modal');
+    document.getElementById('btn-get-help').addEventListener('click', () => helpModal.classList.add('active'));
+    document.getElementById('header-help').addEventListener('click', () => helpModal.classList.add('active'));
+    document.getElementById('close-help').addEventListener('click', () => helpModal.classList.remove('active'));
+    helpModal.addEventListener('click', (e) => {
+      if (e.target === helpModal) helpModal.classList.remove('active');
+    });
+
+    // Hint Modal
+    const hintModal = document.getElementById('hint-modal');
+    document.getElementById('btn-get-hint').addEventListener('click', () => hintModal.classList.add('active'));
+    document.getElementById('close-hint').addEventListener('click', () => hintModal.classList.remove('active'));
+    hintModal.addEventListener('click', (e) => {
+      if (e.target === hintModal) hintModal.classList.remove('active');
+    });
+
+    // Load Lottie
+    const helpLottie = document.getElementById('help-lottie');
+    const lottieData = {"v":"5.4.4","fr":60,"ip":0,"op":132,"w":100,"h":100,"nm":"Question 2","assets":[],"layers":[{"ind":1,"ty":4,"nm":"? Outlines","sr":1,"ks":{"o":{"a":0,"k":100},"r":{"a":0,"k":0},"p":{"a":0,"k":[50.713,49.149,0]},"a":{"a":0,"k":[-0.214,-10.242,0]},"s":{"a":1,"k":[{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":61,"s":[200,200,100],"e":[210,210,100]},{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":71,"s":[210,210,100],"e":[200,200,100]},{"t":80}]}},"ao":0,"shapes":[{"ty":"gr","it":[{"ind":0,"ty":"sh","ks":{"a":0,"k":{"i":[[0,0],[0,0],[0,0],[0,3.203],[4.23,0],[0.242,-3.897],[0,0],[-1.601,0],[0,-1.541],[1.692,0],[0,0]],"o":[[0,0],[0,0],[3.565,-0.483],[0,-3.988],[-4.592,0],[0,0],[0.121,-1.45],[1.601,0],[0,1.662],[0,0],[0,0]],"v":[[-2.556,-6.617],[1.16,-6.617],[1.311,-8.369],[7.142,-14.17],[-0.199,-20.816],[-7.571,-14.351],[-2.828,-14.351],[-0.048,-16.738],[2.61,-14.17],[-0.381,-11.541],[-2.858,-11.541]],"c":true}},"nm":"?"},{"ind":1,"ty":"sh","ks":{"a":0,"k":{"i":[[-1.42,0],[0,1.45],[1.45,0],[0,-1.45]],"o":[[1.45,0],[0,-1.45],[-1.42,0],[0,1.45]],"v":[[-0.834,0.332],[1.825,-2.206],[-0.834,-4.743],[-3.462,-2.206]],"c":true}},"nm":"?"},{"ty":"mm","mm":1,"nm":"Merge Paths 1"},{"ty":"fl","c":{"a":0,"k":[1,1,1,1]},"o":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":61,"s":[0],"e":[100]},{"t":71}]},"r":1,"nm":"Fill 1"},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":0},"o":{"a":0,"k":100},"sk":{"a":0,"k":0},"sa":{"a":0,"k":0},"nm":"Transform"}],"nm":"?"},{"ty":"tm","s":{"a":0,"k":0},"e":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":37,"s":[0],"e":[100]},{"t":61}]},"o":{"a":0,"k":0},"m":1,"nm":"Trim Paths 1"},{"ty":"st","c":{"a":0,"k":[1,1,1,1]},"o":{"a":0,"k":100},"w":{"a":0,"k":1},"lc":1,"lj":1,"ml":4,"nm":"Stroke 1"}],"ip":0,"op":132,"st":0},{"ind":3,"ty":3,"nm":"▽ Group 6","sr":1,"ks":{"o":{"a":0,"k":100},"r":{"a":0,"k":0},"p":{"a":0,"k":[50,50,0]},"a":{"a":0,"k":[42,42,0]},"s":{"a":0,"k":[100,100,100]}},"ao":0,"ip":0,"op":132,"st":0},{"ind":4,"ty":4,"nm":"Rectangle 6 Copy","parent":3,"sr":1,"ks":{"o":{"a":0,"k":100},"r":{"a":0,"k":0},"p":{"a":0,"k":[42,42,0]},"a":{"a":0,"k":[0,0,0]},"s":{"a":1,"k":[{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":21,"s":[100,100,100],"e":[110,110,100]},{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":29,"s":[110,110,100],"e":[100,100,100]},{"t":36}]}},"ao":0,"shapes":[{"ty":"gr","it":[{"ty":"rc","d":1,"s":{"a":0,"k":[42,42]},"p":{"a":0,"k":[0,0]},"r":{"a":0,"k":21},"nm":"Rectangle Path 1"},{"ty":"tm","s":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":0,"s":[0],"e":[100]},{"t":22}]},"e":{"a":0,"k":0},"o":{"a":0,"k":-90},"m":1,"nm":"Trim Paths 1"},{"ty":"st","c":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":13,"s":[0.74,0.729,0.709,1],"e":[0.961,0.694,0.196,1]},{"t":22}]},"o":{"a":0,"k":100},"w":{"a":0,"k":2},"lc":2,"lj":1,"ml":4,"nm":"Stroke 1"},{"ty":"fl","c":{"a":0,"k":[0.953,0.691,0.256,1]},"o":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":21,"s":[1],"e":[100]},{"t":26}]},"r":1,"nm":"Fill 1"},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[200,200]},"r":{"a":0,"k":0},"o":{"a":0,"k":100},"sk":{"a":0,"k":0},"sa":{"a":0,"k":0},"nm":"Transform"}],"nm":"Rectangle 6 Copy"}],"ip":0,"op":132,"st":0}],"markers":[]};
+    helpLottie.load(lottieData);
+
+    // Start
+    loadQuestion();
+  </script>
+</body>
+</html>

@@ -249,6 +249,50 @@ hint: Think about what sound each animal makes!
 
 ---
 
+### 10. Word Sort (`word-sort`)
+
+Sort words into categories based on spelling patterns (e.g., st__ vs __st, -ing vs -ed endings).
+
+| Column | Type | Required | Description |
+|--------|------|----------|-------------|
+| `template_type` | string | Yes | `"word-sort"` |
+| `question_text` | string | Yes | Instructions for sorting |
+| `words` | JSON array | Yes | Words to sort with their category |
+| `categories` | JSON array | Yes | Category definitions with patterns |
+| `hint` | string | No | Hint text |
+
+**Words Structure:**
+```json
+[
+  {"word": "stop", "category": "st-start"},
+  {"word": "nest", "category": "st-end"},
+  {"word": "star", "category": "st-start"}
+]
+```
+
+**Categories Structure:**
+```json
+[
+  {"id": "st-start", "header": "st__", "example": "stop", "pattern": "^st"},
+  {"id": "st-end", "header": "__st", "example": "nest", "pattern": "st$"}
+]
+```
+
+**Pattern Format:** Uses regex patterns - `^st` means starts with "st", `st$` means ends with "st".
+
+**Example Excel Row:**
+```
+template_type: word-sort
+question_text: Sort these words by their spelling pattern
+words: [{"word":"stop","category":"st-start"},{"word":"nest","category":"st-end"},{"word":"star","category":"st-start"},{"word":"best","category":"st-end"}]
+categories: [{"id":"st-start","header":"st__","example":"stop"},{"id":"st-end","header":"__st","example":"nest"}]
+hint: Look at where the 'st' appears in each word!
+```
+
+**Note:** Words appear as bullet-point lists in notebook-style drop zones.
+
+---
+
 ## Suggested Excel Import Structure
 
 ### Option A: Single Table (Simple)
@@ -339,7 +383,8 @@ public abstract class QuestionComponentBase : ComponentBase
 ├── WordMatchQuestion.razor
 ├── NumberOrderQuestion.razor
 ├── SoundSelectQuestion.razor
-└── LineMatchQuestion.razor
+├── LineMatchQuestion.razor
+└── WordSortQuestion.razor
 ```
 
 ### 3. Dynamic Component Loader
@@ -397,6 +442,7 @@ public class QuestionImportService
 | `demo-number-order.html` | `number-order` | Inline styles |
 | `demo-sound-select.html` | `sound-select` | Inline styles |
 | `demo-line-match.html` | `line-match` | Inline styles |
+| `demo-word-sort.html` | `word-sort` | Inline styles |
 
 ---
 
