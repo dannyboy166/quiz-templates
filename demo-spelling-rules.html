@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spelling Rules - Quiz Template</title>
+  <link rel="stylesheet" href="css/base.css">
+  <style>
+    body {
+      background: #F2ADE2;
+    }
+
+    .rule-selector {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .rule-btn {
+      padding: 8px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      background: white;
+      border: 2px solid #E91E63;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .rule-btn:hover {
+      background: #FCE4EC;
+    }
+
+    .rule-btn.active {
+      background: #E91E63;
+      color: white;
+    }
+
+    .word-display {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 20px;
+    }
+
+    .letter-box {
+      width: 50px;
+      height: 60px;
+      background: white;
+      border: 3px solid #333;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      font-weight: 700;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      text-transform: lowercase;
+    }
+
+    .letter-box.small {
+      width: 40px;
+      height: 50px;
+      font-size: 28px;
+    }
+
+    .letter-box.blank {
+      background: #FFF9C4;
+      border-style: dashed;
+      border-color: #FF9800;
+      min-width: 50px;
+    }
+
+    .letter-box.blank.filled {
+      background: #E1BEE7;
+      border-style: solid;
+      border-color: #9C27B0;
+    }
+
+    .letter-box.blank.correct {
+      background: #C8E6C9;
+      border-color: #4CAF50;
+    }
+
+    .letter-box.blank.incorrect {
+      background: #FFCDD2;
+      border-color: #F44336;
+    }
+
+    .options-container {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .option-btn {
+      min-width: 100px;
+      padding: 16px 32px;
+      font-size: 28px;
+      font-weight: 700;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      background: white;
+      border: 4px solid #333;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: lowercase;
+    }
+
+    .option-btn:hover {
+      transform: scale(1.05);
+      background: #F3E5F5;
+    }
+
+    .option-btn.selected {
+      background: #E1BEE7;
+      border-color: #9C27B0;
+    }
+
+    .option-btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    .rule-hint {
+      background: #FFF9E6;
+      border: 2px solid #FFE082;
+      border-radius: 12px;
+      padding: 14px 20px;
+      margin-bottom: 20px;
+      text-align: center;
+      font-size: 16px;
+    }
+
+    .rule-hint strong {
+      color: #E91E63;
+    }
+
+    .word-info {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .word-meaning {
+      font-size: 15px;
+      color: #666;
+      font-style: italic;
+      margin-bottom: 8px;
+    }
+
+    .word-context {
+      font-size: 14px;
+      color: #888;
+      background: #f5f5f5;
+      padding: 8px 16px;
+      border-radius: 8px;
+      display: inline-block;
+    }
+
+    .aus-flag {
+      display: inline-block;
+      margin-left: 8px;
+      font-size: 16px;
+    }
+
+    /* Feedback */
+    .feedback {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .feedback.show {
+      display: flex;
+    }
+
+    .feedback-badge {
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .feedback-badge.correct {
+      background: #C8E6C9;
+      border: 2px solid #66BB6A;
+      color: #2E7D32;
+    }
+
+    .feedback-badge.incorrect {
+      background: #FFCDD2;
+      border: 2px solid #E57373;
+      color: #C62828;
+    }
+
+    .btn-try-again {
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      background: #FF9800;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .btn-try-again:hover {
+      background: #F57C00;
+    }
+
+    .btn-next {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #4CAF50;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+
+    .btn-next:hover {
+      background: #43A047;
+    }
+
+    .progress-dots {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 15px;
+      flex-wrap: wrap;
+      max-width: 300px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .progress-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #ddd;
+    }
+
+    .progress-dot.correct { background: #4CAF50; }
+    .progress-dot.incorrect { background: #F44336; }
+    .progress-dot.current { background: #9C27B0; transform: scale(1.3); }
+
+    .score-display {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 16px;
+      color: #666;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.show { display: flex; }
+
+    .modal-content {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 500px;
+      width: 90%;
+      text-align: center;
+      position: relative;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      width: 30px;
+      height: 30px;
+      border: none;
+      background: #eee;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    .modal-content h2 { margin-bottom: 20px; }
+
+    .modal-instruction {
+      background: #FFF9E6;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .modal-instruction p { margin-bottom: 10px; }
+    .modal-instruction ul { margin-left: 20px; }
+    .modal-instruction li { margin-bottom: 6px; }
+
+    .modal-btn {
+      padding: 12px 30px;
+      font-size: 16px;
+      font-weight: 600;
+      background: #333;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+    <!-- Header -->
+    <header class="quiz-header">
+      <button class="btn-back" onclick="window.location.href='index.html'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Back
+      </button>
+
+      <div class="user-profile">
+        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User" class="user-avatar">
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" style="width: 50%"></div>
+        </div>
+      </div>
+
+      <button class="btn-help" id="header-help">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        Help
+      </button>
+    </header>
+
+    <!-- Rule Selector -->
+    <div class="rule-selector" id="rule-selector">
+      <button class="rule-btn active" data-rule="ie-ei">i before e</button>
+      <button class="rule-btn" data-rule="aus-our">-our 🇦🇺</button>
+      <button class="rule-btn" data-rule="aus-ise">-ise 🇦🇺</button>
+      <button class="rule-btn" data-rule="aus-re">-re 🇦🇺</button>
+      <button class="rule-btn" data-rule="silent">Silent Letters</button>
+      <button class="rule-btn" data-rule="soft-c">Soft c & g</button>
+      <button class="rule-btn" data-rule="double">Double Letters</button>
+      <button class="rule-btn" data-rule="ck-k">ck vs k</button>
+    </div>
+
+    <!-- Question Meta -->
+    <div class="question-meta">
+      <span class="badge badge-english">English</span>
+      <span class="question-progress">Question <span id="current-q">1</span> of <span id="total-q">6</span></span>
+    </div>
+
+    <!-- Question Title -->
+    <div class="question-title">
+      <button class="btn-read-aloud" id="btn-read-title">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+        </svg>
+      </button>
+      <h1 id="question-text">Choose the missing letters!</h1>
+    </div>
+
+    <!-- Help Bar -->
+    <div class="help-bar">
+      <div class="help-item" id="btn-read-aloud">
+        <span class="help-item-icon">🔊</span>
+        <span>Read Aloud</span>
+      </div>
+      <span class="help-item-line"></span>
+      <div class="help-item" id="btn-get-help">
+        <span class="help-item-icon">❓</span>
+        <span>Get Help</span>
+      </div>
+      <span class="help-item-line"></span>
+      <div class="help-item" id="btn-get-hint">
+        <span class="help-item-icon">💡</span>
+        <span>Get Hint</span>
+      </div>
+    </div>
+
+    <!-- Rule Hint -->
+    <div class="rule-hint" id="rule-hint">
+      <strong>Remember:</strong> "i before e, except after c"
+    </div>
+
+    <!-- Content Card -->
+    <div class="content-card">
+      <div class="content-card-inner">
+        <div class="word-display" id="word-display"></div>
+
+        <div class="word-info">
+          <div class="word-meaning" id="word-meaning">to think something is true</div>
+          <div class="word-context" id="word-context">"I believe you!"</div>
+        </div>
+
+        <div class="options-container" id="options-container"></div>
+
+        <button class="btn-check-answer" id="btn-check">Check Answer</button>
+
+        <div class="feedback" id="feedback">
+          <div class="feedback-badge" id="feedback-badge">
+            <span id="feedback-icon">✓</span>
+            <span id="feedback-text">Correct!</span>
+          </div>
+          <button class="btn-try-again" id="btn-try-again">Try Again</button>
+          <button class="btn-next" id="btn-next">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="progress-dots" id="progress-dots"></div>
+        <div class="score-display" id="score-display"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Help Modal -->
+  <div class="modal-overlay" id="help-modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal('help-modal')">×</button>
+      <h2>Spelling Rules</h2>
+      <div class="modal-instruction" id="help-content">
+        <!-- Dynamic content -->
+      </div>
+      <button class="modal-btn" onclick="closeModal('help-modal')">Got it!</button>
+    </div>
+  </div>
+
+  <!-- Hint Modal -->
+  <div class="modal-overlay" id="hint-modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal('hint-modal')">×</button>
+      <h2>💡 Hint</h2>
+      <div class="modal-instruction">
+        <p id="hint-text">Look carefully at the word...</p>
+      </div>
+      <button class="modal-btn" onclick="closeModal('hint-modal')">Thanks!</button>
+    </div>
+  </div>
+
+  <script>
+    // All spelling rules data
+    const allRules = {
+      "ie-ei": {
+        name: "i before e, except after c",
+        hint: "Use 'ie' most of the time, but 'ei' after the letter 'c'",
+        helpContent: `
+          <p>📏 <strong>The Rule:</strong> "i before e, except after c"</p>
+          <ul>
+            <li><strong>ie</strong> - use in most words: believe, friend, thief</li>
+            <li><strong>ei</strong> - use after 'c': receive, ceiling, deceive</li>
+          </ul>
+          <p>⚠️ Exceptions: weird, their, neither, either</p>
+        `,
+        questions: [
+          { word: "believe", blank: [3,4], options: ["ie","ei"], correct: "ie", meaning: "to think something is true", context: '"I believe you!"' },
+          { word: "receive", blank: [3,4], options: ["ie","ei"], correct: "ei", meaning: "to get something", context: '"Did you receive my letter?"' },
+          { word: "friend", blank: [2,3], options: ["ie","ei"], correct: "ie", meaning: "someone you like", context: '"She is my best friend."' },
+          { word: "ceiling", blank: [1,2], options: ["ie","ei"], correct: "ei", meaning: "top of a room", context: '"Look at the ceiling!"' },
+          { word: "achieve", blank: [3,4], options: ["ie","ei"], correct: "ie", meaning: "to succeed", context: '"You can achieve anything!"' },
+          { word: "deceive", blank: [3,4], options: ["ie","ei"], correct: "ei", meaning: "to trick someone", context: '"Don\'t deceive me."' }
+        ]
+      },
+      "aus-our": {
+        name: "Australian -our spelling",
+        hint: "In Australia, we use -our not -or! 🇦🇺",
+        helpContent: `
+          <p>🇦🇺 <strong>Australian Spelling:</strong> We use <strong>-our</strong> not -or</p>
+          <ul>
+            <li>colour (not color)</li>
+            <li>favour (not favor)</li>
+            <li>neighbour (not neighbor)</li>
+            <li>honour (not honor)</li>
+            <li>harbour (not harbor)</li>
+          </ul>
+          <p>This is British/Australian English!</p>
+        `,
+        questions: [
+          { word: "colour", blank: [3,4,5], options: ["our","or"], correct: "our", meaning: "red, blue, green...", context: '"What colour is the sky?"' },
+          { word: "favour", blank: [3,4,5], options: ["our","or"], correct: "our", meaning: "a kind act", context: '"Can you do me a favour?"' },
+          { word: "neighbour", blank: [6,7,8], options: ["our","or"], correct: "our", meaning: "person next door", context: '"Our neighbour has a dog."' },
+          { word: "honour", blank: [3,4,5], options: ["our","or"], correct: "our", meaning: "respect", context: '"It\'s an honour to meet you."' },
+          { word: "behaviour", blank: [6,7,8], options: ["our","or"], correct: "our", meaning: "how you act", context: '"Good behaviour in class!"' },
+          { word: "harbour", blank: [4,5,6], options: ["our","or"], correct: "our", meaning: "where boats park", context: '"Sydney Harbour is beautiful."' }
+        ]
+      },
+      "aus-ise": {
+        name: "Australian -ise spelling",
+        hint: "In Australia, we use -ise not -ize! 🇦🇺",
+        helpContent: `
+          <p>🇦🇺 <strong>Australian Spelling:</strong> We use <strong>-ise</strong> not -ize</p>
+          <ul>
+            <li>organise (not organize)</li>
+            <li>recognise (not recognize)</li>
+            <li>realise (not realize)</li>
+            <li>apologise (not apologize)</li>
+          </ul>
+          <p>This is British/Australian English!</p>
+        `,
+        questions: [
+          { word: "organise", blank: [5,6,7], options: ["ise","ize"], correct: "ise", meaning: "to arrange things", context: '"Let\'s organise the party!"' },
+          { word: "recognise", blank: [6,7,8], options: ["ise","ize"], correct: "ise", meaning: "to know who someone is", context: '"I recognise that face!"' },
+          { word: "realise", blank: [4,5,6], options: ["ise","ize"], correct: "ise", meaning: "to understand", context: '"I didn\'t realise the time."' },
+          { word: "apologise", blank: [6,7,8], options: ["ise","ize"], correct: "ise", meaning: "to say sorry", context: '"I apologise for being late."' },
+          { word: "surprise", blank: [5,6,7], options: ["ise","ize"], correct: "ise", meaning: "something unexpected", context: '"What a lovely surprise!"' },
+          { word: "exercise", blank: [5,6,7], options: ["ise","ize"], correct: "ise", meaning: "physical activity", context: '"Let\'s do some exercise."' }
+        ]
+      },
+      "aus-re": {
+        name: "Australian -re spelling",
+        hint: "In Australia, we use -re not -er! 🇦🇺",
+        helpContent: `
+          <p>🇦🇺 <strong>Australian Spelling:</strong> We use <strong>-re</strong> not -er</p>
+          <ul>
+            <li>centre (not center)</li>
+            <li>metre (not meter)</li>
+            <li>theatre (not theater)</li>
+            <li>litre (not liter)</li>
+          </ul>
+          <p>This is British/Australian English!</p>
+        `,
+        questions: [
+          { word: "centre", blank: [4,5], options: ["re","er"], correct: "re", meaning: "the middle", context: '"Meet me in the town centre."' },
+          { word: "metre", blank: [3,4], options: ["re","er"], correct: "re", meaning: "100 centimetres", context: '"The pool is 50 metres long."' },
+          { word: "theatre", blank: [5,6], options: ["re","er"], correct: "re", meaning: "where you watch plays", context: '"Let\'s go to the theatre."' },
+          { word: "litre", blank: [3,4], options: ["re","er"], correct: "re", meaning: "1000 millilitres", context: '"Buy a litre of milk."' },
+          { word: "fibre", blank: [3,4], options: ["re","er"], correct: "re", meaning: "thread-like material", context: '"Eat food with fibre."' },
+          { word: "sombre", blank: [4,5], options: ["re","er"], correct: "re", meaning: "dark and serious", context: '"A sombre mood."' }
+        ]
+      },
+      "silent": {
+        name: "Silent Letters",
+        hint: "Some letters are written but not spoken!",
+        helpContent: `
+          <p>🤫 <strong>Silent Letters:</strong> Written but not said!</p>
+          <ul>
+            <li><strong>kn</strong> - knight, knee, know, knife</li>
+            <li><strong>wr</strong> - write, wrong, wrap, wrist</li>
+            <li><strong>gn</strong> - gnome, sign, design</li>
+            <li><strong>mb</strong> - lamb, climb, thumb, comb</li>
+            <li><strong>wh</strong> - what, when, where (w is silent)</li>
+          </ul>
+        `,
+        questions: [
+          { word: "knight", blank: [0,1], options: ["kn","n"], correct: "kn", meaning: "medieval warrior", context: '"The brave knight!"' },
+          { word: "write", blank: [0,1], options: ["wr","r"], correct: "wr", meaning: "to put words on paper", context: '"Please write your name."' },
+          { word: "gnome", blank: [0,1], options: ["gn","n"], correct: "gn", meaning: "small garden figure", context: '"A garden gnome."' },
+          { word: "thumb", blank: [4], options: ["mb","m"], correct: "mb", meaning: "short finger", context: '"Thumbs up!"', blankSize: 2 },
+          { word: "know", blank: [0,1], options: ["kn","n"], correct: "kn", meaning: "to understand", context: '"I know the answer!"' },
+          { word: "wrong", blank: [0,1], options: ["wr","r"], correct: "wr", meaning: "not right", context: '"That\'s the wrong answer."' }
+        ]
+      },
+      "soft-c": {
+        name: "Soft c and g",
+        hint: "c and g sound soft before e, i, or y",
+        helpContent: `
+          <p>🔤 <strong>Soft c and g:</strong> Before e, i, or y</p>
+          <ul>
+            <li><strong>Soft c</strong> = /s/ sound: city, ceiling, cycle</li>
+            <li><strong>Hard c</strong> = /k/ sound: cat, cup, car</li>
+            <li><strong>Soft g</strong> = /j/ sound: giant, giraffe, gym</li>
+            <li><strong>Hard g</strong> = /g/ sound: go, game, good</li>
+          </ul>
+          <p>The next letter matters!</p>
+        `,
+        questions: [
+          { word: "city", blank: [0], options: ["c","k"], correct: "c", meaning: "a big town", context: '"Sydney is a big city."', blankSize: 1 },
+          { word: "giant", blank: [0], options: ["g","j"], correct: "g", meaning: "very big person", context: '"The friendly giant."', blankSize: 1 },
+          { word: "circle", blank: [0], options: ["c","k"], correct: "c", meaning: "round shape", context: '"Draw a circle."', blankSize: 1 },
+          { word: "giraffe", blank: [0], options: ["g","j"], correct: "g", meaning: "tall animal", context: '"The giraffe is tall!"', blankSize: 1 },
+          { word: "cycle", blank: [0], options: ["c","k"], correct: "c", meaning: "to ride a bike", context: '"I cycle to school."', blankSize: 1 },
+          { word: "gym", blank: [0], options: ["g","j"], correct: "g", meaning: "place for exercise", context: '"Let\'s go to the gym."', blankSize: 1 }
+        ]
+      },
+      "double": {
+        name: "Double Letters",
+        hint: "Double the consonant after a short vowel!",
+        helpContent: `
+          <p>✌️ <strong>Double Letters:</strong></p>
+          <ul>
+            <li>After a <strong>short vowel</strong>, double the consonant</li>
+            <li>running (run + n + ing)</li>
+            <li>hopping (hop + p + ing)</li>
+            <li>sitting (sit + t + ing)</li>
+            <li>swimming (swim + m + ing)</li>
+          </ul>
+          <p>Short vowels: a, e, i, o, u (cat, bed, sit, hot, cup)</p>
+        `,
+        questions: [
+          { word: "running", blank: [2,3], options: ["nn","n"], correct: "nn", meaning: "moving fast", context: '"I love running!"' },
+          { word: "hopping", blank: [2,3], options: ["pp","p"], correct: "pp", meaning: "jumping on one foot", context: '"The rabbit is hopping."' },
+          { word: "sitting", blank: [2,3], options: ["tt","t"], correct: "tt", meaning: "on a chair", context: '"I am sitting down."' },
+          { word: "swimming", blank: [3,4], options: ["mm","m"], correct: "mm", meaning: "in the water", context: '"Let\'s go swimming!"' },
+          { word: "stopped", blank: [3,4], options: ["pp","p"], correct: "pp", meaning: "not moving", context: '"The car stopped."' },
+          { word: "getting", blank: [2,3], options: ["tt","t"], correct: "tt", meaning: "receiving", context: '"I\'m getting better!"' }
+        ]
+      },
+      "ck-k": {
+        name: "ck vs k",
+        hint: "Use 'ck' after a short vowel, 'k' after a long vowel",
+        helpContent: `
+          <p>🔤 <strong>ck vs k:</strong></p>
+          <ul>
+            <li><strong>ck</strong> after a <strong>short vowel</strong>: back, stick, clock</li>
+            <li><strong>k</strong> after a <strong>long vowel</strong>: bake, bike, poke</li>
+            <li><strong>k</strong> after a consonant: milk, bank, sink</li>
+          </ul>
+          <p>Short vowels sound quick: a, e, i, o, u</p>
+        `,
+        questions: [
+          { word: "back", blank: [2,3], options: ["ck","k"], correct: "ck", meaning: "behind", context: '"Go to the back!"' },
+          { word: "bake", blank: [2], options: ["k","ck"], correct: "k", meaning: "cook in oven", context: '"Let\'s bake a cake."', blankSize: 1 },
+          { word: "stick", blank: [3,4], options: ["ck","k"], correct: "ck", meaning: "thin piece of wood", context: '"Pick up the stick."' },
+          { word: "bike", blank: [2], options: ["k","ck"], correct: "k", meaning: "two wheels", context: '"Ride your bike."', blankSize: 1 },
+          { word: "clock", blank: [3,4], options: ["ck","k"], correct: "ck", meaning: "tells time", context: '"Look at the clock."' },
+          { word: "poke", blank: [2], options: ["k","ck"], correct: "k", meaning: "to push with finger", context: '"Don\'t poke me!"', blankSize: 1 }
+        ]
+      }
+    };
+
+    let currentRule = "ie-ei";
+    let currentQuestion = 0;
+    let selectedOption = null;
+    let results = [];
+
+    function init() {
+      loadRule(currentRule);
+      setupEventListeners();
+    }
+
+    function loadRule(ruleId) {
+      currentRule = ruleId;
+      currentQuestion = 0;
+      results = [];
+      selectedOption = null;
+
+      // Update buttons
+      document.querySelectorAll('.rule-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.rule === ruleId);
+      });
+
+      const rule = allRules[ruleId];
+
+      // Update rule hint
+      document.getElementById('rule-hint').innerHTML = `<strong>Rule:</strong> ${rule.hint}`;
+
+      // Update help content
+      document.getElementById('help-content').innerHTML = rule.helpContent;
+
+      // Render progress dots
+      renderProgressDots();
+
+      // Load first question
+      loadQuestion(0);
+    }
+
+    function renderProgressDots() {
+      const questions = allRules[currentRule].questions;
+      const container = document.getElementById('progress-dots');
+      container.innerHTML = questions.map((_, i) =>
+        `<div class="progress-dot ${i === 0 ? 'current' : ''}" data-index="${i}"></div>`
+      ).join('');
+    }
+
+    function loadQuestion(index) {
+      const questions = allRules[currentRule].questions;
+      const q = questions[index];
+      selectedOption = null;
+
+      document.getElementById('current-q').textContent = index + 1;
+      document.getElementById('total-q').textContent = questions.length;
+
+      // Update progress dots
+      document.querySelectorAll('.progress-dot').forEach((dot, i) => {
+        dot.classList.remove('current');
+        if (i === index) dot.classList.add('current');
+        if (results[i] === true) dot.classList.add('correct');
+        if (results[i] === false) dot.classList.add('incorrect');
+      });
+
+      // Render word
+      renderWord(q);
+
+      // Render options
+      renderOptions(q.options);
+
+      // Update info
+      document.getElementById('word-meaning').textContent = q.meaning;
+      document.getElementById('word-context').textContent = q.context;
+      document.getElementById('hint-text').textContent = allRules[currentRule].hint;
+
+      // Reset UI
+      document.getElementById('btn-check').style.display = 'block';
+      document.getElementById('feedback').classList.remove('show');
+
+      document.querySelectorAll('.option-btn').forEach(btn => {
+        btn.disabled = false;
+        btn.classList.remove('selected');
+      });
+
+      updateScore();
+    }
+
+    function renderWord(q) {
+      const container = document.getElementById('word-display');
+      const letters = q.word.split('');
+      const blankSet = new Set(q.blank);
+      const useSmall = letters.length > 7;
+
+      let inBlank = false;
+      let html = '';
+
+      letters.forEach((letter, i) => {
+        if (blankSet.has(i)) {
+          if (!inBlank) {
+            // Start of blank group
+            html += `<div class="letter-box blank ${useSmall ? 'small' : ''}" data-start="${i}">`;
+            for (let j = 0; j < q.blank.length; j++) html += '_';
+            html += '</div>';
+            inBlank = true;
+          }
+        } else {
+          inBlank = false;
+          html += `<div class="letter-box ${useSmall ? 'small' : ''}">${letter}</div>`;
+        }
+      });
+
+      container.innerHTML = html;
+    }
+
+    function renderOptions(options) {
+      const container = document.getElementById('options-container');
+      container.innerHTML = options.map(opt =>
+        `<button class="option-btn" data-option="${opt}">${opt}</button>`
+      ).join('');
+
+      container.querySelectorAll('.option-btn').forEach(btn => {
+        btn.addEventListener('click', () => selectOption(btn));
+      });
+    }
+
+    function selectOption(btn) {
+      if (btn.disabled) return;
+
+      document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedOption = btn.dataset.option;
+
+      // Fill blank
+      const blankBox = document.querySelector('.letter-box.blank');
+      if (blankBox) {
+        blankBox.textContent = selectedOption;
+        blankBox.classList.add('filled');
+      }
+    }
+
+    function checkAnswer() {
+      if (!selectedOption) {
+        alert('Please choose an option first!');
+        return;
+      }
+
+      const q = allRules[currentRule].questions[currentQuestion];
+      const isCorrect = selectedOption === q.correct;
+      results[currentQuestion] = isCorrect;
+
+      // Update blank styling
+      const blankBox = document.querySelector('.letter-box.blank');
+      if (blankBox) {
+        blankBox.classList.remove('filled');
+        blankBox.classList.add(isCorrect ? 'correct' : 'incorrect');
+        if (!isCorrect) blankBox.textContent = q.correct;
+      }
+
+      document.querySelectorAll('.option-btn').forEach(btn => btn.disabled = true);
+
+      // Show feedback
+      const feedback = document.getElementById('feedback');
+      const badge = document.getElementById('feedback-badge');
+      const icon = document.getElementById('feedback-icon');
+      const text = document.getElementById('feedback-text');
+      const tryAgain = document.getElementById('btn-try-again');
+      const next = document.getElementById('btn-next');
+
+      badge.className = 'feedback-badge ' + (isCorrect ? 'correct' : 'incorrect');
+      icon.textContent = isCorrect ? '✓' : '✗';
+      text.textContent = isCorrect ? 'Correct!' : `It's "${q.correct}"`;
+
+      tryAgain.style.display = isCorrect ? 'none' : 'inline-block';
+      next.style.display = 'flex';
+
+      document.getElementById('btn-check').style.display = 'none';
+      feedback.classList.add('show');
+
+      // Update dot
+      const dot = document.querySelector(`.progress-dot[data-index="${currentQuestion}"]`);
+      dot.classList.add(isCorrect ? 'correct' : 'incorrect');
+
+      updateScore();
+
+      // Speak
+      if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(
+          isCorrect ? `Correct! ${q.word}` : `The answer is ${q.correct}. ${q.word}`
+        );
+        utterance.rate = 0.8;
+        speechSynthesis.speak(utterance);
+      }
+    }
+
+    function updateScore() {
+      const correct = results.filter(r => r === true).length;
+      const total = results.length;
+      document.getElementById('score-display').textContent = total > 0 ? `Score: ${correct}/${total}` : '';
+    }
+
+    function tryAgain() {
+      loadQuestion(currentQuestion);
+    }
+
+    function nextQuestion() {
+      const questions = allRules[currentRule].questions;
+      if (currentQuestion < questions.length - 1) {
+        currentQuestion++;
+        loadQuestion(currentQuestion);
+      } else {
+        const correct = results.filter(r => r === true).length;
+        alert(`🎉 Finished "${allRules[currentRule].name}"!\n\nYou got ${correct} out of ${questions.length} correct!`);
+      }
+    }
+
+    function readAloud() {
+      if ('speechSynthesis' in window) {
+        const q = allRules[currentRule].questions[currentQuestion];
+        const utterance = new SpeechSynthesisUtterance(
+          `What are the missing letters? ${q.meaning}. ${q.context}`
+        );
+        utterance.rate = 0.8;
+        speechSynthesis.speak(utterance);
+      }
+    }
+
+    function openModal(id) { document.getElementById(id).classList.add('show'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+    function setupEventListeners() {
+      // Rule selector
+      document.querySelectorAll('.rule-btn').forEach(btn => {
+        btn.addEventListener('click', () => loadRule(btn.dataset.rule));
+      });
+
+      document.getElementById('btn-check').addEventListener('click', checkAnswer);
+      document.getElementById('btn-try-again').addEventListener('click', tryAgain);
+      document.getElementById('btn-next').addEventListener('click', nextQuestion);
+      document.getElementById('btn-read-aloud').addEventListener('click', readAloud);
+      document.getElementById('btn-read-title').addEventListener('click', readAloud);
+      document.getElementById('btn-get-help').addEventListener('click', () => openModal('help-modal'));
+      document.getElementById('header-help').addEventListener('click', () => openModal('help-modal'));
+      document.getElementById('btn-get-hint').addEventListener('click', () => openModal('hint-modal'));
+
+      document.querySelectorAll('.modal-overlay').forEach(modal => {
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) closeModal(modal.id);
+        });
+      });
+    }
+
+    init();
+  </script>
+</body>
+</html>

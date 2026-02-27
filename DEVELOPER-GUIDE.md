@@ -330,6 +330,52 @@ rule: i before e, except after c
 
 ---
 
+### 12. Spelling Rules (`spelling-rules`)
+
+Comprehensive spelling rules practice with multiple rule categories. Students switch between rules.
+
+| Column | Type | Required | Description |
+|--------|------|----------|-------------|
+| `template_type` | string | Yes | `"spelling-rules"` |
+| `rule_id` | string | Yes | Rule category identifier |
+| `rule_name` | string | Yes | Display name for the rule |
+| `rule_hint` | string | Yes | Short hint for the rule |
+| `rule_help` | string | Yes | Detailed explanation (HTML allowed) |
+| `questions` | JSON array | Yes | Array of question objects |
+
+**Rule Categories (Australian English):**
+- `ie-ei` - i before e, except after c
+- `aus-our` - Australian -our spelling (colour, favour)
+- `aus-ise` - Australian -ise spelling (organise, realise)
+- `aus-re` - Australian -re spelling (centre, metre)
+- `silent` - Silent letters (knight, write, gnome)
+- `soft-c` - Soft c and g (city, giant)
+- `double` - Double letters (running, hopping)
+- `ck-k` - ck vs k (back, bake)
+
+**Question Structure:**
+```json
+{
+  "word": "colour",
+  "blank": [3, 4, 5],
+  "options": ["our", "or"],
+  "correct": "our",
+  "meaning": "red, blue, green...",
+  "context": "\"What colour is the sky?\""
+}
+```
+
+**Example Excel Row:**
+```
+template_type: spelling-rules
+rule_id: aus-our
+rule_name: Australian -our spelling
+rule_hint: In Australia, we use -our not -or! 🇦🇺
+questions: [{"word":"colour","blank":[3,4,5],"options":["our","or"],"correct":"our","meaning":"red, blue, green","context":"What colour?"}]
+```
+
+---
+
 ## Suggested Excel Import Structure
 
 ### Option A: Single Table (Simple)
@@ -422,7 +468,8 @@ public abstract class QuestionComponentBase : ComponentBase
 ├── SoundSelectQuestion.razor
 ├── LineMatchQuestion.razor
 ├── WordSortQuestion.razor
-└── MissingLettersQuestion.razor
+├── MissingLettersQuestion.razor
+└── SpellingRulesQuestion.razor
 ```
 
 ### 3. Dynamic Component Loader
@@ -482,6 +529,7 @@ public class QuestionImportService
 | `demo-line-match.html` | `line-match` | Inline styles |
 | `demo-word-sort.html` | `word-sort` | Inline styles |
 | `demo-missing-letters.html` | `missing-letters` | Inline styles |
+| `demo-spelling-rules.html` | `spelling-rules` | Inline styles |
 
 ---
 
