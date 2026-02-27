@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fractions - Quiz Template</title>
+  <link rel="stylesheet" href="css/base.css">
+  <style>
+    body {
+      background: #FAE38E;
+    }
+
+    .fraction-display {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .target-fraction {
+      font-size: 48px;
+      font-weight: 700;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: white;
+      padding: 15px 30px;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .fraction-num {
+      border-bottom: 4px solid #333;
+      padding-bottom: 5px;
+      min-width: 60px;
+      text-align: center;
+    }
+
+    .fraction-denom {
+      padding-top: 5px;
+    }
+
+    .shape-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    /* Circle (Pizza) */
+    .circle-shape {
+      width: 200px;
+      height: 200px;
+      position: relative;
+    }
+
+    .circle-slice {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 50%);
+      background: #E0E0E0;
+      border: 2px solid #999;
+      cursor: pointer;
+      transition: all 0.2s;
+      transform-origin: center;
+    }
+
+    .circle-slice:hover {
+      filter: brightness(0.95);
+    }
+
+    .circle-slice.shaded {
+      background: #FF7043;
+    }
+
+    .circle-slice.correct {
+      background: #66BB6A;
+    }
+
+    .circle-slice.incorrect {
+      background: #EF5350;
+    }
+
+    .circle-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 20px;
+      height: 20px;
+      background: white;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+      border: 2px solid #999;
+    }
+
+    /* Rectangle (Chocolate Bar) */
+    .rect-shape {
+      display: grid;
+      gap: 4px;
+      background: #8B4513;
+      padding: 8px;
+      border-radius: 12px;
+    }
+
+    .rect-piece {
+      width: 50px;
+      height: 50px;
+      background: #E0E0E0;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 2px solid #999;
+    }
+
+    .rect-piece:hover {
+      filter: brightness(0.95);
+    }
+
+    .rect-piece.shaded {
+      background: #AB47BC;
+    }
+
+    .rect-piece.correct {
+      background: #66BB6A;
+    }
+
+    .rect-piece.incorrect {
+      background: #EF5350;
+    }
+
+    /* Counter display */
+    .shade-counter {
+      font-size: 20px;
+      color: #666;
+      margin-top: 10px;
+    }
+
+    .shade-counter strong {
+      color: #E91E63;
+      font-size: 24px;
+    }
+
+    /* Feedback */
+    .feedback {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .feedback.show {
+      display: flex;
+    }
+
+    .feedback-badge {
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .feedback-badge.correct {
+      background: #C8E6C9;
+      border: 2px solid #66BB6A;
+      color: #2E7D32;
+    }
+
+    .feedback-badge.incorrect {
+      background: #FFCDD2;
+      border: 2px solid #E57373;
+      color: #C62828;
+    }
+
+    .btn-try-again {
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      background: #FF9800;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .btn-try-again:hover {
+      background: #F57C00;
+    }
+
+    .btn-next {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #4CAF50;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+
+    .btn-next:hover {
+      background: #43A047;
+    }
+
+    .progress-dots {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    .progress-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #ddd;
+    }
+
+    .progress-dot.correct { background: #4CAF50; }
+    .progress-dot.incorrect { background: #F44336; }
+    .progress-dot.current { background: #9C27B0; transform: scale(1.3); }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.show { display: flex; }
+
+    .modal-content {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 500px;
+      width: 90%;
+      text-align: center;
+      position: relative;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      width: 30px;
+      height: 30px;
+      border: none;
+      background: #eee;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    .modal-content h2 { margin-bottom: 20px; }
+
+    .modal-instruction {
+      background: #FFF9E6;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .modal-instruction p { margin-bottom: 10px; }
+
+    .modal-btn {
+      padding: 12px 30px;
+      font-size: 16px;
+      font-weight: 600;
+      background: #333;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .btn-check-answer {
+      margin-top: 30px;
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+    <!-- Header -->
+    <header class="quiz-header">
+      <button class="btn-back" onclick="window.location.href='index.html'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Back
+      </button>
+
+      <div class="user-profile">
+        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User" class="user-avatar">
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" style="width: 35%"></div>
+        </div>
+      </div>
+
+      <button class="btn-help" id="header-help">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        Help
+      </button>
+    </header>
+
+    <!-- Question Meta -->
+    <div class="question-meta">
+      <span class="badge badge-math">Maths</span>
+      <span class="question-progress">Question <span id="current-q">1</span> of <span id="total-q">8</span></span>
+    </div>
+
+    <!-- Question Title -->
+    <div class="question-title">
+      <button class="btn-read-aloud" id="btn-read-title">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+        </svg>
+      </button>
+      <h1 id="question-text">Shade the shape to show the fraction</h1>
+    </div>
+
+    <!-- Help Bar -->
+    <div class="help-bar">
+      <div class="help-item" id="btn-read-aloud">
+        <span class="help-item-icon">🔊</span>
+        <span>Read Aloud</span>
+      </div>
+      <span class="help-item-line"></span>
+      <div class="help-item" id="btn-get-help">
+        <span class="help-item-icon">❓</span>
+        <span>Get Help</span>
+      </div>
+      <span class="help-item-line"></span>
+      <div class="help-item" id="btn-get-hint">
+        <span class="help-item-icon">💡</span>
+        <span>Get Hint</span>
+      </div>
+    </div>
+
+    <!-- Content Card -->
+    <div class="content-card">
+      <div class="content-card-inner">
+        <div class="fraction-display">
+          <div class="target-fraction">
+            <span class="fraction-num" id="fraction-num">3</span>
+            <span class="fraction-denom" id="fraction-denom">4</span>
+          </div>
+        </div>
+
+        <div class="shape-container" id="shape-container">
+          <!-- Shape will be inserted here -->
+        </div>
+
+        <div class="shade-counter">
+          You shaded <strong id="shaded-count">0</strong> out of <strong id="total-parts">4</strong> parts
+        </div>
+
+        <button class="btn-check-answer" id="btn-check">Check Answer</button>
+
+        <div class="feedback" id="feedback">
+          <div class="feedback-badge" id="feedback-badge">
+            <span id="feedback-icon">✓</span>
+            <span id="feedback-text">Correct!</span>
+          </div>
+          <button class="btn-try-again" id="btn-try-again">Try Again</button>
+          <button class="btn-next" id="btn-next">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="progress-dots" id="progress-dots"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Help Modal -->
+  <div class="modal-overlay" id="help-modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal('help-modal')">×</button>
+      <h2>How to Play</h2>
+      <div class="modal-instruction">
+        <p>🍕 Look at the fraction shown (like 3/4)</p>
+        <p>👆 Click on parts of the shape to shade them</p>
+        <p>🔢 The bottom number tells you how many parts total</p>
+        <p>🔢 The top number tells you how many to shade</p>
+        <p>💡 3/4 means shade 3 out of 4 parts!</p>
+        <p>✅ Press "Check Answer" when you're done!</p>
+      </div>
+      <button class="modal-btn" onclick="closeModal('help-modal')">Got it!</button>
+    </div>
+  </div>
+
+  <!-- Hint Modal -->
+  <div class="modal-overlay" id="hint-modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal('hint-modal')">×</button>
+      <h2>💡 Hint</h2>
+      <div class="modal-instruction">
+        <p id="hint-text">The top number tells you how many parts to shade!</p>
+      </div>
+      <button class="modal-btn" onclick="closeModal('hint-modal')">Thanks!</button>
+    </div>
+  </div>
+
+  <script>
+    // Questions with different fractions and shapes
+    const questions = [
+      { numerator: 1, denominator: 2, shape: 'circle' },
+      { numerator: 1, denominator: 4, shape: 'rect', cols: 4, rows: 1 },
+      { numerator: 3, denominator: 4, shape: 'circle' },
+      { numerator: 2, denominator: 3, shape: 'rect', cols: 3, rows: 1 },
+      { numerator: 1, denominator: 3, shape: 'circle' },
+      { numerator: 5, denominator: 8, shape: 'rect', cols: 4, rows: 2 },
+      { numerator: 3, denominator: 6, shape: 'rect', cols: 3, rows: 2 },
+      { numerator: 2, denominator: 4, shape: 'circle' }
+    ];
+
+    let currentQuestion = 0;
+    let results = [];
+    let shadedParts = new Set();
+
+    function init() {
+      renderProgressDots();
+      loadQuestion(currentQuestion);
+      setupEventListeners();
+    }
+
+    function renderProgressDots() {
+      const container = document.getElementById('progress-dots');
+      container.innerHTML = questions.map((_, i) =>
+        `<div class="progress-dot ${i === 0 ? 'current' : ''}" data-index="${i}"></div>`
+      ).join('');
+    }
+
+    function loadQuestion(index) {
+      const q = questions[index];
+      shadedParts = new Set();
+
+      // Update progress
+      document.getElementById('current-q').textContent = index + 1;
+      document.getElementById('total-q').textContent = questions.length;
+
+      // Update fraction display
+      document.getElementById('fraction-num').textContent = q.numerator;
+      document.getElementById('fraction-denom').textContent = q.denominator;
+
+      // Update counter
+      document.getElementById('total-parts').textContent = q.denominator;
+      updateShadedCount();
+
+      // Update hint
+      document.getElementById('hint-text').textContent =
+        `Shade ${q.numerator} out of ${q.denominator} parts. Click ${q.numerator} pieces!`;
+
+      // Render shape
+      renderShape(q);
+
+      // Update progress dots
+      document.querySelectorAll('.progress-dot').forEach((dot, i) => {
+        dot.classList.remove('current');
+        if (i === index) dot.classList.add('current');
+        if (results[i] === true) dot.classList.add('correct');
+        if (results[i] === false) dot.classList.add('incorrect');
+      });
+
+      // Reset UI
+      document.getElementById('btn-check').style.display = 'block';
+      document.getElementById('feedback').classList.remove('show');
+    }
+
+    function renderShape(q) {
+      const container = document.getElementById('shape-container');
+
+      if (q.shape === 'circle') {
+        container.innerHTML = renderCircle(q.denominator);
+      } else {
+        container.innerHTML = renderRectangle(q.cols, q.rows);
+      }
+
+      // Add click handlers
+      container.querySelectorAll('.circle-slice, .rect-piece').forEach((piece, i) => {
+        piece.addEventListener('click', () => toggleShade(piece, i));
+      });
+    }
+
+    function renderCircle(parts) {
+      const anglePerSlice = 360 / parts;
+      let html = '<div class="circle-shape">';
+
+      for (let i = 0; i < parts; i++) {
+        const startAngle = i * anglePerSlice - 90;
+        const endAngle = (i + 1) * anglePerSlice - 90;
+
+        // Create clip path for each slice
+        const startRad = (startAngle * Math.PI) / 180;
+        const endRad = (endAngle * Math.PI) / 180;
+
+        const x1 = 50 + 50 * Math.cos(startRad);
+        const y1 = 50 + 50 * Math.sin(startRad);
+        const x2 = 50 + 50 * Math.cos(endRad);
+        const y2 = 50 + 50 * Math.sin(endRad);
+
+        // For larger slices, we need the large arc flag
+        const largeArc = anglePerSlice > 180 ? 1 : 0;
+
+        html += `
+          <svg class="circle-slice" data-index="${i}" viewBox="0 0 100 100" style="position:absolute;width:100%;height:100%;">
+            <path d="M 50 50 L ${x1} ${y1} A 50 50 0 ${largeArc} 1 ${x2} ${y2} Z"
+                  fill="#E0E0E0" stroke="#999" stroke-width="2"/>
+          </svg>
+        `;
+      }
+
+      html += '<div class="circle-center"></div></div>';
+      return html;
+    }
+
+    function renderRectangle(cols, rows) {
+      let html = `<div class="rect-shape" style="grid-template-columns: repeat(${cols}, 1fr);">`;
+      const total = cols * rows;
+
+      for (let i = 0; i < total; i++) {
+        html += `<div class="rect-piece" data-index="${i}"></div>`;
+      }
+
+      html += '</div>';
+      return html;
+    }
+
+    function toggleShade(piece, index) {
+      if (piece.classList.contains('correct') || piece.classList.contains('incorrect')) return;
+
+      if (shadedParts.has(index)) {
+        shadedParts.delete(index);
+        if (piece.tagName === 'svg') {
+          piece.querySelector('path').setAttribute('fill', '#E0E0E0');
+        } else {
+          piece.classList.remove('shaded');
+        }
+      } else {
+        shadedParts.add(index);
+        if (piece.tagName === 'svg') {
+          piece.querySelector('path').setAttribute('fill', '#FF7043');
+        } else {
+          piece.classList.add('shaded');
+        }
+      }
+
+      updateShadedCount();
+    }
+
+    function updateShadedCount() {
+      document.getElementById('shaded-count').textContent = shadedParts.size;
+    }
+
+    function checkAnswer() {
+      const q = questions[currentQuestion];
+      const isCorrect = shadedParts.size === q.numerator;
+      results[currentQuestion] = isCorrect;
+
+      // Mark pieces as correct/incorrect
+      const container = document.getElementById('shape-container');
+      container.querySelectorAll('.circle-slice, .rect-piece').forEach((piece, i) => {
+        if (shadedParts.has(i)) {
+          if (piece.tagName === 'svg') {
+            piece.querySelector('path').setAttribute('fill', isCorrect ? '#66BB6A' : '#EF5350');
+          } else {
+            piece.classList.remove('shaded');
+            piece.classList.add(isCorrect ? 'correct' : 'incorrect');
+          }
+        }
+      });
+
+      // Show feedback
+      const feedback = document.getElementById('feedback');
+      const badge = document.getElementById('feedback-badge');
+      const icon = document.getElementById('feedback-icon');
+      const text = document.getElementById('feedback-text');
+      const tryAgain = document.getElementById('btn-try-again');
+      const next = document.getElementById('btn-next');
+
+      badge.className = 'feedback-badge ' + (isCorrect ? 'correct' : 'incorrect');
+      icon.textContent = isCorrect ? '✓' : '✗';
+      text.textContent = isCorrect ? 'Correct!' : `You need to shade ${q.numerator} parts`;
+
+      tryAgain.style.display = isCorrect ? 'none' : 'inline-block';
+      next.style.display = 'flex';
+
+      document.getElementById('btn-check').style.display = 'none';
+      feedback.classList.add('show');
+
+      // Update progress dot
+      const dot = document.querySelector(`.progress-dot[data-index="${currentQuestion}"]`);
+      dot.classList.add(isCorrect ? 'correct' : 'incorrect');
+
+      // Read aloud
+      if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(
+          isCorrect ? 'Correct!' : `You shaded ${shadedParts.size}, but ${q.numerator} ${q.denominator}ths means ${q.numerator} parts.`
+        );
+        utterance.rate = 0.8;
+        speechSynthesis.speak(utterance);
+      }
+    }
+
+    function tryAgain() {
+      loadQuestion(currentQuestion);
+    }
+
+    function nextQuestion() {
+      if (currentQuestion < questions.length - 1) {
+        currentQuestion++;
+        loadQuestion(currentQuestion);
+      } else {
+        const correct = results.filter(r => r === true).length;
+        alert(`🎉 Well done!\n\nYou got ${correct} out of ${questions.length} correct!`);
+      }
+    }
+
+    function readAloud() {
+      if ('speechSynthesis' in window) {
+        const q = questions[currentQuestion];
+        const utterance = new SpeechSynthesisUtterance(
+          `Shade ${q.numerator} ${q.denominator}ths of the shape. Click ${q.numerator} out of ${q.denominator} parts.`
+        );
+        utterance.rate = 0.8;
+        speechSynthesis.speak(utterance);
+      }
+    }
+
+    function openModal(id) { document.getElementById(id).classList.add('show'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+    function setupEventListeners() {
+      document.getElementById('btn-check').addEventListener('click', checkAnswer);
+      document.getElementById('btn-try-again').addEventListener('click', tryAgain);
+      document.getElementById('btn-next').addEventListener('click', nextQuestion);
+      document.getElementById('btn-read-aloud').addEventListener('click', readAloud);
+      document.getElementById('btn-read-title').addEventListener('click', readAloud);
+      document.getElementById('btn-get-help').addEventListener('click', () => openModal('help-modal'));
+      document.getElementById('header-help').addEventListener('click', () => openModal('help-modal'));
+      document.getElementById('btn-get-hint').addEventListener('click', () => openModal('hint-modal'));
+
+      document.querySelectorAll('.modal-overlay').forEach(modal => {
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) closeModal(modal.id);
+        });
+      });
+    }
+
+    init();
+  </script>
+</body>
+</html>

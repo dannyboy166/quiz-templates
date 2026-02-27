@@ -458,6 +458,61 @@ equations: [{"type":"subtraction","total":8,"subtract":3,"result":5,"given":["to
 
 ---
 
+### 14. Fractions (`fractions`)
+
+Click to shade parts of shapes to represent fractions. Supports circles (pizza) and rectangles (chocolate bar).
+
+| Column | Type | Required | Description |
+|--------|------|----------|-------------|
+| `template_type` | string | Yes | `"fractions"` |
+| `numerator` | integer | Yes | Top number (parts to shade) |
+| `denominator` | integer | Yes | Bottom number (total parts) |
+| `shape` | string | Yes | `"circle"` or `"rect"` |
+| `cols` | integer | No | Columns for rectangle (default 4) |
+| `rows` | integer | No | Rows for rectangle (default 1) |
+
+**Example Excel Row:**
+```
+template_type: fractions
+numerator: 3
+denominator: 4
+shape: circle
+```
+
+**Features:**
+- Click parts to shade/unshade them
+- Counter shows "You shaded X out of Y parts"
+- Supports circles (divided like pizza) and rectangles (like chocolate bars)
+
+---
+
+### 15. Skip Counting (`skip-counting`)
+
+Fill in missing numbers in a counting sequence. Count by 2s, 5s, 10s, 3s, etc.
+
+| Column | Type | Required | Description |
+|--------|------|----------|-------------|
+| `template_type` | string | Yes | `"skip-counting"` |
+| `skip_by` | integer | Yes | The number to count by (2, 5, 10, 3, etc.) |
+| `sequence` | JSON array | Yes | Full number sequence |
+| `blanks` | JSON array | Yes | Indices of blank positions (0-indexed) |
+
+**Example Excel Row:**
+```
+template_type: skip-counting
+skip_by: 2
+sequence: [2, 4, 6, 8, 10, 12, 14]
+blanks: [2, 4, 5]
+```
+This creates: 2, 4, __, 8, __, __, 14
+
+**Features:**
+- Pattern selector for different skip counts (2s, 5s, 10s, 3s)
+- Randomly generated sequences with random blank positions
+- 7 numbers per sequence with 2-3 blanks
+
+---
+
 ## Suggested Excel Import Structure
 
 ### Option A: Single Table (Simple)
@@ -552,7 +607,9 @@ public abstract class QuestionComponentBase : ComponentBase
 ├── WordSortQuestion.razor
 ├── MissingLettersQuestion.razor
 ├── SpellingRulesQuestion.razor
-└── PictureEquationsQuestion.razor
+├── PictureEquationsQuestion.razor
+├── FractionsQuestion.razor
+└── SkipCountingQuestion.razor
 ```
 
 ### 3. Dynamic Component Loader
@@ -614,6 +671,8 @@ public class QuestionImportService
 | `demo-missing-letters.html` | `missing-letters` | Inline styles |
 | `demo-spelling-rules.html` | `spelling-rules` | Inline styles |
 | `demo-picture-equations.html` | `picture-equations` | Inline styles |
+| `demo-fractions.html` | `fractions` | Inline styles |
+| `demo-skip-counting.html` | `skip-counting` | Inline styles |
 
 ---
 
