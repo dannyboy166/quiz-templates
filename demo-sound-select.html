@@ -11,6 +11,95 @@
       background-color: #F2ADE2;
     }
 
+    .quiz-container {
+      background: #F2ADE2;
+    }
+
+    /* Override header for pink theme */
+    .quiz-header {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-back {
+      background: white;
+    }
+
+    .btn-help {
+      background: white;
+    }
+
+    /* Question title */
+    .question-title h1 {
+      color: #333;
+      font-size: 28px;
+    }
+
+    /* Help bar override */
+    .help-bar {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Modal styles */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      max-width: 400px;
+      margin: 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal h2 {
+      margin: 0 0 15px 0;
+      font-size: 22px;
+    }
+
+    .modal p {
+      margin: 0 0 10px 0;
+      line-height: 1.6;
+    }
+
+    .modal-close {
+      margin-top: 20px;
+      padding: 10px 24px;
+      background: #333;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* Help bar clickable */
+    .help-item {
+      cursor: pointer;
+      padding: 8px 12px;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+
+    .help-item:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+
     /* Image grid */
     .image-grid {
       display: grid;
@@ -213,7 +302,7 @@
 
     <!-- Question Meta -->
     <div class="question-meta">
-      <span class="badge">English</span>
+      <span class="badge" style="background: #E91E63; color: white;">ENGLISH</span>
       <span class="question-progress" id="question-progress">Question 1 of 10</span>
     </div>
 
@@ -250,26 +339,25 @@
     <!-- Help Modal -->
     <div class="modal-overlay" id="help-modal">
       <div class="modal">
-        <div style="font-size: 40px; text-align: center; margin-bottom: 10px;">&#128264;</div>
-        <h2 style="text-align: center;">Sound Selection</h2>
-        <div style="background: var(--bg-primary); padding: 15px; border-radius: 12px; margin: 15px 0;">
-          <p style="margin: 8px 0;"><strong>&#128066; Listen</strong> to the target sound</p>
-          <p style="margin: 8px 0;"><strong>&#128065; Look</strong> at all the pictures</p>
-          <p style="margin: 8px 0;"><strong>&#128070; Tap</strong> pictures that start with that sound</p>
-          <p style="margin: 8px 0;"><strong>&#9989;</strong> Check your answer when ready!</p>
+        <div style="font-size: 40px; text-align: center; margin-bottom: 10px;">🔊</div>
+        <h2 style="text-align: center;">Sound Selection!</h2>
+        <div style="background: #FFF9E6; padding: 15px; border-radius: 12px; margin: 15px 0;">
+          <p style="margin: 8px 0;"><strong>👀 Look</strong> at the target sound</p>
+          <p style="margin: 8px 0;"><strong>🖼️ Find</strong> pictures that start with it</p>
+          <p style="margin: 8px 0;"><strong>👆 Tap</strong> all the correct ones!</p>
         </div>
-        <p style="text-align: center; color: var(--text-secondary); font-size: 15px;">You can select multiple pictures!</p>
-        <button class="modal-close" id="close-help">Got it!</button>
+        <p style="text-align: center; font-size: 15px;">You can select multiple pictures!</p>
+        <button class="modal-close" id="close-help">Let's go! ⭐</button>
       </div>
     </div>
 
     <!-- Hint Modal -->
     <div class="modal-overlay" id="hint-modal">
       <div class="modal">
-        <div style="font-size: 40px; text-align: center; margin-bottom: 10px;">&#128161;</div>
-        <h2 style="text-align: center;" id="hint-title">Hint</h2>
-        <p style="text-align: center; font-size: 18px;" id="hint-text">Say each picture's name out loud. Does it start with "mmm"?</p>
-        <button class="modal-close" id="close-hint">Thanks!</button>
+        <div style="font-size: 40px; text-align: center; margin-bottom: 10px;">💡</div>
+        <h2 style="text-align: center;" id="hint-title">Here's a hint!</h2>
+        <p style="text-align: center; font-size: 18px; margin: 20px 0;" id="hint-text">Say each picture's name out loud. Does it start with "mmm"?</p>
+        <button class="modal-close" id="close-hint">Thanks! 👍</button>
       </div>
     </div>
 
