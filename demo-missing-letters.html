@@ -39,6 +39,12 @@
       border-color: #FF9800;
     }
 
+    /* Dynamic width based on number of letters */
+    .letter-box.blank.letters-1 { width: 60px; }
+    .letter-box.blank.letters-2 { width: 100px; }
+    .letter-box.blank.letters-3 { width: 140px; }
+    .letter-box.blank.letters-4 { width: 180px; }
+
     .letter-box.blank.filled {
       background: #E1BEE7;
       border-style: solid;
@@ -565,13 +571,28 @@
     function renderWord(q) {
       const container = document.getElementById('word-display');
       const letters = q.word.split('');
+      const blankSet = new Set(q.blank);
+      const blankCount = q.blank.length;
 
-      container.innerHTML = letters.map((letter, i) => {
-        if (q.blank.includes(i)) {
-          return `<div class="letter-box blank" data-index="${i}">_</div>`;
+      let inBlank = false;
+      let html = '';
+
+      letters.forEach((letter, i) => {
+        if (blankSet.has(i)) {
+          if (!inBlank) {
+            // Create single box for all blanks with appropriate width class
+            html += `<div class="letter-box blank letters-${blankCount}" data-start="${i}">`;
+            for (let j = 0; j < blankCount; j++) html += '_';
+            html += '</div>';
+            inBlank = true;
+          }
+        } else {
+          inBlank = false;
+          html += `<div class="letter-box">${letter}</div>`;
         }
-        return `<div class="letter-box">${letter}</div>`;
-      }).join('');
+      });
+
+      container.innerHTML = html;
     }
 
     function renderOptions(options) {
@@ -596,16 +617,12 @@
       btn.classList.add('selected');
       selectedOption = btn.dataset.option;
 
-      // Fill in the blanks
-      const q = questions[currentQuestion];
-      const letters = selectedOption.split('');
-      q.blank.forEach((pos, i) => {
-        const box = document.querySelector(`.letter-box.blank[data-index="${pos}"]`);
-        if (box && letters[i]) {
-          box.textContent = letters[i];
-          box.classList.add('filled');
-        }
-      });
+      // Fill in the blank box
+      const blankBox = document.querySelector('.letter-box.blank');
+      if (blankBox) {
+        blankBox.textContent = selectedOption;
+        blankBox.classList.add('filled');
+      }
     }
 
     function checkAnswer() {
@@ -618,11 +635,13 @@
       const isCorrect = selectedOption === q.correct;
       results[currentQuestion] = isCorrect;
 
-      // Update blanks styling
-      document.querySelectorAll('.letter-box.blank').forEach(box => {
-        box.classList.remove('filled');
-        box.classList.add(isCorrect ? 'correct' : 'incorrect');
-      });
+      // Update blank styling and show correct answer if wrong
+      const blankBox = document.querySelector('.letter-box.blank');
+      if (blankBox) {
+        blankBox.classList.remove('filled');
+        blankBox.classList.add(isCorrect ? 'correct' : 'incorrect');
+        if (!isCorrect) blankBox.textContent = q.correct;
+      }
 
       // Disable options
       document.querySelectorAll('.option-btn').forEach(btn => {

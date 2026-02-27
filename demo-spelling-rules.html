@@ -71,8 +71,18 @@
       background: #FFF9C4;
       border-style: dashed;
       border-color: #FF9800;
-      min-width: 50px;
     }
+
+    /* Dynamic width based on number of letters */
+    .letter-box.blank.letters-1 { width: 50px; }
+    .letter-box.blank.letters-2 { width: 80px; }
+    .letter-box.blank.letters-3 { width: 110px; }
+    .letter-box.blank.letters-4 { width: 140px; }
+
+    .letter-box.blank.small.letters-1 { width: 40px; }
+    .letter-box.blank.small.letters-2 { width: 70px; }
+    .letter-box.blank.small.letters-3 { width: 100px; }
+    .letter-box.blank.small.letters-4 { width: 130px; }
 
     .letter-box.blank.filled {
       background: #E1BEE7;
@@ -736,6 +746,7 @@
       const letters = q.word.split('');
       const blankSet = new Set(q.blank);
       const useSmall = letters.length > 7;
+      const blankCount = q.blank.length; // Number of missing letters
 
       let inBlank = false;
       let html = '';
@@ -743,9 +754,9 @@
       letters.forEach((letter, i) => {
         if (blankSet.has(i)) {
           if (!inBlank) {
-            // Start of blank group
-            html += `<div class="letter-box blank ${useSmall ? 'small' : ''}" data-start="${i}">`;
-            for (let j = 0; j < q.blank.length; j++) html += '_';
+            // Start of blank group - add letters-X class for width
+            html += `<div class="letter-box blank letters-${blankCount} ${useSmall ? 'small' : ''}" data-start="${i}">`;
+            for (let j = 0; j < blankCount; j++) html += '_';
             html += '</div>';
             inBlank = true;
           }
