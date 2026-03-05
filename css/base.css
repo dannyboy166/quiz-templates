@@ -259,8 +259,8 @@ html, body {
 }
 
 .question-title h1 {
-  font-size: 28px;
-  font-weight: 700;
+  font-size: 52px;
+  font-weight: 530;
   line-height: 1.3;
 }
 
@@ -509,7 +509,7 @@ html, body {
   }
 
   .question-title h1 {
-    font-size: 22px;
+    font-size: 40px;
   }
 
   .help-bar {
@@ -537,7 +537,7 @@ html, body {
 
 @media (max-width: 480px) {
   .question-title h1 {
-    font-size: 18px;
+    font-size: 32px;
   }
 
   .user-profile {
