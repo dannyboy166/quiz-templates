@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Balloon Pop - Quiz Template</title>
+  <link rel="stylesheet" href="css/base.css">
+  <style>
+    body {
+      background: rgb(178, 235, 242);
+    }
+
+    .quiz-container {
+      background: rgb(178, 235, 242);
+    }
+
+    /* Balloons Container */
+    .balloons-container {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 40px;
+      flex-wrap: wrap;
+    }
+
+    /* Individual Balloon */
+    .balloon {
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.2s;
+      user-select: none;
+    }
+
+    .balloon:hover:not(.popped):not(.disabled) {
+      transform: scale(1.08) translateY(-5px);
+    }
+
+    .balloon:active:not(.popped):not(.disabled) {
+      transform: scale(0.95);
+    }
+
+    .balloon.disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    /* Balloon SVG */
+    .balloon svg {
+      width: 100px;
+      height: 140px;
+      filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.15));
+    }
+
+    @media (max-width: 600px) {
+      .balloon svg {
+        width: 75px;
+        height: 105px;
+      }
+
+      .balloon-text {
+        font-size: 22px !important;
+      }
+    }
+
+    /* Text inside balloon */
+    .balloon-text {
+      font-family: 'Apfel Grotezk', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      fill: white;
+      text-anchor: middle;
+      dominant-baseline: middle;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    }
+
+    /* Pop Animation */
+    .balloon.popped .balloon-body {
+      animation: popBalloon 0.3s ease-out forwards;
+    }
+
+    @keyframes popBalloon {
+      0% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      30% {
+        transform: scale(1.3);
+        opacity: 0.8;
+      }
+      100% {
+        transform: scale(0);
+        opacity: 0;
+      }
+    }
+
+    /* Pop particles */
+    .pop-particles {
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      pointer-events: none;
+      display: none;
+    }
+
+    .balloon.popped .pop-particles {
+      display: block;
+    }
+
+    .particle {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      animation: particleBurst 0.5s ease-out forwards;
+    }
+
+    @keyframes particleBurst {
+      0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+      }
+      100% {
+        opacity: 0;
+      }
+    }
+
+    .particle:nth-child(1) { animation: particleBurst1 0.5s ease-out forwards; }
+    .particle:nth-child(2) { animation: particleBurst2 0.5s ease-out forwards; }
+    .particle:nth-child(3) { animation: particleBurst3 0.5s ease-out forwards; }
+    .particle:nth-child(4) { animation: particleBurst4 0.5s ease-out forwards; }
+    .particle:nth-child(5) { animation: particleBurst5 0.5s ease-out forwards; }
+    .particle:nth-child(6) { animation: particleBurst6 0.5s ease-out forwards; }
+
+    @keyframes particleBurst1 { 0% { transform: translate(-50%, -50%); opacity: 1; } 100% { transform: translate(-40px, -50px); opacity: 0; } }
+    @keyframes particleBurst2 { 0% { transform: translate(-50%, -50%); opacity: 1; } 100% { transform: translate(40px, -40px); opacity: 0; } }
+    @keyframes particleBurst3 { 0% { transform: translate(-50%, -50%); opacity: 1; } 100% { transform: translate(-50px, 20px); opacity: 0; } }
+    @keyframes particleBurst4 { 0% { transform: translate(-50%, -50%); opacity: 1; } 100% { transform: translate(50px, 30px); opacity: 0; } }
+    @keyframes particleBurst5 { 0% { transform: translate(-50%, -50%); opacity: 1; } 100% { transform: translate(-20px, -60px); opacity: 0; } }
+    @keyframes particleBurst6 { 0% { transform: translate(-50%, -50%); opacity: 1; } 100% { transform: translate(30px, -55px); opacity: 0; } }
+
+    /* Word Area */
+    .word-area {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .picture-container {
+      margin-bottom: 20px;
+    }
+
+    .picture-emoji {
+      font-size: 100px;
+      line-height: 1;
+    }
+
+    @media (max-width: 600px) {
+      .picture-emoji {
+        font-size: 70px;
+      }
+    }
+
+    /* Word display with blank */
+    .word-display {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 20px;
+    }
+
+    .letter-box {
+      width: 55px;
+      height: 65px;
+      background: white;
+      border: 3px solid #333;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 38px;
+      font-weight: 700;
+      font-family: 'Comic Sans MS', 'Apfel Grotezk', cursive, sans-serif;
+      text-transform: lowercase;
+    }
+
+    .letter-box.blank {
+      background: #FFF9C4;
+      border-style: dashed;
+      border-color: #FF9800;
+      min-width: 90px;
+      color: #FF9800;
+    }
+
+    .letter-box.blank.filled {
+      background: #E1BEE7;
+      border-style: solid;
+      border-color: #9C27B0;
+      color: #333;
+      animation: letterLand 0.4s ease-out;
+    }
+
+    @keyframes letterLand {
+      0% {
+        transform: translateY(-30px) scale(1.2);
+        opacity: 0;
+      }
+      60% {
+        transform: translateY(5px) scale(0.95);
+      }
+      100% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+    }
+
+    .letter-box.blank.correct {
+      background: #C8E6C9;
+      border-color: #4CAF50;
+      border-style: solid;
+    }
+
+    .letter-box.blank.incorrect {
+      background: #FFCDD2;
+      border-color: #F44336;
+      border-style: solid;
+    }
+
+    /* Sound hint */
+    .sound-hint {
+      background: #FFF9E6;
+      border: 2px solid #FFE082;
+      border-radius: 12px;
+      padding: 16px 24px;
+      margin: 0 auto 24px;
+      max-width: 500px;
+      text-align: center;
+      font-size: 16px;
+    }
+
+    .sound-hint strong {
+      color: #E91E63;
+    }
+
+    .sound-hint .sound-example {
+      display: block;
+      margin-top: 8px;
+      font-size: 14px;
+      color: #666;
+    }
+
+    /* Feedback styles */
+    .feedback {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .feedback.show {
+      display: flex;
+    }
+
+    .feedback-badge {
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .feedback-badge.correct {
+      background: #C8E6C9;
+      border: 2px solid #66BB6A;
+      color: #2E7D32;
+    }
+
+    .feedback-badge.incorrect {
+      background: #FFCDD2;
+      border: 2px solid #E57373;
+      color: #C62828;
+    }
+
+    .btn-try-again {
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      background: #FF9800;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-try-again:hover {
+      background: #F57C00;
+    }
+
+    .btn-next {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #4CAF50;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      transition: all 0.2s;
+    }
+
+    .btn-next:hover {
+      background: #43A047;
+      transform: scale(1.1);
+    }
+
+    /* Progress dots */
+    .progress-dots {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    .progress-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #ddd;
+      transition: background 0.3s;
+    }
+
+    .progress-dot.correct {
+      background: #4CAF50;
+    }
+
+    .progress-dot.incorrect {
+      background: #F44336;
+    }
+
+    .progress-dot.current {
+      background: #9C27B0;
+      transform: scale(1.3);
+    }
+
+    /* Help Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 500px;
+      width: 90%;
+      text-align: center;
+      position: relative;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      width: 30px;
+      height: 30px;
+      border: none;
+      background: #eee;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content h2 {
+      margin-bottom: 20px;
+      font-size: 24px;
+    }
+
+    .modal-instruction {
+      background: #FFF9E6;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .modal-instruction p {
+      margin-bottom: 12px;
+      font-size: 16px;
+    }
+
+    .modal-btn {
+      padding: 12px 30px;
+      font-size: 16px;
+      font-weight: 600;
+      background: #333;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    /* Balloon colors */
+    .balloon-red { --balloon-color: #EF5350; --balloon-highlight: #FFCDD2; --balloon-shadow: #C62828; }
+    .balloon-blue { --balloon-color: #42A5F5; --balloon-highlight: #BBDEFB; --balloon-shadow: #1565C0; }
+    .balloon-yellow { --balloon-color: #FFEE58; --balloon-highlight: #FFF9C4; --balloon-shadow: #F9A825; }
+    .balloon-green { --balloon-color: #66BB6A; --balloon-highlight: #C8E6C9; --balloon-shadow: #2E7D32; }
+    .balloon-purple { --balloon-color: #AB47BC; --balloon-highlight: #E1BEE7; --balloon-shadow: #6A1B9A; }
+    .balloon-orange { --balloon-color: #FFA726; --balloon-highlight: #FFE0B2; --balloon-shadow: #E65100; }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+    <!-- Header -->
+    <header class="quiz-header">
+      <button class="btn-back" onclick="window.location.href='index.html'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Back
+      </button>
+
+      <div class="user-profile">
+        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User" class="user-avatar">
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" style="width: 25%"></div>
+        </div>
+      </div>
+
+      <button class="btn-help" id="header-help">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        Help
+      </button>
+    </header>
+
+    <!-- Question Meta -->
+    <div class="question-meta">
+      <span class="badge badge-english">English</span>
+      <span class="question-progress">Question <span id="current-q">1</span> of <span id="total-q">6</span></span>
+    </div>
+
+    <!-- Question Title -->
+    <div class="question-title">
+      <h1 id="question-text">Pop the balloon to complete the word!</h1>
+    </div>
+
+    <!-- Help Bar -->
+    <div class="help-bar">
+      <div class="help-item" id="btn-read-aloud">
+        <span style="font-weight: 530; font-size: 15px;">Read Aloud</span>
+        <span class="help-item-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg></span>
+      </div>
+      <span class="help-item-line"></span>
+      <div class="help-item" id="btn-get-help">
+        <span style="font-weight: 530; font-size: 15px;">Get Help</span>
+        <span class="help-item-icon">?</span>
+      </div>
+      <span class="help-item-line"></span>
+      <div class="help-item" id="btn-get-hint">
+        <span style="font-weight: 530; font-size: 15px;">Get Hint</span>
+        <span class="help-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 6h12v2H6V6zm0 3h12v2H6V9zm0 3h8v2H6v-2z"/></svg></span>
+      </div>
+    </div>
+
+    <!-- Content Card -->
+    <div class="content-card">
+      <div class="content-card-inner">
+
+        <!-- Balloons -->
+        <div class="balloons-container" id="balloons-container">
+          <!-- Balloons will be inserted by JS -->
+        </div>
+
+        <!-- Word Area -->
+        <div class="word-area">
+          <!-- Picture -->
+          <div class="picture-container">
+            <span class="picture-emoji" id="picture-emoji">🐟</span>
+          </div>
+
+          <!-- Word Display -->
+          <div class="word-display" id="word-display">
+            <!-- Letters will be inserted by JS -->
+          </div>
+        </div>
+
+        <!-- Sound Hint -->
+        <div class="sound-hint" id="sound-hint">
+          <strong>The 'sh' Sound</strong> - Shhh! Like a quiet whisper or a fishy kiss!
+          <span class="sound-example">Examples: ship, shoe, shell</span>
+        </div>
+
+        <!-- Check Button -->
+        <button class="btn-check-answer" id="btn-check" style="display: none;">Check Answer</button>
+
+        <!-- Feedback -->
+        <div class="feedback" id="feedback">
+          <div class="feedback-badge" id="feedback-badge">
+            <span id="feedback-icon">✓</span>
+            <span id="feedback-text">Correct!</span>
+          </div>
+          <button class="btn-try-again" id="btn-try-again">Try Again</button>
+          <button class="btn-next" id="btn-next">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Progress Dots -->
+        <div class="progress-dots" id="progress-dots">
+          <!-- Dots will be inserted by JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Help Modal -->
+  <div class="modal-overlay" id="help-modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal('help-modal')">×</button>
+      <h2>How to Play</h2>
+      <div class="modal-instruction">
+        <p>🎈 Look at the picture and the word with missing letters.</p>
+        <p>👆 <strong>Pop the balloon</strong> with the correct sound to complete the word!</p>
+        <p>🔤 Each balloon has a different letter combination:</p>
+        <ul style="margin-left: 20px; margin-top: 8px;">
+          <li><strong>ch</strong> - like in "chair" or "cheese"</li>
+          <li><strong>sh</strong> - like in "ship" or "shell"</li>
+          <li><strong>th</strong> - like in "think" or "three"</li>
+          <li><strong>ph</strong> - like in "phone" or "photo"</li>
+        </ul>
+      </div>
+      <button class="modal-btn" onclick="closeModal('help-modal')">Got it!</button>
+    </div>
+  </div>
+
+  <!-- Hint Modal -->
+  <div class="modal-overlay" id="hint-modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal('hint-modal')">×</button>
+      <h2>💡 Hint</h2>
+      <div class="modal-instruction">
+        <p id="hint-text">Say the word out loud. What sound do you hear at the beginning?</p>
+      </div>
+      <button class="modal-btn" onclick="closeModal('hint-modal')">Thanks!</button>
+    </div>
+  </div>
+
+  <script>
+    // Balloon colors
+    const balloonColors = ['balloon-red', 'balloon-blue', 'balloon-yellow', 'balloon-green', 'balloon-purple', 'balloon-orange'];
+
+    // Question data
+    const questions = [
+      {
+        word: "fish",
+        blankPosition: "end", // where the digraph goes: "start" or "end"
+        blankLetters: "sh",
+        displayWord: ["fi", "_"],  // parts of the word, _ = blank
+        options: ["ch", "th", "ph", "sh"],
+        correct: "sh",
+        emoji: "🐟",
+        soundName: "sh",
+        soundDescription: "Shhh! Like a quiet whisper or a fishy kiss!",
+        soundExamples: "ship, shoe, shell",
+        hint: "This word ends with a quiet sound, like when you tell someone to be quiet: Shhh!"
+      },
+      {
+        word: "chair",
+        blankPosition: "start",
+        blankLetters: "ch",
+        displayWord: ["_", "air"],
+        options: ["ch", "sh", "th", "ph"],
+        correct: "ch",
+        emoji: "🪑",
+        soundName: "ch",
+        soundDescription: "Ch-ch-ch! Like a choo-choo train!",
+        soundExamples: "cheese, chicken, chocolate",
+        hint: "Think about the sound a train makes: Choo-choo!"
+      },
+      {
+        word: "phone",
+        blankPosition: "start",
+        blankLetters: "ph",
+        displayWord: ["_", "one"],
+        options: ["ph", "th", "ch", "sh"],
+        correct: "ph",
+        emoji: "📱",
+        soundName: "ph",
+        soundDescription: "Ph makes an 'f' sound! Funny, right?",
+        soundExamples: "photo, elephant, alphabet",
+        hint: "These two letters together make an 'f' sound!"
+      },
+      {
+        word: "three",
+        blankPosition: "start",
+        blankLetters: "th",
+        displayWord: ["_", "ree"],
+        options: ["th", "sh", "ch", "ph"],
+        correct: "th",
+        emoji: "3️⃣",
+        soundName: "th",
+        soundDescription: "Th! Stick your tongue out a little!",
+        soundExamples: "think, thumb, throw",
+        hint: "Put your tongue between your teeth and blow gently!"
+      },
+      {
+        word: "ship",
+        blankPosition: "start",
+        blankLetters: "sh",
+        displayWord: ["_", "ip"],
+        options: ["sh", "ch", "th", "ph"],
+        correct: "sh",
+        emoji: "🚢",
+        soundName: "sh",
+        soundDescription: "Shhh! Like waves on the ocean!",
+        soundExamples: "shark, shell, shore",
+        hint: "This sound is like telling someone to be quiet!"
+      },
+      {
+        word: "cheese",
+        blankPosition: "start",
+        blankLetters: "ch",
+        displayWord: ["_", "eese"],
+        options: ["ch", "sh", "ph", "th"],
+        correct: "ch",
+        emoji: "🧀",
+        soundName: "ch",
+        soundDescription: "Say cheese! Smile for the camera!",
+        soundExamples: "cherry, church, chin",
+        hint: "What do you say when someone takes your picture? Say ___!"
+      }
+    ];
+
+    let currentQuestion = 0;
+    let selectedOption = null;
+    let results = [];
+    let hasPopped = false;
+
+    // Create balloon SVG
+    function createBalloonSVG(text, colorClass) {
+      const colors = {
+        'balloon-red': { main: '#EF5350', highlight: '#FFCDD2', shadow: '#C62828' },
+        'balloon-blue': { main: '#42A5F5', highlight: '#BBDEFB', shadow: '#1565C0' },
+        'balloon-yellow': { main: '#FFEE58', highlight: '#FFF9C4', shadow: '#F9A825' },
+        'balloon-green': { main: '#66BB6A', highlight: '#C8E6C9', shadow: '#2E7D32' },
+        'balloon-purple': { main: '#AB47BC', highlight: '#E1BEE7', shadow: '#6A1B9A' },
+        'balloon-orange': { main: '#FFA726', highlight: '#FFE0B2', shadow: '#E65100' }
+      };
+
+      const c = colors[colorClass] || colors['balloon-red'];
+
+      return `
+        <svg viewBox="0 -5 100 150" class="balloon-svg">
+          <defs>
+            <radialGradient id="grad-${colorClass}" cx="30%" cy="30%" r="60%">
+              <stop offset="0%" stop-color="${c.highlight}"/>
+              <stop offset="100%" stop-color="${c.main}"/>
+            </radialGradient>
+          </defs>
+          <g class="balloon-body">
+            <!-- Balloon -->
+            <ellipse cx="50" cy="50" rx="40" ry="45" fill="url(#grad-${colorClass})" stroke="${c.shadow}" stroke-width="2"/>
+            <!-- Highlight -->
+            <ellipse cx="35" cy="32" rx="12" ry="8" fill="${c.highlight}" opacity="0.5"/>
+            <!-- Knot -->
+            <polygon points="50,95 45,100 55,100" fill="${c.shadow}"/>
+          </g>
+          <!-- String -->
+          <path d="M50 100 Q45 115 50 130 Q55 140 50 145" stroke="#666" stroke-width="2" fill="none"/>
+          <!-- Text -->
+          <text x="50" y="55" class="balloon-text">${text}</text>
+        </svg>
+        <div class="pop-particles">
+          <div class="particle" style="background: ${c.main};"></div>
+          <div class="particle" style="background: ${c.highlight};"></div>
+          <div class="particle" style="background: ${c.main};"></div>
+          <div class="particle" style="background: ${c.shadow};"></div>
+          <div class="particle" style="background: ${c.highlight};"></div>
+          <div class="particle" style="background: ${c.main};"></div>
+        </div>
+      `;
+    }
+
+    // Initialize
+    function init() {
+      renderProgressDots();
+      loadQuestion(currentQuestion);
+      setupEventListeners();
+    }
+
+    function renderProgressDots() {
+      const container = document.getElementById('progress-dots');
+      container.innerHTML = questions.map((_, i) =>
+        `<div class="progress-dot ${i === 0 ? 'current' : ''}" data-index="${i}"></div>`
+      ).join('');
+    }
+
+    function loadQuestion(index) {
+      const q = questions[index];
+      selectedOption = null;
+      hasPopped = false;
+
+      // Update progress
+      document.getElementById('current-q').textContent = index + 1;
+      document.getElementById('total-q').textContent = questions.length;
+
+      // Update progress dots
+      document.querySelectorAll('.progress-dot').forEach((dot, i) => {
+        dot.classList.remove('current');
+        if (i === index) dot.classList.add('current');
+        if (results[i] === true) dot.classList.add('correct');
+        if (results[i] === false) dot.classList.add('incorrect');
+      });
+
+      // Render balloons
+      renderBalloons(q.options);
+
+      // Render word
+      renderWord(q);
+
+      // Update picture
+      document.getElementById('picture-emoji').textContent = q.emoji;
+
+      // Update sound hint
+      const soundHint = document.getElementById('sound-hint');
+      soundHint.innerHTML = `
+        <strong>The '${q.soundName}' Sound</strong> - ${q.soundDescription}
+        <span class="sound-example">Examples: ${q.soundExamples}</span>
+      `;
+
+      // Update hint
+      document.getElementById('hint-text').textContent = q.hint;
+
+      // Reset UI
+      document.getElementById('btn-check').style.display = 'none';
+      document.getElementById('feedback').classList.remove('show');
+    }
+
+    function renderBalloons(options) {
+      const container = document.getElementById('balloons-container');
+
+      // Shuffle colors
+      const shuffledColors = [...balloonColors].sort(() => Math.random() - 0.5);
+
+      container.innerHTML = options.map((opt, i) => `
+        <div class="balloon ${shuffledColors[i % shuffledColors.length]}" data-option="${opt}">
+          ${createBalloonSVG(opt, shuffledColors[i % shuffledColors.length])}
+        </div>
+      `).join('');
+
+      // Add click handlers
+      container.querySelectorAll('.balloon').forEach(balloon => {
+        balloon.addEventListener('click', () => popBalloon(balloon));
+      });
+    }
+
+    function renderWord(q) {
+      const container = document.getElementById('word-display');
+      let html = '';
+
+      q.displayWord.forEach(part => {
+        if (part === '_') {
+          // Blank slot
+          html += `<div class="letter-box blank" id="blank-slot">?</div>`;
+        } else {
+          // Regular letters
+          for (const letter of part) {
+            html += `<div class="letter-box">${letter}</div>`;
+          }
+        }
+      });
+
+      container.innerHTML = html;
+    }
+
+    function popBalloon(balloon) {
+      if (hasPopped || balloon.classList.contains('popped')) return;
+
+      hasPopped = true;
+      const option = balloon.dataset.option;
+      selectedOption = option;
+
+      // Play pop sound (optional - using Web Audio API)
+      playPopSound();
+
+      // Add popped class
+      balloon.classList.add('popped');
+
+      // Disable other balloons
+      document.querySelectorAll('.balloon').forEach(b => {
+        if (b !== balloon) {
+          b.classList.add('disabled');
+        }
+      });
+
+      // Fill in the blank
+      const blankSlot = document.getElementById('blank-slot');
+      setTimeout(() => {
+        blankSlot.textContent = option;
+        blankSlot.classList.add('filled');
+      }, 200);
+
+      // Auto-check after animation
+      setTimeout(() => {
+        checkAnswer();
+      }, 600);
+    }
+
+    // Preload the pop sound
+    const popSound = new Audio('mixkit-ballon-blows-up-3071.wav');
+    popSound.preload = 'auto';
+
+    function playPopSound() {
+      try {
+        popSound.currentTime = 0;
+        popSound.play();
+      } catch (e) {
+        // Audio not supported
+      }
+    }
+
+    function checkAnswer() {
+      const q = questions[currentQuestion];
+      const isCorrect = selectedOption === q.correct;
+      results[currentQuestion] = isCorrect;
+
+      // Update blank styling
+      const blankSlot = document.getElementById('blank-slot');
+      blankSlot.classList.remove('filled');
+      blankSlot.classList.add(isCorrect ? 'correct' : 'incorrect');
+
+      // If wrong, show correct answer
+      if (!isCorrect) {
+        setTimeout(() => {
+          blankSlot.textContent = q.correct;
+        }, 500);
+      }
+
+      // Show feedback
+      const feedback = document.getElementById('feedback');
+      const badge = document.getElementById('feedback-badge');
+      const icon = document.getElementById('feedback-icon');
+      const text = document.getElementById('feedback-text');
+      const tryAgain = document.getElementById('btn-try-again');
+      const next = document.getElementById('btn-next');
+
+      badge.className = 'feedback-badge ' + (isCorrect ? 'correct' : 'incorrect');
+      icon.textContent = isCorrect ? '✓' : '✗';
+      text.textContent = isCorrect ? `Correct! ${q.word}!` : `It's "${q.correct}" - ${q.word}`;
+
+      tryAgain.style.display = isCorrect ? 'none' : 'inline-block';
+      next.style.display = 'flex';
+
+      feedback.classList.add('show');
+
+      // Update progress dot
+      const dot = document.querySelector(`.progress-dot[data-index="${currentQuestion}"]`);
+      dot.classList.remove('current');
+      dot.classList.add(isCorrect ? 'correct' : 'incorrect');
+
+      // Read aloud feedback
+      if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(
+          isCorrect ? `Correct! The word is ${q.word}.` : `The answer is ${q.correct}. The word is ${q.word}.`
+        );
+        utterance.rate = 0.85;
+        speechSynthesis.speak(utterance);
+      }
+    }
+
+    function tryAgain() {
+      loadQuestion(currentQuestion);
+    }
+
+    function nextQuestion() {
+      if (currentQuestion < questions.length - 1) {
+        currentQuestion++;
+        loadQuestion(currentQuestion);
+      } else {
+        // Quiz complete
+        const correct = results.filter(r => r === true).length;
+        const container = document.querySelector('.content-card-inner');
+        container.innerHTML = `
+          <div style="text-align: center; padding: 40px;">
+            <div style="font-size: 80px; margin-bottom: 20px;">🎉</div>
+            <h2 style="font-size: 32px; margin-bottom: 15px;">Quiz Complete!</h2>
+            <p style="font-size: 20px; color: #666; margin-bottom: 30px;">You got ${correct} out of ${questions.length} correct!</p>
+            <button onclick="window.location.href='index.html'" style="padding: 15px 40px; background: black; color: white; border: none; border-radius: 25px; font-size: 16px; cursor: pointer;">Back to Home</button>
+          </div>
+        `;
+      }
+    }
+
+    function readAloud() {
+      if ('speechSynthesis' in window) {
+        speechSynthesis.cancel();
+        const q = questions[currentQuestion];
+        const utterance = new SpeechSynthesisUtterance(
+          `Pop the balloon to complete the word. Look at the picture: ${q.word}. Which sound completes the word?`
+        );
+        utterance.rate = 0.85;
+        speechSynthesis.speak(utterance);
+      }
+    }
+
+    function openModal(id) {
+      document.getElementById(id).classList.add('show');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('show');
+    }
+
+    function setupEventListeners() {
+      document.getElementById('btn-try-again').addEventListener('click', tryAgain);
+      document.getElementById('btn-next').addEventListener('click', nextQuestion);
+      document.getElementById('btn-read-aloud').addEventListener('click', readAloud);
+      document.getElementById('btn-get-help').addEventListener('click', () => openModal('help-modal'));
+      document.getElementById('header-help').addEventListener('click', () => openModal('help-modal'));
+      document.getElementById('btn-get-hint').addEventListener('click', () => openModal('hint-modal'));
+
+      // Close modals on overlay click
+      document.querySelectorAll('.modal-overlay').forEach(modal => {
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) closeModal(modal.id);
+        });
+      });
+    }
+
+    // Start
+    init();
+  </script>
+</body>
+</html>
