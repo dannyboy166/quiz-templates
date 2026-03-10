@@ -16,56 +16,80 @@
 
     /* Balloons Container */
     .balloons-container {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
+      position: relative;
+      width: 100%;
+      height: 280px;
       margin-bottom: 40px;
-      flex-wrap: wrap;
+    }
+
+    @media (max-width: 600px) {
+      .balloons-container {
+        height: 220px;
+      }
     }
 
     /* Individual Balloon */
     .balloon {
-      position: relative;
+      position: absolute;
       cursor: pointer;
       transition: transform 0.2s;
       user-select: none;
+      pointer-events: none;
     }
 
-    .balloon:hover:not(.popped):not(.disabled) {
-      transform: scale(1.08) translateY(-5px);
+    .balloon:has(ellipse:hover):not(.popped):not(.disabled) {
+      transform: scale(1.08);
     }
 
-    .balloon:active:not(.popped):not(.disabled) {
+    .balloon:has(ellipse:active):not(.popped):not(.disabled) {
       transform: scale(0.95);
     }
 
     .balloon.disabled {
       cursor: not-allowed;
       opacity: 0.5;
+      animation: none !important;
+    }
+
+    /* Floating - handled by JavaScript for random movement */
+    .balloon.floating {
+      transition: transform 0.1s linear;
     }
 
     /* Balloon SVG */
     .balloon svg {
-      width: 100px;
-      height: 140px;
+      width: 130px;
+      height: 180px;
       filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.15));
+      pointer-events: none;
+    }
+
+    /* Only the balloon ellipse is clickable */
+    .balloon svg ellipse {
+      pointer-events: auto;
+      cursor: pointer;
+    }
+
+    .balloon.popped svg ellipse,
+    .balloon.disabled svg ellipse {
+      pointer-events: none;
     }
 
     @media (max-width: 600px) {
       .balloon svg {
-        width: 75px;
-        height: 105px;
+        width: 100px;
+        height: 140px;
       }
 
       .balloon-text {
-        font-size: 22px !important;
+        font-size: 26px !important;
       }
     }
 
     /* Text inside balloon */
     .balloon-text {
       font-family: 'Apfel Grotezk', sans-serif;
-      font-size: 28px;
+      font-size: 32px;
       font-weight: 700;
       fill: white;
       text-anchor: middle;
@@ -74,7 +98,15 @@
     }
 
     /* Pop Animation */
+    .balloon.popped {
+      animation: none !important;
+    }
+
     .balloon.popped .balloon-body {
+      animation: popBalloon 0.3s ease-out forwards;
+    }
+
+    .balloon.popped .balloon-string {
       animation: popBalloon 0.3s ease-out forwards;
     }
 
@@ -146,11 +178,13 @@
 
     .picture-container {
       margin-bottom: 20px;
+      overflow: visible;
     }
 
     .picture-emoji {
       font-size: 100px;
-      line-height: 1;
+      line-height: 1.2;
+      display: inline-block;
     }
 
     @media (max-width: 600px) {
@@ -576,14 +610,14 @@
     // Balloon colors
     const balloonColors = ['balloon-red', 'balloon-blue', 'balloon-yellow', 'balloon-green', 'balloon-purple', 'balloon-orange'];
 
-    // Question data
+    // Question data - supports 2-8 balloons per question
     const questions = [
       {
         word: "fish",
         blankPosition: "end", // where the digraph goes: "start" or "end"
         blankLetters: "sh",
         displayWord: ["fi", "_"],  // parts of the word, _ = blank
-        options: ["ch", "th", "ph", "sh"],
+        options: ["ch", "sh"],  // 2 balloons - easier
         correct: "sh",
         emoji: "🐟",
         soundName: "sh",
@@ -596,7 +630,7 @@
         blankPosition: "start",
         blankLetters: "ch",
         displayWord: ["_", "air"],
-        options: ["ch", "sh", "th", "ph"],
+        options: ["ch", "sh", "th"],  // 3 balloons
         correct: "ch",
         emoji: "🪑",
         soundName: "ch",
@@ -609,7 +643,7 @@
         blankPosition: "start",
         blankLetters: "ph",
         displayWord: ["_", "one"],
-        options: ["ph", "th", "ch", "sh"],
+        options: ["ph", "th", "ch", "sh"],  // 4 balloons
         correct: "ph",
         emoji: "📱",
         soundName: "ph",
@@ -622,7 +656,7 @@
         blankPosition: "start",
         blankLetters: "th",
         displayWord: ["_", "ree"],
-        options: ["th", "sh", "ch", "ph"],
+        options: ["th", "sh", "ch", "ph", "wh"],  // 5 balloons
         correct: "th",
         emoji: "3️⃣",
         soundName: "th",
@@ -635,7 +669,7 @@
         blankPosition: "start",
         blankLetters: "sh",
         displayWord: ["_", "ip"],
-        options: ["sh", "ch", "th", "ph"],
+        options: ["sh", "ch", "th", "ph", "wh", "ck"],  // 6 balloons
         correct: "sh",
         emoji: "🚢",
         soundName: "sh",
@@ -648,7 +682,7 @@
         blankPosition: "start",
         blankLetters: "ch",
         displayWord: ["_", "eese"],
-        options: ["ch", "sh", "ph", "th"],
+        options: ["ch", "sh", "ph", "th", "wh", "ck", "ng"],  // 7 balloons
         correct: "ch",
         emoji: "🧀",
         soundName: "ch",
@@ -691,11 +725,11 @@
             <ellipse cx="35" cy="32" rx="12" ry="8" fill="${c.highlight}" opacity="0.5"/>
             <!-- Knot -->
             <polygon points="50,95 45,100 55,100" fill="${c.shadow}"/>
+            <!-- Text -->
+            <text x="50" y="55" class="balloon-text">${text}</text>
           </g>
           <!-- String -->
-          <path d="M50 100 Q45 115 50 130 Q55 140 50 145" stroke="#666" stroke-width="2" fill="none"/>
-          <!-- Text -->
-          <text x="50" y="55" class="balloon-text">${text}</text>
+          <path d="M50 100 Q45 115 50 130 Q55 140 50 145" stroke="#666" stroke-width="2" fill="none" class="balloon-string"/>
         </svg>
         <div class="pop-particles">
           <div class="particle" style="background: ${c.main};"></div>
@@ -765,20 +799,65 @@
 
     function renderBalloons(options) {
       const container = document.getElementById('balloons-container');
+      const numBalloons = options.length; // Supports 2-8 balloons
 
       // Shuffle colors
       const shuffledColors = [...balloonColors].sort(() => Math.random() - 0.5);
 
-      container.innerHTML = options.map((opt, i) => `
-        <div class="balloon ${shuffledColors[i % shuffledColors.length]}" data-option="${opt}">
-          ${createBalloonSVG(opt, shuffledColors[i % shuffledColors.length])}
-        </div>
-      `).join('');
+      // Calculate positions to spread balloons across the container
+      const positions = generateBalloonPositions(numBalloons);
 
-      // Add click handlers
+      container.innerHTML = options.map((opt, i) => {
+        const pos = positions[i];
+
+        return `
+          <div class="balloon floating ${shuffledColors[i % shuffledColors.length]}"
+               data-option="${opt}"
+               style="left: ${pos.x}%; top: ${pos.y}%;"
+               data-base-x="${pos.x}"
+               data-base-y="${pos.y}">
+            ${createBalloonSVG(opt, shuffledColors[i % shuffledColors.length])}
+          </div>
+        `;
+      }).join('');
+
+      // Start floating animation
+      startFloatingAnimation();
+
+      // Add click handlers to the balloon body (ellipse) for precise hit detection
       container.querySelectorAll('.balloon').forEach(balloon => {
-        balloon.addEventListener('click', () => popBalloon(balloon));
+        const ellipse = balloon.querySelector('ellipse');
+        if (ellipse) {
+          ellipse.addEventListener('click', (e) => {
+            e.stopPropagation();
+            popBalloon(balloon);
+          });
+        }
       });
+    }
+
+    function generateBalloonPositions(count) {
+      const positions = [];
+
+      // Divide container into zones to ensure spread, then randomize within each zone
+      const cols = Math.ceil(Math.sqrt(count));
+      const rows = Math.ceil(count / cols);
+      const zoneWidth = 80 / cols;
+      const zoneHeight = 50 / rows;
+
+      for (let i = 0; i < count; i++) {
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+
+        // Random position within this zone
+        positions.push({
+          x: 5 + col * zoneWidth + Math.random() * (zoneWidth * 0.8),
+          y: 5 + row * zoneHeight + Math.random() * (zoneHeight * 0.8)
+        });
+      }
+
+      // Shuffle positions so balloons don't always appear in same order
+      return positions.sort(() => Math.random() - 0.5);
     }
 
     function renderWord(q) {
@@ -952,6 +1031,92 @@
           if (e.target === modal) closeModal(modal.id);
         });
       });
+    }
+
+    // Floating animation state
+    let floatingAnimationId = null;
+    const balloonStates = new Map();
+
+    function startFloatingAnimation() {
+      // Cancel any existing animation
+      if (floatingAnimationId) {
+        cancelAnimationFrame(floatingAnimationId);
+      }
+      balloonStates.clear();
+
+      const container = document.getElementById('balloons-container');
+
+      // Initialize each balloon with random velocity
+      document.querySelectorAll('.balloon.floating').forEach(balloon => {
+        balloonStates.set(balloon, {
+          x: 0,
+          y: 0,
+          vx: (Math.random() - 0.5) * 0.5,
+          vy: (Math.random() - 0.5) * 0.5,
+          targetVx: (Math.random() - 0.5) * 0.5,
+          targetVy: (Math.random() - 0.5) * 0.5,
+          changeTimer: Math.random() * 100
+        });
+      });
+
+      // Animation loop
+      function animate() {
+        const containerRect = container.getBoundingClientRect();
+
+        document.querySelectorAll('.balloon.floating').forEach(balloon => {
+          if (balloon.classList.contains('popped') || balloon.classList.contains('disabled')) return;
+
+          const state = balloonStates.get(balloon);
+          if (!state) return;
+
+          // Gradually change direction
+          state.changeTimer--;
+          if (state.changeTimer <= 0) {
+            state.targetVx = (Math.random() - 0.5) * 0.8;
+            state.targetVy = (Math.random() - 0.5) * 0.6;
+            state.changeTimer = 80 + Math.random() * 120;
+          }
+
+          // Smooth velocity transition
+          state.vx += (state.targetVx - state.vx) * 0.02;
+          state.vy += (state.targetVy - state.vy) * 0.02;
+
+          // Update position
+          state.x += state.vx;
+          state.y += state.vy;
+
+          // Check actual balloon position against container bounds
+          const balloonRect = balloon.getBoundingClientRect();
+          const balloonLeft = balloonRect.left - containerRect.left + state.vx;
+          const balloonRight = balloonRect.right - containerRect.left + state.vx;
+          const balloonTop = balloonRect.top - containerRect.top + state.vy;
+          const balloonBottom = balloonRect.bottom - containerRect.top + state.vy;
+
+          // Bounce off edges
+          if (balloonLeft < 0 || balloonRight > containerRect.width) {
+            state.targetVx = -state.vx * 0.5;
+            state.vx *= -0.3;
+          }
+          if (balloonTop < 0 || balloonBottom > containerRect.height) {
+            state.targetVy = -state.vy * 0.5;
+            state.vy *= -0.3;
+          }
+
+          // Apply transform
+          balloon.style.transform = `translate(${state.x}px, ${state.y}px)`;
+        });
+
+        floatingAnimationId = requestAnimationFrame(animate);
+      }
+
+      animate();
+    }
+
+    function stopFloatingAnimation() {
+      if (floatingAnimationId) {
+        cancelAnimationFrame(floatingAnimationId);
+        floatingAnimationId = null;
+      }
     }
 
     // Start
