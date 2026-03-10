@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Balloon Pop Sound Tester</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f5;
+      padding: 40px 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    p.subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 40px;
+    }
+
+    .sound-card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .sound-card h2 {
+      font-size: 20px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sound-card p {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
+
+    .play-btn {
+      padding: 16px 32px;
+      font-size: 18px;
+      font-weight: 600;
+      background: #EF5350;
+      color: white;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .play-btn:hover {
+      background: #E53935;
+      transform: scale(1.05);
+    }
+
+    .play-btn:active {
+      transform: scale(0.95);
+    }
+
+    .selected {
+      border: 3px solid #4CAF50;
+    }
+
+    .select-btn {
+      margin-left: 10px;
+      padding: 8px 16px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .select-btn:hover {
+      background: #43A047;
+    }
+
+    .code-preview {
+      background: #f5f5f5;
+      padding: 12px;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 12px;
+      margin-top: 16px;
+      overflow-x: auto;
+      display: none;
+    }
+
+    .sound-card.selected .code-preview {
+      display: block;
+    }
+
+    .badge {
+      background: #E3F2FD;
+      color: #1976D2;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎈 Balloon Pop Sounds</h1>
+    <p class="subtitle">Click each button to test the sound, then tell me which one you like!</p>
+
+    <!-- Sound 1: Sharp Pop -->
+    <div class="sound-card" id="card1">
+      <h2>1. Sharp Pop <span class="badge">Quick & Snappy</span></h2>
+      <p>A quick, sharp burst - like a real balloon pop</p>
+      <button class="play-btn" onclick="playSound1()">🎈 Play Sound 1</button>
+    </div>
+
+    <!-- Sound 2: Deep Pop -->
+    <div class="sound-card" id="card2">
+      <h2>2. Deep Pop <span class="badge">Low & Punchy</span></h2>
+      <p>A deeper, more bass-heavy pop sound</p>
+      <button class="play-btn" onclick="playSound2()">🎈 Play Sound 2</button>
+    </div>
+
+    <!-- Sound 3: Cartoon Pop -->
+    <div class="sound-card" id="card3">
+      <h2>3. Cartoon Pop <span class="badge">Fun & Bouncy</span></h2>
+      <p>A playful, cartoon-style pop with a slight bounce</p>
+      <button class="play-btn" onclick="playSound3()">🎈 Play Sound 3</button>
+    </div>
+
+    <!-- Sound 4: Crisp Burst -->
+    <div class="sound-card" id="card4">
+      <h2>4. Crisp Burst <span class="badge">Noise-based</span></h2>
+      <p>White noise burst - more realistic "air release" sound</p>
+      <button class="play-btn" onclick="playSound4()">🎈 Play Sound 4</button>
+    </div>
+
+    <!-- Sound 5: Double Pop -->
+    <div class="sound-card" id="card5">
+      <h2>5. Double Pop <span class="badge">Two-stage</span></h2>
+      <p>Initial pop + secondary "air whoosh"</p>
+      <button class="play-btn" onclick="playSound5()">🎈 Play Sound 5</button>
+    </div>
+
+    <!-- Sound 6: Soft Pop -->
+    <div class="sound-card" id="card6">
+      <h2>6. Soft Pop <span class="badge">Gentle</span></h2>
+      <p>A gentler, less startling pop - good for young kids</p>
+      <button class="play-btn" onclick="playSound6()">🎈 Play Sound 6</button>
+    </div>
+
+  </div>
+
+  <script>
+    let audioContext;
+
+    function getAudioContext() {
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      return audioContext;
+    }
+
+    // Sound 1: Sharp Pop - quick high-to-low sweep with noise
+    function playSound1() {
+      const ctx = getAudioContext();
+      const now = ctx.currentTime;
+
+      // Oscillator for the "pop" tone
+      const osc = ctx.createOscillator();
+      const oscGain = ctx.createGain();
+      osc.connect(oscGain);
+      oscGain.connect(ctx.destination);
+
+      osc.frequency.setValueAtTime(1200, now);
+      osc.frequency.exponentialRampToValueAtTime(150, now + 0.08);
+
+      oscGain.gain.setValueAtTime(0.4, now);
+      oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+
+      osc.start(now);
+      osc.stop(now + 0.08);
+
+      // Noise burst
+      const bufferSize = ctx.sampleRate * 0.1;
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, 3);
+      }
+
+      const noise = ctx.createBufferSource();
+      const noiseGain = ctx.createGain();
+      noise.buffer = buffer;
+      noise.connect(noiseGain);
+      noiseGain.connect(ctx.destination);
+      noiseGain.gain.setValueAtTime(0.3, now);
+
+      noise.start(now);
+    }
+
+    // Sound 2: Deep Pop - lower frequency, punchier
+    function playSound2() {
+      const ctx = getAudioContext();
+      const now = ctx.currentTime;
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.frequency.setValueAtTime(600, now);
+      osc.frequency.exponentialRampToValueAtTime(60, now + 0.15);
+
+      gain.gain.setValueAtTime(0.5, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+
+      osc.start(now);
+      osc.stop(now + 0.15);
+    }
+
+    // Sound 3: Cartoon Pop - bouncy with overtones
+    function playSound3() {
+      const ctx = getAudioContext();
+      const now = ctx.currentTime;
+
+      // Main pop
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.connect(gain1);
+      gain1.connect(ctx.destination);
+
+      osc1.frequency.setValueAtTime(800, now);
+      osc1.frequency.exponentialRampToValueAtTime(200, now + 0.05);
+      osc1.frequency.setValueAtTime(400, now + 0.05);
+      osc1.frequency.exponentialRampToValueAtTime(100, now + 0.12);
+
+      gain1.gain.setValueAtTime(0.4, now);
+      gain1.gain.setValueAtTime(0.3, now + 0.05);
+      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+      osc1.start(now);
+      osc1.stop(now + 0.12);
+
+      // Higher overtone
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+
+      osc2.frequency.setValueAtTime(1600, now);
+      osc2.frequency.exponentialRampToValueAtTime(400, now + 0.04);
+
+      gain2.gain.setValueAtTime(0.15, now);
+      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+
+      osc2.start(now);
+      osc2.stop(now + 0.04);
+    }
+
+    // Sound 4: Crisp Burst - noise-based, realistic
+    function playSound4() {
+      const ctx = getAudioContext();
+      const now = ctx.currentTime;
+
+      // Create noise buffer
+      const bufferSize = ctx.sampleRate * 0.15;
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+
+      for (let i = 0; i < bufferSize; i++) {
+        // Sharp attack, quick decay
+        const envelope = i < 100 ? i / 100 : Math.pow(1 - (i - 100) / (bufferSize - 100), 2);
+        data[i] = (Math.random() * 2 - 1) * envelope;
+      }
+
+      const noise = ctx.createBufferSource();
+      noise.buffer = buffer;
+
+      // Bandpass filter for more "pop" character
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(2000, now);
+      filter.Q.setValueAtTime(1, now);
+
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.5, now);
+
+      noise.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+
+      noise.start(now);
+    }
+
+    // Sound 5: Double Pop - two-stage with air release
+    function playSound5() {
+      const ctx = getAudioContext();
+      const now = ctx.currentTime;
+
+      // Initial pop
+      const osc = ctx.createOscillator();
+      const oscGain = ctx.createGain();
+      osc.connect(oscGain);
+      oscGain.connect(ctx.destination);
+
+      osc.frequency.setValueAtTime(1000, now);
+      osc.frequency.exponentialRampToValueAtTime(100, now + 0.05);
+
+      oscGain.gain.setValueAtTime(0.4, now);
+      oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+
+      osc.start(now);
+      osc.stop(now + 0.05);
+
+      // Air release (filtered noise)
+      const bufferSize = ctx.sampleRate * 0.2;
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, 1.5);
+      }
+
+      const noise = ctx.createBufferSource();
+      noise.buffer = buffer;
+
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'highpass';
+      filter.frequency.setValueAtTime(3000, now + 0.03);
+      filter.frequency.exponentialRampToValueAtTime(500, now + 0.2);
+
+      const noiseGain = ctx.createGain();
+      noiseGain.gain.setValueAtTime(0.25, now + 0.03);
+
+      noise.connect(filter);
+      filter.connect(noiseGain);
+      noiseGain.connect(ctx.destination);
+
+      noise.start(now + 0.03);
+    }
+
+    // Sound 6: Soft Pop - gentle, less startling
+    function playSound6() {
+      const ctx = getAudioContext();
+      const now = ctx.currentTime;
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.frequency.setValueAtTime(500, now);
+      osc.frequency.exponentialRampToValueAtTime(150, now + 0.1);
+
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+
+      osc.start(now);
+      osc.stop(now + 0.1);
+
+      // Soft noise
+      const bufferSize = ctx.sampleRate * 0.08;
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = (Math.random() * 2 - 1) * 0.5 * Math.pow(1 - i / bufferSize, 2);
+      }
+
+      const noise = ctx.createBufferSource();
+      const noiseGain = ctx.createGain();
+      noise.buffer = buffer;
+      noise.connect(noiseGain);
+      noiseGain.connect(ctx.destination);
+      noiseGain.gain.setValueAtTime(0.15, now);
+
+      noise.start(now);
+    }
+  </script>
+</body>
+</html>
