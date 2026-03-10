@@ -192,8 +192,8 @@
     /* Splash particles */
     .splash {
       position: absolute;
-      width: 8px;
-      height: 8px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
       pointer-events: none;
       opacity: 0;
@@ -205,7 +205,7 @@
         opacity: 1;
       }
       100% {
-        transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(0.5);
+        transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(0.3);
         opacity: 0;
       }
     }
@@ -499,30 +499,53 @@
       }
 
       .dice {
-        width: 55px;
-        height: 55px;
+        width: 66px;
+        height: 66px;
       }
 
       .face {
-        width: 55px;
-        height: 55px;
+        width: 66px;
+        height: 66px;
       }
 
       .face-1, .face-6, .face-2, .face-5, .face-3, .face-4 {
-        transform: translateZ(27.5px);
+        transform: translateZ(33px);
       }
 
-      .face-1 { transform: rotateY(0deg) translateZ(27.5px); }
-      .face-6 { transform: rotateY(180deg) translateZ(27.5px); }
-      .face-2 { transform: rotateY(-90deg) translateZ(27.5px); }
-      .face-5 { transform: rotateY(90deg) translateZ(27.5px); }
-      .face-3 { transform: rotateX(90deg) translateZ(27.5px); }
-      .face-4 { transform: rotateX(-90deg) translateZ(27.5px); }
+      .face-1 { transform: rotateY(0deg) translateZ(33px); }
+      .face-6 { transform: rotateY(180deg) translateZ(33px); }
+      .face-2 { transform: rotateY(-90deg) translateZ(33px); }
+      .face-5 { transform: rotateY(90deg) translateZ(33px); }
+      .face-3 { transform: rotateX(90deg) translateZ(33px); }
+      .face-4 { transform: rotateX(-90deg) translateZ(33px); }
 
       .dot {
-        width: 9px;
-        height: 9px;
+        width: 10px;
+        height: 10px;
       }
+
+      /* Adjust dot positions for mobile dice */
+      .face-1 .dot { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+      .face-2 .dot:nth-child(1) { top: 12px; left: 12px; }
+      .face-2 .dot:nth-child(2) { bottom: 12px; right: 12px; }
+      .face-3 .dot:nth-child(1) { top: 12px; left: 12px; }
+      .face-3 .dot:nth-child(2) { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+      .face-3 .dot:nth-child(3) { bottom: 12px; right: 12px; }
+      .face-4 .dot:nth-child(1) { top: 12px; left: 12px; }
+      .face-4 .dot:nth-child(2) { top: 12px; right: 12px; }
+      .face-4 .dot:nth-child(3) { bottom: 12px; left: 12px; }
+      .face-4 .dot:nth-child(4) { bottom: 12px; right: 12px; }
+      .face-5 .dot:nth-child(1) { top: 12px; left: 12px; }
+      .face-5 .dot:nth-child(2) { top: 12px; right: 12px; }
+      .face-5 .dot:nth-child(3) { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+      .face-5 .dot:nth-child(4) { bottom: 12px; left: 12px; }
+      .face-5 .dot:nth-child(5) { bottom: 12px; right: 12px; }
+      .face-6 .dot:nth-child(1) { top: 12px; left: 12px; }
+      .face-6 .dot:nth-child(2) { top: 12px; right: 12px; }
+      .face-6 .dot:nth-child(3) { top: 50%; left: 12px; transform: translateY(-50%); }
+      .face-6 .dot:nth-child(4) { top: 50%; right: 12px; transform: translateY(-50%); }
+      .face-6 .dot:nth-child(5) { bottom: 12px; left: 12px; }
+      .face-6 .dot:nth-child(6) { bottom: 12px; right: 12px; }
 
       .answer-btn {
         width: 70px;
@@ -771,24 +794,24 @@
         const colors = ['rgb(244,191,222)', '#a8d8e8', '#e8a850', '#a8d060', '#ffcc66'];
         const container = this.dice.parentElement;
 
-        for (let i = 0; i < 6; i++) {
+        for (let i = 0; i < 20; i++) {
           const splash = document.createElement('div');
           splash.className = 'splash';
           splash.style.background = colors[Math.floor(Math.random() * colors.length)];
           splash.style.left = '48px';
           splash.style.top = '48px';
 
-          const angle = (i / 6) * 360;
-          const distance = 40 + Math.random() * 30;
+          const angle = (i / 20) * 360 + Math.random() * 20;
+          const distance = 60 + Math.random() * 70;
           const x = Math.cos(angle * Math.PI / 180) * distance;
           const y = Math.sin(angle * Math.PI / 180) * distance;
 
-          splash.style.animation = 'splashOut 0.4s ease-out forwards';
+          splash.style.animation = 'splashOut 0.5s ease-out forwards';
           splash.style.setProperty('--x', x + 'px');
           splash.style.setProperty('--y', y + 'px');
 
           container.appendChild(splash);
-          setTimeout(() => splash.remove(), 400);
+          setTimeout(() => splash.remove(), 500);
         }
       }
     }
@@ -814,10 +837,10 @@
       // Position dice based on count
       const positions = getDicePositions(diceCount);
 
-      // Board is 400x400, center is at 200,200
-      // Dice is 96x96, so dice center offset is 48
-      const boardCenter = 200;
-      const diceHalf = 48;
+      // Board center and dice half size (varies by screen size)
+      const isMobile = window.innerWidth <= 600;
+      const boardCenter = isMobile ? 175 : 200;
+      const diceHalf = isMobile ? 33 : 48;
 
       for (let i = 0; i < diceCount; i++) {
         const wrapper = document.createElement('div');
@@ -843,29 +866,31 @@
 
     function getDicePositions(count) {
       const positions = [];
+      const isMobile = window.innerWidth <= 600;
 
       if (count === 2) {
-        const s = 100;
+        const s = isMobile ? 70 : 100;
         positions.push({ x: -s, y: 0 });
         positions.push({ x: s, y: 0 });
       } else if (count === 3) {
-        const s = 120;
+        const s = isMobile ? 105 : 120;
         positions.push({ x: -s, y: 0 });
         positions.push({ x: 0, y: 0 });
         positions.push({ x: s, y: 0 });
       } else if (count === 4) {
-        const s = 95;
+        const s = isMobile ? 70 : 95;
         positions.push({ x: -s, y: -s });
         positions.push({ x: s, y: -s });
         positions.push({ x: -s, y: s });
         positions.push({ x: s, y: s });
       } else if (count === 5) {
-        const s = 115;
-        positions.push({ x: -s, y: -s });
-        positions.push({ x: s, y: -s });
+        const sx = isMobile ? 95 : 115; // horizontal spacing
+        const sy = isMobile ? 65 : 115; // vertical spacing
+        positions.push({ x: -sx, y: -sy });
+        positions.push({ x: sx, y: -sy });
         positions.push({ x: 0, y: 0 });
-        positions.push({ x: -s, y: s });
-        positions.push({ x: s, y: s });
+        positions.push({ x: -sx, y: sy });
+        positions.push({ x: sx, y: sy });
       }
 
       return positions;
