@@ -513,6 +513,57 @@ This creates: 2, 4, __, 8, __, __, 14
 
 ---
 
+### 16. Dice Addition (`dice-addition`)
+
+**Standalone Speed Challenge** - Roll dice and add them up as fast as possible!
+
+This template is **ready to use as-is** - no Excel import needed. Students select the number of dice (2-5) and complete 10 rounds as fast as they can.
+
+| Setting | Value | Description |
+|---------|-------|-------------|
+| Dice count | 2-5 | Selected by student before starting |
+| Rounds | 10 | Fixed challenge length |
+| Wrong answer penalty | +5 seconds | Added to final time |
+| Answer options | 4 | Multiple choice, randomised |
+
+**Features:**
+- 3D animated dice with realistic rolling physics
+- Timer tracks total time including penalties
+- Visual round progress dots
+- Answer buttons appear on right side (desktop) or below (mobile)
+- Final score shows time, correct count, and penalty count
+
+**Customisation Options (in code):**
+
+To change number of rounds:
+```javascript
+// Line ~950 - change 10 to desired number
+if (currentRound >= 10) {
+  endGame();
+}
+```
+
+To change penalty time:
+```javascript
+// Line ~930 - change 5000 to desired ms
+totalPenalty += 5000; // 5 seconds
+```
+
+To change available dice options:
+```html
+<!-- Line ~559 - modify dice-selector buttons -->
+<div class="dice-selector">
+  <button class="dice-option" data-count="2">2</button>
+  <button class="dice-option selected" data-count="3">3</button>
+  <button class="dice-option" data-count="4">4</button>
+  <button class="dice-option" data-count="5">5</button>
+</div>
+```
+
+**Note:** Unlike other templates, this is a **complete activity** rather than a data-driven question type. Use it directly for maths fluency practice.
+
+---
+
 ## Suggested Excel Import Structure
 
 ### Option A: Single Table (Simple)
@@ -609,7 +660,9 @@ public abstract class QuestionComponentBase : ComponentBase
 ├── SpellingRulesQuestion.razor
 ├── PictureEquationsQuestion.razor
 ├── FractionsQuestion.razor
-└── SkipCountingQuestion.razor
+├── SkipCountingQuestion.razor
+├── BalloonPopQuestion.razor
+└── DiceAdditionChallenge.razor
 ```
 
 ### 3. Dynamic Component Loader
@@ -673,6 +726,8 @@ public class QuestionImportService
 | `demo-picture-equations.html` | `picture-equations` | Inline styles |
 | `demo-fractions.html` | `fractions` | Inline styles |
 | `demo-skip-counting.html` | `skip-counting` | Inline styles |
+| `demo-balloon-pop.html` | `balloon-pop` | Inline styles |
+| `demo-dice-addition.html` | `dice-addition` | Inline styles (standalone) |
 
 ---
 
