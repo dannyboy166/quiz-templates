@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Base 10 Blocks - Quiz Template</title>
+  <link rel="stylesheet" href="css/base.css">
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+  <style>
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    /* Modal styles */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      max-width: 400px;
+      margin: 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal h2 {
+      margin: 0 0 15px 0;
+      font-size: 22px;
+    }
+
+    .modal p {
+      margin: 0 0 10px 0;
+      line-height: 1.6;
+    }
+
+    .modal-close {
+      margin-top: 20px;
+      padding: 10px 24px;
+      background: #333;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* Help bar clickable */
+    .help-item {
+      cursor: pointer;
+      padding: 8px 12px;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+
+    .help-item:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    .help-item.active {
+      background: rgba(0, 0, 0, 0.1);
+    }
+
+    /* Help button with Lottie */
+    .btn-help {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .btn-help lottie-player {
+      pointer-events: none;
+    }
+
+    /* Try Again button */
+    .btn-try-again {
+      background: #FF9800;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 25px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    .btn-try-again:hover {
+      background: #F57C00;
+      transform: scale(1.05);
+    }
+
+    /* Next button styling - circular arrow */
+    .btn-next {
+      background: #4CAF50;
+      border: none;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s, background 0.2s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    .btn-next:hover {
+      background: #43A047;
+      transform: scale(1.1);
+    }
+
+    .btn-next svg {
+      stroke: white;
+    }
+
+    /* Success animation */
+    @keyframes celebrate {
+      0%, 100% { transform: scale(1); }
+      25% { transform: scale(1.1) rotate(-5deg); }
+      75% { transform: scale(1.1) rotate(5deg); }
+    }
+
+    .celebrate {
+      animation: celebrate 0.5s ease-in-out;
+    }
+
+    /* Blocks display area */
+    .blocks-container {
+      display: flex;
+      gap: 40px;
+      justify-content: center;
+      align-items: flex-end;
+      padding: 30px;
+      min-height: 250px;
+    }
+
+    .hundreds-group {
+      position: relative;
+      width: 180px;
+      display: flex;
+      align-items: flex-end;
+    }
+
+    .tens-group {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+    }
+
+    .ones-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      max-width: 100px;
+      align-content: flex-end;
+      justify-content: center;
+    }
+
+    /* Difficulty selector */
+    .difficulty-selector {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 15px;
+    }
+
+    .difficulty-btn {
+      padding: 8px 16px;
+      border: 2px solid #ddd;
+      border-radius: 20px;
+      background: white;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .difficulty-btn:hover {
+      border-color: #667eea;
+    }
+
+    .difficulty-btn.active {
+      background: #667eea;
+      color: white;
+      border-color: #667eea;
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+    <!-- Header -->
+    <header class="quiz-header">
+      <button class="btn-back" onclick="window.location='index.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Back to Home
+      </button>
+
+      <div class="user-profile">
+        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=student" alt="Student Avatar" class="user-avatar">
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" id="progress-fill" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <button class="btn-help" id="header-help">
+        <lottie-player
+          id="help-lottie"
+          background="transparent"
+          speed="1"
+          style="width: 28px; height: 28px;"
+          loop
+          autoplay
+        ></lottie-player>
+        Help
+      </button>
+    </header>
+
+    <!-- Question Meta -->
+    <div class="question-meta">
+      <span class="badge">MATH</span>
+      <span class="question-progress" id="question-progress">Question 1 of 5</span>
+    </div>
+
+    <!-- Question Title -->
+    <div class="question-title">
+      <h1>How many blocks are there?</h1>
+    </div>
+
+    <!-- Help Bar -->
+    <div class="help-bar">
+      <div class="help-item" id="btn-read-aloud">
+        <span style="font-weight: 530; font-size: 15px;">Read Aloud</span>
+        <span class="help-item-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg></span>
+      </div>
+      <span class="help-item-line"></span>
+      <div class="help-item" id="btn-get-help">
+        <span style="font-weight: 530; font-size: 15px;">Get Help</span>
+        <span class="help-item-icon">?</span>
+      </div>
+      <span class="help-item-line"></span>
+      <div class="help-item" id="btn-get-hint">
+        <span style="font-weight: 530; font-size: 15px;">Get Hint</span>
+        <span class="help-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 6h12v2H6V6zm0 3h12v2H6V9zm0 3h8v2H6v-2z"/></svg></span>
+      </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div class="modal-overlay" id="help-modal">
+      <div class="modal">
+        <div style="font-size: 40px; text-align: center; margin-bottom: 10px;">&#129518;</div>
+        <h2 style="text-align: center;">Counting Base-10 Blocks!</h2>
+        <div style="background: #FFF9E6; padding: 15px; border-radius: 12px; margin: 15px 0;">
+          <p style="margin: 8px 0;"><strong style="color: #3498DB;">Blue flat</strong> = 100 blocks</p>
+          <p style="margin: 8px 0;"><strong style="color: #E74C3C;">Red rod</strong> = 10 blocks</p>
+          <p style="margin: 8px 0;"><strong style="color: #F5A623;">Orange cube</strong> = 1 block</p>
+        </div>
+        <p style="text-align: center; font-size: 15px;">Count the hundreds, tens, and ones, then add them together!</p>
+        <button class="modal-close" id="close-help">I'm ready! &#127775;</button>
+      </div>
+    </div>
+
+    <!-- Hint Modal -->
+    <div class="modal-overlay" id="hint-modal">
+      <div class="modal">
+        <div style="font-size: 40px; text-align: center; margin-bottom: 10px;">&#128161;</div>
+        <h2 style="text-align: center;" id="hint-title">Here's a hint!</h2>
+        <p style="text-align: center; font-size: 18px; margin: 20px 0;" id="hint-text"></p>
+        <button class="modal-close" id="close-hint">Thanks! &#128077;</button>
+      </div>
+    </div>
+
+    <!-- Difficulty Selector -->
+    <div class="difficulty-selector">
+      <button class="difficulty-btn active" data-min="1" data-max="20">Easy (1-20)</button>
+      <button class="difficulty-btn" data-min="1" data-max="100">Medium (1-100)</button>
+      <button class="difficulty-btn" data-min="100" data-max="999">Hard (100-999)</button>
+    </div>
+
+    <!-- Content Card -->
+    <div class="content-card">
+      <div class="content-card-inner">
+        <div class="blocks-container" id="blocks-container">
+          <!-- Blocks will be generated here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Answer Input -->
+    <div class="answer-area">
+      <input type="number" class="answer-input" id="answer" placeholder="Type your answer" autocomplete="off" min="1" max="999">
+    </div>
+
+    <!-- Feedback (hidden initially) -->
+    <div class="feedback" id="feedback" style="display: none;">
+      <span class="feedback-badge" id="feedback-badge"></span>
+      <button class="btn-try-again" id="btn-try-again" style="display: none;">
+        Try Again &#128260;
+      </button>
+      <button class="btn-next" id="btn-next" style="display: none;" title="Next Question">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Check Answer Button -->
+    <button class="btn-check-answer" id="btn-check">Check Answer</button>
+  </div>
+
+  <script>
+    // ==========================================
+    // SVG Block Generators
+    // ==========================================
+
+    function createSingleBlock() {
+      return `<svg width="40" height="48" viewBox="0 0 100 120">
+        <polygon points="50,10 90,30 50,50 10,30" fill="#F5A623" stroke="#333" stroke-width="1.5"/>
+        <polygon points="10,30 50,50 50,100 10,80" fill="#E8940F" stroke="#333" stroke-width="1.5"/>
+        <polygon points="50,50 90,30 90,80 50,100" fill="#D4820A" stroke="#333" stroke-width="1.5"/>
+      </svg>`;
+    }
+
+    function createTenBlock() {
+      return `<svg width="35" height="180" viewBox="0 0 100 520">
+        <polygon points="50,10 90,30 50,50 10,30" fill="#E74C3C" stroke="#333" stroke-width="1.5"/>
+        <polygon points="10,30 50,50 50,500 10,480" fill="#C0392B" stroke="#333" stroke-width="1.5"/>
+        <polygon points="50,50 90,30 90,480 50,500" fill="#A93226" stroke="#333" stroke-width="1.5"/>
+        <line x1="10" y1="75" x2="50" y2="95" stroke="#333" stroke-width="0.8"/>
+        <line x1="10" y1="120" x2="50" y2="140" stroke="#333" stroke-width="0.8"/>
+        <line x1="10" y1="165" x2="50" y2="185" stroke="#333" stroke-width="0.8"/>
+        <line x1="10" y1="210" x2="50" y2="230" stroke="#333" stroke-width="0.8"/>
+        <line x1="10" y1="255" x2="50" y2="275" stroke="#333" stroke-width="0.8"/>
+        <line x1="10" y1="300" x2="50" y2="320" stroke="#333" stroke-width="0.8"/>
+        <line x1="10" y1="345" x2="50" y2="365" stroke="#333" stroke-width="0.8"/>
+        <line x1="10" y1="390" x2="50" y2="410" stroke="#333" stroke-width="0.8"/>
+        <line x1="10" y1="435" x2="50" y2="455" stroke="#333" stroke-width="0.8"/>
+        <line x1="50" y1="95" x2="90" y2="75" stroke="#333" stroke-width="0.8"/>
+        <line x1="50" y1="140" x2="90" y2="120" stroke="#333" stroke-width="0.8"/>
+        <line x1="50" y1="185" x2="90" y2="165" stroke="#333" stroke-width="0.8"/>
+        <line x1="50" y1="230" x2="90" y2="210" stroke="#333" stroke-width="0.8"/>
+        <line x1="50" y1="275" x2="90" y2="255" stroke="#333" stroke-width="0.8"/>
+        <line x1="50" y1="320" x2="90" y2="300" stroke="#333" stroke-width="0.8"/>
+        <line x1="50" y1="365" x2="90" y2="345" stroke="#333" stroke-width="0.8"/>
+        <line x1="50" y1="410" x2="90" y2="390" stroke="#333" stroke-width="0.8"/>
+        <line x1="50" y1="455" x2="90" y2="435" stroke="#333" stroke-width="0.8"/>
+      </svg>`;
+    }
+
+    function createHundredBlock() {
+      // Simplified hundred block - 10x10 grid
+      let svg = `<svg width="180" height="120" viewBox="0 0 520 320">
+        <!-- Top face - simplified as single polygon with grid lines -->
+        <polygon points="260,10 500,130 260,250 20,130" fill="#3498DB" stroke="#333" stroke-width="1.5"/>`;
+
+      // Add grid lines on top face
+      for (let i = 1; i < 10; i++) {
+        // Lines going one direction
+        const x1 = 260 - (i * 24);
+        const y1 = 10 + (i * 12);
+        const x2 = 500 - (i * 24);
+        const y2 = 130 + (i * 12);
+        svg += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#333" stroke-width="0.5"/>`;
+
+        // Lines going other direction
+        const x3 = 260 + (i * 24);
+        const y3 = 10 + (i * 12);
+        const x4 = 20 + (i * 24);
+        const y4 = 130 + (i * 12);
+        svg += `<line x1="${x3}" y1="${y3}" x2="${x4}" y2="${y4}" stroke="#333" stroke-width="0.5"/>`;
+      }
+
+      // Left face
+      svg += `<polygon points="20,130 260,250 260,280 20,160" fill="#2980B9" stroke="#333" stroke-width="1.5"/>`;
+
+      // Right face
+      svg += `<polygon points="260,250 500,130 500,160 260,280" fill="#1F618D" stroke="#333" stroke-width="1.5"/>`;
+
+      svg += `</svg>`;
+      return svg;
+    }
+
+    // ==========================================
+    // Game State
+    // ==========================================
+    let currentNumber = 0;
+    let currentQuestion = 1;
+    let totalQuestions = 5;
+    let minNumber = 1;
+    let maxNumber = 20;
+    let score = 0;
+
+    // ==========================================
+    // Generate Question
+    // ==========================================
+    function generateQuestion() {
+      // Generate random number based on difficulty (between min and max)
+      currentNumber = Math.floor(Math.random() * (maxNumber - minNumber + 1)) + minNumber;
+
+      // Break down into hundreds, tens, ones
+      const hundreds = Math.floor(currentNumber / 100);
+      const tens = Math.floor((currentNumber % 100) / 10);
+      const ones = currentNumber % 10;
+
+      // Build the blocks display
+      const container = document.getElementById('blocks-container');
+      let html = '';
+
+      // Add hundreds blocks (stacked vertically on top of each other)
+      if (hundreds > 0) {
+        const stackHeight = 120 + (hundreds - 1) * 30; // base height + stacking offset
+        html += `<div class="hundreds-group" style="height: ${stackHeight}px;">`;
+        for (let i = 0; i < hundreds; i++) {
+          // Stack upward - first block at bottom, each one higher and in front
+          const offsetFromBottom = i * 30;
+          html += `<div style="position: absolute; left: 0; bottom: ${offsetFromBottom}px; z-index: ${i};">${createHundredBlock()}</div>`;
+        }
+        html += '</div>';
+      }
+
+      // Add tens blocks
+      if (tens > 0) {
+        html += '<div class="tens-group">';
+        for (let i = 0; i < tens; i++) {
+          html += createTenBlock();
+        }
+        html += '</div>';
+      }
+
+      // Add ones blocks
+      if (ones > 0) {
+        html += '<div class="ones-group">';
+        for (let i = 0; i < ones; i++) {
+          html += createSingleBlock();
+        }
+        html += '</div>';
+      }
+
+      container.innerHTML = html;
+
+      // Update question progress
+      document.getElementById('question-progress').textContent = `Question ${currentQuestion} of ${totalQuestions}`;
+      document.getElementById('progress-fill').style.width = `${((currentQuestion - 1) / totalQuestions) * 100}%`;
+
+      // Reset input and feedback
+      const answerInput = document.getElementById('answer');
+      answerInput.value = '';
+      answerInput.disabled = false;
+      answerInput.classList.remove('correct', 'incorrect');
+      document.getElementById('feedback').style.display = 'none';
+      document.getElementById('btn-check').style.display = 'block';
+      document.getElementById('btn-try-again').style.display = 'none';
+      document.getElementById('btn-next').style.display = 'none';
+
+      // Reset hints
+      hintIndex = 0;
+      updateHints();
+    }
+
+    // ==========================================
+    // Hints
+    // ==========================================
+    let hintIndex = 0;
+    let hints = [];
+
+    function updateHints() {
+      const hundreds = Math.floor(currentNumber / 100);
+      const tens = Math.floor((currentNumber % 100) / 10);
+      const ones = currentNumber % 10;
+
+      hints = [];
+
+      if (hundreds > 0) {
+        hints.push(`There is <strong>${hundreds} blue flat</strong> = ${hundreds * 100}`);
+      }
+      if (tens > 0) {
+        hints.push(`There ${tens === 1 ? 'is' : 'are'} <strong>${tens} red rod${tens > 1 ? 's' : ''}</strong> = ${tens * 10}`);
+      }
+      if (ones > 0) {
+        hints.push(`There ${ones === 1 ? 'is' : 'are'} <strong>${ones} orange cube${ones > 1 ? 's' : ''}</strong> = ${ones}`);
+      }
+
+      let equation = '';
+      if (hundreds > 0) equation += (hundreds * 100);
+      if (tens > 0) equation += (equation ? ' + ' : '') + (tens * 10);
+      if (ones > 0) equation += (equation ? ' + ' : '') + ones;
+      equation += ' = ?';
+      hints.push(equation);
+    }
+
+    // ==========================================
+    // Check Answer
+    // ==========================================
+    const answerInput = document.getElementById('answer');
+    const btnCheck = document.getElementById('btn-check');
+    const feedback = document.getElementById('feedback');
+    const feedbackBadge = document.getElementById('feedback-badge');
+    const btnTryAgain = document.getElementById('btn-try-again');
+    const btnNext = document.getElementById('btn-next');
+
+    btnCheck.addEventListener('click', () => {
+      const userAnswer = parseInt(answerInput.value.trim());
+      const isCorrect = userAnswer === currentNumber;
+
+      feedback.style.display = 'flex';
+      answerInput.classList.remove('correct', 'incorrect');
+      answerInput.classList.add(isCorrect ? 'correct' : 'incorrect');
+
+      feedbackBadge.classList.remove('correct', 'incorrect');
+      feedbackBadge.classList.add(isCorrect ? 'correct' : 'incorrect');
+
+      if (isCorrect) {
+        feedbackBadge.innerHTML = '&#127881; Awesome! That\'s right!';
+        answerInput.disabled = true;
+        btnCheck.style.display = 'none';
+        btnTryAgain.style.display = 'none';
+        btnNext.style.display = 'flex';
+        score++;
+        document.getElementById('progress-fill').style.width = `${(currentQuestion / totalQuestions) * 100}%`;
+        document.querySelector('.content-card').classList.add('celebrate');
+        setTimeout(() => {
+          document.querySelector('.content-card').classList.remove('celebrate');
+        }, 500);
+      } else {
+        feedbackBadge.innerHTML = '&#128170; Not quite - give it another go!';
+        btnTryAgain.style.display = 'block';
+        btnNext.style.display = 'none';
+      }
+    });
+
+    // Allow Enter key to submit
+    answerInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        btnCheck.click();
+      }
+    });
+
+    // Try Again
+    btnTryAgain.addEventListener('click', () => {
+      answerInput.value = '';
+      answerInput.classList.remove('correct', 'incorrect');
+      answerInput.disabled = false;
+      answerInput.focus();
+      feedback.style.display = 'none';
+      btnTryAgain.style.display = 'none';
+    });
+
+    // Next Question
+    btnNext.addEventListener('click', () => {
+      currentQuestion++;
+      if (currentQuestion > totalQuestions) {
+        // Quiz complete - show results or restart
+        alert(`Quiz Complete! You got ${score} out of ${totalQuestions} correct!`);
+        currentQuestion = 1;
+        score = 0;
+      }
+      generateQuestion();
+    });
+
+    // ==========================================
+    // Difficulty Selection
+    // ==========================================
+    document.querySelectorAll('.difficulty-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        minNumber = parseInt(btn.dataset.min);
+        maxNumber = parseInt(btn.dataset.max);
+        currentQuestion = 1;
+        score = 0;
+        generateQuestion();
+      });
+    });
+
+    // ==========================================
+    // Read Aloud
+    // ==========================================
+    const btnReadAloud = document.getElementById('btn-read-aloud');
+
+    btnReadAloud.addEventListener('click', () => {
+      speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance("How many blocks are there? Count the blue flats for hundreds, red rods for tens, and orange cubes for ones.");
+      utterance.rate = 0.9;
+      btnReadAloud.classList.add('active');
+      utterance.onend = () => btnReadAloud.classList.remove('active');
+      speechSynthesis.speak(utterance);
+    });
+
+    // ==========================================
+    // Get Help
+    // ==========================================
+    const btnGetHelp = document.getElementById('btn-get-help');
+    const helpModal = document.getElementById('help-modal');
+    const closeHelp = document.getElementById('close-help');
+
+    btnGetHelp.addEventListener('click', () => {
+      helpModal.classList.add('active');
+    });
+
+    document.getElementById('header-help').addEventListener('click', () => {
+      helpModal.classList.add('active');
+    });
+
+    closeHelp.addEventListener('click', () => {
+      helpModal.classList.remove('active');
+    });
+
+    helpModal.addEventListener('click', (e) => {
+      if (e.target === helpModal) helpModal.classList.remove('active');
+    });
+
+    // ==========================================
+    // Get Hint
+    // ==========================================
+    const btnGetHint = document.getElementById('btn-get-hint');
+    const hintModal = document.getElementById('hint-modal');
+    const hintTitle = document.getElementById('hint-title');
+    const hintText = document.getElementById('hint-text');
+    const closeHint = document.getElementById('close-hint');
+
+    btnGetHint.addEventListener('click', () => {
+      hintTitle.innerHTML = "&#128161; Hint " + (hintIndex + 1) + "!";
+      hintText.innerHTML = hints[hintIndex];
+      hintModal.classList.add('active');
+      hintIndex = (hintIndex + 1) % hints.length;
+    });
+
+    closeHint.addEventListener('click', () => {
+      hintModal.classList.remove('active');
+    });
+
+    hintModal.addEventListener('click', (e) => {
+      if (e.target === hintModal) hintModal.classList.remove('active');
+    });
+
+    // ==========================================
+    // Initialize
+    // ==========================================
+    generateQuestion();
+
+    // Load Lottie animation
+    const helpLottie = document.getElementById('help-lottie');
+    const lottieData = {"v":"5.4.4","fr":60,"ip":0,"op":132,"w":100,"h":100,"nm":"Question 2","assets":[],"layers":[{"ind":1,"ty":4,"nm":"? Outlines","sr":1,"ks":{"o":{"a":0,"k":100},"r":{"a":0,"k":0},"p":{"a":0,"k":[50.713,49.149,0]},"a":{"a":0,"k":[-0.214,-10.242,0]},"s":{"a":1,"k":[{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":61,"s":[200,200,100],"e":[210,210,100]},{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":71,"s":[210,210,100],"e":[200,200,100]},{"t":80}]}},"ao":0,"shapes":[{"ty":"gr","it":[{"ind":0,"ty":"sh","ks":{"a":0,"k":{"i":[[0,0],[0,0],[0,0],[0,3.203],[4.23,0],[0.242,-3.897],[0,0],[-1.601,0],[0,-1.541],[1.692,0],[0,0]],"o":[[0,0],[0,0],[3.565,-0.483],[0,-3.988],[-4.592,0],[0,0],[0.121,-1.45],[1.601,0],[0,1.662],[0,0],[0,0]],"v":[[-2.556,-6.617],[1.16,-6.617],[1.311,-8.369],[7.142,-14.17],[-0.199,-20.816],[-7.571,-14.351],[-2.828,-14.351],[-0.048,-16.738],[2.61,-14.17],[-0.381,-11.541],[-2.858,-11.541]],"c":true}},"nm":"?"},{"ind":1,"ty":"sh","ks":{"a":0,"k":{"i":[[-1.42,0],[0,1.45],[1.45,0],[0,-1.45]],"o":[[1.45,0],[0,-1.45],[-1.42,0],[0,1.45]],"v":[[-0.834,0.332],[1.825,-2.206],[-0.834,-4.743],[-3.462,-2.206]],"c":true}},"nm":"?"},{"ty":"mm","mm":1,"nm":"Merge Paths 1"},{"ty":"fl","c":{"a":0,"k":[1,1,1,1]},"o":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":61,"s":[0],"e":[100]},{"t":71}]},"r":1,"nm":"Fill 1"},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":0},"o":{"a":0,"k":100},"sk":{"a":0,"k":0},"sa":{"a":0,"k":0},"nm":"Transform"}],"nm":"?"},{"ty":"tm","s":{"a":0,"k":0},"e":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":37,"s":[0],"e":[100]},{"t":61}]},"o":{"a":0,"k":0},"m":1,"nm":"Trim Paths 1"},{"ty":"st","c":{"a":0,"k":[1,1,1,1]},"o":{"a":0,"k":100},"w":{"a":0,"k":1},"lc":1,"lj":1,"ml":4,"nm":"Stroke 1"}],"ip":0,"op":132,"st":0},{"ind":3,"ty":3,"nm":"▽ Group 6","sr":1,"ks":{"o":{"a":0,"k":100},"r":{"a":0,"k":0},"p":{"a":0,"k":[50,50,0]},"a":{"a":0,"k":[42,42,0]},"s":{"a":0,"k":[100,100,100]}},"ao":0,"ip":0,"op":132,"st":0},{"ind":4,"ty":4,"nm":"Rectangle 6 Copy","parent":3,"sr":1,"ks":{"o":{"a":0,"k":100},"r":{"a":0,"k":0},"p":{"a":0,"k":[42,42,0]},"a":{"a":0,"k":[0,0,0]},"s":{"a":1,"k":[{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":21,"s":[100,100,100],"e":[110,110,100]},{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":29,"s":[110,110,100],"e":[100,100,100]},{"t":36}]}},"ao":0,"shapes":[{"ty":"gr","it":[{"ty":"rc","d":1,"s":{"a":0,"k":[42,42]},"p":{"a":0,"k":[0,0]},"r":{"a":0,"k":21},"nm":"Rectangle Path 1"},{"ty":"tm","s":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":0,"s":[0],"e":[100]},{"t":22}]},"e":{"a":0,"k":0},"o":{"a":0,"k":-90},"m":1,"nm":"Trim Paths 1"},{"ty":"st","c":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":13,"s":[0.74,0.729,0.709,1],"e":[0.961,0.694,0.196,1]},{"t":22}]},"o":{"a":0,"k":100},"w":{"a":0,"k":2},"lc":2,"lj":1,"ml":4,"nm":"Stroke 1"},{"ty":"fl","c":{"a":0,"k":[0.953,0.691,0.256,1]},"o":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":21,"s":[1],"e":[100]},{"t":26}]},"r":1,"nm":"Fill 1"},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[200,200]},"r":{"a":0,"k":0},"o":{"a":0,"k":100},"sk":{"a":0,"k":0},"sa":{"a":0,"k":0},"nm":"Transform"}],"nm":"Rectangle 6 Copy"}],"ip":0,"op":132,"st":0}],"markers":[]};
+    helpLottie.load(lottieData);
+  </script>
+</body>
+</html>

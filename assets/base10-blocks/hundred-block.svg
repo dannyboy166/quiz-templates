@@ -1,0 +1,157 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 320">
+  <!-- Hundred Block (Flat) - Blue -->
+  <defs>
+    <g id="blue-cube-top">
+      <!-- Top face only for the grid -->
+      <polygon points="25,0 50,12.5 25,25 0,12.5" fill="#3498DB" stroke="#333" stroke-width="0.8"/>
+    </g>
+  </defs>
+
+  <!-- Main flat shape -->
+  <!-- Top face - 10x10 grid -->
+  <g transform="translate(10, 10)">
+    <!-- Row 0 -->
+    <use href="#blue-cube-top" transform="translate(225, 0)"/>
+    <use href="#blue-cube-top" transform="translate(250, 12.5)"/>
+    <use href="#blue-cube-top" transform="translate(275, 25)"/>
+    <use href="#blue-cube-top" transform="translate(300, 37.5)"/>
+    <use href="#blue-cube-top" transform="translate(325, 50)"/>
+    <use href="#blue-cube-top" transform="translate(350, 62.5)"/>
+    <use href="#blue-cube-top" transform="translate(375, 75)"/>
+    <use href="#blue-cube-top" transform="translate(400, 87.5)"/>
+    <use href="#blue-cube-top" transform="translate(425, 100)"/>
+    <use href="#blue-cube-top" transform="translate(450, 112.5)"/>
+
+    <!-- Row 1 -->
+    <use href="#blue-cube-top" transform="translate(200, 12.5)"/>
+    <use href="#blue-cube-top" transform="translate(225, 25)"/>
+    <use href="#blue-cube-top" transform="translate(250, 37.5)"/>
+    <use href="#blue-cube-top" transform="translate(275, 50)"/>
+    <use href="#blue-cube-top" transform="translate(300, 62.5)"/>
+    <use href="#blue-cube-top" transform="translate(325, 75)"/>
+    <use href="#blue-cube-top" transform="translate(350, 87.5)"/>
+    <use href="#blue-cube-top" transform="translate(375, 100)"/>
+    <use href="#blue-cube-top" transform="translate(400, 112.5)"/>
+    <use href="#blue-cube-top" transform="translate(425, 125)"/>
+
+    <!-- Row 2 -->
+    <use href="#blue-cube-top" transform="translate(175, 25)"/>
+    <use href="#blue-cube-top" transform="translate(200, 37.5)"/>
+    <use href="#blue-cube-top" transform="translate(225, 50)"/>
+    <use href="#blue-cube-top" transform="translate(250, 62.5)"/>
+    <use href="#blue-cube-top" transform="translate(275, 75)"/>
+    <use href="#blue-cube-top" transform="translate(300, 87.5)"/>
+    <use href="#blue-cube-top" transform="translate(325, 100)"/>
+    <use href="#blue-cube-top" transform="translate(350, 112.5)"/>
+    <use href="#blue-cube-top" transform="translate(375, 125)"/>
+    <use href="#blue-cube-top" transform="translate(400, 137.5)"/>
+
+    <!-- Row 3 -->
+    <use href="#blue-cube-top" transform="translate(150, 37.5)"/>
+    <use href="#blue-cube-top" transform="translate(175, 50)"/>
+    <use href="#blue-cube-top" transform="translate(200, 62.5)"/>
+    <use href="#blue-cube-top" transform="translate(225, 75)"/>
+    <use href="#blue-cube-top" transform="translate(250, 87.5)"/>
+    <use href="#blue-cube-top" transform="translate(275, 100)"/>
+    <use href="#blue-cube-top" transform="translate(300, 112.5)"/>
+    <use href="#blue-cube-top" transform="translate(325, 125)"/>
+    <use href="#blue-cube-top" transform="translate(350, 137.5)"/>
+    <use href="#blue-cube-top" transform="translate(375, 150)"/>
+
+    <!-- Row 4 -->
+    <use href="#blue-cube-top" transform="translate(125, 50)"/>
+    <use href="#blue-cube-top" transform="translate(150, 62.5)"/>
+    <use href="#blue-cube-top" transform="translate(175, 75)"/>
+    <use href="#blue-cube-top" transform="translate(200, 87.5)"/>
+    <use href="#blue-cube-top" transform="translate(225, 100)"/>
+    <use href="#blue-cube-top" transform="translate(250, 112.5)"/>
+    <use href="#blue-cube-top" transform="translate(275, 125)"/>
+    <use href="#blue-cube-top" transform="translate(300, 137.5)"/>
+    <use href="#blue-cube-top" transform="translate(325, 150)"/>
+    <use href="#blue-cube-top" transform="translate(350, 162.5)"/>
+
+    <!-- Row 5 -->
+    <use href="#blue-cube-top" transform="translate(100, 62.5)"/>
+    <use href="#blue-cube-top" transform="translate(125, 75)"/>
+    <use href="#blue-cube-top" transform="translate(150, 87.5)"/>
+    <use href="#blue-cube-top" transform="translate(175, 100)"/>
+    <use href="#blue-cube-top" transform="translate(200, 112.5)"/>
+    <use href="#blue-cube-top" transform="translate(225, 125)"/>
+    <use href="#blue-cube-top" transform="translate(250, 137.5)"/>
+    <use href="#blue-cube-top" transform="translate(275, 150)"/>
+    <use href="#blue-cube-top" transform="translate(300, 162.5)"/>
+    <use href="#blue-cube-top" transform="translate(325, 175)"/>
+
+    <!-- Row 6 -->
+    <use href="#blue-cube-top" transform="translate(75, 75)"/>
+    <use href="#blue-cube-top" transform="translate(100, 87.5)"/>
+    <use href="#blue-cube-top" transform="translate(125, 100)"/>
+    <use href="#blue-cube-top" transform="translate(150, 112.5)"/>
+    <use href="#blue-cube-top" transform="translate(175, 125)"/>
+    <use href="#blue-cube-top" transform="translate(200, 137.5)"/>
+    <use href="#blue-cube-top" transform="translate(225, 150)"/>
+    <use href="#blue-cube-top" transform="translate(250, 162.5)"/>
+    <use href="#blue-cube-top" transform="translate(275, 175)"/>
+    <use href="#blue-cube-top" transform="translate(300, 187.5)"/>
+
+    <!-- Row 7 -->
+    <use href="#blue-cube-top" transform="translate(50, 87.5)"/>
+    <use href="#blue-cube-top" transform="translate(75, 100)"/>
+    <use href="#blue-cube-top" transform="translate(100, 112.5)"/>
+    <use href="#blue-cube-top" transform="translate(125, 125)"/>
+    <use href="#blue-cube-top" transform="translate(150, 137.5)"/>
+    <use href="#blue-cube-top" transform="translate(175, 150)"/>
+    <use href="#blue-cube-top" transform="translate(200, 162.5)"/>
+    <use href="#blue-cube-top" transform="translate(225, 175)"/>
+    <use href="#blue-cube-top" transform="translate(250, 187.5)"/>
+    <use href="#blue-cube-top" transform="translate(275, 200)"/>
+
+    <!-- Row 8 -->
+    <use href="#blue-cube-top" transform="translate(25, 100)"/>
+    <use href="#blue-cube-top" transform="translate(50, 112.5)"/>
+    <use href="#blue-cube-top" transform="translate(75, 125)"/>
+    <use href="#blue-cube-top" transform="translate(100, 137.5)"/>
+    <use href="#blue-cube-top" transform="translate(125, 150)"/>
+    <use href="#blue-cube-top" transform="translate(150, 162.5)"/>
+    <use href="#blue-cube-top" transform="translate(175, 175)"/>
+    <use href="#blue-cube-top" transform="translate(200, 187.5)"/>
+    <use href="#blue-cube-top" transform="translate(225, 200)"/>
+    <use href="#blue-cube-top" transform="translate(250, 212.5)"/>
+
+    <!-- Row 9 -->
+    <use href="#blue-cube-top" transform="translate(0, 112.5)"/>
+    <use href="#blue-cube-top" transform="translate(25, 125)"/>
+    <use href="#blue-cube-top" transform="translate(50, 137.5)"/>
+    <use href="#blue-cube-top" transform="translate(75, 150)"/>
+    <use href="#blue-cube-top" transform="translate(100, 162.5)"/>
+    <use href="#blue-cube-top" transform="translate(125, 175)"/>
+    <use href="#blue-cube-top" transform="translate(150, 187.5)"/>
+    <use href="#blue-cube-top" transform="translate(175, 200)"/>
+    <use href="#blue-cube-top" transform="translate(200, 212.5)"/>
+    <use href="#blue-cube-top" transform="translate(225, 225)"/>
+  </g>
+
+  <!-- Left edge (front-left side) -->
+  <polygon points="10,135 35,147.5 35,175 10,162.5" fill="#2980B9" stroke="#333" stroke-width="1"/>
+  <polygon points="35,147.5 60,160 60,187.5 35,175" fill="#2980B9" stroke="#333" stroke-width="1"/>
+  <polygon points="60,160 85,172.5 85,200 60,187.5" fill="#2980B9" stroke="#333" stroke-width="1"/>
+  <polygon points="85,172.5 110,185 110,212.5 85,200" fill="#2980B9" stroke="#333" stroke-width="1"/>
+  <polygon points="110,185 135,197.5 135,225 110,212.5" fill="#2980B9" stroke="#333" stroke-width="1"/>
+  <polygon points="135,197.5 160,210 160,237.5 135,225" fill="#2980B9" stroke="#333" stroke-width="1"/>
+  <polygon points="160,210 185,222.5 185,250 160,237.5" fill="#2980B9" stroke="#333" stroke-width="1"/>
+  <polygon points="185,222.5 210,235 210,262.5 185,250" fill="#2980B9" stroke="#333" stroke-width="1"/>
+  <polygon points="210,235 235,247.5 235,275 210,262.5" fill="#2980B9" stroke="#333" stroke-width="1"/>
+  <polygon points="235,247.5 260,260 260,287.5 235,275" fill="#2980B9" stroke="#333" stroke-width="1"/>
+
+  <!-- Right edge (front-right side) -->
+  <polygon points="260,260 285,247.5 285,275 260,287.5" fill="#1F618D" stroke="#333" stroke-width="1"/>
+  <polygon points="285,247.5 310,235 310,262.5 285,275" fill="#1F618D" stroke="#333" stroke-width="1"/>
+  <polygon points="310,235 335,222.5 335,250 310,262.5" fill="#1F618D" stroke="#333" stroke-width="1"/>
+  <polygon points="335,222.5 360,210 360,237.5 335,250" fill="#1F618D" stroke="#333" stroke-width="1"/>
+  <polygon points="360,210 385,197.5 385,225 360,237.5" fill="#1F618D" stroke="#333" stroke-width="1"/>
+  <polygon points="385,197.5 410,185 410,212.5 385,225" fill="#1F618D" stroke="#333" stroke-width="1"/>
+  <polygon points="410,185 435,172.5 435,200 410,212.5" fill="#1F618D" stroke="#333" stroke-width="1"/>
+  <polygon points="435,172.5 460,160 460,187.5 435,200" fill="#1F618D" stroke="#333" stroke-width="1"/>
+  <polygon points="460,160 485,147.5 485,175 460,187.5" fill="#1F618D" stroke="#333" stroke-width="1"/>
+  <polygon points="485,147.5 510,135 510,162.5 485,175" fill="#1F618D" stroke="#333" stroke-width="1"/>
+</svg>
