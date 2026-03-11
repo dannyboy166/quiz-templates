@@ -147,8 +147,15 @@
       align-items: center;
     }
 
-    .game-layout .blocks-container {
+    .game-layout .blocks-area {
       flex: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .game-layout .blocks-container {
+      width: 100%;
     }
 
     .game-layout .answer-panel {
@@ -429,26 +436,28 @@
     <div class="content-card">
       <div class="content-card-inner">
         <div class="game-layout">
-          <!-- Blocks on left -->
-          <div class="blocks-container" id="blocks-container">
-            <!-- Blocks will be generated here -->
-          </div>
+          <!-- Blocks on left with hints below -->
+          <div class="blocks-area">
+            <div class="blocks-container" id="blocks-container">
+              <!-- Blocks will be generated here -->
+            </div>
 
-          <!-- Hint boxes (shown progressively) -->
-          <div class="hint-boxes" id="hint-boxes">
-            <div class="hint-box hundreds" id="hint-hundreds">
-              <span class="hint-box-number" id="hint-hundreds-num">0</span>
-              <span class="hint-box-label">Hundreds</span>
-            </div>
-            <span class="hint-plus" id="hint-plus-1">+</span>
-            <div class="hint-box tens" id="hint-tens">
-              <span class="hint-box-number" id="hint-tens-num">0</span>
-              <span class="hint-box-label">Tens</span>
-            </div>
-            <span class="hint-plus" id="hint-plus-2">+</span>
-            <div class="hint-box ones" id="hint-ones">
-              <span class="hint-box-number" id="hint-ones-num">0</span>
-              <span class="hint-box-label">Ones</span>
+            <!-- Hint boxes (shown progressively) - under the blocks -->
+            <div class="hint-boxes" id="hint-boxes">
+              <div class="hint-box hundreds" id="hint-hundreds">
+                <span class="hint-box-number" id="hint-hundreds-num">0</span>
+                <span class="hint-box-label">Hundreds</span>
+              </div>
+              <span class="hint-plus" id="hint-plus-1">+</span>
+              <div class="hint-box tens" id="hint-tens">
+                <span class="hint-box-number" id="hint-tens-num">0</span>
+                <span class="hint-box-label">Tens</span>
+              </div>
+              <span class="hint-plus" id="hint-plus-2">+</span>
+              <div class="hint-box ones" id="hint-ones">
+                <span class="hint-box-number" id="hint-ones-num">0</span>
+                <span class="hint-box-label">Ones</span>
+              </div>
             </div>
           </div>
 
