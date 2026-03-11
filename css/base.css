@@ -152,11 +152,9 @@ html, body {
   height: 20px;
 }
 
-/* User Profile Area */
+/* User Profile Area - Hidden */
 .user-profile {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
+  display: none;
 }
 
 .user-avatar {
@@ -254,6 +252,8 @@ html, body {
 .question-title {
   display: flex;
   align-items: flex-start;
+  justify-content: center;
+  text-align: center;
   gap: var(--spacing-md);
   margin-bottom: var(--spacing-md);
 }
@@ -286,6 +286,7 @@ html, body {
 .help-bar {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: var(--spacing-lg);
   margin-bottom: var(--spacing-lg);
 }
