@@ -198,6 +198,99 @@
     .celebrate {
       animation: celebrate 0.5s ease-in-out;
     }
+
+    /* Start Screen */
+    .start-screen {
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .start-screen h2 {
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+
+    .start-screen > .content-card-inner > p {
+      color: #666;
+      margin-bottom: 25px;
+    }
+
+    .difficulty-selector {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      max-width: 380px;
+      margin: 0 auto 30px;
+    }
+
+    .difficulty-option {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 16px 12px;
+      background: white;
+      border: 3px solid #333;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .difficulty-option:hover {
+      transform: scale(1.03);
+    }
+
+    .difficulty-option.selected {
+      background: #333;
+      color: white;
+    }
+
+    .diff-icon {
+      font-size: 22px;
+      font-weight: 700;
+      font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+    }
+
+    .diff-label {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .diff-desc {
+      font-size: 11px;
+      opacity: 0.7;
+    }
+
+    .start-btn {
+      padding: 16px 50px;
+      font-size: 20px;
+      font-weight: 600;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .start-btn:hover {
+      background: #43A047;
+      transform: scale(1.05);
+    }
+
+    .game-area {
+      display: none;
+    }
+
+    .game-area.show {
+      display: block;
+    }
+
+    @media (max-width: 400px) {
+      .difficulty-selector {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
@@ -285,10 +378,41 @@
       </div>
     </div>
 
-    <!-- Content Card -->
-    <div class="content-card">
+    <!-- Start Screen -->
+    <div class="content-card start-screen" id="start-screen">
       <div class="content-card-inner">
-        <div class="clocks-grid">
+        <h2>Choose Difficulty</h2>
+        <p>What type of times do you want to practice?</p>
+
+        <div class="difficulty-selector">
+          <button class="difficulty-option selected" data-difficulty="hours-only">
+            <span class="diff-label">Easy</span>
+            <span class="diff-desc">o'clock times</span>
+          </button>
+          <button class="difficulty-option" data-difficulty="half-hours">
+            <span class="diff-label">Medium</span>
+            <span class="diff-desc">half past</span>
+          </button>
+          <button class="difficulty-option" data-difficulty="quarters">
+            <span class="diff-label">Hard</span>
+            <span class="diff-desc">quarter past/to</span>
+          </button>
+          <button class="difficulty-option" data-difficulty="five-minutes">
+            <span class="diff-label">Expert</span>
+            <span class="diff-desc">any 5 minutes</span>
+          </button>
+        </div>
+
+        <button class="start-btn" id="start-btn">Start!</button>
+      </div>
+    </div>
+
+    <!-- Game Area (hidden until start) -->
+    <div class="game-area" id="game-area">
+      <!-- Content Card -->
+      <div class="content-card">
+        <div class="content-card-inner">
+          <div class="clocks-grid">
           <!-- Clock 1 -->
           <div class="clock-item">
             <div id="clock-1"></div>
@@ -318,56 +442,172 @@
       </div>
     </div>
 
-    <!-- Feedback -->
-    <div class="feedback" id="feedback" style="display: none;">
-      <span class="feedback-badge" id="feedback-badge"></span>
-      <button class="btn-try-again" id="btn-try-again" style="display: none;">
-        Try Again &#128260;
-      </button>
-      <button class="btn-next" id="btn-next" style="display: none;" title="Next Question">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <path d="M5 12h14M12 5l7 7-7 7"/>
-        </svg>
-      </button>
-    </div>
+      <!-- Feedback -->
+      <div class="feedback" id="feedback" style="display: none;">
+        <span class="feedback-badge" id="feedback-badge"></span>
+        <button class="btn-try-again" id="btn-try-again" style="display: none;">
+          Try Again &#128260;
+        </button>
+        <button class="btn-next" id="btn-next" style="display: none;" title="Play Again">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </div>
 
-    <!-- Check Answer Button -->
-    <button class="btn-check-answer" id="btn-check">Check All Answers</button>
+      <!-- Check Answer Button -->
+      <button class="btn-check-answer" id="btn-check">Check All Answers</button>
+    </div>
+    <!-- End Game Area -->
+
   </div>
 
   <script src="js/clock.js"></script>
   <script>
-    // Target times for each clock [hour, minute]
-    const targets = [
-      { hour: 3, minute: 0 },
-      { hour: 9, minute: 0 },
-      { hour: 6, minute: 0 },
-      { hour: 12, minute: 0 }
-    ];
+    // ==========================================
+    // Game State
+    // ==========================================
+    let difficulty = 'hours-only';
+    let targets = [];
+    let clocks = [];
+    let hintIndex = 0;
 
-    // Create 4 clocks - start at 3 o'clock so hands aren't overlapping
-    const clocks = [];
-    for (let i = 0; i < 4; i++) {
-      const clock = new DraggableClock(`#clock-${i + 1}`, {
-        size: 160,
-        interactive: true,
-        showMinuteHand: true,
-        snapToHour: true,
-        snapToFiveMinutes: true,
-        initialHour: 3,
-        initialMinute: 0
-      });
-      clocks.push(clock);
-    }
-
-    // Check all answers
+    // DOM Elements
     const btnCheck = document.getElementById('btn-check');
     const feedback = document.getElementById('feedback');
     const feedbackBadge = document.getElementById('feedback-badge');
     const btnTryAgain = document.getElementById('btn-try-again');
     const btnNext = document.getElementById('btn-next');
     const progressFill = document.querySelector('.progress-bar-fill');
+    const questionText = document.querySelector('.question-title h1').textContent;
 
+    // ==========================================
+    // Time Formatting
+    // ==========================================
+    function formatTime(hour, minute) {
+      if (minute === 0) {
+        return `${hour} o'clock`;
+      } else if (minute === 30) {
+        return `half past ${hour}`;
+      } else if (minute === 15) {
+        return `quarter past ${hour}`;
+      } else if (minute === 45) {
+        const nextHour = hour === 12 ? 1 : hour + 1;
+        return `quarter to ${nextHour}`;
+      } else {
+        return `${hour}:${minute.toString().padStart(2, '0')}`;
+      }
+    }
+
+    // ==========================================
+    // Random Time Generation
+    // ==========================================
+    function generateTimes() {
+      const times = [];
+      const usedTimes = new Set();
+
+      const minuteOptions = {
+        'hours-only': [0],
+        'half-hours': [0, 30],
+        'quarters': [0, 15, 30, 45],
+        'five-minutes': [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]
+      };
+
+      const minutes = minuteOptions[difficulty];
+
+      while (times.length < 4) {
+        const hour = Math.floor(Math.random() * 12) + 1; // 1-12
+        const minute = minutes[Math.floor(Math.random() * minutes.length)];
+        const key = `${hour}:${minute}`;
+
+        if (!usedTimes.has(key)) {
+          usedTimes.add(key);
+          times.push({ hour, minute });
+        }
+      }
+
+      return times;
+    }
+
+    // ==========================================
+    // Start Game
+    // ==========================================
+    function startGame() {
+      document.getElementById('start-screen').style.display = 'none';
+      document.getElementById('game-area').classList.add('show');
+
+      // Generate new times based on difficulty
+      targets = generateTimes();
+
+      // Update target displays
+      targets.forEach((target, i) => {
+        const label = formatTime(target.hour, target.minute);
+        document.getElementById(`target-${i + 1}`).textContent = label;
+        document.getElementById(`target-${i + 1}`).classList.remove('correct', 'incorrect');
+      });
+
+      // Clear and recreate clocks
+      clocks.forEach(c => {
+        if (c.svg) c.svg.remove();
+      });
+      clocks = [];
+
+      for (let i = 0; i < 4; i++) {
+        const clockContainer = document.getElementById(`clock-${i + 1}`);
+        clockContainer.innerHTML = '';
+
+        const showMinutes = difficulty !== 'hours-only';
+        const clock = new DraggableClock(`#clock-${i + 1}`, {
+          size: 160,
+          interactive: true,
+          showMinuteHand: true,
+          snapToHour: difficulty === 'hours-only',
+          snapToFiveMinutes: true,
+          initialHour: 3,
+          initialMinute: 0
+        });
+        clocks.push(clock);
+      }
+
+      // Reset UI state
+      feedback.style.display = 'none';
+      btnCheck.style.display = 'block';
+      btnTryAgain.style.display = 'none';
+      btnNext.style.display = 'none';
+      progressFill.style.width = '50%';
+      hintIndex = 0;
+
+      // Remove celebrate class from any content card
+      document.querySelectorAll('.content-card').forEach(card => {
+        card.classList.remove('celebrate');
+      });
+    }
+
+    // ==========================================
+    // Play Again - Return to Start Screen
+    // ==========================================
+    function playAgain() {
+      document.getElementById('game-area').classList.remove('show');
+      document.getElementById('start-screen').style.display = 'block';
+    }
+
+    // ==========================================
+    // Difficulty Selector
+    // ==========================================
+    document.querySelectorAll('.difficulty-option').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.difficulty-option').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        difficulty = btn.dataset.difficulty;
+      });
+    });
+
+    // Start button
+    document.getElementById('start-btn').addEventListener('click', startGame);
+
+    // ==========================================
+    // Check Answers
+    // ==========================================
     btnCheck.addEventListener('click', () => {
       let correctCount = 0;
 
@@ -397,10 +637,10 @@
         btnNext.style.display = 'flex';
 
         // Update progress bar
-        progressFill.style.width = '75%';
+        progressFill.style.width = '100%';
 
         // Celebrate animation
-        document.querySelector('.content-card').classList.add('celebrate');
+        document.querySelector('#game-area .content-card').classList.add('celebrate');
       } else {
         feedbackBadge.innerHTML = `&#128170; ${correctCount}/4 correct - Keep trying, you've got this!`;
         btnTryAgain.style.display = 'block';
@@ -408,9 +648,10 @@
       }
     });
 
-    // Try Again - reset incorrect clocks
+    // ==========================================
+    // Try Again - Reset Incorrect Clocks
+    // ==========================================
     btnTryAgain.addEventListener('click', () => {
-      // Reset all clocks to 12 o'clock
       clocks.forEach((clock, i) => {
         const targetEl = document.getElementById(`target-${i + 1}`);
         const isCorrect = clock.checkAnswer(targets[i].hour, targets[i].minute);
@@ -429,25 +670,23 @@
       btnTryAgain.style.display = 'none';
     });
 
-    // Next Question - go to next demo
-    btnNext.addEventListener('click', () => {
-      // Go to the next demo (drag-drop)
-      window.location.href = 'demo-drag-drop.html';
-    });
+    // ==========================================
+    // Next/Play Again Button
+    // ==========================================
+    btnNext.addEventListener('click', playAgain);
 
     // ==========================================
     // Read Aloud - Uses Web Speech API
     // ==========================================
     const btnReadAloud = document.getElementById('btn-read-aloud');
-    const questionText = document.querySelector('.question-title h1').textContent;
-    const targetTimes = ['3 o\'clock', '9 o\'clock', '6 o\'clock', '12 o\'clock'];
 
     btnReadAloud.addEventListener('click', () => {
       // Stop any current speech
       speechSynthesis.cancel();
 
-      // Build the text to read
-      const textToRead = `${questionText}. The four times are: ${targetTimes.join(', ')}.`;
+      // Build the text to read with dynamic times
+      const targetTimeLabels = targets.map(t => formatTime(t.hour, t.minute));
+      const textToRead = `${questionText}. The four times are: ${targetTimeLabels.join(', ')}.`;
 
       const utterance = new SpeechSynthesisUtterance(textToRead);
       utterance.rate = 0.9;
@@ -458,11 +697,6 @@
       utterance.onend = () => btnReadAloud.classList.remove('active');
 
       speechSynthesis.speak(utterance);
-    });
-
-    // Also wire up the button in the question title
-    document.querySelector('.btn-read-aloud').addEventListener('click', () => {
-      btnReadAloud.click();
     });
 
     // ==========================================
@@ -499,7 +733,6 @@
     const hintTitle = document.getElementById('hint-title');
     const hintText = document.getElementById('hint-text');
     const closeHint = document.getElementById('close-hint');
-    let hintIndex = 0;
 
     const encouragements = [
       "You're doing great! ",
@@ -513,21 +746,27 @@
       let foundIncorrect = false;
       for (let i = 0; i < 4; i++) {
         const checkIndex = (hintIndex + i) % 4;
-        const isCorrect = clocks[checkIndex].checkAnswer(targets[checkIndex].hour, targets[checkIndex].minute);
+        const isCorrect = clocks[checkIndex] && clocks[checkIndex].checkAnswer(targets[checkIndex].hour, targets[checkIndex].minute);
 
-        if (!isCorrect) {
+        if (!isCorrect && clocks[checkIndex]) {
           // Highlight this clock
           const clockItem = document.querySelectorAll('.clock-item')[checkIndex];
           clockItem.classList.remove('hint-highlight');
           void clockItem.offsetWidth; // Trigger reflow
           clockItem.classList.add('hint-highlight');
 
-          // Show friendly hint modal
-          const targetTime = targetTimes[checkIndex];
+          // Show friendly hint modal with dynamic time
+          const targetTime = formatTime(targets[checkIndex].hour, targets[checkIndex].minute);
           const encourage = encouragements[Math.floor(Math.random() * encouragements.length)];
 
+          // Build hint text based on difficulty
+          let hintDetails = `&#128072; Move the <strong>short hand</strong> to point at the <strong>${targets[checkIndex].hour}</strong>!`;
+          if (targets[checkIndex].minute !== 0) {
+            hintDetails += `<br><br>&#128070; Move the <strong>long hand</strong> to point at the <strong>${targets[checkIndex].minute / 5 || 12}</strong>!`;
+          }
+
           hintTitle.innerHTML = `&#128161; Look at clock ${checkIndex + 1}!`;
-          hintText.innerHTML = `${encourage}<br><br>This clock should show <strong>${targetTime}</strong><br><br>&#128072; Move the <strong>short hand</strong> to point at the <strong>${targets[checkIndex].hour}</strong>!`;
+          hintText.innerHTML = `${encourage}<br><br>This clock should show <strong>${targetTime}</strong><br><br>${hintDetails}`;
 
           hintModal.classList.add('active');
 
@@ -554,7 +793,9 @@
       }
     });
 
+    // ==========================================
     // Load Lottie animation inline (avoids CORS issues)
+    // ==========================================
     const helpLottie = document.getElementById('help-lottie');
     const lottieData = {"v":"5.4.4","fr":60,"ip":0,"op":132,"w":100,"h":100,"nm":"Question 2","assets":[],"layers":[{"ind":1,"ty":4,"nm":"? Outlines","sr":1,"ks":{"o":{"a":0,"k":100},"r":{"a":0,"k":0},"p":{"a":0,"k":[50.713,49.149,0]},"a":{"a":0,"k":[-0.214,-10.242,0]},"s":{"a":1,"k":[{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":61,"s":[200,200,100],"e":[210,210,100]},{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":71,"s":[210,210,100],"e":[200,200,100]},{"t":80}]}},"ao":0,"shapes":[{"ty":"gr","it":[{"ind":0,"ty":"sh","ks":{"a":0,"k":{"i":[[0,0],[0,0],[0,0],[0,3.203],[4.23,0],[0.242,-3.897],[0,0],[-1.601,0],[0,-1.541],[1.692,0],[0,0]],"o":[[0,0],[0,0],[3.565,-0.483],[0,-3.988],[-4.592,0],[0,0],[0.121,-1.45],[1.601,0],[0,1.662],[0,0],[0,0]],"v":[[-2.556,-6.617],[1.16,-6.617],[1.311,-8.369],[7.142,-14.17],[-0.199,-20.816],[-7.571,-14.351],[-2.828,-14.351],[-0.048,-16.738],[2.61,-14.17],[-0.381,-11.541],[-2.858,-11.541]],"c":true}},"nm":"?"},{"ind":1,"ty":"sh","ks":{"a":0,"k":{"i":[[-1.42,0],[0,1.45],[1.45,0],[0,-1.45]],"o":[[1.45,0],[0,-1.45],[-1.42,0],[0,1.45]],"v":[[-0.834,0.332],[1.825,-2.206],[-0.834,-4.743],[-3.462,-2.206]],"c":true}},"nm":"?"},{"ty":"mm","mm":1,"nm":"Merge Paths 1"},{"ty":"fl","c":{"a":0,"k":[1,1,1,1]},"o":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":61,"s":[0],"e":[100]},{"t":71}]},"r":1,"nm":"Fill 1"},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":0},"o":{"a":0,"k":100},"sk":{"a":0,"k":0},"sa":{"a":0,"k":0},"nm":"Transform"}],"nm":"?"},{"ty":"tm","s":{"a":0,"k":0},"e":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":37,"s":[0],"e":[100]},{"t":61}]},"o":{"a":0,"k":0},"m":1,"nm":"Trim Paths 1"},{"ty":"st","c":{"a":0,"k":[1,1,1,1]},"o":{"a":0,"k":100},"w":{"a":0,"k":1},"lc":1,"lj":1,"ml":4,"nm":"Stroke 1"}],"ip":0,"op":132,"st":0},{"ind":3,"ty":3,"nm":"▽ Group 6","sr":1,"ks":{"o":{"a":0,"k":100},"r":{"a":0,"k":0},"p":{"a":0,"k":[50,50,0]},"a":{"a":0,"k":[42,42,0]},"s":{"a":0,"k":[100,100,100]}},"ao":0,"ip":0,"op":132,"st":0},{"ind":4,"ty":4,"nm":"Rectangle 6 Copy","parent":3,"sr":1,"ks":{"o":{"a":0,"k":100},"r":{"a":0,"k":0},"p":{"a":0,"k":[42,42,0]},"a":{"a":0,"k":[0,0,0]},"s":{"a":1,"k":[{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":21,"s":[100,100,100],"e":[110,110,100]},{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":29,"s":[110,110,100],"e":[100,100,100]},{"t":36}]}},"ao":0,"shapes":[{"ty":"gr","it":[{"ty":"rc","d":1,"s":{"a":0,"k":[42,42]},"p":{"a":0,"k":[0,0]},"r":{"a":0,"k":21},"nm":"Rectangle Path 1"},{"ty":"tm","s":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":0,"s":[0],"e":[100]},{"t":22}]},"e":{"a":0,"k":0},"o":{"a":0,"k":-90},"m":1,"nm":"Trim Paths 1"},{"ty":"st","c":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":13,"s":[0.74,0.729,0.709,1],"e":[0.961,0.694,0.196,1]},{"t":22}]},"o":{"a":0,"k":100},"w":{"a":0,"k":2},"lc":2,"lj":1,"ml":4,"nm":"Stroke 1"},{"ty":"fl","c":{"a":0,"k":[0.953,0.691,0.256,1]},"o":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":21,"s":[1],"e":[100]},{"t":26}]},"r":1,"nm":"Fill 1"},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[200,200]},"r":{"a":0,"k":0},"o":{"a":0,"k":100},"sk":{"a":0,"k":0},"sa":{"a":0,"k":0},"nm":"Transform"}],"nm":"Rectangle 6 Copy"}],"ip":0,"op":132,"st":0}],"markers":[]};
     helpLottie.load(lottieData);

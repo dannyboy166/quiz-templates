@@ -36,22 +36,28 @@ hint: Count on your fingers!
 
 ### 2. Draggable Clock (`clock`)
 
-Student drags clock hands to show a time.
+Student drags clock hands to show a time. Supports difficulty-based random generation.
 
 | Column | Type | Required | Description |
 |--------|------|----------|-------------|
 | `template_type` | string | Yes | `"clock"` |
-| `question_text` | string | Yes | e.g., "Show half past 2" |
-| `target_hour` | integer | Yes | Hour (1-12) |
-| `target_minute` | integer | Yes | Minute (0, 15, 30, 45 for young kids) |
+| `question_text` | string | No | Default: "Set each clock to show the time below it" |
+| `difficulty` | string | Yes | `"hours-only"`, `"half-hours"`, `"quarters"`, `"five-minutes"` |
+
+**Difficulty Options:**
+- `hours-only` - Only :00 times (3 o'clock, 9 o'clock)
+- `half-hours` - :00 and :30 times (3:00, 3:30, half past 3)
+- `quarters` - :00, :15, :30, :45 (quarter past, half past, quarter to)
+- `five-minutes` - Any 5-minute interval (3:05, 3:10, 6:25, etc.)
 
 **Example Excel Row:**
 ```
 template_type: clock
-question_text: Show half past 3
-target_hour: 3
-target_minute: 30
+difficulty: half-hours
 ```
+
+**Standalone Mode:**
+The template generates 4 random times per round based on the selected difficulty. Students set all 4 clocks, then check their answers. Different times are generated each time the activity is played.
 
 ---
 
@@ -80,22 +86,30 @@ categories: [{"id":"3","label":"3 Sides"},{"id":"4","label":"4 Sides"},{"id":"5"
 
 ### 4. Colour the Blocks (`color-blocks`)
 
-Click blocks to colour tens and ones to make a number.
+Click blocks to colour tens and ones to make a number. Supports difficulty-based random generation.
 
 | Column | Type | Required | Description |
 |--------|------|----------|-------------|
 | `template_type` | string | Yes | `"color-blocks"` |
-| `question_text` | string | Yes | e.g., "Make the number 23" |
-| `target_number` | integer | Yes | Number to make (1-99) |
-| `tens_color` | string | No | Hex color for tens (default: #FF6B6B) |
-| `ones_color` | string | No | Hex color for ones (default: #4ECDC4) |
+| `question_text` | string | No | Auto-generated: "Colour the blocks to make [number]" |
+| `difficulty` | string | Yes | `"ones-only"`, `"easy"`, `"medium"`, `"hard"` |
+| `tens_color` | string | No | Hex color for tens (default: #5C6BC0) |
+| `ones_color` | string | No | Hex color for ones (default: #90CAF9) |
+
+**Difficulty Options:**
+- `ones-only` - Numbers 1-9 (single digits, no tens columns)
+- `easy` - Numbers 10-30
+- `medium` - Numbers 31-60
+- `hard` - Numbers 61-99
 
 **Example Excel Row:**
 ```
 template_type: color-blocks
-question_text: Colour the blocks to make 45
-target_number: 45
+difficulty: easy
 ```
+
+**Standalone Mode:**
+The template generates a random target number within the selected difficulty range. The block grid automatically adjusts to provide enough tens columns and ones blocks for the target number. Different numbers are generated each time the activity is played.
 
 ---
 
@@ -460,29 +474,33 @@ equations: [{"type":"subtraction","total":8,"subtract":3,"result":5,"given":["to
 
 ### 14. Fractions (`fractions`)
 
-Click to shade parts of shapes to represent fractions. Supports circles (pizza) and rectangles (chocolate bar).
+Click to shade parts of shapes to represent fractions. Supports circles (pizza) and rectangles (chocolate bar). Supports difficulty-based random generation.
 
 | Column | Type | Required | Description |
 |--------|------|----------|-------------|
 | `template_type` | string | Yes | `"fractions"` |
-| `numerator` | integer | Yes | Top number (parts to shade) |
-| `denominator` | integer | Yes | Bottom number (total parts) |
-| `shape` | string | Yes | `"circle"` or `"rect"` |
-| `cols` | integer | No | Columns for rectangle (default 4) |
-| `rows` | integer | No | Rows for rectangle (default 1) |
+| `difficulty` | string | Yes | `"halves"`, `"quarters"`, `"mixed"`, `"eighths"` |
+
+**Difficulty Options:**
+- `halves` - 1/2 only
+- `quarters` - 1/4, 2/4, 3/4
+- `mixed` - Halves + quarters combined
+- `eighths` - Include 1/8 through 7/8 (plus halves and quarters)
 
 **Example Excel Row:**
 ```
 template_type: fractions
-numerator: 3
-denominator: 4
-shape: circle
+difficulty: quarters
 ```
+
+**Standalone Mode:**
+The template generates 8 random fraction questions based on the selected difficulty. Each question randomly uses either a circle (pizza) or rectangle (chocolate bar) shape. Students complete all 8 questions, then can play again with new fractions.
 
 **Features:**
 - Click parts to shade/unshade them
 - Counter shows "You shaded X out of Y parts"
-- Supports circles (divided like pizza) and rectangles (like chocolate bars)
+- Progress dots track completion of all 8 questions
+- Shapes automatically adjust grid for denominator (e.g., 8ths use 4x2 grid)
 
 ---
 

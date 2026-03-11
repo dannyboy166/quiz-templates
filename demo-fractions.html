@@ -301,6 +301,113 @@
     .btn-check-answer {
       margin-top: 30px;
     }
+
+    /* Start Screen */
+    .start-screen {
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .start-screen h2 {
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+
+    .start-screen > .content-card-inner > p {
+      color: #666;
+      margin-bottom: 25px;
+    }
+
+    .difficulty-selector {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      max-width: 380px;
+      margin: 0 auto 30px;
+    }
+
+    .difficulty-option {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 16px 12px;
+      background: white;
+      border: 3px solid #333;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .difficulty-option:hover {
+      transform: scale(1.03);
+    }
+
+    .difficulty-option.selected {
+      background: #333;
+      color: white;
+    }
+
+    .diff-fraction {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1.1;
+    }
+
+    .diff-fraction span:first-child {
+      border-bottom: 2px solid currentColor;
+      padding-bottom: 2px;
+      min-width: 20px;
+    }
+
+    .diff-fraction span:last-child {
+      padding-top: 2px;
+    }
+
+    .diff-label {
+      font-size: 15px;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    .diff-desc {
+      font-size: 11px;
+      opacity: 0.7;
+    }
+
+    .start-btn {
+      padding: 16px 50px;
+      font-size: 20px;
+      font-weight: 600;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .start-btn:hover {
+      background: #43A047;
+      transform: scale(1.05);
+    }
+
+    .game-area {
+      display: none;
+    }
+
+    .game-area.show {
+      display: block;
+    }
+
+    @media (max-width: 400px) {
+      .difficulty-selector {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
@@ -360,10 +467,57 @@
       </div>
     </div>
 
-    <!-- Content Card -->
-    <div class="content-card">
+    <!-- Start Screen -->
+    <div class="content-card start-screen" id="start-screen">
       <div class="content-card-inner">
-        <div class="fraction-display">
+        <h2>Choose Difficulty</h2>
+        <p>What fractions do you want to practice?</p>
+
+        <div class="difficulty-selector">
+          <button class="difficulty-option selected" data-difficulty="halves">
+            <span class="diff-fraction">
+              <span>1</span>
+              <span>2</span>
+            </span>
+            <span class="diff-label">Halves</span>
+            <span class="diff-desc">1/2 only</span>
+          </button>
+          <button class="difficulty-option" data-difficulty="quarters">
+            <span class="diff-fraction">
+              <span>3</span>
+              <span>4</span>
+            </span>
+            <span class="diff-label">Quarters</span>
+            <span class="diff-desc">1/4, 2/4, 3/4</span>
+          </button>
+          <button class="difficulty-option" data-difficulty="mixed">
+            <span class="diff-fraction">
+              <span>1</span>
+              <span>2</span>
+            </span>
+            <span class="diff-label">Mixed</span>
+            <span class="diff-desc">Halves + Quarters</span>
+          </button>
+          <button class="difficulty-option" data-difficulty="eighths">
+            <span class="diff-fraction">
+              <span>5</span>
+              <span>8</span>
+            </span>
+            <span class="diff-label">Eighths</span>
+            <span class="diff-desc">Include 1/8 to 7/8</span>
+          </button>
+        </div>
+
+        <button class="start-btn" id="start-btn">Start!</button>
+      </div>
+    </div>
+
+    <!-- Game Area (hidden until start) -->
+    <div class="game-area" id="game-area">
+      <!-- Content Card -->
+      <div class="content-card">
+        <div class="content-card-inner">
+          <div class="fraction-display">
           <div class="target-fraction">
             <span class="fraction-num" id="fraction-num">3</span>
             <span class="fraction-denom" id="fraction-denom">4</span>
@@ -394,8 +548,11 @@
         </div>
 
         <div class="progress-dots" id="progress-dots"></div>
+        </div>
       </div>
     </div>
+    <!-- End Game Area -->
+
   </div>
 
   <!-- Help Modal -->
@@ -428,28 +585,141 @@
   </div>
 
   <script>
-    // Questions with different fractions and shapes
-    const questions = [
-      { numerator: 1, denominator: 2, shape: 'circle' },
-      { numerator: 1, denominator: 4, shape: 'rect', cols: 4, rows: 1 },
-      { numerator: 3, denominator: 4, shape: 'circle' },
-      { numerator: 2, denominator: 3, shape: 'rect', cols: 3, rows: 1 },
-      { numerator: 1, denominator: 3, shape: 'circle' },
-      { numerator: 5, denominator: 8, shape: 'rect', cols: 4, rows: 2 },
-      { numerator: 3, denominator: 6, shape: 'rect', cols: 3, rows: 2 },
-      { numerator: 2, denominator: 4, shape: 'circle' }
-    ];
-
+    // ==========================================
+    // Game State
+    // ==========================================
+    let difficulty = 'halves';
+    let questions = [];
     let currentQuestion = 0;
     let results = [];
     let shadedParts = new Set();
+    const QUESTIONS_PER_ROUND = 8;
 
-    function init() {
-      renderProgressDots();
-      loadQuestion(currentQuestion);
-      setupEventListeners();
+    // ==========================================
+    // Fraction Pools by Difficulty
+    // ==========================================
+    const fractionPools = {
+      halves: [
+        { numerator: 1, denominator: 2 }
+      ],
+      quarters: [
+        { numerator: 1, denominator: 4 },
+        { numerator: 2, denominator: 4 },
+        { numerator: 3, denominator: 4 }
+      ],
+      mixed: [
+        { numerator: 1, denominator: 2 },
+        { numerator: 1, denominator: 4 },
+        { numerator: 2, denominator: 4 },
+        { numerator: 3, denominator: 4 }
+      ],
+      eighths: [
+        { numerator: 1, denominator: 2 },
+        { numerator: 1, denominator: 4 },
+        { numerator: 2, denominator: 4 },
+        { numerator: 3, denominator: 4 },
+        { numerator: 1, denominator: 8 },
+        { numerator: 2, denominator: 8 },
+        { numerator: 3, denominator: 8 },
+        { numerator: 4, denominator: 8 },
+        { numerator: 5, denominator: 8 },
+        { numerator: 6, denominator: 8 },
+        { numerator: 7, denominator: 8 }
+      ]
+    };
+
+    // ==========================================
+    // Grid Dimensions for Denominators
+    // ==========================================
+    function getGridDimensions(denominator) {
+      const layouts = {
+        2: { cols: 2, rows: 1 },
+        4: { cols: 4, rows: 1 },
+        8: { cols: 4, rows: 2 }
+      };
+      return layouts[denominator] || { cols: denominator, rows: 1 };
     }
 
+    // ==========================================
+    // Generate Questions
+    // ==========================================
+    function generateQuestions() {
+      const pool = fractionPools[difficulty];
+      const newQuestions = [];
+
+      for (let i = 0; i < QUESTIONS_PER_ROUND; i++) {
+        // Pick random fraction from pool
+        const fraction = pool[Math.floor(Math.random() * pool.length)];
+
+        // Alternate or random shape
+        const useCircle = Math.random() > 0.5;
+
+        if (useCircle) {
+          newQuestions.push({
+            ...fraction,
+            shape: 'circle'
+          });
+        } else {
+          const { cols, rows } = getGridDimensions(fraction.denominator);
+          newQuestions.push({
+            ...fraction,
+            shape: 'rect',
+            cols,
+            rows
+          });
+        }
+      }
+
+      return newQuestions;
+    }
+
+    // ==========================================
+    // Start Game
+    // ==========================================
+    function startGame() {
+      document.getElementById('start-screen').style.display = 'none';
+      document.getElementById('game-area').classList.add('show');
+
+      // Get selected difficulty
+      const selected = document.querySelector('.difficulty-option.selected');
+      difficulty = selected.dataset.difficulty;
+
+      // Generate new questions
+      questions = generateQuestions();
+      currentQuestion = 0;
+      results = [];
+
+      // Render progress dots
+      renderProgressDots();
+
+      // Load first question
+      loadQuestion(0);
+    }
+
+    // ==========================================
+    // Play Again - Return to Start Screen
+    // ==========================================
+    function playAgain() {
+      document.getElementById('game-area').classList.remove('show');
+      document.getElementById('start-screen').style.display = 'block';
+    }
+
+    // ==========================================
+    // Difficulty Selector
+    // ==========================================
+    document.querySelectorAll('.difficulty-option').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.difficulty-option').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+      });
+    });
+
+    // Start button
+    document.getElementById('start-btn').addEventListener('click', startGame);
+
+    // ==========================================
+    // Render Progress Dots
+    // ==========================================
     function renderProgressDots() {
       const container = document.getElementById('progress-dots');
       container.innerHTML = questions.map((_, i) =>
@@ -457,6 +727,9 @@
       ).join('');
     }
 
+    // ==========================================
+    // Load Question
+    // ==========================================
     function loadQuestion(index) {
       const q = questions[index];
       shadedParts = new Set();
@@ -493,6 +766,9 @@
       document.getElementById('feedback').classList.remove('show');
     }
 
+    // ==========================================
+    // Render Shape
+    // ==========================================
     function renderShape(q) {
       const container = document.getElementById('shape-container');
 
@@ -511,7 +787,7 @@
 
     function renderCircle(parts) {
       const anglePerSlice = 360 / parts;
-      const radius = 48; // Slightly smaller than viewBox to account for stroke
+      const radius = 48;
       const center = 50;
 
       let html = '<div class="circle-shape"><svg class="circle-svg" viewBox="0 0 100 100">';
@@ -525,7 +801,6 @@
         const x2 = center + radius * Math.cos(endAngle);
         const y2 = center + radius * Math.sin(endAngle);
 
-        // For slices > 180 degrees, use large arc flag
         const largeArc = anglePerSlice > 180 ? 1 : 0;
 
         const pathData = `M ${center} ${center} L ${x1.toFixed(2)} ${y1.toFixed(2)} A ${radius} ${radius} 0 ${largeArc} 1 ${x2.toFixed(2)} ${y2.toFixed(2)} Z`;
@@ -549,6 +824,9 @@
       return html;
     }
 
+    // ==========================================
+    // Toggle Shade
+    // ==========================================
     function toggleShade(piece, index) {
       if (piece.classList.contains('correct') || piece.classList.contains('incorrect')) return;
 
@@ -567,6 +845,9 @@
       document.getElementById('shaded-count').textContent = shadedParts.size;
     }
 
+    // ==========================================
+    // Check Answer
+    // ==========================================
     function checkAnswer() {
       const q = questions[currentQuestion];
       const isCorrect = shadedParts.size === q.numerator;
@@ -602,7 +883,7 @@
 
       // Update progress dot
       const dot = document.querySelector(`.progress-dot[data-index="${currentQuestion}"]`);
-      dot.classList.add(isCorrect ? 'correct' : 'incorrect');
+      if (dot) dot.classList.add(isCorrect ? 'correct' : 'incorrect');
 
       // Read aloud
       if ('speechSynthesis' in window) {
@@ -614,22 +895,33 @@
       }
     }
 
+    // ==========================================
+    // Try Again
+    // ==========================================
     function tryAgain() {
       loadQuestion(currentQuestion);
     }
 
+    // ==========================================
+    // Next Question
+    // ==========================================
     function nextQuestion() {
       if (currentQuestion < questions.length - 1) {
         currentQuestion++;
         loadQuestion(currentQuestion);
       } else {
+        // End of round - show summary and return to start
         const correct = results.filter(r => r === true).length;
-        alert(`🎉 Well done!\n\nYou got ${correct} out of ${questions.length} correct!`);
+        alert(`Well done!\n\nYou got ${correct} out of ${questions.length} correct!`);
+        playAgain();
       }
     }
 
+    // ==========================================
+    // Read Aloud
+    // ==========================================
     function readAloud() {
-      if ('speechSynthesis' in window) {
+      if ('speechSynthesis' in window && questions[currentQuestion]) {
         const q = questions[currentQuestion];
         const utterance = new SpeechSynthesisUtterance(
           `Shade ${q.numerator} ${q.denominator}ths of the shape. Click ${q.numerator} out of ${q.denominator} parts.`
@@ -639,9 +931,15 @@
       }
     }
 
+    // ==========================================
+    // Modal Functions
+    // ==========================================
     function openModal(id) { document.getElementById(id).classList.add('show'); }
     function closeModal(id) { document.getElementById(id).classList.remove('show'); }
 
+    // ==========================================
+    // Setup Event Listeners
+    // ==========================================
     function setupEventListeners() {
       document.getElementById('btn-check').addEventListener('click', checkAnswer);
       document.getElementById('btn-try-again').addEventListener('click', tryAgain);
@@ -658,7 +956,8 @@
       });
     }
 
-    init();
+    // Initialize event listeners (but don't start game automatically)
+    setupEventListeners();
   </script>
 </body>
 </html>
