@@ -598,18 +598,30 @@
     // ==========================================
     // Fraction Pools by Difficulty
     // ==========================================
+    // Fractions can have optional 'pieces' and 'shadeCount' for equivalent fractions
+    // e.g., 1/2 shown with 8 pieces (shade 4) teaches that 1/2 = 4/8
     const fractionPools = {
       halves: [
         { numerator: 0, denominator: 2 },
         { numerator: 1, denominator: 2 },
-        { numerator: 2, denominator: 2 }
+        { numerator: 2, denominator: 2 },
+        // Equivalent: 1/2 shown with 4 pieces
+        { numerator: 1, denominator: 2, pieces: 4, shadeCount: 2 },
+        // Equivalent: 1/2 shown with 8 pieces
+        { numerator: 1, denominator: 2, pieces: 8, shadeCount: 4 }
       ],
       quarters: [
         { numerator: 0, denominator: 4 },
         { numerator: 1, denominator: 4 },
         { numerator: 2, denominator: 4 },
         { numerator: 3, denominator: 4 },
-        { numerator: 4, denominator: 4 }
+        { numerator: 4, denominator: 4 },
+        // Equivalent: 1/4 shown with 8 pieces
+        { numerator: 1, denominator: 4, pieces: 8, shadeCount: 2 },
+        // Equivalent: 2/4 (1/2) shown with 8 pieces
+        { numerator: 2, denominator: 4, pieces: 8, shadeCount: 4 },
+        // Equivalent: 3/4 shown with 8 pieces
+        { numerator: 3, denominator: 4, pieces: 8, shadeCount: 6 }
       ],
       mixed: [
         { numerator: 0, denominator: 2 },
@@ -619,7 +631,11 @@
         { numerator: 1, denominator: 4 },
         { numerator: 2, denominator: 4 },
         { numerator: 3, denominator: 4 },
-        { numerator: 4, denominator: 4 }
+        { numerator: 4, denominator: 4 },
+        // Equivalent fractions
+        { numerator: 1, denominator: 2, pieces: 4, shadeCount: 2 },
+        { numerator: 1, denominator: 2, pieces: 8, shadeCount: 4 },
+        { numerator: 1, denominator: 4, pieces: 8, shadeCount: 2 }
       ],
       eighths: [
         { numerator: 0, denominator: 2 },
@@ -638,7 +654,11 @@
         { numerator: 5, denominator: 8 },
         { numerator: 6, denominator: 8 },
         { numerator: 7, denominator: 8 },
-        { numerator: 8, denominator: 8 }
+        { numerator: 8, denominator: 8 },
+        // Equivalent fractions with 8 pieces
+        { numerator: 1, denominator: 2, pieces: 8, shadeCount: 4 },
+        { numerator: 1, denominator: 4, pieces: 8, shadeCount: 2 },
+        { numerator: 3, denominator: 4, pieces: 8, shadeCount: 6 }
       ]
     };
 
@@ -665,21 +685,29 @@
         // Pick random fraction from pool
         const fraction = pool[Math.floor(Math.random() * pool.length)];
 
+        // Use pieces if specified (for equivalent fractions), otherwise use denominator
+        const actualPieces = fraction.pieces || fraction.denominator;
+        const actualShadeCount = fraction.shadeCount !== undefined ? fraction.shadeCount : fraction.numerator;
+
         // Alternate or random shape
         const useCircle = Math.random() > 0.5;
 
         if (useCircle) {
           newQuestions.push({
             ...fraction,
-            shape: 'circle'
+            shape: 'circle',
+            actualPieces,
+            actualShadeCount
           });
         } else {
-          const { cols, rows } = getGridDimensions(fraction.denominator);
+          const { cols, rows } = getGridDimensions(actualPieces);
           newQuestions.push({
             ...fraction,
             shape: 'rect',
             cols,
-            rows
+            rows,
+            actualPieces,
+            actualShadeCount
           });
         }
       }
@@ -752,17 +780,17 @@
       document.getElementById('current-q').textContent = index + 1;
       document.getElementById('total-q').textContent = questions.length;
 
-      // Update fraction display
+      // Update fraction display (shows the simplified fraction)
       document.getElementById('fraction-num').textContent = q.numerator;
       document.getElementById('fraction-denom').textContent = q.denominator;
 
-      // Update counter
-      document.getElementById('total-parts').textContent = q.denominator;
+      // Update counter (shows actual pieces to shade)
+      document.getElementById('total-parts').textContent = q.actualPieces;
       updateShadedCount();
 
-      // Update hint
+      // Update hint (tells them how many pieces to actually shade)
       document.getElementById('hint-text').textContent =
-        `Shade ${q.numerator} out of ${q.denominator} parts. Click ${q.numerator} pieces!`;
+        `Shade ${q.actualShadeCount} out of ${q.actualPieces} parts to show ${q.numerator}/${q.denominator}!`;
 
       // Render shape
       renderShape(q);
@@ -787,7 +815,7 @@
       const container = document.getElementById('shape-container');
 
       if (q.shape === 'circle') {
-        container.innerHTML = renderCircle(q.denominator);
+        container.innerHTML = renderCircle(q.actualPieces);
       } else {
         container.innerHTML = renderRectangle(q.cols, q.rows);
       }
@@ -864,7 +892,7 @@
     // ==========================================
     function checkAnswer() {
       const q = questions[currentQuestion];
-      const isCorrect = shadedParts.size === q.numerator;
+      const isCorrect = shadedParts.size === q.actualShadeCount;
       results[currentQuestion] = isCorrect;
 
       // Mark pieces as correct/incorrect
@@ -887,7 +915,13 @@
 
       badge.className = 'feedback-badge ' + (isCorrect ? 'correct' : 'incorrect');
       icon.textContent = isCorrect ? '✓' : '✗';
-      text.textContent = isCorrect ? 'Correct!' : `You need to shade ${q.numerator} parts`;
+
+      // Show helpful message for equivalent fractions
+      if (isCorrect) {
+        text.textContent = q.pieces ? `Correct! ${q.actualShadeCount}/${q.actualPieces} = ${q.numerator}/${q.denominator}` : 'Correct!';
+      } else {
+        text.textContent = `You need to shade ${q.actualShadeCount} parts to show ${q.numerator}/${q.denominator}`;
+      }
 
       tryAgain.style.display = isCorrect ? 'none' : 'inline-block';
       next.style.display = 'flex';
@@ -901,9 +935,10 @@
 
       // Read aloud
       if ('speechSynthesis' in window) {
-        const utterance = new SpeechSynthesisUtterance(
-          isCorrect ? 'Correct!' : `You shaded ${shadedParts.size}, but ${q.numerator} ${q.denominator}ths means ${q.numerator} parts.`
-        );
+        const msg = isCorrect
+          ? (q.pieces ? `Correct! ${q.actualShadeCount} ${q.actualPieces}ths equals ${q.numerator} ${q.denominator}ths!` : 'Correct!')
+          : `You shaded ${shadedParts.size}, but ${q.numerator} ${q.denominator}ths means ${q.actualShadeCount} parts.`;
+        const utterance = new SpeechSynthesisUtterance(msg);
         utterance.rate = 0.8;
         speechSynthesis.speak(utterance);
       }
