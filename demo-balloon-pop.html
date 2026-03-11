@@ -1081,10 +1081,10 @@
         balloonStates.set(balloon, {
           x: 0,
           y: 0,
-          vx: (Math.random() - 0.5) * 0.5,
-          vy: (Math.random() - 0.5) * 0.5,
-          targetVx: (Math.random() - 0.5) * 0.5,
-          targetVy: (Math.random() - 0.5) * 0.5,
+          vx: (Math.random() - 0.5) * 1.5,
+          vy: (Math.random() - 0.5) * 1.5,
+          targetVx: (Math.random() - 0.5) * 1.5,
+          targetVy: (Math.random() - 0.5) * 1.5,
           changeTimer: Math.random() * 100
         });
       });
@@ -1102,8 +1102,8 @@
           // Gradually change direction
           state.changeTimer--;
           if (state.changeTimer <= 0) {
-            state.targetVx = (Math.random() - 0.5) * 0.8;
-            state.targetVy = (Math.random() - 0.5) * 0.6;
+            state.targetVx = (Math.random() - 0.5) * 2.0;
+            state.targetVy = (Math.random() - 0.5) * 1.5;
             state.changeTimer = 80 + Math.random() * 120;
           }
 
