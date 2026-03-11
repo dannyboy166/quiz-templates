@@ -413,37 +413,33 @@
 
     <!-- Game Area (hidden until start) -->
     <div class="game-area" id="game-area">
-      <!-- Content Card -->
-      <div class="content-card">
-        <div class="content-card-inner">
-          <div class="clocks-grid">
-          <!-- Clock 1 -->
-          <div class="clock-item">
-            <div id="clock-1"></div>
-            <div class="target-time" id="target-1">3 o'clock</div>
-          </div>
-
-          <!-- Clock 2 -->
-          <div class="clock-item">
-            <div id="clock-2"></div>
-            <div class="target-time" id="target-2">9 o'clock</div>
-          </div>
-
-          <!-- Clock 3 -->
-          <div class="clock-item">
-            <div id="clock-3"></div>
-            <div class="target-time" id="target-3">6 o'clock</div>
-          </div>
-
-          <!-- Clock 4 -->
-          <div class="clock-item">
-            <div id="clock-4"></div>
-            <div class="target-time" id="target-4">12 o'clock</div>
-          </div>
+      <div class="clocks-grid">
+        <!-- Clock 1 -->
+        <div class="clock-item">
+          <div id="clock-1"></div>
+          <div class="target-time" id="target-1">3 o'clock</div>
         </div>
 
-        <p class="clock-instructions">Drag the short hand for hours, long hand for minutes</p>
+        <!-- Clock 2 -->
+        <div class="clock-item">
+          <div id="clock-2"></div>
+          <div class="target-time" id="target-2">9 o'clock</div>
+        </div>
+
+        <!-- Clock 3 -->
+        <div class="clock-item">
+          <div id="clock-3"></div>
+          <div class="target-time" id="target-3">6 o'clock</div>
+        </div>
+
+        <!-- Clock 4 -->
+        <div class="clock-item">
+          <div id="clock-4"></div>
+          <div class="target-time" id="target-4">12 o'clock</div>
+        </div>
       </div>
+
+      <p class="clock-instructions" style="text-align: center; margin-top: 15px;">Drag the short hand for hours, long hand for minutes</p>
     </div>
 
       <!-- Feedback -->
@@ -581,9 +577,9 @@
       progressFill.style.width = '50%';
       hintIndex = 0;
 
-      // Remove celebrate class from any content card
-      document.querySelectorAll('.content-card').forEach(card => {
-        card.classList.remove('celebrate');
+      // Remove celebrate class from clock items
+      document.querySelectorAll('.clock-item').forEach(item => {
+        item.classList.remove('celebrate');
       });
     }
 
@@ -644,7 +640,7 @@
         progressFill.style.width = '100%';
 
         // Celebrate animation
-        document.querySelector('#game-area .content-card').classList.add('celebrate');
+        document.querySelectorAll('.clock-item').forEach(item => item.classList.add('celebrate'));
       } else {
         feedbackBadge.innerHTML = `&#128170; ${correctCount}/4 correct - Keep trying, you've got this!`;
         btnTryAgain.style.display = 'block';
