@@ -531,7 +531,49 @@ This creates: 2, 4, __, 8, __, __, 14
 
 ---
 
-### 16. Dice Addition (`dice-addition`)
+### 16. Base 10 Blocks (`base10-blocks`)
+
+Count base-10 blocks (hundreds, tens, ones) to identify the number shown. Uses isometric 3D SVG blocks.
+
+| Column | Type | Required | Description |
+|--------|------|----------|-------------|
+| `template_type` | string | Yes | `"base10-blocks"` |
+| `difficulty` | string | Yes | `"easy"`, `"medium"`, `"hard"` |
+
+**Difficulty Options:**
+- `easy` - Numbers 1-20 (ones and some tens)
+- `medium` - Numbers 1-100 (tens and ones only)
+- `hard` - Numbers 100-999 (hundreds, tens, and ones)
+
+**Example Excel Row:**
+```
+template_type: base10-blocks
+difficulty: medium
+```
+
+**Standalone Mode:**
+The template generates a random number within the selected difficulty range and displays the corresponding blocks:
+- **Ones**: Small orange cubes
+- **Tens**: Red vertical rods (stacks of 10)
+- **Hundreds**: Blue flat squares (10x10 grids, stacked isometrically)
+
+Students count the blocks and type the total number. Different numbers are generated each time the activity is played.
+
+**Features:**
+- Isometric 3D SVG blocks generated programmatically
+- Hundreds stack on top of each other with visual offset
+- Tens wrap to multiple rows when needed
+- Responsive layout: blocks on left, answer input on right
+- Read aloud, help, and hint functionality
+
+**Block Colours:**
+- Ones: Orange `#FF8C00`
+- Tens: Red `#B22222`
+- Hundreds: Blue `#4169E1`
+
+---
+
+### 17. Dice Addition (`dice-addition`)
 
 **Standalone Speed Challenge** - Roll dice and add them up as fast as possible!
 
@@ -680,6 +722,7 @@ public abstract class QuestionComponentBase : ComponentBase
 ├── FractionsQuestion.razor
 ├── SkipCountingQuestion.razor
 ├── BalloonPopQuestion.razor
+├── Base10BlocksQuestion.razor
 └── DiceAdditionChallenge.razor
 ```
 
@@ -697,6 +740,9 @@ public abstract class QuestionComponentBase : ComponentBase
         break;
     case "drag-drop":
         <DragDropQuestion Question="@Question" OnAnswerSubmitted="@HandleAnswer" />
+        break;
+    case "base10-blocks":
+        <Base10BlocksQuestion Question="@Question" OnAnswerSubmitted="@HandleAnswer" />
         break;
     // ... etc
 }
@@ -745,6 +791,7 @@ public class QuestionImportService
 | `demo-fractions.html` | `fractions` | Inline styles |
 | `demo-skip-counting.html` | `skip-counting` | Inline styles |
 | `demo-balloon-pop.html` | `balloon-pop` | Inline styles |
+| `demo-base10-blocks.html` | `base10-blocks` | Inline styles |
 | `demo-dice-addition.html` | `dice-addition` | Inline styles (standalone) |
 
 ---
