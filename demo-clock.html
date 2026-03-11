@@ -13,19 +13,25 @@
     }
     .clocks-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 30px;
-      padding: 20px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      padding: 10px;
+    }
+
+    @media (max-width: 900px) {
+      .clocks-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
     }
 
     .clock-item {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 12px;
+      gap: 8px;
       background: white;
-      padding: 20px;
-      border-radius: 16px;
+      padding: 15px;
+      border-radius: 12px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 
@@ -558,7 +564,7 @@
 
         const showMinutes = difficulty !== 'hours-only';
         const clock = new DraggableClock(`#clock-${i + 1}`, {
-          size: 160,
+          size: 130,
           interactive: true,
           showMinuteHand: true,
           snapToHour: difficulty === 'hours-only',
