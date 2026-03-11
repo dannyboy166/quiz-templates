@@ -89,13 +89,17 @@ class DraggableClock {
       this.svg.appendChild(text);
     }
 
-    // Hour hand (short and thick)
-    this.hourHand = this.createHand('hour', center, 40, 10);
+    // Hour hand (short and thick) - proportional to size
+    const hourLength = Math.round(size * 0.28);
+    const hourWidth = Math.round(size * 0.055);
+    this.hourHand = this.createHand('hour', center, hourLength, hourWidth);
     this.svg.appendChild(this.hourHand);
 
-    // Minute hand (long and thin)
+    // Minute hand (long and thin) - proportional to size
     if (this.options.showMinuteHand) {
-      this.minuteHand = this.createHand('minute', center, 65, 5);
+      const minuteLength = Math.round(size * 0.42);
+      const minuteWidth = Math.round(size * 0.035);
+      this.minuteHand = this.createHand('minute', center, minuteLength, minuteWidth);
       this.svg.appendChild(this.minuteHand);
     }
 

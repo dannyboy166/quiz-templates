@@ -184,8 +184,7 @@
 
 /* SVG-based Clock (better for drag rotation) */
 .clock-svg {
-  width: 180px;
-  height: 180px;
+  /* Size is set dynamically by JS */
 }
 
 .clock-svg .clock-face-bg {

@@ -33,6 +33,7 @@
       padding: 15px;
       border-radius: 12px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      overflow: visible;
     }
 
     .target-time {
@@ -564,7 +565,7 @@
 
         const showMinutes = difficulty !== 'hours-only';
         const clock = new DraggableClock(`#clock-${i + 1}`, {
-          size: 130,
+          size: 145,
           interactive: true,
           showMinuteHand: true,
           snapToHour: difficulty === 'hours-only',
