@@ -18,13 +18,13 @@
     .balloons-container {
       position: relative;
       width: 100%;
-      height: 340px;
+      height: 400px;
       margin-bottom: 40px;
     }
 
     @media (max-width: 600px) {
       .balloons-container {
-        height: 260px;
+        height: 300px;
       }
     }
 
@@ -58,8 +58,8 @@
 
     /* Balloon SVG */
     .balloon svg {
-      width: 160px;
-      height: 220px;
+      width: 190px;
+      height: 260px;
       filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.15));
       pointer-events: none;
     }
@@ -77,19 +77,19 @@
 
     @media (max-width: 600px) {
       .balloon svg {
-        width: 120px;
-        height: 165px;
+        width: 140px;
+        height: 190px;
       }
 
       .balloon-text {
-        font-size: 28px !important;
+        font-size: 30px !important;
       }
     }
 
     /* Text inside balloon */
     .balloon-text {
       font-family: 'Apfel Grotezk', sans-serif;
-      font-size: 32px;
+      font-size: 36px;
       font-weight: 700;
       fill: white;
       text-anchor: middle;
@@ -1076,16 +1076,16 @@
 
       const container = document.getElementById('balloons-container');
 
-      // Initialize each balloon with random velocity
+      // Initialize each balloon with random velocity - faster movement!
       document.querySelectorAll('.balloon.floating').forEach(balloon => {
         balloonStates.set(balloon, {
           x: 0,
           y: 0,
-          vx: (Math.random() - 0.5) * 1.5,
-          vy: (Math.random() - 0.5) * 1.5,
-          targetVx: (Math.random() - 0.5) * 1.5,
-          targetVy: (Math.random() - 0.5) * 1.5,
-          changeTimer: Math.random() * 100
+          vx: (Math.random() - 0.5) * 3,
+          vy: (Math.random() - 0.5) * 3,
+          targetVx: (Math.random() - 0.5) * 3,
+          targetVy: (Math.random() - 0.5) * 3,
+          changeTimer: Math.random() * 80
         });
       });
 
@@ -1099,12 +1099,12 @@
           const state = balloonStates.get(balloon);
           if (!state) return;
 
-          // Gradually change direction
+          // Gradually change direction - more movement!
           state.changeTimer--;
           if (state.changeTimer <= 0) {
-            state.targetVx = (Math.random() - 0.5) * 2.0;
-            state.targetVy = (Math.random() - 0.5) * 1.5;
-            state.changeTimer = 80 + Math.random() * 120;
+            state.targetVx = (Math.random() - 0.5) * 4;
+            state.targetVy = (Math.random() - 0.5) * 3;
+            state.changeTimer = 50 + Math.random() * 80;
           }
 
           // Smooth velocity transition

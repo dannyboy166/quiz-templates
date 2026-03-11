@@ -273,6 +273,73 @@
       color: white;
       border-color: #667eea;
     }
+
+    /* Hint boxes display */
+    .hint-boxes {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .hint-box {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      padding: 15px 25px;
+      border-radius: 12px;
+      color: white;
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      animation: hintPop 0.3s ease-out;
+    }
+
+    .hint-box.show {
+      display: flex;
+    }
+
+    .hint-box-number {
+      font-size: 36px;
+      line-height: 1;
+    }
+
+    .hint-box-label {
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 4px;
+    }
+
+    .hint-box.hundreds {
+      background: linear-gradient(135deg, #3498DB, #2980B9);
+    }
+
+    .hint-box.tens {
+      background: linear-gradient(135deg, #E74C3C, #C0392B);
+    }
+
+    .hint-box.ones {
+      background: linear-gradient(135deg, #F5A623, #E8940F);
+    }
+
+    .hint-plus {
+      display: none;
+      font-size: 28px;
+      font-weight: 700;
+      color: #666;
+      align-self: center;
+    }
+
+    .hint-plus.show {
+      display: block;
+    }
+
+    @keyframes hintPop {
+      0% { transform: scale(0.5); opacity: 0; }
+      70% { transform: scale(1.1); }
+      100% { transform: scale(1); opacity: 1; }
+    }
   </style>
 </head>
 <body>
@@ -350,15 +417,6 @@
       </div>
     </div>
 
-    <!-- Hint Modal -->
-    <div class="modal-overlay" id="hint-modal">
-      <div class="modal">
-        <div style="font-size: 40px; text-align: center; margin-bottom: 10px;">&#128161;</div>
-        <h2 style="text-align: center;" id="hint-title">Here's a hint!</h2>
-        <p style="text-align: center; font-size: 18px; margin: 20px 0;" id="hint-text"></p>
-        <button class="modal-close" id="close-hint">Thanks! &#128077;</button>
-      </div>
-    </div>
 
     <!-- Difficulty Selector -->
     <div class="difficulty-selector">
@@ -374,6 +432,24 @@
           <!-- Blocks on left -->
           <div class="blocks-container" id="blocks-container">
             <!-- Blocks will be generated here -->
+          </div>
+
+          <!-- Hint boxes (shown progressively) -->
+          <div class="hint-boxes" id="hint-boxes">
+            <div class="hint-box hundreds" id="hint-hundreds">
+              <span class="hint-box-number" id="hint-hundreds-num">0</span>
+              <span class="hint-box-label">Hundreds</span>
+            </div>
+            <span class="hint-plus" id="hint-plus-1">+</span>
+            <div class="hint-box tens" id="hint-tens">
+              <span class="hint-box-number" id="hint-tens-num">0</span>
+              <span class="hint-box-label">Tens</span>
+            </div>
+            <span class="hint-plus" id="hint-plus-2">+</span>
+            <div class="hint-box ones" id="hint-ones">
+              <span class="hint-box-number" id="hint-ones-num">0</span>
+              <span class="hint-box-label">Ones</span>
+            </div>
           </div>
 
           <!-- Answer panel on right -->
@@ -547,39 +623,68 @@
       document.getElementById('btn-next').style.display = 'none';
 
       // Reset hints
-      hintIndex = 0;
       updateHints();
     }
 
     // ==========================================
-    // Hints
+    // Hints - Progressive colored boxes
     // ==========================================
     let hintIndex = 0;
-    let hints = [];
+    let hintOrder = []; // Which hints to show in order
 
     function updateHints() {
       const hundreds = Math.floor(currentNumber / 100);
       const tens = Math.floor((currentNumber % 100) / 10);
       const ones = currentNumber % 10;
 
-      hints = [];
+      // Update hint box values
+      document.getElementById('hint-hundreds-num').textContent = hundreds;
+      document.getElementById('hint-tens-num').textContent = tens;
+      document.getElementById('hint-ones-num').textContent = ones;
 
-      if (hundreds > 0) {
-        hints.push(`There is <strong>${hundreds} blue flat</strong> = ${hundreds * 100}`);
-      }
-      if (tens > 0) {
-        hints.push(`There ${tens === 1 ? 'is' : 'are'} <strong>${tens} red rod${tens > 1 ? 's' : ''}</strong> = ${tens * 10}`);
-      }
-      if (ones > 0) {
-        hints.push(`There ${ones === 1 ? 'is' : 'are'} <strong>${ones} orange cube${ones > 1 ? 's' : ''}</strong> = ${ones}`);
+      // Build the order of hints based on what's present
+      hintOrder = [];
+      if (hundreds > 0) hintOrder.push('hundreds');
+      if (tens > 0) hintOrder.push('tens');
+      if (ones > 0) hintOrder.push('ones');
+
+      // Reset hint display
+      resetHintBoxes();
+    }
+
+    function resetHintBoxes() {
+      document.getElementById('hint-hundreds').classList.remove('show');
+      document.getElementById('hint-tens').classList.remove('show');
+      document.getElementById('hint-ones').classList.remove('show');
+      document.getElementById('hint-plus-1').classList.remove('show');
+      document.getElementById('hint-plus-2').classList.remove('show');
+      hintIndex = 0;
+    }
+
+    function showNextHint() {
+      if (hintIndex >= hintOrder.length) {
+        // All hints shown, cycle back
+        hintIndex = 0;
+        return;
       }
 
-      let equation = '';
-      if (hundreds > 0) equation += (hundreds * 100);
-      if (tens > 0) equation += (equation ? ' + ' : '') + (tens * 10);
-      if (ones > 0) equation += (equation ? ' + ' : '') + ones;
-      equation += ' = ?';
-      hints.push(equation);
+      const hintType = hintOrder[hintIndex];
+      const hintBox = document.getElementById(`hint-${hintType}`);
+      hintBox.classList.add('show');
+
+      // Show plus signs between boxes
+      if (hintIndex > 0) {
+        // Determine which plus to show based on what's visible
+        const shownHints = hintOrder.slice(0, hintIndex + 1);
+        if (shownHints.includes('hundreds') && (shownHints.includes('tens') || shownHints.includes('ones'))) {
+          document.getElementById('hint-plus-1').classList.add('show');
+        }
+        if (shownHints.includes('tens') && shownHints.includes('ones')) {
+          document.getElementById('hint-plus-2').classList.add('show');
+        }
+      }
+
+      hintIndex++;
     }
 
     // ==========================================
@@ -704,27 +809,12 @@
     });
 
     // ==========================================
-    // Get Hint
+    // Get Hint - Progressive colored boxes
     // ==========================================
     const btnGetHint = document.getElementById('btn-get-hint');
-    const hintModal = document.getElementById('hint-modal');
-    const hintTitle = document.getElementById('hint-title');
-    const hintText = document.getElementById('hint-text');
-    const closeHint = document.getElementById('close-hint');
 
     btnGetHint.addEventListener('click', () => {
-      hintTitle.innerHTML = "&#128161; Hint " + (hintIndex + 1) + "!";
-      hintText.innerHTML = hints[hintIndex];
-      hintModal.classList.add('active');
-      hintIndex = (hintIndex + 1) % hints.length;
-    });
-
-    closeHint.addEventListener('click', () => {
-      hintModal.classList.remove('active');
-    });
-
-    hintModal.addEventListener('click', (e) => {
-      if (e.target === hintModal) hintModal.classList.remove('active');
+      showNextHint();
     });
 
     // ==========================================
