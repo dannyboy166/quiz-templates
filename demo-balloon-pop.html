@@ -170,10 +170,37 @@
     @keyframes particleBurst5 { 0% { transform: translate(-50%, -50%); opacity: 1; } 100% { transform: translate(-20px, -60px); opacity: 0; } }
     @keyframes particleBurst6 { 0% { transform: translate(-50%, -50%); opacity: 1; } 100% { transform: translate(30px, -55px); opacity: 0; } }
 
+    /* Main game layout - side by side */
+    .game-layout {
+      display: flex;
+      gap: 30px;
+      align-items: center;
+    }
+
+    .game-layout .balloons-container {
+      flex: 1;
+      margin-bottom: 0;
+    }
+
+    .game-layout .word-area {
+      flex: 1;
+      margin-bottom: 0;
+    }
+
+    @media (max-width: 800px) {
+      .game-layout {
+        flex-direction: column;
+      }
+    }
+
     /* Word Area */
     .word-area {
       text-align: center;
       margin-bottom: 30px;
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 
     .picture-container {
@@ -525,29 +552,31 @@
     <div class="content-card">
       <div class="content-card-inner">
 
-        <!-- Balloons -->
-        <div class="balloons-container" id="balloons-container">
-          <!-- Balloons will be inserted by JS -->
-        </div>
-
-        <!-- Word Area -->
-        <div class="word-area">
-          <!-- Picture -->
-          <div class="picture-container">
-            <span class="picture-emoji" id="picture-emoji">🐟</span>
+        <!-- Game Layout - Balloons Left, Word Right -->
+        <div class="game-layout">
+          <!-- Balloons -->
+          <div class="balloons-container" id="balloons-container">
+            <!-- Balloons will be inserted by JS -->
           </div>
 
-          <!-- Word Display -->
-          <div class="word-display" id="word-display">
-            <!-- Letters will be inserted by JS -->
-          </div>
-        </div>
+          <!-- Word Area -->
+          <div class="word-area">
+            <!-- Picture -->
+            <div class="picture-container">
+              <span class="picture-emoji" id="picture-emoji">🐟</span>
+            </div>
 
-        <!-- Sound Hint -->
-        <div class="sound-hint" id="sound-hint">
-          <strong>The 'sh' Sound</strong> - Shhh! Like a quiet whisper or a fishy kiss!
-          <span class="sound-example">Examples: ship, shoe, shell</span>
-        </div>
+            <!-- Word Display -->
+            <div class="word-display" id="word-display">
+              <!-- Letters will be inserted by JS -->
+            </div>
+
+            <!-- Sound Hint -->
+            <div class="sound-hint" id="sound-hint">
+              <strong>The 'sh' Sound</strong> - Shhh! Like a quiet whisper or a fishy kiss!
+              <span class="sound-example">Examples: ship, shoe, shell</span>
+            </div>
+          </div>
 
         <!-- Check Button -->
         <button class="btn-check-answer" id="btn-check" style="display: none;">Check Answer</button>

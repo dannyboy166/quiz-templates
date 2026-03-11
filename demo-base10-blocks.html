@@ -140,6 +140,44 @@
       animation: celebrate 0.5s ease-in-out;
     }
 
+    /* Main game layout - side by side */
+    .game-layout {
+      display: flex;
+      gap: 40px;
+      align-items: center;
+    }
+
+    .game-layout .blocks-container {
+      flex: 2;
+    }
+
+    .game-layout .answer-panel {
+      flex: 1;
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .game-layout .answer-panel .answer-input {
+      margin-bottom: 15px;
+    }
+
+    .game-layout .answer-panel .btn-check-answer {
+      width: 100%;
+      max-width: none;
+    }
+
+    @media (max-width: 800px) {
+      .game-layout {
+        flex-direction: column;
+      }
+      .game-layout .answer-panel {
+        width: 100%;
+      }
+    }
+
     /* Blocks display area */
     .blocks-container {
       display: flex;
@@ -297,32 +335,36 @@
     <!-- Content Card -->
     <div class="content-card">
       <div class="content-card-inner">
-        <div class="blocks-container" id="blocks-container">
-          <!-- Blocks will be generated here -->
+        <div class="game-layout">
+          <!-- Blocks on left -->
+          <div class="blocks-container" id="blocks-container">
+            <!-- Blocks will be generated here -->
+          </div>
+
+          <!-- Answer panel on right -->
+          <div class="answer-panel">
+            <h3 style="margin-bottom: 15px; font-size: 20px;">Your Answer</h3>
+            <input type="number" class="answer-input" id="answer" placeholder="?" autocomplete="off" min="1" max="999">
+            <button class="btn-check-answer" id="btn-check">Check Answer</button>
+
+            <!-- Feedback -->
+            <div class="feedback" id="feedback" style="display: none; margin-top: 15px;">
+              <span class="feedback-badge" id="feedback-badge"></span>
+            </div>
+            <div style="margin-top: 15px;">
+              <button class="btn-try-again" id="btn-try-again" style="display: none;">
+                Try Again &#128260;
+              </button>
+              <button class="btn-next" id="btn-next" style="display: none;" title="Next Question">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-
-    <!-- Answer Input -->
-    <div class="answer-area">
-      <input type="number" class="answer-input" id="answer" placeholder="Type your answer" autocomplete="off" min="1" max="999">
-    </div>
-
-    <!-- Feedback (hidden initially) -->
-    <div class="feedback" id="feedback" style="display: none;">
-      <span class="feedback-badge" id="feedback-badge"></span>
-      <button class="btn-try-again" id="btn-try-again" style="display: none;">
-        Try Again &#128260;
-      </button>
-      <button class="btn-next" id="btn-next" style="display: none;" title="Next Question">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <path d="M5 12h14M12 5l7 7-7 7"/>
-        </svg>
-      </button>
-    </div>
-
-    <!-- Check Answer Button -->
-    <button class="btn-check-answer" id="btn-check">Check Answer</button>
   </div>
 
   <script>
