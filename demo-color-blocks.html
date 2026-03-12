@@ -279,6 +279,12 @@
     .start-screen {
       text-align: center;
       padding: 40px 20px;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .start-screen .content-card-inner {
+      background: transparent;
     }
 
     .start-screen h2 {
@@ -287,7 +293,7 @@
     }
 
     .start-screen > .content-card-inner > p {
-      color: #666;
+      color: #333;
       margin-bottom: 25px;
     }
 
@@ -305,11 +311,28 @@
       align-items: center;
       gap: 4px;
       padding: 16px 12px;
-      background: white;
-      border: 3px solid #333;
+      border: 3px solid transparent;
       border-radius: 16px;
       cursor: pointer;
       transition: all 0.2s;
+      color: white;
+    }
+
+    .difficulty-option[data-difficulty="ones-only"] {
+      background: #3c3a32;
+    }
+
+    .difficulty-option[data-difficulty="easy"] {
+      background: #a7f0f5;
+      color: #333;
+    }
+
+    .difficulty-option[data-difficulty="medium"] {
+      background: #d793fa;
+    }
+
+    .difficulty-option[data-difficulty="hard"] {
+      background: #ee836b;
     }
 
     .difficulty-option:hover {
@@ -317,8 +340,8 @@
     }
 
     .difficulty-option.selected {
-      background: #333;
-      color: white;
+      border-color: #333;
+      box-shadow: 0 0 0 3px rgba(0,0,0,0.2);
     }
 
     .diff-icon {
