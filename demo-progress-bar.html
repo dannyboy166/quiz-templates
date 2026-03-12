@@ -120,7 +120,6 @@
 
     /* Kite shapes inside compass */
     .compass-diamond {
-      animation: spin 3s linear infinite;
       z-index: 5;
       position: relative;
     }
@@ -129,15 +128,6 @@
       width: 28px;
       height: 8px;
       display: block;
-    }
-
-    @keyframes spin {
-      from {
-        transform: rotate(0deg);
-      }
-      to {
-        transform: rotate(360deg);
-      }
     }
 
     /* Question meta */
@@ -266,13 +256,51 @@
     let currentQuestion = 1;
     const totalQuestions = 8;
 
-    function updateProgress() {
+    // Rotation state
+    let rotation = 0;
+    let spinSpeed = 120; // degrees per second (slow)
+    const slowSpeed = 120;
+    const fastSpeed = 720;
+    let lastTime = performance.now();
+    let slowDownTimer = null;
+
+    // Spin loop
+    function spinCompass(currentTime) {
+      const delta = (currentTime - lastTime) / 1000;
+      lastTime = currentTime;
+
+      rotation += spinSpeed * delta;
+      rotation %= 360;
+
+      const compassDiamond = document.querySelector('.compass-diamond');
+      if (compassDiamond) {
+        compassDiamond.style.transform = `rotate(${rotation}deg)`;
+      }
+
+      requestAnimationFrame(spinCompass);
+    }
+
+    // Start spinning
+    requestAnimationFrame(spinCompass);
+
+    function updateProgress(animate = false, backwards = false) {
       const progressFill = document.getElementById('progress-fill');
       const compassContainer = document.getElementById('compass-container');
       const currentQEl = document.getElementById('current-q');
 
       // Calculate percentage (question 1 = 1/8 = 12.5%, etc.)
       const percentage = (currentQuestion / totalQuestions) * 100;
+
+      // Spin faster while moving (backwards if going to previous)
+      if (animate) {
+        // Cancel any pending slow-down
+        if (slowDownTimer) clearTimeout(slowDownTimer);
+
+        spinSpeed = backwards ? -fastSpeed : fastSpeed;
+        slowDownTimer = setTimeout(() => {
+          spinSpeed = slowSpeed;
+        }, 500);
+      }
 
       // Update fill width
       progressFill.style.width = percentage + '%';
@@ -287,14 +315,14 @@
     function nextQuestion() {
       if (currentQuestion < totalQuestions) {
         currentQuestion++;
-        updateProgress();
+        updateProgress(true);
       }
     }
 
     function prevQuestion() {
       if (currentQuestion > 1) {
         currentQuestion--;
-        updateProgress();
+        updateProgress(true, true); // animate, backwards
       }
     }
 
