@@ -43,6 +43,16 @@ See `DOCUMENTATION.md` for full integration guide.
 
 ## Recent Updates
 
+**March 2025:**
+- Added spinning compass progress bar to ALL templates
+- Added difficulty start screens to: Clock, Skip Counting, Color Blocks, Base 10 Blocks, Fractions
+- Colored difficulty buttons (cyan/purple/coral/charcoal) for consistent UX
+- Skip Counting: Easy (1,2), Medium (3,5,10), Hard (4,6), Expert (7,8,9)
+- Color Blocks: Ones Only (1-9), Easy (10-30), Medium (31-60), Hard (61-99)
+- Removed white containers from game areas for cleaner look
+- 3D isometric SVG blocks in Base 10 Blocks (hundreds/tens/ones)
+
+**February 2025:**
 - Updated yellow background color to #FFE280 across templates
 - Removed transparent white bars from headers
 - Added progress bar component with spinning compass

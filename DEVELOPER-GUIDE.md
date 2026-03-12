@@ -506,28 +506,33 @@ The template generates 8 random fraction questions based on the selected difficu
 
 ### 15. Skip Counting (`skip-counting`)
 
-Fill in missing numbers in a counting sequence. Count by 2s, 5s, 10s, 3s, etc.
+Fill in missing numbers in a counting sequence. Supports difficulty-based random generation.
 
 | Column | Type | Required | Description |
 |--------|------|----------|-------------|
 | `template_type` | string | Yes | `"skip-counting"` |
-| `skip_by` | integer | Yes | The number to count by (2, 5, 10, 3, etc.) |
-| `sequence` | JSON array | Yes | Full number sequence |
-| `blanks` | JSON array | Yes | Indices of blank positions (0-indexed) |
+| `difficulty` | string | Yes | `"easy"`, `"medium"`, `"hard"`, `"expert"` |
+
+**Difficulty Options:**
+- `easy` - Count by 1s or 2s (randomly selected per question)
+- `medium` - Count by 3s, 5s, or 10s
+- `hard` - Count by 4s or 6s
+- `expert` - Count by 7s, 8s, or 9s
 
 **Example Excel Row:**
 ```
 template_type: skip-counting
-skip_by: 2
-sequence: [2, 4, 6, 8, 10, 12, 14]
-blanks: [2, 4, 5]
+difficulty: medium
 ```
-This creates: 2, 4, __, 8, __, __, 14
+
+**Standalone Mode:**
+The template generates 6 random skip counting questions based on the selected difficulty. Each question randomly selects a skip value from the difficulty's options and generates a sequence with 2-3 blanks.
 
 **Features:**
-- Pattern selector for different skip counts (2s, 5s, 10s, 3s)
+- Difficulty selector with colored buttons (cyan/purple/coral/charcoal)
 - Randomly generated sequences with random blank positions
 - 7 numbers per sequence with 2-3 blanks
+- 6 questions per round
 
 ---
 
