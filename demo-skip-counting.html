@@ -91,33 +91,120 @@
       border-style: solid;
     }
 
-    /* Pattern selector */
-    .pattern-selector {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 8px;
-      margin-bottom: 20px;
+    /* Start Screen */
+    .start-screen {
+      text-align: center;
+      padding: 40px 20px;
+      background: transparent;
+      box-shadow: none;
     }
 
-    .pattern-btn {
-      padding: 8px 20px;
-      font-size: 18px;
+    .start-screen .content-card-inner {
+      background: transparent;
+    }
+
+    .start-screen h2 {
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+
+    .start-screen > .content-card-inner > p {
+      color: #333;
+      margin-bottom: 25px;
+    }
+
+    .difficulty-selector {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      max-width: 380px;
+      margin: 0 auto 30px;
+    }
+
+    .difficulty-option {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 16px 12px;
+      border: 3px solid transparent;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: white;
+    }
+
+    .difficulty-option[data-difficulty="easy"] {
+      background: #a7f0f5;
+      color: #333;
+    }
+
+    .difficulty-option[data-difficulty="medium"] {
+      background: #d793fa;
+    }
+
+    .difficulty-option[data-difficulty="hard"] {
+      background: #ee836b;
+    }
+
+    .difficulty-option[data-difficulty="expert"] {
+      background: #3c3a32;
+    }
+
+    .difficulty-option:hover {
+      transform: scale(1.03);
+    }
+
+    .difficulty-option.selected {
+      border-color: #333;
+      box-shadow: 0 0 0 3px rgba(0,0,0,0.2);
+    }
+
+    .diff-icon {
+      font-size: 22px;
       font-weight: 700;
-      background: white;
-      border: 3px solid #9C27B0;
-      border-radius: 20px;
+      font-family: inherit;
+    }
+
+    .diff-label {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .diff-desc {
+      font-size: 11px;
+      opacity: 0.7;
+    }
+
+    .start-btn {
+      padding: 16px 50px;
+      font-size: 20px;
+      font-weight: 600;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 16px;
       cursor: pointer;
       transition: all 0.2s;
     }
 
-    .pattern-btn:hover {
-      background: #F3E5F5;
+    .start-btn:hover {
+      background: #43A047;
+      transform: scale(1.05);
     }
 
-    .pattern-btn.active {
-      background: #9C27B0;
-      color: white;
+    .game-area {
+      display: none;
+    }
+
+    .game-area.show {
+      display: block;
+    }
+
+    @media (max-width: 400px) {
+      .difficulty-selector {
+        grid-template-columns: 1fr;
+      }
     }
 
     /* Feedback */
@@ -377,92 +464,120 @@
       </button>
     </header>
 
-    <!-- Progress Bar -->
-    <div class="progress-container">
-      <div class="progress-track">
-        <div class="progress-fill" id="progress-fill"></div>
-      </div>
-      <div class="compass-container" id="compass-container">
-        <div class="compass">
-          <div class="compass-dot top"></div>
-          <div class="compass-dot bottom"></div>
-          <div class="compass-dot left"></div>
-          <div class="compass-dot right"></div>
-          <div class="compass-diamond">
-            <svg viewBox="0 0 28 8">
-              <polygon points="0,4 10,0 14,4 10,8" fill="#EFA1D5" stroke="#333" stroke-width="0.5"/>
-              <polygon points="28,4 18,0 14,4 18,8" fill="#5E58F9" stroke="#333" stroke-width="0.5"/>
-            </svg>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Pattern Selector -->
-    <div class="pattern-selector">
-      <button class="pattern-btn active" data-skip="2">Count by 2s</button>
-      <button class="pattern-btn" data-skip="5">Count by 5s</button>
-      <button class="pattern-btn" data-skip="10">Count by 10s</button>
-      <button class="pattern-btn" data-skip="3">Count by 3s</button>
-    </div>
-
-    <!-- Question Meta -->
-    <div class="question-meta">
-      <span class="badge badge-math">Maths</span>
-      <span class="question-progress">Question <span id="current-q">1</span> of <span id="total-q">6</span></span>
-    </div>
-
-    <!-- Question Title -->
-    <div class="question-title">
-      <h1 id="question-text">Fill in the missing numbers</h1>
-    </div>
-
-    <!-- Help Bar -->
-    <div class="help-bar">
-      <div class="help-item" id="btn-read-aloud">
-        <span style="font-weight: 530; font-size: 15px;">Read Aloud</span>
-        <span class="help-item-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg></span>
-      </div>
-      <span class="help-item-line"></span>
-      <div class="help-item" id="btn-get-help">
-        <span style="font-weight: 530; font-size: 15px;">Get Help</span>
-        <span class="help-item-icon">?</span>
-      </div>
-      <span class="help-item-line"></span>
-      <div class="help-item" id="btn-get-hint">
-        <span style="font-weight: 530; font-size: 15px;">Get Hint</span>
-        <span class="help-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 6h12v2H6V6zm0 3h12v2H6V9zm0 3h8v2H6v-2z"/></svg></span>
-      </div>
-    </div>
-
-    <!-- Content Card -->
-    <div class="content-card">
+    <!-- Start Screen -->
+    <div class="content-card start-screen" id="start-screen">
       <div class="content-card-inner">
-        <div class="skip-info">
-          <div class="skip-badge">Skip counting by <span id="skip-number">2</span>s</div>
-        </div>
+        <h2>Choose Difficulty</h2>
+        <p>What skip counting do you want to practice?</p>
 
-        <div class="number-sequence" id="number-sequence">
-          <!-- Numbers will be inserted here -->
-        </div>
-
-        <button class="btn-check-answer" id="btn-check">Check Answer</button>
-
-        <div class="feedback" id="feedback">
-          <div class="feedback-badge" id="feedback-badge">
-            <span id="feedback-icon">✓</span>
-            <span id="feedback-text">Correct!</span>
-          </div>
-          <button class="btn-try-again" id="btn-try-again">Try Again</button>
-          <button class="btn-next" id="btn-next">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
-            </svg>
+        <div class="difficulty-selector">
+          <button class="difficulty-option selected" data-difficulty="easy" data-skips="1,2">
+            <span class="diff-icon">1, 2</span>
+            <span class="diff-label">Easy</span>
+            <span class="diff-desc">count by 1s or 2s</span>
+          </button>
+          <button class="difficulty-option" data-difficulty="medium" data-skips="3,5,10">
+            <span class="diff-icon">3, 5, 10</span>
+            <span class="diff-label">Medium</span>
+            <span class="diff-desc">count by 3s, 5s or 10s</span>
+          </button>
+          <button class="difficulty-option" data-difficulty="hard" data-skips="4,6">
+            <span class="diff-icon">4, 6</span>
+            <span class="diff-label">Hard</span>
+            <span class="diff-desc">count by 4s or 6s</span>
+          </button>
+          <button class="difficulty-option" data-difficulty="expert" data-skips="7,8,9">
+            <span class="diff-icon">7, 8, 9</span>
+            <span class="diff-label">Expert</span>
+            <span class="diff-desc">count by 7s, 8s or 9s</span>
           </button>
         </div>
 
-        <div class="progress-dots" id="progress-dots"></div>
-        <div class="score-display" id="score-display"></div>
+        <button class="start-btn" id="start-btn">Start!</button>
+      </div>
+    </div>
+
+    <!-- Game Area (hidden until start) -->
+    <div class="game-area" id="game-area">
+      <!-- Progress Bar -->
+      <div class="progress-container">
+        <div class="progress-track">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <div class="compass-container" id="compass-container">
+          <div class="compass">
+            <div class="compass-dot top"></div>
+            <div class="compass-dot bottom"></div>
+            <div class="compass-dot left"></div>
+            <div class="compass-dot right"></div>
+            <div class="compass-diamond">
+              <svg viewBox="0 0 28 8">
+                <polygon points="0,4 10,0 14,4 10,8" fill="#EFA1D5" stroke="#333" stroke-width="0.5"/>
+                <polygon points="28,4 18,0 14,4 18,8" fill="#5E58F9" stroke="#333" stroke-width="0.5"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Question Meta -->
+      <div class="question-meta">
+        <span class="badge badge-math">Maths</span>
+        <span class="question-progress">Question <span id="current-q">1</span> of <span id="total-q">6</span></span>
+      </div>
+
+      <!-- Question Title -->
+      <div class="question-title">
+        <h1 id="question-text">Fill in the missing numbers</h1>
+      </div>
+
+      <!-- Help Bar -->
+      <div class="help-bar">
+        <div class="help-item" id="btn-read-aloud">
+          <span style="font-weight: 530; font-size: 15px;">Read Aloud</span>
+          <span class="help-item-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg></span>
+        </div>
+        <span class="help-item-line"></span>
+        <div class="help-item" id="btn-get-help">
+          <span style="font-weight: 530; font-size: 15px;">Get Help</span>
+          <span class="help-item-icon">?</span>
+        </div>
+        <span class="help-item-line"></span>
+        <div class="help-item" id="btn-get-hint">
+          <span style="font-weight: 530; font-size: 15px;">Get Hint</span>
+          <span class="help-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 6h12v2H6V6zm0 3h12v2H6V9zm0 3h8v2H6v-2z"/></svg></span>
+        </div>
+      </div>
+
+      <!-- Content Card -->
+      <div class="content-card">
+        <div class="content-card-inner">
+          <div class="skip-info">
+            <div class="skip-badge">Skip counting by <span id="skip-number">2</span>s</div>
+          </div>
+
+          <div class="number-sequence" id="number-sequence">
+            <!-- Numbers will be inserted here -->
+          </div>
+
+          <button class="btn-check-answer" id="btn-check">Check Answer</button>
+
+          <div class="feedback" id="feedback">
+            <div class="feedback-badge" id="feedback-badge">
+              <span id="feedback-icon">✓</span>
+              <span id="feedback-text">Correct!</span>
+            </div>
+            <button class="btn-try-again" id="btn-try-again">Try Again</button>
+            <button class="btn-next" id="btn-next">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="progress-dots" id="progress-dots"></div>
+          <div class="score-display" id="score-display"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -476,9 +591,10 @@
         <p>🔢 Look at the number pattern</p>
         <p>📈 Figure out what number we're counting by</p>
         <p>✏️ Type the missing numbers in the yellow boxes</p>
-        <p>💡 <strong>Counting by 2s:</strong> 2, 4, 6, 8, 10...</p>
-        <p>💡 <strong>Counting by 5s:</strong> 5, 10, 15, 20...</p>
-        <p>💡 <strong>Counting by 10s:</strong> 10, 20, 30, 40...</p>
+        <p>💡 <strong>Easy:</strong> Count by 1s or 2s</p>
+        <p>💡 <strong>Medium:</strong> Count by 3s, 5s or 10s</p>
+        <p>💡 <strong>Hard:</strong> Count by 4s or 6s</p>
+        <p>💡 <strong>Expert:</strong> Count by 7s, 8s or 9s</p>
         <p>✅ Press "Check Answer" when you're done!</p>
       </div>
       <button class="modal-btn" onclick="closeModal('help-modal')">Got it!</button>
@@ -537,6 +653,17 @@
       compassContainer.style.left = percentage + '%';
     }
 
+    // Difficulty settings
+    const difficultySkips = {
+      'easy': [1, 2],
+      'medium': [3, 5, 10],
+      'hard': [4, 6],
+      'expert': [7, 8, 9]
+    };
+
+    let currentDifficulty = 'easy';
+    let availableSkips = difficultySkips['easy'];
+
     // Generate questions for each skip pattern
     function generateQuestions(skipBy) {
       const questions = [];
@@ -562,7 +689,44 @@
 
         questions.push({
           sequence,
-          blanks: Array.from(blankIndices).sort((a, b) => a - b)
+          blanks: Array.from(blankIndices).sort((a, b) => a - b),
+          skipBy: skipBy
+        });
+      }
+
+      return questions;
+    }
+
+    // Generate questions with random skip values from available options
+    function generateMixedQuestions() {
+      const questions = [];
+
+      for (let i = 0; i < 6; i++) {
+        // Pick a random skip from available options
+        const skipBy = availableSkips[Math.floor(Math.random() * availableSkips.length)];
+
+        // Random starting point
+        const start = skipBy * (Math.floor(Math.random() * 5) + 1);
+        const length = 7;
+        const sequence = [];
+
+        for (let j = 0; j < length; j++) {
+          sequence.push(start + (skipBy * j));
+        }
+
+        // Randomly choose 2-3 blanks (not first or last)
+        const numBlanks = Math.floor(Math.random() * 2) + 2;
+        const blankIndices = new Set();
+
+        while (blankIndices.size < numBlanks) {
+          const idx = Math.floor(Math.random() * (length - 2)) + 1;
+          blankIndices.add(idx);
+        }
+
+        questions.push({
+          sequence,
+          blanks: Array.from(blankIndices).sort((a, b) => a - b),
+          skipBy: skipBy
         });
       }
 
@@ -570,15 +734,41 @@
     }
 
     let currentSkip = 2;
-    let questions = generateQuestions(currentSkip);
+    let questions = [];
     let currentQuestion = 0;
     let results = [];
     let correctCount = 0;
 
     function init() {
-      renderProgressDots();
-      loadQuestion(currentQuestion);
       setupEventListeners();
+    }
+
+    function startGame() {
+      // Get selected difficulty
+      const selected = document.querySelector('.difficulty-option.selected');
+      currentDifficulty = selected.dataset.difficulty;
+      availableSkips = selected.dataset.skips.split(',').map(Number);
+
+      // Generate questions with random skips from difficulty
+      questions = generateMixedQuestions();
+      currentQuestion = 0;
+      results = [];
+      correctCount = 0;
+
+      // Show game area, hide start screen
+      document.getElementById('start-screen').style.display = 'none';
+      document.getElementById('game-area').classList.add('show');
+
+      // Reset compass
+      updateCompass(0, false);
+
+      renderProgressDots();
+      loadQuestion(0);
+    }
+
+    function playAgain() {
+      document.getElementById('game-area').classList.remove('show');
+      document.getElementById('start-screen').style.display = 'block';
     }
 
     function renderProgressDots() {
@@ -590,6 +780,7 @@
 
     function loadQuestion(index) {
       const q = questions[index];
+      currentSkip = q.skipBy;
 
       // Update progress
       document.getElementById('current-q').textContent = index + 1;
@@ -727,26 +918,9 @@
         // Complete - update compass to 100%
         updateCompass(100, true);
         alert(`🎉 Well done!\n\nYou got ${correctCount} out of ${questions.length} correct!`);
+        // Return to start screen
+        playAgain();
       }
-    }
-
-    function switchPattern(skipBy) {
-      currentSkip = skipBy;
-      currentQuestion = 0;
-      results = [];
-      correctCount = 0;
-      questions = generateQuestions(skipBy);
-
-      // Reset compass
-      updateCompass(0, false);
-
-      // Update buttons
-      document.querySelectorAll('.pattern-btn').forEach(btn => {
-        btn.classList.toggle('active', parseInt(btn.dataset.skip) === skipBy);
-      });
-
-      renderProgressDots();
-      loadQuestion(0);
     }
 
     function readAloud() {
@@ -776,10 +950,16 @@
       document.getElementById('header-help').addEventListener('click', () => openModal('help-modal'));
       document.getElementById('btn-get-hint').addEventListener('click', () => openModal('hint-modal'));
 
-      // Pattern selector
-      document.querySelectorAll('.pattern-btn').forEach(btn => {
-        btn.addEventListener('click', () => switchPattern(parseInt(btn.dataset.skip)));
+      // Difficulty selector
+      document.querySelectorAll('.difficulty-option').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.difficulty-option').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+        });
       });
+
+      // Start button
+      document.getElementById('start-btn').addEventListener('click', startGame);
 
       document.querySelectorAll('.modal-overlay').forEach(modal => {
         modal.addEventListener('click', (e) => {
