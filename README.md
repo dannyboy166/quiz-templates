@@ -40,7 +40,7 @@ These templates generate random questions automatically - just select difficulty
 |----------|-----------|-------------------|
 | Base 10 Blocks | 5 per round | Easy (1-20), Medium (1-100), Hard (100-999) |
 | Clock | 4 per round | Hours Only, Half Hours, Quarters, 5 Minutes |
-| Color Blocks | 10 per round | Ones Only (1-9), Easy (10-30), Medium (31-60), Hard (61-99) |
+| Color Blocks | 10 per round | Ones Only (1-9), Easy (10-50), Medium (51-99), Hard (100-500), Expert (500-999) |
 | Dice Addition | 10 per round | 2-5 dice (speed challenge) |
 | Fractions | 8 per round | Halves, Quarters, Mixed, Eighths |
 | Skip Counting | 6 per round | Easy (1,2), Medium (3,5,10), Hard (4,6), Expert (7,8,9) |
