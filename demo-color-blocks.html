@@ -254,13 +254,11 @@
       transform: scale(1.15);
     }
 
-    /* Hundreds section */
+    /* Hundreds section - stacked vertically */
     .hundreds-section {
+      position: relative;
       display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      max-width: 320px;
-      justify-content: center;
+      align-items: flex-end;
     }
 
     .hundred-block {
@@ -901,13 +899,27 @@
       const tensWrapper = document.getElementById('tens-wrapper');
       if (TARGET >= 100) {
         hundredsWrapper.style.display = 'flex';
-        // Create hundred blocks (3D SVG flats)
+
+        // Calculate stack height: base height (95px) + stacking offset (25px per additional block)
+        const stackHeight = 95 + (hundredsNeeded - 1) * 25;
+        hundredsSection.style.height = stackHeight + 'px';
+        hundredsSection.style.width = '140px';
+
+        // Create hundred blocks (3D SVG flats) - stacked vertically
         for (let h = 0; h < hundredsNeeded; h++) {
           const wrapper = document.createElement('div');
           wrapper.innerHTML = createHundredBlockSVG(false);
           const svg = wrapper.firstChild;
           svg.dataset.index = h;
           svg.dataset.colored = 'false';
+
+          // Stack upward - first block at bottom, each one higher
+          const offsetFromBottom = h * 25;
+          svg.style.position = 'absolute';
+          svg.style.left = '0';
+          svg.style.bottom = offsetFromBottom + 'px';
+          svg.style.zIndex = h;
+
           hundredsSection.appendChild(svg);
           hundredBlocks.push(svg);
 
