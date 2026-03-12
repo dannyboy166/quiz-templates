@@ -100,8 +100,7 @@ Click 3D isometric blocks to colour tens and ones to make a number. Fully auto-g
 - `Ones Only` - Numbers 1-9 (single digits, no tens columns)
 - `Easy` - Numbers 10-50 (small two-digit)
 - `Medium` - Numbers 51-99 (large two-digit)
-- `Hard` - Numbers 100-500 (with hundreds)
-- `Expert` - Numbers 500-999 (up to a thousand)
+- `Hard` - Numbers 100-999 (with hundreds)
 
 **How It Works:**
 1. Student selects difficulty on start screen
