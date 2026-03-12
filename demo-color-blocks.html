@@ -888,6 +888,7 @@
 
       // Clear existing blocks
       hundredsSection.innerHTML = '';
+      hundredsSection.onclick = null; // Clear previous click handler
       tensSection.innerHTML = '';
       onesSection.innerHTML = '';
       hundredBlocks = [];
@@ -919,26 +920,36 @@
           svg.style.left = '0';
           svg.style.bottom = offsetFromBottom + 'px';
           svg.style.zIndex = h;
+          svg.style.pointerEvents = 'none'; // Disable individual clicks
 
           hundredsSection.appendChild(svg);
           hundredBlocks.push(svg);
+        }
 
-          // Add click listener
-          svg.addEventListener('click', () => {
-            if (isErasing) {
-              if (svg.dataset.colored === 'true') {
-                uncolorBlock(svg);
-                svg.dataset.colored = 'false';
-              }
-            } else {
-              if (svg.dataset.colored === 'false') {
-                colorBlock(svg, COLORED_HUNDREDS);
-                svg.dataset.colored = 'true';
+        // Click handler for entire hundreds stack - color/uncolor one at a time
+        hundredsSection.style.cursor = 'pointer';
+        hundredsSection.onclick = () => {
+          if (isErasing) {
+            // Find last colored block and uncolor it
+            for (let i = hundredBlocks.length - 1; i >= 0; i--) {
+              if (hundredBlocks[i].dataset.colored === 'true') {
+                uncolorBlock(hundredBlocks[i]);
+                hundredBlocks[i].dataset.colored = 'false';
+                break;
               }
             }
-            updateCount();
-          });
-        }
+          } else {
+            // Find first uncolored block and color it
+            for (let i = 0; i < hundredBlocks.length; i++) {
+              if (hundredBlocks[i].dataset.colored === 'false') {
+                colorBlock(hundredBlocks[i], COLORED_HUNDREDS);
+                hundredBlocks[i].dataset.colored = 'true';
+                break;
+              }
+            }
+          }
+          updateCount();
+        };
       } else {
         hundredsWrapper.style.display = 'none';
       }
