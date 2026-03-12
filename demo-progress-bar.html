@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Progress Bar Demo</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #FFE280;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 40px 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    /* Header with back button */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 30px;
+    }
+
+    .btn-back {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: white;
+      border: 2px solid #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 20px;
+    }
+
+    .header-text {
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    /* Progress Bar Container */
+    .progress-container {
+      position: relative;
+      width: 100%;
+      height: 24px;
+      margin: 40px 0;
+    }
+
+    /* Track (background) */
+    .progress-track {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 16px;
+      background: #3a3a3a;
+      border-radius: 8px;
+      transform: translateY(-50%);
+      overflow: hidden;
+    }
+
+    /* Gradient fill */
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #5E58F9 0%, #EFA1D5 100%);
+      border-radius: 8px;
+      transition: width 0.5s ease-out;
+    }
+
+    /* Compass container - positions at progress point */
+    .compass-container {
+      position: absolute;
+      top: 50%;
+      left: 0%;
+      transform: translate(-50%, -50%);
+      transition: left 0.5s ease-out;
+      z-index: 10;
+    }
+
+    /* Compass circle */
+    .compass {
+      width: 44px;
+      height: 44px;
+      background: white;
+      border: 2px solid #333;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+
+    /* Compass dots */
+    .compass-dot {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: #333;
+      border-radius: 50%;
+    }
+
+    .compass-dot.top { top: 3px; left: 50%; transform: translateX(-50%); }
+    .compass-dot.bottom { bottom: 3px; left: 50%; transform: translateX(-50%); }
+    .compass-dot.left { left: 3px; top: 50%; transform: translateY(-50%); }
+    .compass-dot.right { right: 3px; top: 50%; transform: translateY(-50%); }
+
+    /* Kite shapes inside compass */
+    .compass-diamond {
+      animation: spin 3s linear infinite;
+      z-index: 5;
+      position: relative;
+    }
+
+    .compass-diamond svg {
+      width: 28px;
+      height: 8px;
+      display: block;
+    }
+
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Question meta */
+    .question-meta {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-top: 30px;
+    }
+
+    .badge {
+      padding: 8px 16px;
+      border: 2px solid #333;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 14px;
+      background: white;
+    }
+
+    .question-progress {
+      font-size: 16px;
+      font-weight: 500;
+      color: #333;
+    }
+
+    /* Demo controls */
+    .demo-controls {
+      margin-top: 60px;
+      padding: 30px;
+      background: white;
+      border-radius: 16px;
+      border: 2px solid #333;
+    }
+
+    .demo-controls h3 {
+      margin-bottom: 20px;
+    }
+
+    .demo-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .demo-btn {
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      border: 2px solid #333;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .demo-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .demo-btn.next {
+      background: #5E58F9;
+      color: white;
+    }
+
+    .demo-btn.prev {
+      background: #EFA1D5;
+      color: #333;
+    }
+
+    .demo-btn.reset {
+      background: #333;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <button class="btn-back">←</button>
+      <span class="header-text">Exit Questions</span>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-container">
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <div class="compass-container" id="compass-container">
+        <div class="compass">
+          <!-- Dots -->
+          <div class="compass-dot top"></div>
+          <div class="compass-dot bottom"></div>
+          <div class="compass-dot left"></div>
+          <div class="compass-dot right"></div>
+          <!-- Spinning bowtie kites -->
+          <div class="compass-diamond">
+            <svg viewBox="0 0 28 8">
+              <!-- Pink kite - point on left, wide near center -->
+              <polygon points="0,4 10,0 14,4 10,8" fill="#EFA1D5" stroke="#333" stroke-width="0.5"/>
+              <!-- Blue kite - point on right, wide near center -->
+              <polygon points="28,4 18,0 14,4 18,8" fill="#5E58F9" stroke="#333" stroke-width="0.5"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Question Meta -->
+    <div class="question-meta">
+      <span class="badge">English</span>
+      <span class="question-progress">Question <span id="current-q">1</span> of <span id="total-q">8</span></span>
+    </div>
+
+    <!-- Demo Controls -->
+    <div class="demo-controls">
+      <h3>Demo Controls</h3>
+      <div class="demo-buttons">
+        <button class="demo-btn prev" onclick="prevQuestion()">← Previous</button>
+        <button class="demo-btn next" onclick="nextQuestion()">Next Question →</button>
+        <button class="demo-btn reset" onclick="resetProgress()">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentQuestion = 1;
+    const totalQuestions = 8;
+
+    function updateProgress() {
+      const progressFill = document.getElementById('progress-fill');
+      const compassContainer = document.getElementById('compass-container');
+      const currentQEl = document.getElementById('current-q');
+
+      // Calculate percentage (question 1 = 1/8 = 12.5%, etc.)
+      const percentage = (currentQuestion / totalQuestions) * 100;
+
+      // Update fill width
+      progressFill.style.width = percentage + '%';
+
+      // Update compass position
+      compassContainer.style.left = percentage + '%';
+
+      // Update question number
+      currentQEl.textContent = currentQuestion;
+    }
+
+    function nextQuestion() {
+      if (currentQuestion < totalQuestions) {
+        currentQuestion++;
+        updateProgress();
+      }
+    }
+
+    function prevQuestion() {
+      if (currentQuestion > 1) {
+        currentQuestion--;
+        updateProgress();
+      }
+    }
+
+    function resetProgress() {
+      currentQuestion = 1;
+      updateProgress();
+    }
+
+    // Initialize
+    updateProgress();
+  </script>
+</body>
+</html>

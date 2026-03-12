@@ -185,7 +185,7 @@
     <!-- Question Meta -->
     <div class="question-meta">
       <span class="badge">MATH</span>
-      <span class="question-progress">Question 3 of 4</span>
+      <span class="question-progress">Sort the Shapes</span>
     </div>
 
     <!-- Question Title -->
@@ -455,9 +455,11 @@
       btnTryAgain.style.display = 'none';
     });
 
-    // Next Question
+    // Play Again
     btnNext.addEventListener('click', () => {
-      window.location.href = 'demo-color-blocks.html';
+      sorter.reset();
+      feedback.style.display = 'none';
+      btnNext.style.display = 'none';
     });
 
     // ==========================================

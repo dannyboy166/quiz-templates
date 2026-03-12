@@ -8,7 +8,7 @@
   <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
   <style>
     body {
-      background: rgb(251, 230, 151);
+      background: #FFE280;
     }
 
     /* Modal styles */
@@ -281,14 +281,47 @@
       border-color: #667eea;
     }
 
-    /* Hint boxes display */
-    .hint-boxes {
+    /* Hints row - separate from blocks */
+    .hints-row {
       display: flex;
-      gap: 15px;
+      gap: 40px;
       justify-content: center;
-      margin-top: 20px;
-      flex-wrap: wrap;
+      align-items: center;
+      padding: 15px 30px 0 30px;
+      min-height: 0;
     }
+
+    /* Hint slot - matches width of block group above */
+    .hint-slot {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .hint-slot.hundreds {
+      width: 180px;
+    }
+
+    .hint-slot.tens {
+      min-width: 100px;
+    }
+
+    .hint-slot.ones {
+      min-width: 80px;
+    }
+
+    /* Plus signs between hints */
+    .hint-plus {
+      display: none;
+      font-size: 28px;
+      font-weight: 700;
+      color: #666;
+    }
+
+    .hint-plus.show {
+      display: block;
+    }
+
 
     .hint-box {
       display: none;
@@ -330,17 +363,6 @@
       background: linear-gradient(135deg, #F5A623, #E8940F);
     }
 
-    .hint-plus {
-      display: none;
-      font-size: 28px;
-      font-weight: 700;
-      color: #666;
-      align-self: center;
-    }
-
-    .hint-plus.show {
-      display: block;
-    }
 
     @keyframes hintPop {
       0% { transform: scale(0.5); opacity: 0; }
@@ -442,22 +464,9 @@
               <!-- Blocks will be generated here -->
             </div>
 
-            <!-- Hint boxes (shown progressively) - under the blocks -->
-            <div class="hint-boxes" id="hint-boxes">
-              <div class="hint-box hundreds" id="hint-hundreds">
-                <span class="hint-box-number" id="hint-hundreds-num">0</span>
-                <span class="hint-box-label">Hundreds</span>
-              </div>
-              <span class="hint-plus" id="hint-plus-1">+</span>
-              <div class="hint-box tens" id="hint-tens">
-                <span class="hint-box-number" id="hint-tens-num">0</span>
-                <span class="hint-box-label">Tens</span>
-              </div>
-              <span class="hint-plus" id="hint-plus-2">+</span>
-              <div class="hint-box ones" id="hint-ones">
-                <span class="hint-box-number" id="hint-ones-num">0</span>
-                <span class="hint-box-label">Ones</span>
-              </div>
+            <!-- Hints row - separate from blocks -->
+            <div class="hints-row" id="hints-row">
+              <!-- Hints will be generated here -->
             </div>
           </div>
 
@@ -583,39 +592,81 @@
 
       // Build the blocks display
       const container = document.getElementById('blocks-container');
-      let html = '';
+      const hintsContainer = document.getElementById('hints-row');
+      let blocksHtml = '';
+      let hintsHtml = '';
+
+      // Track which groups exist for plus sign logic
+      const hasHundreds = hundreds > 0;
+      const hasTens = tens > 0;
+      const hasOnes = ones > 0;
 
       // Add hundreds blocks (stacked vertically on top of each other)
-      if (hundreds > 0) {
+      if (hasHundreds) {
         const stackHeight = 120 + (hundreds - 1) * 30; // base height + stacking offset
-        html += `<div class="hundreds-group" style="height: ${stackHeight}px;">`;
+        blocksHtml += `<div class="hundreds-group" style="height: ${stackHeight}px;">`;
         for (let i = 0; i < hundreds; i++) {
           // Stack upward - first block at bottom, each one higher and in front
           const offsetFromBottom = i * 30;
-          html += `<div style="position: absolute; left: 0; bottom: ${offsetFromBottom}px; z-index: ${i};">${createHundredBlock()}</div>`;
+          blocksHtml += `<div style="position: absolute; left: 0; bottom: ${offsetFromBottom}px; z-index: ${i};">${createHundredBlock()}</div>`;
         }
-        html += '</div>';
+        blocksHtml += '</div>';
+
+        // Hint for hundreds
+        hintsHtml += `<div class="hint-slot hundreds">
+          <div class="hint-box hundreds" id="hint-hundreds">
+            <span class="hint-box-number">${hundreds}</span>
+            <span class="hint-box-label">Hundreds</span>
+          </div>
+        </div>`;
+
+        // Plus after hundreds (if tens or ones follow)
+        if (hasTens || hasOnes) {
+          hintsHtml += '<span class="hint-plus" id="hint-plus-after-hundreds">+</span>';
+        }
       }
 
       // Add tens blocks
-      if (tens > 0) {
-        html += '<div class="tens-group">';
+      if (hasTens) {
+        blocksHtml += '<div class="tens-group">';
         for (let i = 0; i < tens; i++) {
-          html += createTenBlock();
+          blocksHtml += createTenBlock();
         }
-        html += '</div>';
+        blocksHtml += '</div>';
+
+        // Hint for tens
+        hintsHtml += `<div class="hint-slot tens">
+          <div class="hint-box tens" id="hint-tens">
+            <span class="hint-box-number">${tens}</span>
+            <span class="hint-box-label">Tens</span>
+          </div>
+        </div>`;
+
+        // Plus after tens (if ones follow)
+        if (hasOnes) {
+          hintsHtml += '<span class="hint-plus" id="hint-plus-after-tens">+</span>';
+        }
       }
 
       // Add ones blocks
-      if (ones > 0) {
-        html += '<div class="ones-group">';
+      if (hasOnes) {
+        blocksHtml += '<div class="ones-group">';
         for (let i = 0; i < ones; i++) {
-          html += createSingleBlock();
+          blocksHtml += createSingleBlock();
         }
-        html += '</div>';
+        blocksHtml += '</div>';
+
+        // Hint for ones
+        hintsHtml += `<div class="hint-slot ones">
+          <div class="hint-box ones" id="hint-ones">
+            <span class="hint-box-number">${ones}</span>
+            <span class="hint-box-label">Ones</span>
+          </div>
+        </div>`;
       }
 
-      container.innerHTML = html;
+      container.innerHTML = blocksHtml;
+      hintsContainer.innerHTML = hintsHtml;
 
       // Update question progress
       document.getElementById('question-progress').textContent = `Question ${currentQuestion} of ${totalQuestions}`;
@@ -646,11 +697,6 @@
       const tens = Math.floor((currentNumber % 100) / 10);
       const ones = currentNumber % 10;
 
-      // Update hint box values
-      document.getElementById('hint-hundreds-num').textContent = hundreds;
-      document.getElementById('hint-tens-num').textContent = tens;
-      document.getElementById('hint-ones-num').textContent = ones;
-
       // Build the order of hints based on what's present
       hintOrder = [];
       if (hundreds > 0) hintOrder.push('hundreds');
@@ -662,11 +708,12 @@
     }
 
     function resetHintBoxes() {
-      document.getElementById('hint-hundreds').classList.remove('show');
-      document.getElementById('hint-tens').classList.remove('show');
-      document.getElementById('hint-ones').classList.remove('show');
-      document.getElementById('hint-plus-1').classList.remove('show');
-      document.getElementById('hint-plus-2').classList.remove('show');
+      // Reset all hints that exist in the DOM
+      const hintsRow = document.getElementById('hints-row');
+      if (hintsRow) {
+        hintsRow.querySelectorAll('.hint-box').forEach(el => el.classList.remove('show'));
+        hintsRow.querySelectorAll('.hint-plus').forEach(el => el.classList.remove('show'));
+      }
       hintIndex = 0;
     }
 
@@ -679,18 +726,13 @@
 
       const hintType = hintOrder[hintIndex];
       const hintBox = document.getElementById(`hint-${hintType}`);
-      hintBox.classList.add('show');
+      if (hintBox) hintBox.classList.add('show');
 
-      // Show plus signs between boxes
+      // Show the plus sign that comes BEFORE this hint (after the previous one)
       if (hintIndex > 0) {
-        // Determine which plus to show based on what's visible
-        const shownHints = hintOrder.slice(0, hintIndex + 1);
-        if (shownHints.includes('hundreds') && (shownHints.includes('tens') || shownHints.includes('ones'))) {
-          document.getElementById('hint-plus-1').classList.add('show');
-        }
-        if (shownHints.includes('tens') && shownHints.includes('ones')) {
-          document.getElementById('hint-plus-2').classList.add('show');
-        }
+        const prevHint = hintOrder[hintIndex - 1];
+        const plusAfterPrev = document.getElementById(`hint-plus-after-${prevHint}`);
+        if (plusAfterPrev) plusAfterPrev.classList.add('show');
       }
 
       hintIndex++;

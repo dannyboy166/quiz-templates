@@ -9,7 +9,7 @@
   <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
   <style>
     body {
-      background: rgb(251, 230, 151);
+      background: #FFE280;
     }
     .clocks-grid {
       display: grid;
@@ -214,6 +214,12 @@
     .start-screen {
       text-align: center;
       padding: 40px 20px;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .start-screen .content-card-inner {
+      background: transparent;
     }
 
     .start-screen h2 {
@@ -222,7 +228,7 @@
     }
 
     .start-screen > .content-card-inner > p {
-      color: #666;
+      color: #333;
       margin-bottom: 25px;
     }
 
@@ -240,11 +246,28 @@
       align-items: center;
       gap: 4px;
       padding: 16px 12px;
-      background: white;
-      border: 3px solid #333;
+      border: 3px solid transparent;
       border-radius: 16px;
       cursor: pointer;
       transition: all 0.2s;
+      color: white;
+    }
+
+    .difficulty-option[data-difficulty="hours-only"] {
+      background: #a7f0f5; /* cyan from 2048 */
+      color: #333;
+    }
+
+    .difficulty-option[data-difficulty="half-hours"] {
+      background: #d793fa; /* light purple from 2048 */
+    }
+
+    .difficulty-option[data-difficulty="quarters"] {
+      background: #ee836b; /* coral from 2048 */
+    }
+
+    .difficulty-option[data-difficulty="five-minutes"] {
+      background: #3c3a32; /* charcoal from 2048 */
     }
 
     .difficulty-option:hover {
@@ -252,8 +275,8 @@
     }
 
     .difficulty-option.selected {
-      background: #333;
-      color: white;
+      border-color: #333;
+      box-shadow: 0 0 0 3px rgba(0,0,0,0.2);
     }
 
     .diff-icon {
@@ -338,7 +361,7 @@
     <!-- Question Meta -->
     <div class="question-meta">
       <span class="badge">MATH</span>
-      <span class="question-progress">Question 2 of 4</span>
+      <span class="question-progress">Set 4 Clocks</span>
     </div>
 
     <!-- Question Title -->
