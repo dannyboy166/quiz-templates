@@ -305,6 +305,79 @@
       border-radius: 8px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     }
+
+    /* Progress Bar with Compass */
+    .progress-container {
+      position: relative;
+      width: calc(100% - 40px);
+      height: 24px;
+      margin: 20px auto;
+    }
+
+    .progress-track {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 16px;
+      background: #3a3a3a;
+      border-radius: 8px;
+      transform: translateY(-50%);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #5E58F9 0%, #EFA1D5 100%);
+      border-radius: 8px;
+      transition: width 0.5s ease-out;
+    }
+
+    .compass-container {
+      position: absolute;
+      top: 50%;
+      left: 0%;
+      transform: translate(-50%, -50%);
+      transition: left 0.5s ease-out;
+      z-index: 10;
+    }
+
+    .compass {
+      width: 44px;
+      height: 44px;
+      background: white;
+      border: 2px solid #333;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .compass-dot {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: #333;
+      border-radius: 50%;
+    }
+
+    .compass-dot.top { top: 3px; left: 50%; transform: translateX(-50%); }
+    .compass-dot.bottom { bottom: 3px; left: 50%; transform: translateX(-50%); }
+    .compass-dot.left { left: 3px; top: 50%; transform: translateY(-50%); }
+    .compass-dot.right { right: 3px; top: 50%; transform: translateY(-50%); }
+
+    .compass-diamond {
+      z-index: 5;
+      position: relative;
+    }
+
+    .compass-diamond svg {
+      width: 28px;
+      height: 8px;
+      display: block;
+    }
   </style>
 </head>
 <body>
@@ -320,9 +393,6 @@
 
       <div class="user-profile">
         <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=student" alt="Student Avatar" class="user-avatar">
-        <div class="progress-bar-container">
-          <div class="progress-bar-fill" id="progress-fill" style="width: 10%"></div>
-        </div>
       </div>
 
       <button class="btn-help" id="header-help">
@@ -337,6 +407,27 @@
         Help
       </button>
     </header>
+
+    <!-- Progress Bar -->
+    <div class="progress-container">
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <div class="compass-container" id="compass-container">
+        <div class="compass">
+          <div class="compass-dot top"></div>
+          <div class="compass-dot bottom"></div>
+          <div class="compass-dot left"></div>
+          <div class="compass-dot right"></div>
+          <div class="compass-diamond">
+            <svg viewBox="0 0 28 8">
+              <polygon points="0,4 10,0 14,4 10,8" fill="#EFA1D5" stroke="#333" stroke-width="0.5"/>
+              <polygon points="28,4 18,0 14,4 18,8" fill="#5E58F9" stroke="#333" stroke-width="0.5"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Question Meta -->
     <div class="question-meta">
@@ -423,6 +514,43 @@
   </div>
 
   <script>
+    // Compass rotation state
+    let rotation = 0;
+    let spinSpeed = 120;
+    const slowSpeed = 120;
+    const fastSpeed = 720;
+    let lastTime = performance.now();
+    let slowDownTimer = null;
+
+    function spinCompass(currentTime) {
+      const delta = (currentTime - lastTime) / 1000;
+      lastTime = currentTime;
+      rotation += spinSpeed * delta;
+      rotation %= 360;
+      const compassDiamond = document.querySelector('.compass-diamond');
+      if (compassDiamond) {
+        compassDiamond.style.transform = `rotate(${rotation}deg)`;
+      }
+      requestAnimationFrame(spinCompass);
+    }
+    requestAnimationFrame(spinCompass);
+
+    function updateCompass(percentage, animate = false, backwards = false) {
+      const compassContainer = document.getElementById('compass-container');
+      const progressFill = document.getElementById('progress-fill');
+
+      if (animate) {
+        if (slowDownTimer) clearTimeout(slowDownTimer);
+        spinSpeed = backwards ? -fastSpeed : fastSpeed;
+        slowDownTimer = setTimeout(() => {
+          spinSpeed = slowSpeed;
+        }, 500);
+      }
+
+      progressFill.style.width = percentage + '%';
+      compassContainer.style.left = percentage + '%';
+    }
+
     // Question data
     const questions = [
       {
@@ -474,12 +602,12 @@
     const questionProgress = document.getElementById('question-progress');
 
     // Load question
-    function loadQuestion() {
+    function loadQuestion(animate = false) {
       const q = questions[currentQuestion];
       questionText.textContent = q.prompt;
       hintText.textContent = q.hint;
       questionProgress.textContent = `Question ${currentQuestion + 1} of ${questions.length}`;
-      progressFill.style.width = `${(currentQuestion / questions.length) * 100}%`;
+      updateCompass((currentQuestion / questions.length) * 100, animate);
 
       // Reset state
       sortedWords = {};
@@ -770,7 +898,7 @@
     btnNext.addEventListener('click', () => {
       currentQuestion++;
       if (currentQuestion < questions.length) {
-        loadQuestion();
+        loadQuestion(true);
       } else {
         // Quiz complete
         sortListsEl.innerHTML = `
@@ -784,7 +912,7 @@
         wordListEl.innerHTML = '';
         btnCheck.style.display = 'none';
         feedback.style.display = 'none';
-        progressFill.style.width = '100%';
+        updateCompass(100, true);
       }
     });
 
