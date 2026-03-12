@@ -86,30 +86,37 @@ categories: [{"id":"3","label":"3 Sides"},{"id":"4","label":"4 Sides"},{"id":"5"
 
 ### 4. Colour the Blocks (`color-blocks`)
 
-Click blocks to colour tens and ones to make a number. Supports difficulty-based random generation.
+**Standalone Auto-Generated Template** - No Excel import needed!
 
-| Column | Type | Required | Description |
-|--------|------|----------|-------------|
-| `template_type` | string | Yes | `"color-blocks"` |
-| `question_text` | string | No | Auto-generated: "Colour the blocks to make [number]" |
-| `difficulty` | string | Yes | `"ones-only"`, `"easy"`, `"medium"`, `"hard"` |
-| `tens_color` | string | No | Hex color for tens (default: #5C6BC0) |
-| `ones_color` | string | No | Hex color for ones (default: #90CAF9) |
+Click 3D isometric blocks to colour tens and ones to make a number. Fully auto-generated with 10 questions per round.
 
-**Difficulty Options:**
-- `ones-only` - Numbers 1-9 (single digits, no tens columns)
-- `easy` - Numbers 10-30
-- `medium` - Numbers 31-60
-- `hard` - Numbers 61-99
+| Setting | Value | Description |
+|---------|-------|-------------|
+| Questions per round | 10 | Fixed challenge length |
+| Block style | 3D isometric SVG | Matching base10-blocks visual style |
+| Progress tracking | Yes | Compass progress bar + Question X of 10 |
 
-**Example Excel Row:**
-```
-template_type: color-blocks
-difficulty: easy
-```
+**Difficulty Options (selected on start screen):**
+- `Ones Only` - Numbers 1-9 (single digits, no tens columns)
+- `Easy` - Numbers 10-30
+- `Medium` - Numbers 31-60
+- `Hard` - Numbers 61-99
 
-**Standalone Mode:**
-The template generates a random target number within the selected difficulty range. The block grid automatically adjusts to provide enough tens columns and ones blocks for the target number. Different numbers are generated each time the activity is played.
+**How It Works:**
+1. Student selects difficulty on start screen
+2. Template generates 10 random target numbers within that range
+3. For each question, student clicks blocks to colour the correct amount
+4. Progress bar updates after each correct answer
+5. Final score shown after 10 questions
+
+**Features:**
+- 3D isometric SVG blocks (purple tens, blue ones)
+- Paint/Erase/Clear tools
+- Blocks auto-adjust based on target number
+- Read aloud, help, and hint functionality
+- Score tracking across all 10 questions
+
+**Note:** This template requires NO Excel import - it's ready to use as-is!
 
 ---
 

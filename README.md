@@ -32,6 +32,19 @@ open index.html
 | Word Sort | Sort words into categories |
 | Written Answer | Text input with correct/incorrect feedback |
 
+## Auto-Generated Templates (No Excel Import Needed!)
+
+These templates generate random questions automatically - just select difficulty and play:
+
+| Template | Questions | Difficulty Options |
+|----------|-----------|-------------------|
+| Base 10 Blocks | 5 per round | Easy (1-20), Medium (1-100), Hard (100-999) |
+| Clock | 4 per round | Hours Only, Half Hours, Quarters, 5 Minutes |
+| Color Blocks | 10 per round | Ones Only (1-9), Easy (10-30), Medium (31-60), Hard (61-99) |
+| Dice Addition | 10 per round | 2-5 dice (speed challenge) |
+| Fractions | 8 per round | Halves, Quarters, Mixed, Eighths |
+| Skip Counting | 6 per round | Easy (1,2), Medium (3,5,10), Hard (4,6), Expert (7,8,9) |
+
 ## For Developer
 
 See `DOCUMENTATION.md` for full integration guide.
@@ -50,7 +63,8 @@ See `DOCUMENTATION.md` for full integration guide.
 - Skip Counting: Easy (1,2), Medium (3,5,10), Hard (4,6), Expert (7,8,9)
 - Color Blocks: Ones Only (1-9), Easy (10-30), Medium (31-60), Hard (61-99)
 - Removed white containers from game areas for cleaner look
-- 3D isometric SVG blocks in Base 10 Blocks (hundreds/tens/ones)
+- 3D isometric SVG blocks in Base 10 Blocks AND Color Blocks
+- Color Blocks now auto-generates 10 questions per round (no Excel needed!)
 
 **February 2025:**
 - Updated yellow background color to #FFE280 across templates
