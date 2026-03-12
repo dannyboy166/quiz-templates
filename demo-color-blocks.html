@@ -199,16 +199,14 @@
       padding: 30px;
     }
 
-    /* Ten blocks (columns) - matching written answer style */
+    /* Ten blocks (columns) - 3D SVG style */
     .tens-section {
       display: flex;
-      gap: 12px;
+      gap: 8px;
       align-items: flex-end;
     }
 
     .ten-column {
-      display: flex;
-      flex-direction: column;
       cursor: pointer;
       transition: transform 0.2s;
     }
@@ -217,44 +215,23 @@
       transform: scale(1.05);
     }
 
-    .ten-column .block {
-      width: 30px;
-      height: 20px;
-      background: white;
-      border: 1px solid #333;
-      transition: all 0.15s;
-    }
-
-    .ten-column.colored .block {
-      background: #5C6BC0;
-    }
-
-    /* Ones section - matching written answer style */
+    /* Ones section - 3D SVG style */
     .ones-section {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
-      max-width: 180px;
+      gap: 6px;
+      max-width: 200px;
       padding: 10px;
       align-content: flex-start;
     }
 
-    .block.single {
-      width: 25px;
-      height: 25px;
-      border-radius: 2px;
+    .single-block {
       cursor: pointer;
-      background: white;
-      border: 1px solid #333;
-      transition: all 0.15s;
+      transition: transform 0.2s;
     }
 
-    .block.single:hover {
+    .single-block:hover {
       transform: scale(1.15);
-    }
-
-    .block.single.colored {
-      background: #90CAF9;
     }
 
     /* Section wrappers with labels */
@@ -715,6 +692,79 @@
     }
 
     // ==========================================
+    // SVG Block Generators (3D isometric style)
+    // ==========================================
+
+    // Colors for uncolored (white/gray) blocks
+    const UNCOLORED = {
+      top: '#FFFFFF',
+      left: '#E8E8E8',
+      right: '#D0D0D0'
+    };
+
+    // Colors for colored blocks (purple theme)
+    const COLORED_ONES = {
+      top: '#90CAF9',
+      left: '#64B5F6',
+      right: '#42A5F5'
+    };
+
+    const COLORED_TENS = {
+      top: '#5C6BC0',
+      left: '#3F51B5',
+      right: '#303F9F'
+    };
+
+    function createSingleBlockSVG(colored = false) {
+      const c = colored ? COLORED_ONES : UNCOLORED;
+      return `<svg width="40" height="48" viewBox="0 0 100 120" class="single-block">
+        <polygon points="50,10 90,30 50,50 10,30" fill="${c.top}" stroke="#333" stroke-width="1.5"/>
+        <polygon points="10,30 50,50 50,100 10,80" fill="${c.left}" stroke="#333" stroke-width="1.5"/>
+        <polygon points="50,50 90,30 90,80 50,100" fill="${c.right}" stroke="#333" stroke-width="1.5"/>
+      </svg>`;
+    }
+
+    function createTenBlockSVG(colored = false) {
+      const c = colored ? COLORED_TENS : UNCOLORED;
+      return `<svg width="28" height="150" viewBox="0 0 100 520" class="ten-column">
+        <polygon points="50,10 90,30 50,50 10,30" fill="${c.top}" stroke="#333" stroke-width="1.5"/>
+        <polygon points="10,30 50,50 50,500 10,480" fill="${c.left}" stroke="#333" stroke-width="1.5"/>
+        <polygon points="50,50 90,30 90,480 50,500" fill="${c.right}" stroke="#333" stroke-width="1.5"/>
+        <line x1="10" y1="75" x2="50" y2="95" stroke="#333" stroke-width="0.8"/>
+        <line x1="10" y1="120" x2="50" y2="140" stroke="#333" stroke-width="0.8"/>
+        <line x1="10" y1="165" x2="50" y2="185" stroke="#333" stroke-width="0.8"/>
+        <line x1="10" y1="210" x2="50" y2="230" stroke="#333" stroke-width="0.8"/>
+        <line x1="10" y1="255" x2="50" y2="275" stroke="#333" stroke-width="0.8"/>
+        <line x1="10" y1="300" x2="50" y2="320" stroke="#333" stroke-width="0.8"/>
+        <line x1="10" y1="345" x2="50" y2="365" stroke="#333" stroke-width="0.8"/>
+        <line x1="10" y1="390" x2="50" y2="410" stroke="#333" stroke-width="0.8"/>
+        <line x1="10" y1="435" x2="50" y2="455" stroke="#333" stroke-width="0.8"/>
+        <line x1="50" y1="95" x2="90" y2="75" stroke="#333" stroke-width="0.8"/>
+        <line x1="50" y1="140" x2="90" y2="120" stroke="#333" stroke-width="0.8"/>
+        <line x1="50" y1="185" x2="90" y2="165" stroke="#333" stroke-width="0.8"/>
+        <line x1="50" y1="230" x2="90" y2="210" stroke="#333" stroke-width="0.8"/>
+        <line x1="50" y1="275" x2="90" y2="255" stroke="#333" stroke-width="0.8"/>
+        <line x1="50" y1="320" x2="90" y2="300" stroke="#333" stroke-width="0.8"/>
+        <line x1="50" y1="365" x2="90" y2="345" stroke="#333" stroke-width="0.8"/>
+        <line x1="50" y1="410" x2="90" y2="390" stroke="#333" stroke-width="0.8"/>
+        <line x1="50" y1="455" x2="90" y2="435" stroke="#333" stroke-width="0.8"/>
+      </svg>`;
+    }
+
+    function colorBlock(svg, colors) {
+      const polygons = svg.querySelectorAll('polygon');
+      if (polygons.length >= 3) {
+        polygons[0].setAttribute('fill', colors.top);
+        polygons[1].setAttribute('fill', colors.left);
+        polygons[2].setAttribute('fill', colors.right);
+      }
+    }
+
+    function uncolorBlock(svg) {
+      colorBlock(svg, UNCOLORED);
+    }
+
+    // ==========================================
     // Game State
     // ==========================================
     let difficulty = 'easy';
@@ -759,44 +809,55 @@
       tenColumns = [];
       singleBlocks = [];
 
-      // Create ten columns
+      // Create ten columns (3D SVG blocks)
       for (let col = 0; col < tensNeeded; col++) {
-        const column = document.createElement('div');
-        column.className = 'ten-column';
-        column.dataset.col = col;
-        for (let row = 0; row < 10; row++) {
-          const block = document.createElement('div');
-          block.className = 'block';
-          column.appendChild(block);
-        }
-        tensSection.appendChild(column);
-        tenColumns.push(column);
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = createTenBlockSVG(false);
+        const svg = wrapper.firstChild;
+        svg.dataset.col = col;
+        svg.dataset.colored = 'false';
+        tensSection.appendChild(svg);
+        tenColumns.push(svg);
 
         // Add click listener
-        column.addEventListener('click', () => {
+        svg.addEventListener('click', () => {
           if (isErasing) {
-            column.classList.remove('colored');
+            if (svg.dataset.colored === 'true') {
+              uncolorBlock(svg);
+              svg.dataset.colored = 'false';
+            }
           } else {
-            column.classList.add('colored');
+            if (svg.dataset.colored === 'false') {
+              colorBlock(svg, COLORED_TENS);
+              svg.dataset.colored = 'true';
+            }
           }
           updateCount();
         });
       }
 
-      // Create single blocks
+      // Create single blocks (3D SVG cubes)
       for (let i = 0; i < onesNeeded; i++) {
-        const block = document.createElement('div');
-        block.className = 'block single';
-        block.dataset.index = i;
-        onesSection.appendChild(block);
-        singleBlocks.push(block);
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = createSingleBlockSVG(false);
+        const svg = wrapper.firstChild;
+        svg.dataset.index = i;
+        svg.dataset.colored = 'false';
+        onesSection.appendChild(svg);
+        singleBlocks.push(svg);
 
         // Add click listener
-        block.addEventListener('click', () => {
+        svg.addEventListener('click', () => {
           if (isErasing) {
-            block.classList.remove('colored');
+            if (svg.dataset.colored === 'true') {
+              uncolorBlock(svg);
+              svg.dataset.colored = 'false';
+            }
           } else {
-            block.classList.add('colored');
+            if (svg.dataset.colored === 'false') {
+              colorBlock(svg, COLORED_ONES);
+              svg.dataset.colored = 'true';
+            }
           }
           updateCount();
         });
@@ -898,8 +959,14 @@
     });
 
     document.getElementById('clear-all').addEventListener('click', () => {
-      tenColumns.forEach(col => col.classList.remove('colored'));
-      singleBlocks.forEach(block => block.classList.remove('colored'));
+      tenColumns.forEach(svg => {
+        uncolorBlock(svg);
+        svg.dataset.colored = 'false';
+      });
+      singleBlocks.forEach(svg => {
+        uncolorBlock(svg);
+        svg.dataset.colored = 'false';
+      });
       updateCount();
     });
 
@@ -907,8 +974,8 @@
     // Count Colored Blocks
     // ==========================================
     function updateCount() {
-      const coloredTens = document.querySelectorAll('.ten-column.colored').length * 10;
-      const coloredOnes = document.querySelectorAll('.block.single.colored').length;
+      const coloredTens = tenColumns.filter(svg => svg.dataset.colored === 'true').length * 10;
+      const coloredOnes = singleBlocks.filter(svg => svg.dataset.colored === 'true').length;
       coloredCount = coloredTens + coloredOnes;
     }
 
