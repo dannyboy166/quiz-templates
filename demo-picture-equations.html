@@ -603,20 +603,54 @@
     }
 
     function checkAnswer() {
+      const q = questionSets[currentOperation][currentQuestionIndex];
+      const allBoxes = document.querySelectorAll('.equation-box');
       const inputs = document.querySelectorAll('.equation-box:not(.given)');
-      let allCorrect = true;
 
+      // Get all values from the equation
+      let values = {};
+      allBoxes.forEach(box => {
+        values[box.dataset.name] = parseInt(box.value) || 0;
+      });
+
+      // Check if answers match the picture exactly
+      let pictureCorrect = true;
+      inputs.forEach(input => {
+        const userAnswer = parseInt(input.value);
+        const correctAnswer = parseInt(input.dataset.answer);
+        if (userAnswer !== correctAnswer) {
+          pictureCorrect = false;
+        }
+      });
+
+      // Check if the math is correct (even if not matching the picture)
+      let mathCorrect = false;
+      if (q.type === 'subtraction') {
+        // Check: total - subtract = result
+        mathCorrect = (values.total - values.subtract === values.result);
+      } else {
+        // Check: num1 + num2 = result
+        mathCorrect = (values.num1 + values.num2 === values.result);
+      }
+
+      // Determine final result
+      const isCorrect = pictureCorrect || mathCorrect;
+
+      // Mark boxes
       inputs.forEach(input => {
         const userAnswer = parseInt(input.value);
         const correctAnswer = parseInt(input.dataset.answer);
 
-        if (userAnswer === correctAnswer) {
+        if (pictureCorrect || (mathCorrect && userAnswer === correctAnswer)) {
+          input.classList.add('correct');
+          input.classList.remove('incorrect');
+        } else if (mathCorrect) {
+          // Math is right but doesn't match picture - show as correct (greenish)
           input.classList.add('correct');
           input.classList.remove('incorrect');
         } else {
           input.classList.add('incorrect');
           input.classList.remove('correct');
-          allCorrect = false;
         }
         input.readOnly = true;
       });
@@ -629,14 +663,28 @@
       const tryAgain = document.getElementById('btn-try-again');
       const next = document.getElementById('btn-next');
 
-      if (allCorrect) {
+      if (pictureCorrect) {
+        // Perfect - matches the picture exactly
         correctCount++;
         badge.className = 'feedback-badge correct';
         icon.textContent = '✓';
         text.textContent = 'Correct!';
         tryAgain.style.display = 'none';
         next.style.display = 'flex';
+      } else if (mathCorrect) {
+        // Math is correct but doesn't match the picture
+        correctCount++;
+        badge.className = 'feedback-badge correct';
+        icon.textContent = '✓';
+        if (q.type === 'subtraction') {
+          text.textContent = `Correct math! The picture shows ${q.total} − ${q.subtract} = ${q.result}`;
+        } else {
+          text.textContent = `Correct math! The picture shows ${q.num1} + ${q.num2} = ${q.result}`;
+        }
+        tryAgain.style.display = 'none';
+        next.style.display = 'flex';
       } else {
+        // Wrong answer
         badge.className = 'feedback-badge incorrect';
         icon.textContent = '✗';
         text.textContent = 'Not quite right';
