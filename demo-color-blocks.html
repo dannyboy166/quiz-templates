@@ -502,7 +502,7 @@
     <!-- Question Meta -->
     <div class="question-meta">
       <span class="badge">MATH</span>
-      <span class="question-progress">Question <span id="current-q">1</span> of <span id="total-q">1</span></span>
+      <span class="question-progress">Question <span id="current-q">1</span> of <span id="total-q">10</span></span>
     </div>
 
     <!-- Question Title -->
@@ -774,6 +774,9 @@
     let isErasing = false;
     let coloredCount = 0;
     let hintIndex = 0;
+    let currentQuestion = 1;
+    let totalQuestions = 10;
+    let score = 0;
 
     // DOM Elements
     const tensSection = document.getElementById('tens-section');
@@ -890,11 +893,31 @@
       maxVal = parseInt(selected.dataset.max);
       difficulty = selected.dataset.difficulty;
 
+      // Reset game state
+      currentQuestion = 1;
+      score = 0;
+
+      // Load first question
+      loadQuestion();
+    }
+
+    // ==========================================
+    // Load Question
+    // ==========================================
+    function loadQuestion() {
       // Generate new target
       TARGET = generateTarget();
 
       // Update question title
       document.querySelector('.question-title h1').textContent = `Colour the blocks to make ${TARGET}`;
+
+      // Update progress display
+      document.getElementById('current-q').textContent = currentQuestion;
+      document.getElementById('total-q').textContent = totalQuestions;
+
+      // Update compass progress
+      const percentage = ((currentQuestion - 1) / totalQuestions) * 100;
+      updateCompass(percentage, currentQuestion > 1);
 
       // Regenerate blocks
       regenerateBlocks();
@@ -914,7 +937,6 @@
       btnCheck.style.display = 'block';
       btnTryAgain.style.display = 'none';
       btnNext.style.display = 'none';
-      updateCompass(0, false);
 
       // Remove celebrate class
       document.querySelectorAll('.content-card').forEach(card => {
@@ -989,12 +1011,15 @@
       feedbackBadge.classList.remove('correct', 'incorrect');
 
       if (isCorrect) {
+        score++;
         feedbackBadge.classList.add('correct');
         feedbackBadge.innerHTML = `&#127881; Perfect! You coloured exactly ${TARGET} blocks!`;
         btnCheck.style.display = 'none';
         btnTryAgain.style.display = 'none';
         btnNext.style.display = 'flex';
-        updateCompass(100, true);
+        // Update compass to show completion of this question
+        const percentage = (currentQuestion / totalQuestions) * 100;
+        updateCompass(percentage, true);
         document.querySelector('#game-area .content-card').classList.add('celebrate');
       } else {
         feedbackBadge.classList.add('incorrect');
@@ -1017,9 +1042,18 @@
     });
 
     // ==========================================
-    // Next/Play Again Button
+    // Next Question
     // ==========================================
-    btnNext.addEventListener('click', playAgain);
+    btnNext.addEventListener('click', () => {
+      currentQuestion++;
+      if (currentQuestion > totalQuestions) {
+        // Quiz complete!
+        alert(`🎉 Well done!\n\nYou got ${score} out of ${totalQuestions} correct!`);
+        playAgain();
+      } else {
+        loadQuestion();
+      }
+    });
 
     // ==========================================
     // Read Aloud
