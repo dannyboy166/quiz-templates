@@ -464,6 +464,56 @@
       </button>
     </header>
 
+    <!-- Progress Bar -->
+    <div class="progress-container">
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <div class="compass-container" id="compass-container">
+        <div class="compass">
+          <div class="compass-dot top"></div>
+          <div class="compass-dot bottom"></div>
+          <div class="compass-dot left"></div>
+          <div class="compass-dot right"></div>
+          <div class="compass-diamond">
+            <svg viewBox="0 0 28 8">
+              <polygon points="0,4 10,0 14,4 10,8" fill="#EFA1D5" stroke="#333" stroke-width="0.5"/>
+              <polygon points="28,4 18,0 14,4 18,8" fill="#5E58F9" stroke="#333" stroke-width="0.5"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Question Meta -->
+    <div class="question-meta">
+      <span class="badge badge-math">Maths</span>
+      <span class="question-progress">Question <span id="current-q">1</span> of <span id="total-q">6</span></span>
+    </div>
+
+    <!-- Question Title -->
+    <div class="question-title">
+      <h1 id="question-text">Fill in the missing numbers</h1>
+    </div>
+
+    <!-- Help Bar -->
+    <div class="help-bar">
+      <div class="help-item" id="btn-read-aloud">
+        <span style="font-weight: 530; font-size: 15px;">Read Aloud</span>
+        <span class="help-item-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg></span>
+      </div>
+      <span class="help-item-line"></span>
+      <div class="help-item" id="btn-get-help">
+        <span style="font-weight: 530; font-size: 15px;">Get Help</span>
+        <span class="help-item-icon">?</span>
+      </div>
+      <span class="help-item-line"></span>
+      <div class="help-item" id="btn-get-hint">
+        <span style="font-weight: 530; font-size: 15px;">Get Hint</span>
+        <span class="help-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 6h12v2H6V6zm0 3h12v2H6V9zm0 3h8v2H6v-2z"/></svg></span>
+      </div>
+    </div>
+
     <!-- Start Screen -->
     <div class="content-card start-screen" id="start-screen">
       <div class="content-card-inner">
@@ -499,56 +549,6 @@
 
     <!-- Game Area (hidden until start) -->
     <div class="game-area" id="game-area">
-      <!-- Progress Bar -->
-      <div class="progress-container">
-        <div class="progress-track">
-          <div class="progress-fill" id="progress-fill"></div>
-        </div>
-        <div class="compass-container" id="compass-container">
-          <div class="compass">
-            <div class="compass-dot top"></div>
-            <div class="compass-dot bottom"></div>
-            <div class="compass-dot left"></div>
-            <div class="compass-dot right"></div>
-            <div class="compass-diamond">
-              <svg viewBox="0 0 28 8">
-                <polygon points="0,4 10,0 14,4 10,8" fill="#EFA1D5" stroke="#333" stroke-width="0.5"/>
-                <polygon points="28,4 18,0 14,4 18,8" fill="#5E58F9" stroke="#333" stroke-width="0.5"/>
-              </svg>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Question Meta -->
-      <div class="question-meta">
-        <span class="badge badge-math">Maths</span>
-        <span class="question-progress">Question <span id="current-q">1</span> of <span id="total-q">6</span></span>
-      </div>
-
-      <!-- Question Title -->
-      <div class="question-title">
-        <h1 id="question-text">Fill in the missing numbers</h1>
-      </div>
-
-      <!-- Help Bar -->
-      <div class="help-bar">
-        <div class="help-item" id="btn-read-aloud">
-          <span style="font-weight: 530; font-size: 15px;">Read Aloud</span>
-          <span class="help-item-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg></span>
-        </div>
-        <span class="help-item-line"></span>
-        <div class="help-item" id="btn-get-help">
-          <span style="font-weight: 530; font-size: 15px;">Get Help</span>
-          <span class="help-item-icon">?</span>
-        </div>
-        <span class="help-item-line"></span>
-        <div class="help-item" id="btn-get-hint">
-          <span style="font-weight: 530; font-size: 15px;">Get Hint</span>
-          <span class="help-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 6h12v2H6V6zm0 3h12v2H6V9zm0 3h8v2H6v-2z"/></svg></span>
-        </div>
-      </div>
-
       <!-- Content Card -->
       <div class="content-card">
         <div class="content-card-inner">
