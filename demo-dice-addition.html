@@ -1288,10 +1288,12 @@
       });
     });
 
-    // Close modals on overlay click
+    // Close modals on overlay click (except game-over modal - must click Play Again)
     document.querySelectorAll('.modal-overlay').forEach(modal => {
       modal.addEventListener('click', (e) => {
-        if (e.target === modal) closeModal(modal.id);
+        if (e.target === modal && modal.id !== 'game-over-modal') {
+          closeModal(modal.id);
+        }
       });
     });
   </script>
