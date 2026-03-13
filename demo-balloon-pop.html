@@ -34,36 +34,30 @@
 
     @media (max-width: 600px) {
       .balloons-container {
-        height: 300px;
+        height: 350px;
       }
     }
 
     /* Individual Balloon */
     .balloon {
       position: absolute;
+      left: 0;
+      top: 0;
       cursor: pointer;
-      transition: transform 0.2s;
       user-select: none;
       pointer-events: none;
-    }
-
-    .balloon:has(ellipse:hover):not(.popped):not(.disabled) {
-      transform: scale(1.08);
-    }
-
-    .balloon:has(ellipse:active):not(.popped):not(.disabled) {
-      transform: scale(0.95);
+      opacity: 0;
+      transition: opacity 0.3s ease;
     }
 
     .balloon.disabled {
       cursor: not-allowed;
-      opacity: 0.5;
-      animation: none !important;
+      opacity: 0.5 !important;
     }
 
-    /* Floating - handled by JavaScript for random movement */
+    /* Floating - no CSS transition, JS handles movement */
     .balloon.floating {
-      transition: transform 0.1s linear;
+      /* JS controls transform directly */
     }
 
     /* Balloon SVG */
@@ -87,12 +81,12 @@
 
     @media (max-width: 600px) {
       .balloon svg {
-        width: 140px;
-        height: 190px;
+        width: 120px;
+        height: 160px;
       }
 
       .balloon-text {
-        font-size: 30px !important;
+        font-size: 28px !important;
       }
     }
 
@@ -188,8 +182,14 @@
     }
 
     .game-layout .balloons-container {
-      flex: 1;
+      flex: 0 0 400px; /* Fixed height, don't grow/shrink */
       margin-bottom: 0;
+    }
+
+    @media (max-width: 600px) {
+      .game-layout .balloons-container {
+        flex: 0 0 350px;
+      }
     }
 
     .game-layout .word-area {
@@ -971,29 +971,22 @@
 
     function renderBalloons(options) {
       const container = document.getElementById('balloons-container');
-      const numBalloons = options.length; // Supports 2-8 balloons
 
       // Shuffle colors
       const shuffledColors = [...balloonColors].sort(() => Math.random() - 0.5);
 
-      // Calculate positions to spread balloons across the container
-      const positions = generateBalloonPositions(numBalloons);
-
+      // Start balloons at 0,0 with opacity 0 - JS will position them
       container.innerHTML = options.map((opt, i) => {
-        const pos = positions[i];
-
         return `
           <div class="balloon floating ${shuffledColors[i % shuffledColors.length]}"
                data-option="${opt}"
-               style="left: ${pos.x}%; top: ${pos.y}%;"
-               data-base-x="${pos.x}"
-               data-base-y="${pos.y}">
+               style="left: 0; top: 0; opacity: 0;">
             ${createBalloonSVG(opt, shuffledColors[i % shuffledColors.length])}
           </div>
         `;
       }).join('');
 
-      // Start floating animation
+      // Start floating animation (will position and show balloons)
       startFloatingAnimation();
 
       // Add click handlers to the balloon body (ellipse) for precise hit detection
@@ -1006,30 +999,6 @@
           });
         }
       });
-    }
-
-    function generateBalloonPositions(count) {
-      const positions = [];
-
-      // Divide container into zones to ensure spread, then randomize within each zone
-      const cols = Math.ceil(Math.sqrt(count));
-      const rows = Math.ceil(count / cols);
-      const zoneWidth = 80 / cols;
-      const zoneHeight = 50 / rows;
-
-      for (let i = 0; i < count; i++) {
-        const col = i % cols;
-        const row = Math.floor(i / cols);
-
-        // Random position within this zone
-        positions.push({
-          x: 5 + col * zoneWidth + Math.random() * (zoneWidth * 0.8),
-          y: 5 + row * zoneHeight + Math.random() * (zoneHeight * 0.8)
-        });
-      }
-
-      // Shuffle positions so balloons don't always appear in same order
-      return positions.sort(() => Math.random() - 0.5);
     }
 
     function renderWord(q) {
@@ -1219,28 +1188,81 @@
 
       const container = document.getElementById('balloons-container');
 
-      // Initialize each balloon with random velocity - faster movement!
-      document.querySelectorAll('.balloon.floating').forEach(balloon => {
-        balloonStates.set(balloon, {
-          x: 0,
-          y: 0,
-          vx: (Math.random() - 0.5) * 3,
-          vy: (Math.random() - 0.5) * 3,
-          targetVx: (Math.random() - 0.5) * 3,
-          targetVy: (Math.random() - 0.5) * 3,
-          changeTimer: Math.random() * 80
-        });
+      // Wait for next frame to ensure DOM is painted and dimensions are accurate
+      requestAnimationFrame(() => {
+        initializeBalloonPositions(container);
       });
+    }
+
+    function initializeBalloonPositions(container) {
+      const containerRect = container.getBoundingClientRect();
+
+      // Initialize each balloon with position calculated from container size
+      const balloons = document.querySelectorAll('.balloon.floating');
+      const count = balloons.length;
+
+      // Get balloon dimensions from CSS (more reliable than measuring)
+      const isMobile = window.innerWidth <= 600;
+      const balloonWidth = isMobile ? 120 : 190;
+      const balloonHeight = isMobile ? 160 : 260;
+
+
+      // Calculate safe bounds
+      const padding = 20;
+      const safeWidth = Math.max(containerRect.width - balloonWidth - padding * 2, 50);
+      const safeHeight = Math.max(containerRect.height - balloonHeight - padding * 2, 50);
+
+      // Spread balloons in a grid pattern within safe area
+      const cols = Math.ceil(Math.sqrt(count));
+      const rows = Math.ceil(count / cols);
+      const cellWidth = safeWidth / cols;
+      const cellHeight = safeHeight / rows;
+
+      balloons.forEach((balloon, index) => {
+        const col = index % cols;
+        const row = Math.floor(index / cols);
+
+        // Calculate position with some randomness
+        const startX = padding + col * cellWidth + Math.random() * (cellWidth * 0.5);
+        const startY = padding + row * cellHeight + Math.random() * (cellHeight * 0.5);
+
+        balloonStates.set(balloon, {
+          x: startX,
+          y: startY,
+          vx: (Math.random() - 0.5) * 2,
+          vy: (Math.random() - 0.5) * 2,
+          targetVx: (Math.random() - 0.5) * 2,
+          targetVy: (Math.random() - 0.5) * 2,
+          changeTimer: Math.random() * 80,
+          width: balloonWidth,
+          height: balloonHeight
+        });
+
+        // Apply initial position and show balloon
+        balloon.style.transform = `translate(${startX}px, ${startY}px)`;
+        balloon.style.opacity = '1';
+      });
+
+      // Store container dimensions at start
+      let containerWidth = containerRect.width;
+      let containerHeight = containerRect.height;
 
       // Animation loop
       function animate() {
-        const containerRect = container.getBoundingClientRect();
+        // Recalculate container size (handles resize)
+        const newRect = container.getBoundingClientRect();
+        containerWidth = newRect.width;
+        containerHeight = newRect.height;
 
         document.querySelectorAll('.balloon.floating').forEach(balloon => {
           if (balloon.classList.contains('popped') || balloon.classList.contains('disabled')) return;
 
           const state = balloonStates.get(balloon);
           if (!state) return;
+
+          // Use stored dimensions instead of recalculating each frame
+          const balloonWidth = state.width;
+          const balloonHeight = state.height;
 
           // Gradually change direction - more movement!
           state.changeTimer--;
@@ -1258,40 +1280,32 @@
           state.x += state.vx;
           state.y += state.vy;
 
-          // Check actual balloon position against container bounds
-          const balloonRect = balloon.getBoundingClientRect();
-          const balloonWidth = balloonRect.width;
-          const balloonHeight = balloonRect.height;
+          // Calculate bounds - balloon positioned at top-left corner via translate
+          const padding = 10;
+          const minX = padding;
+          const maxX = Math.max(containerWidth - balloonWidth - padding, minX + 10);
+          const minY = padding;
+          const maxY = Math.max(containerHeight - balloonHeight - padding, minY + 10);
 
-          // Calculate bounds (balloon starts centered, so offset by half size)
-          const minX = -balloonWidth / 2 + 10;
-          const maxX = containerRect.width - balloonWidth / 2 - 10;
-          const minY = -balloonHeight / 2 + 10;
-          const maxY = containerRect.height - balloonHeight / 2 - 10;
+          // Clamp position to valid range
+          state.x = Math.max(minX, Math.min(state.x, maxX));
+          state.y = Math.max(minY, Math.min(state.y, maxY));
 
-          // Bounce off edges with position correction and new random direction
-          if (state.x < minX) {
-            state.x = minX + 5;
-            state.vx = 1 + Math.random() * 2; // Always positive (go right)
+          // Bounce off edges - reverse velocity when hitting bounds
+          if (state.x <= minX && state.vx < 0) {
+            state.vx = 1 + Math.random() * 2;
             state.targetVx = 1 + Math.random() * 2;
-            state.changeTimer = 60 + Math.random() * 40; // Don't change direction immediately
-          } else if (state.x > maxX) {
-            state.x = maxX - 5;
-            state.vx = -(1 + Math.random() * 2); // Always negative (go left)
+          } else if (state.x >= maxX && state.vx > 0) {
+            state.vx = -(1 + Math.random() * 2);
             state.targetVx = -(1 + Math.random() * 2);
-            state.changeTimer = 60 + Math.random() * 40;
           }
 
-          if (state.y < minY) {
-            state.y = minY + 5;
-            state.vy = 1 + Math.random() * 2; // Always positive (go down)
+          if (state.y <= minY && state.vy < 0) {
+            state.vy = 1 + Math.random() * 2;
             state.targetVy = 1 + Math.random() * 2;
-            state.changeTimer = 60 + Math.random() * 40;
-          } else if (state.y > maxY) {
-            state.y = maxY - 5;
-            state.vy = -(1 + Math.random() * 2); // Always negative (go up)
+          } else if (state.y >= maxY && state.vy > 0) {
+            state.vy = -(1 + Math.random() * 2);
             state.targetVy = -(1 + Math.random() * 2);
-            state.changeTimer = 60 + Math.random() * 40;
           }
 
           // Apply transform
