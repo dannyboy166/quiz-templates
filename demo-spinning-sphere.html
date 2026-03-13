@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spinning Sphere Effect</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(180deg, #FFE5B4 0%, #FFB6C1 50%, #E6E6FA 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      padding: 40px 20px;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .subtitle {
+      color: #666;
+      margin-bottom: 40px;
+    }
+
+    /* The sphere container */
+    .sphere-container {
+      position: relative;
+      width: 400px;
+      height: 400px;
+    }
+
+    /* The circular mask */
+    .sphere {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      overflow: hidden;
+      box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.3),
+        inset 0 -10px 30px rgba(0, 0, 0, 0.2);
+      background: #1a472a;
+    }
+
+    /* The sliding image strip (original + mirrored) */
+    .sphere-strip {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 200%;
+      height: 100%;
+      display: flex;
+      animation: spin 12s linear infinite;
+    }
+
+    .sphere-strip img {
+      width: 50%;
+      height: 100%;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+
+    .sphere-strip img.mirrored {
+      transform: scaleX(-1);
+    }
+
+    /* 3D shading overlay - this creates the sphere illusion */
+    .sphere-shading {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: radial-gradient(
+        circle at 35% 35%,
+        transparent 0%,
+        transparent 20%,
+        rgba(0, 0, 0, 0.1) 40%,
+        rgba(0, 0, 0, 0.4) 70%,
+        rgba(0, 0, 0, 0.65) 100%
+      );
+      pointer-events: none;
+    }
+
+    /* Highlight/shine effect */
+    .sphere-highlight {
+      position: absolute;
+      top: 6%;
+      left: 12%;
+      width: 30%;
+      height: 25%;
+      border-radius: 50%;
+      background: radial-gradient(
+        ellipse at center,
+        rgba(255, 255, 255, 0.6) 0%,
+        rgba(255, 255, 255, 0.2) 40%,
+        transparent 70%
+      );
+      pointer-events: none;
+      transform: rotate(-25deg);
+    }
+
+    /* Outer glow */
+    .sphere-glow {
+      position: absolute;
+      top: -20px;
+      left: -20px;
+      right: -20px;
+      bottom: -20px;
+      border-radius: 50%;
+      background: radial-gradient(
+        circle at center,
+        rgba(255, 255, 255, 0.5) 0%,
+        rgba(255, 255, 255, 0.2) 40%,
+        transparent 60%
+      );
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    /* Ring/border effect */
+    .sphere-ring {
+      position: absolute;
+      top: -4px;
+      left: -4px;
+      right: -4px;
+      bottom: -4px;
+      border-radius: 50%;
+      border: 4px solid rgba(255, 255, 255, 0.4);
+      pointer-events: none;
+    }
+
+    @keyframes spin {
+      from {
+        transform: translateX(0);
+      }
+      to {
+        transform: translateX(-50%);
+      }
+    }
+
+    /* Title card like in the reference */
+    .title-card {
+      margin-top: 30px;
+      background: white;
+      padding: 20px 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    .title-card h2 {
+      font-size: 28px;
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    .title-card p {
+      color: #666;
+      font-size: 14px;
+    }
+
+    /* Navigation arrows like in reference */
+    .nav-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: white;
+      border: 2px solid #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      z-index: 10;
+    }
+
+    .nav-arrow:hover {
+      background: #333;
+      color: white;
+    }
+
+    .nav-arrow.left {
+      left: -70px;
+    }
+
+    .nav-arrow.right {
+      right: -70px;
+    }
+
+    .nav-arrow svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    /* Controls */
+    .controls {
+      margin-top: 25px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .control-btn {
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      border: 2px solid #333;
+      border-radius: 25px;
+      background: white;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .control-btn:hover {
+      background: #333;
+      color: white;
+    }
+
+    .control-btn.active {
+      background: #333;
+      color: white;
+    }
+
+    /* Speed control */
+    .speed-control {
+      margin-top: 15px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: white;
+      padding: 10px 20px;
+      border-radius: 25px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .speed-control label {
+      font-weight: 600;
+      color: #333;
+      font-size: 14px;
+    }
+
+    .speed-control input[type="range"] {
+      width: 120px;
+      cursor: pointer;
+    }
+
+    .speed-control span {
+      font-size: 14px;
+      color: #666;
+      min-width: 35px;
+    }
+
+    /* Decorative clouds */
+    .cloud {
+      position: fixed;
+      background: white;
+      border-radius: 50px;
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .cloud::before {
+      content: '';
+      position: absolute;
+      background: white;
+      border-radius: 50%;
+    }
+
+    .cloud-1 {
+      width: 100px;
+      height: 40px;
+      top: 15%;
+      left: 10%;
+    }
+
+    .cloud-1::before {
+      width: 50px;
+      height: 50px;
+      top: -25px;
+      left: 15px;
+    }
+
+    .cloud-2 {
+      width: 120px;
+      height: 50px;
+      top: 20%;
+      right: 15%;
+    }
+
+    .cloud-2::before {
+      width: 60px;
+      height: 60px;
+      top: -30px;
+      left: 20px;
+    }
+
+    .cloud-3 {
+      width: 80px;
+      height: 35px;
+      bottom: 20%;
+      left: 8%;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .sphere-container {
+        width: 300px;
+        height: 300px;
+      }
+
+      .nav-arrow {
+        width: 40px;
+        height: 40px;
+      }
+
+      .nav-arrow.left {
+        left: -50px;
+      }
+
+      .nav-arrow.right {
+        right: -50px;
+      }
+
+      .title-card h2 {
+        font-size: 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Spinning Sphere</h1>
+  <p class="subtitle">Image wrapped around a 3D sphere illusion</p>
+
+  <!-- The Sphere -->
+  <div class="sphere-container">
+    <div class="sphere-glow"></div>
+    <div class="sphere" id="sphere">
+      <!-- Image strip: original + mirrored for seamless loop -->
+      <div class="sphere-strip" id="sphere-strip">
+        <img src="CACD018D-CD84-4083-9B9A-8538C6C1E55E.PNG" alt="Butterfly lifecycle">
+        <img src="CACD018D-CD84-4083-9B9A-8538C6C1E55E.PNG" alt="Butterfly lifecycle" class="mirrored">
+      </div>
+
+      <!-- Overlays for 3D effect -->
+      <div class="sphere-shading"></div>
+      <div class="sphere-highlight"></div>
+    </div>
+    <div class="sphere-ring"></div>
+
+    <!-- Navigation arrows -->
+    <button class="nav-arrow left" onclick="prevSphere()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M15 18l-6-6 6-6"/>
+      </svg>
+    </button>
+    <button class="nav-arrow right" onclick="nextSphere()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 18l6-6-6-6"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Title Card -->
+  <div class="title-card">
+    <h2 id="sphere-title">Animal Lifecycles</h2>
+    <p>Select your learning Sphere</p>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <button class="control-btn" onclick="togglePlay()">⏯️ Play/Pause</button>
+    <button class="control-btn" onclick="reverseDirection()">🔄 Reverse</button>
+  </div>
+
+  <div class="speed-control">
+    <label>Speed:</label>
+    <input type="range" min="3" max="30" value="12" id="speed-slider" oninput="changeSpeed(this.value)">
+    <span id="speed-value">12s</span>
+  </div>
+
+  <!-- Decorative clouds -->
+  <div class="cloud cloud-1"></div>
+  <div class="cloud cloud-2"></div>
+  <div class="cloud cloud-3"></div>
+
+  <script>
+    const spheres = [
+      { title: "Animal Lifecycles", image: "CACD018D-CD84-4083-9B9A-8538C6C1E55E.PNG" },
+      { title: "Ocean World", image: "CACD018D-CD84-4083-9B9A-8538C6C1E55E.PNG" },
+      { title: "Seasons", image: "CACD018D-CD84-4083-9B9A-8538C6C1E55E.PNG" }
+    ];
+
+    let currentSphere = 0;
+    let isPlaying = true;
+    let isReversed = false;
+    const strip = document.getElementById('sphere-strip');
+    const sphereTitle = document.getElementById('sphere-title');
+
+    function loadSphere(index) {
+      const sphere = spheres[index];
+      sphereTitle.textContent = sphere.title;
+      const images = strip.querySelectorAll('img');
+      images[0].src = sphere.image;
+      images[1].src = sphere.image;
+    }
+
+    function nextSphere() {
+      currentSphere = (currentSphere + 1) % spheres.length;
+      loadSphere(currentSphere);
+    }
+
+    function prevSphere() {
+      currentSphere = (currentSphere - 1 + spheres.length) % spheres.length;
+      loadSphere(currentSphere);
+    }
+
+    function togglePlay() {
+      isPlaying = !isPlaying;
+      strip.style.animationPlayState = isPlaying ? 'running' : 'paused';
+    }
+
+    function reverseDirection() {
+      isReversed = !isReversed;
+      strip.style.animationDirection = isReversed ? 'reverse' : 'normal';
+    }
+
+    function changeSpeed(value) {
+      strip.style.animationDuration = value + 's';
+      document.getElementById('speed-value').textContent = value + 's';
+    }
+
+    // Initialize
+    loadSphere(0);
+  </script>
+</body>
+</html>
