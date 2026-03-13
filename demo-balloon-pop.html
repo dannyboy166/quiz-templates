@@ -1269,25 +1269,29 @@
           const minY = -balloonHeight / 2 + 10;
           const maxY = containerRect.height - balloonHeight / 2 - 10;
 
-          // Bounce off edges with position correction
+          // Bounce off edges with position correction and new random direction
           if (state.x < minX) {
-            state.x = minX;
-            state.vx = Math.abs(state.vx) * 0.8 + 0.5;
-            state.targetVx = Math.abs(state.targetVx);
+            state.x = minX + 5;
+            state.vx = 1 + Math.random() * 2; // Always positive (go right)
+            state.targetVx = 1 + Math.random() * 2;
+            state.changeTimer = 60 + Math.random() * 40; // Don't change direction immediately
           } else if (state.x > maxX) {
-            state.x = maxX;
-            state.vx = -Math.abs(state.vx) * 0.8 - 0.5;
-            state.targetVx = -Math.abs(state.targetVx);
+            state.x = maxX - 5;
+            state.vx = -(1 + Math.random() * 2); // Always negative (go left)
+            state.targetVx = -(1 + Math.random() * 2);
+            state.changeTimer = 60 + Math.random() * 40;
           }
 
           if (state.y < minY) {
-            state.y = minY;
-            state.vy = Math.abs(state.vy) * 0.8 + 0.5;
-            state.targetVy = Math.abs(state.targetVy);
+            state.y = minY + 5;
+            state.vy = 1 + Math.random() * 2; // Always positive (go down)
+            state.targetVy = 1 + Math.random() * 2;
+            state.changeTimer = 60 + Math.random() * 40;
           } else if (state.y > maxY) {
-            state.y = maxY;
-            state.vy = -Math.abs(state.vy) * 0.8 - 0.5;
-            state.targetVy = -Math.abs(state.targetVy);
+            state.y = maxY - 5;
+            state.vy = -(1 + Math.random() * 2); // Always negative (go up)
+            state.targetVy = -(1 + Math.random() * 2);
+            state.changeTimer = 60 + Math.random() * 40;
           }
 
           // Apply transform
