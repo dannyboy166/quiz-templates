@@ -1250,19 +1250,34 @@
 
           // Check actual balloon position against container bounds
           const balloonRect = balloon.getBoundingClientRect();
-          const balloonLeft = balloonRect.left - containerRect.left + state.vx;
-          const balloonRight = balloonRect.right - containerRect.left + state.vx;
-          const balloonTop = balloonRect.top - containerRect.top + state.vy;
-          const balloonBottom = balloonRect.bottom - containerRect.top + state.vy;
+          const balloonWidth = balloonRect.width;
+          const balloonHeight = balloonRect.height;
 
-          // Bounce off edges
-          if (balloonLeft < 0 || balloonRight > containerRect.width) {
-            state.targetVx = -state.vx * 0.5;
-            state.vx *= -0.3;
+          // Calculate bounds (balloon starts centered, so offset by half size)
+          const minX = -balloonWidth / 2 + 10;
+          const maxX = containerRect.width - balloonWidth / 2 - 10;
+          const minY = -balloonHeight / 2 + 10;
+          const maxY = containerRect.height - balloonHeight / 2 - 10;
+
+          // Bounce off edges with position correction
+          if (state.x < minX) {
+            state.x = minX;
+            state.vx = Math.abs(state.vx) * 0.8 + 0.5;
+            state.targetVx = Math.abs(state.targetVx);
+          } else if (state.x > maxX) {
+            state.x = maxX;
+            state.vx = -Math.abs(state.vx) * 0.8 - 0.5;
+            state.targetVx = -Math.abs(state.targetVx);
           }
-          if (balloonTop < 0 || balloonBottom > containerRect.height) {
-            state.targetVy = -state.vy * 0.5;
-            state.vy *= -0.3;
+
+          if (state.y < minY) {
+            state.y = minY;
+            state.vy = Math.abs(state.vy) * 0.8 + 0.5;
+            state.targetVy = Math.abs(state.targetVy);
+          } else if (state.y > maxY) {
+            state.y = maxY;
+            state.vy = -Math.abs(state.vy) * 0.8 - 0.5;
+            state.targetVy = -Math.abs(state.targetVy);
           }
 
           // Apply transform
