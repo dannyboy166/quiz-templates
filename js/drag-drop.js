@@ -28,6 +28,12 @@ class DragDropZone {
     this.draggedClone = null;
     this.placements = {};
 
+    // Tap-to-select mode for mobile
+    this.selectedItem = null;
+    this.isTapMode = false;
+    this.touchStartTime = 0;
+    this.touchStartPos = { x: 0, y: 0 };
+
     this.init();
   }
 
@@ -59,6 +65,9 @@ class DragDropZone {
       zone.addEventListener('dragover', this.onDragOver.bind(this));
       zone.addEventListener('dragleave', this.onDragLeave.bind(this));
       zone.addEventListener('drop', this.onDrop.bind(this));
+
+      // Tap-to-place for mobile
+      zone.addEventListener('click', this.onZoneTap.bind(this));
     });
 
     // Source area events (for removing items)
@@ -169,95 +178,145 @@ class DragDropZone {
     delete this.placements[itemId];
   }
 
-  // ==================== Touch Events (Mobile) ====================
+  // ==================== Touch Events (Mobile) - Tap to Select ====================
 
   onTouchStart(e) {
     const item = e.target.closest(this.options.itemSelector);
     if (!item) return;
 
-    e.preventDefault();
-    this.draggedItem = item;
-    this.draggedItem.classList.add('dragging');
-
-    // Create clone for dragging visual
-    const rect = item.getBoundingClientRect();
-    this.draggedClone = item.cloneNode(true);
-    this.draggedClone.classList.add('drag-ghost');
-    this.draggedClone.style.width = rect.width + 'px';
-    this.draggedClone.style.height = rect.height + 'px';
-    document.body.appendChild(this.draggedClone);
-
-    // Position clone
+    // Record touch start for tap detection
+    this.touchStartTime = Date.now();
     const touch = e.touches[0];
-    this.updateClonePosition(touch.clientX, touch.clientY);
+    this.touchStartPos = { x: touch.clientX, y: touch.clientY };
+    this.isTapMode = true;
 
-    // Dim original
-    this.draggedItem.style.opacity = '0.3';
+    // Don't prevent default - allow scrolling
   }
 
   onTouchMove(e) {
-    if (!this.draggedItem || !this.draggedClone) return;
-    e.preventDefault();
+    if (!this.isTapMode) return;
 
+    // If moved more than 10px, it's a scroll not a tap
     const touch = e.touches[0];
-    this.updateClonePosition(touch.clientX, touch.clientY);
+    const dx = Math.abs(touch.clientX - this.touchStartPos.x);
+    const dy = Math.abs(touch.clientY - this.touchStartPos.y);
 
-    // Check which zone we're over
-    const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
-    const zone = elemBelow?.closest(this.options.zoneSelector);
-
-    // Update hover states
-    this.zones.forEach(z => z.classList.remove('drag-over'));
-    if (zone) {
-      zone.classList.add('drag-over');
+    if (dx > 10 || dy > 10) {
+      this.isTapMode = false; // Cancel tap, allow scroll
     }
   }
 
   onTouchEnd(e) {
-    if (!this.draggedItem) return;
+    const item = e.target.closest(this.options.itemSelector);
+    if (!item) return;
 
-    // Find zone at drop position
-    const touch = e.changedTouches[0];
-    const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
-    const zone = elemBelow?.closest(this.options.zoneSelector);
+    // Check if it was a tap (quick, no movement)
+    const tapDuration = Date.now() - this.touchStartTime;
 
-    if (zone) {
-      // Move item to zone
-      const itemsContainer = zone.querySelector('.drop-zone-items') || zone;
-      itemsContainer.appendChild(this.draggedItem);
-      this.draggedItem.classList.add('placed');
-
-      // Random position within jar
-      const randomX = Math.random() * 40;
-      const randomY = Math.random() * 60;
-      const randomRotate = (Math.random() - 0.5) * 30;
-      this.draggedItem.style.left = randomX + 'px';
-      this.draggedItem.style.top = randomY + 'px';
-      this.draggedItem.style.transform = `scale(0.7) rotate(${randomRotate}deg)`;
-
-      // Record placement
-      const itemId = this.draggedItem.dataset.id;
-      const zoneId = zone.dataset.zone;
-      this.placements[itemId] = zoneId;
-
-      if (this.options.onDrop) {
-        this.options.onDrop(itemId, zoneId, this.draggedItem, zone);
-      }
-
-      this.checkComplete();
+    if (this.isTapMode && tapDuration < 300) {
+      e.preventDefault();
+      this.toggleItemSelection(item);
     }
 
-    // Cleanup
-    this.draggedItem.classList.remove('dragging');
-    this.draggedItem.style.opacity = '1';
+    this.isTapMode = false;
+  }
 
-    if (this.draggedClone) {
-      this.draggedClone.remove();
-      this.draggedClone = null;
+  toggleItemSelection(item) {
+    // If already selected, deselect
+    if (this.selectedItem === item) {
+      this.selectedItem.classList.remove('selected');
+      this.selectedItem = null;
+      this.showSelectionHint(false);
+      return;
     }
 
-    this.zones.forEach(z => z.classList.remove('drag-over'));
-    this.draggedItem = null;
+    // Deselect previous
+    if (this.selectedItem) {
+      this.selectedItem.classList.remove('selected');
+    }
+
+    // Select new item
+    this.selectedItem = item;
+    item.classList.add('selected');
+    this.showSelectionHint(true);
+
+    // Highlight all zones as potential targets
+    this.zones.forEach(z => z.classList.add('tap-target'));
+  }
+
+  onZoneTap(e) {
+    if (!this.selectedItem) return;
+
+    const zone = e.target.closest(this.options.zoneSelector);
+    if (!zone) return;
+
+    // Place selected item in this zone
+    this.placeItemInZone(this.selectedItem, zone);
+
+    // Clear selection
+    this.selectedItem.classList.remove('selected');
+    this.selectedItem = null;
+    this.showSelectionHint(false);
+    this.zones.forEach(z => z.classList.remove('tap-target'));
+  }
+
+  placeItemInZone(item, zone) {
+    const itemsContainer = zone.querySelector('.drop-zone-items') || zone;
+    itemsContainer.appendChild(item);
+    item.classList.add('placed');
+    item.classList.add('just-dropped');
+
+    // Random position within jar
+    const randomX = Math.random() * 40;
+    const randomY = Math.random() * 60;
+    const randomRotate = (Math.random() - 0.5) * 30;
+    item.style.left = randomX + 'px';
+    item.style.top = randomY + 'px';
+    item.style.transform = `scale(0.7) rotate(${randomRotate}deg)`;
+
+    // Record placement
+    const itemId = item.dataset.id;
+    const zoneId = zone.dataset.zone;
+    this.placements[itemId] = zoneId;
+
+    if (this.options.onDrop) {
+      this.options.onDrop(itemId, zoneId, item, zone);
+    }
+
+    // Remove animation class
+    setTimeout(() => {
+      item.classList.remove('just-dropped');
+    }, 300);
+
+    this.checkComplete();
+  }
+
+  showSelectionHint(show) {
+    // Show/hide a hint banner for tap mode
+    let hint = document.getElementById('tap-mode-hint');
+
+    if (show && !hint) {
+      hint = document.createElement('div');
+      hint.id = 'tap-mode-hint';
+      hint.innerHTML = 'Tap a jar to place the item';
+      hint.style.cssText = `
+        position: fixed;
+        bottom: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #333;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 25px;
+        font-size: 16px;
+        font-weight: 600;
+        z-index: 1000;
+        animation: fadeInUp 0.3s ease;
+      `;
+      document.body.appendChild(hint);
+    } else if (!show && hint) {
+      hint.remove();
+    }
   }
 
   updateClonePosition(x, y) {
