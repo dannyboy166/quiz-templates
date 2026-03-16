@@ -286,8 +286,27 @@ class DraggableClock {
   // Check if time matches target
   checkAnswer(targetHour, targetMinute = 0) {
     const { hour, minute } = this.getTime();
-    const hourMatch = hour === targetHour;
     const minuteMatch = !this.options.showMinuteHand || minute === targetMinute;
+
+    // Strict hour hand validation: must be PAST targetHour and before targetHour+1
+    // e.g., for 8:50, hour hand must be past 8 and before 9
+    const targetHour12 = targetHour % 12;
+    const minAngle = targetHour12 * 30 + 3; // Must be past the hour mark (3° buffer)
+    const maxAngle = (targetHour12 + 1) * 30 - 1; // Before the next hour
+
+    // Normalize hourAngle to 0-360 range
+    let normalizedHourAngle = this.hourAngle % 360;
+    if (normalizedHourAngle < 0) normalizedHourAngle += 360;
+
+    // Handle the 12 o'clock wrap-around (hour 12 is at 0°/360°)
+    let hourMatch;
+    if (targetHour12 === 0) {
+      // For 12 o'clock times, accept angles past 12 (after 363° or 3°) up to before 1 (29°)
+      hourMatch = normalizedHourAngle >= 333 || (normalizedHourAngle >= 3 && normalizedHourAngle < 29);
+    } else {
+      hourMatch = normalizedHourAngle >= minAngle && normalizedHourAngle <= maxAngle;
+    }
+
     return hourMatch && minuteMatch;
   }
 

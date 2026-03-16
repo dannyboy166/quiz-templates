@@ -944,9 +944,20 @@
           const encourage = encouragements[Math.floor(Math.random() * encouragements.length)];
 
           // Build hint text based on difficulty
-          let hintDetails = `&#128072; Move the <strong>short hand</strong> to point at the <strong>${targets[checkIndex].hour}</strong>!`;
-          if (targets[checkIndex].minute !== 0) {
-            hintDetails += `<br><br>&#128070; Move the <strong>long hand</strong> to point at the <strong>${targets[checkIndex].minute / 5 || 12}</strong>!`;
+          const targetMin = targets[checkIndex].minute;
+          const targetHr = targets[checkIndex].hour;
+          const minuteNumber = targetMin / 5 || 12;
+
+          let hintDetails;
+          if (targetMin === 0) {
+            // O'clock - hour hand points exactly at the number
+            hintDetails = `&#128070; Move the <strong>long hand</strong> to point at the <strong>12</strong>!`;
+            hintDetails += `<br><br>&#128072; Move the <strong>short hand</strong> to point at the <strong>${targetHr}</strong>!`;
+          } else {
+            // Other times - start with minute hand, hour follows automatically
+            const nextHour = targetHr === 12 ? 1 : targetHr + 1;
+            hintDetails = `&#128070; First, move the <strong>long hand</strong> to point at the <strong>${minuteNumber}</strong>!`;
+            hintDetails += `<br><br>&#128072; The <strong>short hand</strong> should be between <strong>${targetHr}</strong> and <strong>${nextHour}</strong>!`;
           }
 
           hintTitle.innerHTML = `&#128161; Look at clock ${checkIndex + 1}!`;
