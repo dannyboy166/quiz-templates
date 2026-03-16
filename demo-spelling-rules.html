@@ -567,8 +567,10 @@
 
     <!-- Rule Selector -->
     <div class="rule-selector" id="rule-selector">
+      <!-- Shuffle All -->
+      <button class="rule-btn active" data-rule="shuffle">🔀 Shuffle Rules</button>
       <!-- Australian Spelling -->
-      <button class="rule-btn active" data-rule="aus-our">-our 🇦🇺</button>
+      <button class="rule-btn" data-rule="aus-our">-our 🇦🇺</button>
       <button class="rule-btn" data-rule="aus-ise">-ise 🇦🇺</button>
       <button class="rule-btn" data-rule="aus-re">-re 🇦🇺</button>
       <!-- Classic Rules -->
@@ -1192,14 +1194,35 @@
       }
     };
 
-    let currentRule = "aus-our";
+    let currentRule = "shuffle";
     let currentQuestion = 0;
     let selectedOption = null;
     let results = [];
+    let shuffledQuestions = []; // For shuffle mode
 
     function init() {
       loadRule(currentRule);
       setupEventListeners();
+    }
+
+    function generateShuffledQuestions(count = 10) {
+      // Collect all questions from all rules with their rule info
+      const allQuestions = [];
+      Object.keys(allRules).forEach(ruleId => {
+        const rule = allRules[ruleId];
+        rule.questions.forEach(q => {
+          allQuestions.push({
+            ...q,
+            ruleId: ruleId,
+            ruleName: rule.name,
+            ruleHint: rule.hint
+          });
+        });
+      });
+
+      // Shuffle and take first 'count' questions
+      const shuffled = allQuestions.sort(() => Math.random() - 0.5);
+      return shuffled.slice(0, count);
     }
 
     function loadRule(ruleId) {
@@ -1216,13 +1239,21 @@
         btn.classList.toggle('active', btn.dataset.rule === ruleId);
       });
 
-      const rule = allRules[ruleId];
-
-      // Update rule hint
-      document.getElementById('rule-hint').innerHTML = `<strong>Rule:</strong> ${rule.hint}`;
-
-      // Update help content
-      document.getElementById('help-content').innerHTML = rule.helpContent;
+      if (ruleId === 'shuffle') {
+        // Shuffle mode - mix questions from all rules
+        shuffledQuestions = generateShuffledQuestions(10);
+        document.getElementById('rule-hint').innerHTML = `<strong>Shuffle Mode:</strong> Questions from all spelling rules!`;
+        document.getElementById('help-content').innerHTML = `
+          <p>🔀 <strong>Shuffle Mode</strong></p>
+          <p>You'll get questions from different spelling rules mixed together!</p>
+          <p>Each question will show you which rule applies.</p>
+          <p>Great for practicing everything you've learned!</p>
+        `;
+      } else {
+        const rule = allRules[ruleId];
+        document.getElementById('rule-hint').innerHTML = `<strong>Rule:</strong> ${rule.hint}`;
+        document.getElementById('help-content').innerHTML = rule.helpContent;
+      }
 
       // Render progress dots
       renderProgressDots();
@@ -1232,7 +1263,7 @@
     }
 
     function renderProgressDots() {
-      const questions = allRules[currentRule].questions;
+      const questions = currentRule === 'shuffle' ? shuffledQuestions : allRules[currentRule].questions;
       const container = document.getElementById('progress-dots');
       container.innerHTML = questions.map((_, i) =>
         `<div class="progress-dot ${i === 0 ? 'current' : ''}" data-index="${i}"></div>`
@@ -1240,7 +1271,7 @@
     }
 
     function loadQuestion(index) {
-      const questions = allRules[currentRule].questions;
+      const questions = currentRule === 'shuffle' ? shuffledQuestions : allRules[currentRule].questions;
       const q = questions[index];
       selectedOption = null;
 
@@ -1268,7 +1299,14 @@
       // Update info
       document.getElementById('word-meaning').textContent = q.meaning;
       document.getElementById('word-context').textContent = q.context;
-      document.getElementById('hint-text').textContent = allRules[currentRule].hint;
+
+      // Update hint based on mode
+      if (currentRule === 'shuffle') {
+        document.getElementById('hint-text').textContent = q.ruleHint;
+        document.getElementById('rule-hint').innerHTML = `<strong>${q.ruleName}:</strong> ${q.ruleHint}`;
+      } else {
+        document.getElementById('hint-text').textContent = allRules[currentRule].hint;
+      }
 
       // Reset UI
       document.getElementById('btn-check').style.display = 'block';
@@ -1342,7 +1380,8 @@
         return;
       }
 
-      const q = allRules[currentRule].questions[currentQuestion];
+      const questions = currentRule === 'shuffle' ? shuffledQuestions : allRules[currentRule].questions;
+      const q = questions[currentQuestion];
       const isCorrect = selectedOption === q.correct;
       results[currentQuestion] = isCorrect;
 
@@ -1401,7 +1440,7 @@
     }
 
     function nextQuestion() {
-      const questions = allRules[currentRule].questions;
+      const questions = currentRule === 'shuffle' ? shuffledQuestions : allRules[currentRule].questions;
       if (currentQuestion < questions.length - 1) {
         currentQuestion++;
         loadQuestion(currentQuestion);
@@ -1409,13 +1448,15 @@
         // Complete - update compass to 100%
         updateCompass(100, true);
         const correct = results.filter(r => r === true).length;
-        alert(`🎉 Finished "${allRules[currentRule].name}"!\n\nYou got ${correct} out of ${questions.length} correct!`);
+        const modeName = currentRule === 'shuffle' ? 'Shuffle Mode' : allRules[currentRule].name;
+        alert(`🎉 Finished "${modeName}"!\n\nYou got ${correct} out of ${questions.length} correct!`);
       }
     }
 
     function readAloud() {
       if ('speechSynthesis' in window) {
-        const q = allRules[currentRule].questions[currentQuestion];
+        const questions = currentRule === 'shuffle' ? shuffledQuestions : allRules[currentRule].questions;
+        const q = questions[currentQuestion];
         const utterance = new SpeechSynthesisUtterance(
           `What are the missing letters? ${q.meaning}. ${q.context}`
         );
