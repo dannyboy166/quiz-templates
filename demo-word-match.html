@@ -378,32 +378,56 @@
 
     @media (max-width: 500px) {
       .word-bank {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 6px;
       }
       .word-option {
-        padding: 10px 6px;
-        font-size: 16px;
+        padding: 8px 4px;
+        font-size: 14px;
       }
       .image-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
       }
       .image-card {
-        padding: 10px;
-        border-radius: 12px;
+        padding: 8px;
+        border-radius: 10px;
       }
       .image-box {
-        width: 80px;
-        height: 65px;
+        width: 70px;
+        height: 55px;
       }
       .word-slot {
-        min-width: 70px;
-        font-size: 14px;
-        padding: 8px 12px;
+        min-width: 50px;
+        font-size: 12px;
+        padding: 6px 8px;
+        min-height: 30px;
+      }
+      .word-slot .placed-word {
+        padding: 4px 8px;
+        font-size: 12px;
       }
       .help-item {
         padding: 12px 16px;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .word-bank {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 4px;
+      }
+      .word-option {
+        padding: 6px 2px;
+        font-size: 12px;
+      }
+      .image-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+      }
+      .image-box {
+        width: 65px;
+        height: 50px;
       }
     }
   </style>
@@ -591,8 +615,8 @@
       { image: 'https://images.emojiterra.com/google/noto-emoji/unicode-15.1/color/512px/1f5fa.png', word: 'Map', hint: 'Shows you where places are' }
     ];
 
-    // All word options (correct + distractors)
-    const allWords = ['Cat', 'Tap', 'At', 'Man', 'Ham', 'Bat', 'Sad', 'Had', 'Am', 'Hat', 'Tag', 'Map', 'Ear'];
+    // All word options (6 correct + 4 distractors = 10 total)
+    const allWords = ['Tap', 'Ham', 'Bat', 'Sad', 'Map', 'Ear', 'Cat', 'Hat', 'Tag', 'Man'];
 
     // Shuffle array
     function shuffle(arr) {
