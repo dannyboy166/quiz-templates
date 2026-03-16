@@ -18,7 +18,7 @@
     /* 3D Scene */
     .dice-scene {
       perspective: 600px;
-      perspective-origin: 50% 20%; /* Centered, looking down */
+      perspective-origin: 50% 50%; /* Centered */
       margin-top: 150px;
     }
 
@@ -28,25 +28,25 @@
 
     .dice-table {
       position: relative;
-      width: 500px;
-      height: 300px;
+      width: 700px;
+      height: 400px;
       transform-style: preserve-3d;
       cursor: pointer;
     }
 
     .dice-container {
       position: absolute;
-      width: 500px;
-      height: 400px;
+      width: 700px;
+      height: 500px;
       transform-style: preserve-3d;
       transform-origin: center top;
-      transform: rotateX(65deg);
+      transform: rotateX(50deg);
     }
 
     .floor {
       position: absolute;
-      width: 500px;
-      height: 400px;
+      width: 700px;
+      height: 500px;
       left: 0;
       top: 0;
       background:
@@ -57,7 +57,7 @@
       border: 1px solid rgba(0,0,0,0.2);
       border-radius: 0;
       transform-origin: center top;
-      transform: rotateX(65deg);
+      transform: rotateX(50deg);
     }
 
     .dice-wrapper {
@@ -138,6 +138,23 @@
   </style>
 </head>
 <body>
+
+  <!-- DEV CONTROLS - Remove for production -->
+  <div style="position: fixed; top: 20px; right: 20px; background: white; padding: 15px 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 100; font-family: system-ui;">
+    <div style="font-weight: bold; margin-bottom: 10px;">Dice Settings</div>
+
+    <label style="font-size: 12px;">Floor Angle: <strong id="angle-val">50</strong>°</label><br>
+    <input type="range" id="angle-slider" min="30" max="80" value="50" style="width: 150px; margin-top: 4px;">
+
+    <div style="margin-top: 12px;">
+      <label style="font-size: 12px;">Position (left/right): <strong id="pos-val">20</strong>%</label><br>
+      <input type="range" id="pos-slider" min="10" max="90" value="20" style="width: 150px; margin-top: 4px;">
+    </div>
+
+    <div style="margin-top: 12px;">
+      <label style="font-size: 12px;"><input type="checkbox" id="show-floor" checked> Show reference floor</label>
+    </div>
+  </div>
 
   <div class="dice-scene">
     <div class="dice-camera">
@@ -252,8 +269,8 @@
       // Dice 1 - front
       const w1 = document.createElement('div');
       w1.className = 'dice-wrapper';
-      w1.style.left = '50px';
-      w1.style.top = '150px';
+      w1.style.left = '110px';
+      w1.style.top = '170px';
       const d1 = document.createElement('div');
       d1.className = 'dice';
       d1.innerHTML = createDiceHTML();
@@ -263,8 +280,8 @@
       // Dice 2 - behind
       const w2 = document.createElement('div');
       w2.className = 'dice-wrapper';
-      w2.style.left = '50px';
-      w2.style.top = '50px';
+      w2.style.left = '110px';
+      w2.style.top = '75px';
       const d2 = document.createElement('div');
       d2.className = 'dice';
       d2.innerHTML = createDiceHTML();
@@ -286,6 +303,78 @@
     }
 
     document.getElementById('dice-table').addEventListener('click', rollAll);
+
+    // Angle slider
+    document.getElementById('angle-slider').addEventListener('input', (e) => {
+      const angle = e.target.value;
+      document.getElementById('angle-val').textContent = angle;
+      document.querySelector('.floor').style.transform = `rotateX(${angle}deg)`;
+      document.querySelector('.dice-container').style.transform = `rotateX(${angle}deg)`;
+    });
+
+    // Position slider
+    const diceSize = 60;
+    document.getElementById('pos-slider').addEventListener('input', (e) => {
+      const pos = e.target.value;
+      document.getElementById('pos-val').textContent = pos;
+      const containerWidth = 700;
+      const left = (containerWidth * pos / 100) - diceSize / 2;
+      document.querySelectorAll('.dice-wrapper').forEach(w => {
+        w.style.left = left + 'px';
+      });
+    });
+
+    // Toggle floor visibility
+    document.getElementById('show-floor').addEventListener('change', (e) => {
+      document.querySelector('.floor').style.display = e.target.checked ? 'block' : 'none';
+    });
+
+    // URL Parameters for production embed
+    const params = new URLSearchParams(window.location.search);
+
+    // ?angle=65 - set floor angle
+    if (params.has('angle')) {
+      const angle = parseInt(params.get('angle'));
+      document.querySelector('.floor').style.transform = `rotateX(${angle}deg)`;
+      document.querySelector('.dice-container').style.transform = `rotateX(${angle}deg)`;
+      document.getElementById('angle-slider').value = angle;
+      document.getElementById('angle-val').textContent = angle;
+    }
+
+    // ?pos=50 - set dice position (0-100)
+    if (params.has('pos')) {
+      const pos = parseInt(params.get('pos'));
+      const containerWidth = 700;
+      const left = (containerWidth * pos / 100) - diceSize / 2;
+      document.querySelectorAll('.dice-wrapper').forEach(w => {
+        w.style.left = left + 'px';
+      });
+      document.getElementById('pos-slider').value = pos;
+      document.getElementById('pos-val').textContent = pos;
+    }
+
+    // ?floor=false - hide the reference floor
+    if (params.get('floor') === 'false') {
+      document.querySelector('.floor').style.display = 'none';
+      document.getElementById('show-floor').checked = false;
+    }
+
+    // ?controls=false - hide dev controls (for production)
+    if (params.get('controls') === 'false') {
+      document.querySelector('[style*="position: fixed"]').style.display = 'none';
+    }
+
+    // PostMessage API for parent window control
+    window.addEventListener('message', (e) => {
+      if (e.data === 'roll') {
+        rollAll().then(() => {
+          // Send results back to parent
+          const results = diceObjects.map(d => d.result);
+          window.parent.postMessage({ type: 'diceResult', values: results, total: results.reduce((a, b) => a + b, 0) }, '*');
+        });
+      }
+    });
+
     init();
   </script>
 </body>
