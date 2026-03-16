@@ -11,6 +11,16 @@
       background: #FFE280;
     }
 
+    /* Remove the big white container */
+    .content-card {
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .content-card-inner {
+      background: transparent;
+    }
+
     /* Modal styles */
     .modal-overlay {
       display: none;
@@ -179,30 +189,47 @@
     @media (max-width: 800px) {
       .game-layout {
         flex-direction: column;
+        align-items: center;
+      }
+      .game-layout .blocks-area {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
       }
       .game-layout .answer-panel {
         width: 100%;
+        max-width: 400px;
       }
-      /* Stack block groups vertically on mobile */
+      /* Stack block groups horizontally but wrap, centered */
       .blocks-container {
-        flex-direction: column;
+        flex-direction: row;
+        flex-wrap: wrap;
         align-items: center;
+        justify-content: center;
         gap: 20px;
         padding: 20px 10px;
       }
       .hundreds-group {
         width: auto;
+        justify-content: center;
       }
       .tens-group {
         max-width: 180px;
+        justify-content: center;
       }
       .ones-group {
         max-width: 120px;
+        justify-content: center;
       }
     }
 
     @media (max-width: 500px) {
       /* Make blocks smaller on very small screens */
+      .blocks-container {
+        gap: 15px;
+        padding: 15px 5px;
+      }
       .tens-group svg {
         width: 22px;
         height: 120px;
@@ -214,6 +241,12 @@
       .hundreds-group svg {
         width: 140px;
         height: 95px;
+      }
+      .tens-group {
+        max-width: 140px;
+      }
+      .ones-group {
+        max-width: 100px;
       }
     }
 
@@ -255,9 +288,11 @@
     /* Difficulty selector */
     .difficulty-selector {
       display: flex;
+      flex-wrap: wrap;
       gap: 10px;
       justify-content: center;
       margin-bottom: 15px;
+      padding: 0 10px;
     }
 
     .difficulty-btn {
@@ -269,6 +304,13 @@
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s;
+    }
+
+    @media (max-width: 400px) {
+      .difficulty-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+      }
     }
 
     .difficulty-btn:hover {
@@ -284,11 +326,27 @@
     /* Hints row - separate from blocks */
     .hints-row {
       display: flex;
-      gap: 40px;
+      flex-wrap: wrap;
+      gap: 20px;
       justify-content: center;
       align-items: center;
-      padding: 15px 30px 0 30px;
+      padding: 15px 10px 0 10px;
       min-height: 0;
+    }
+
+    @media (max-width: 500px) {
+      .hints-row {
+        gap: 10px;
+      }
+      .hint-slot.hundreds,
+      .hint-slot.tens,
+      .hint-slot.ones {
+        width: auto;
+        min-width: auto;
+      }
+      .hint-box {
+        padding: 10px 15px;
+      }
     }
 
     /* Hint slot - matches width of block group above */
