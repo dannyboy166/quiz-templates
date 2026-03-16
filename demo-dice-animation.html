@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D Dice Animation - Standalone</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #a8d8e8 0%, #b8e8d8 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+    }
+
+    .dice-count-btn {
+      width: 50px;
+      height: 50px;
+      font-size: 20px;
+      font-weight: 700;
+      background: white;
+      color: #333;
+      border: 3px solid #333;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .dice-count-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .dice-count-btn.selected {
+      background: #333;
+      color: white;
+    }
+
+    /* Dice Scene */
+    .dice-scene {
+      perspective: 800px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .dice-camera {
+      transform-style: preserve-3d;
+      transform: rotateX(52deg);
+    }
+
+    .dice-table {
+      position: relative;
+      width: 400px;
+      height: 400px;
+      transform-style: preserve-3d;
+    }
+
+    .dice-ground {
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      background: #f0e8d8;
+      border: 3px solid #1a1a1a;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .dice-ground:hover {
+      background: #e8e0d0;
+    }
+
+    .dice-ground::after {
+      content: 'Tap to Roll!';
+      position: absolute;
+      bottom: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 14px;
+      color: #888;
+      font-weight: 500;
+    }
+
+    .dice-ground.rolling::after {
+      content: 'Rolling...';
+    }
+
+    .dice-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 400px;
+      height: 400px;
+      z-index: 10;
+      transform-style: preserve-3d;
+      pointer-events: none;
+    }
+
+    .dice-wrapper {
+      position: absolute;
+      transform-style: preserve-3d;
+    }
+
+    .dice {
+      width: 96px;
+      height: 96px;
+      position: relative;
+      transform-style: preserve-3d;
+    }
+
+    .face {
+      position: absolute;
+      width: 96px;
+      height: 96px;
+      background: rgb(244, 191, 222);
+      border: 3px solid #1a1a1a;
+      border-radius: 4px;
+      backface-visibility: visible;
+    }
+
+    .dot {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      background: #1a1a1a;
+      border-radius: 50%;
+    }
+
+    /* Face positions */
+    .face-1 { transform: rotateY(0deg) translateZ(48px); }
+    .face-6 { transform: rotateY(180deg) translateZ(48px); }
+    .face-2 { transform: rotateY(-90deg) translateZ(48px); }
+    .face-5 { transform: rotateY(90deg) translateZ(48px); }
+    .face-3 { transform: rotateX(90deg) translateZ(48px); }
+    .face-4 { transform: rotateX(-90deg) translateZ(48px); }
+
+    /* Dot positions */
+    .face-1 .dot { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+    .face-2 .dot:nth-child(1) { top: 18px; left: 18px; }
+    .face-2 .dot:nth-child(2) { bottom: 18px; right: 18px; }
+    .face-3 .dot:nth-child(1) { top: 18px; left: 18px; }
+    .face-3 .dot:nth-child(2) { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+    .face-3 .dot:nth-child(3) { bottom: 18px; right: 18px; }
+    .face-4 .dot:nth-child(1) { top: 18px; left: 18px; }
+    .face-4 .dot:nth-child(2) { top: 18px; right: 18px; }
+    .face-4 .dot:nth-child(3) { bottom: 18px; left: 18px; }
+    .face-4 .dot:nth-child(4) { bottom: 18px; right: 18px; }
+    .face-5 .dot:nth-child(1) { top: 18px; left: 18px; }
+    .face-5 .dot:nth-child(2) { top: 18px; right: 18px; }
+    .face-5 .dot:nth-child(3) { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+    .face-5 .dot:nth-child(4) { bottom: 18px; left: 18px; }
+    .face-5 .dot:nth-child(5) { bottom: 18px; right: 18px; }
+    .face-6 .dot:nth-child(1) { top: 18px; left: 18px; }
+    .face-6 .dot:nth-child(2) { top: 18px; right: 18px; }
+    .face-6 .dot:nth-child(3) { top: 50%; left: 18px; transform: translateY(-50%); }
+    .face-6 .dot:nth-child(4) { top: 50%; right: 18px; transform: translateY(-50%); }
+    .face-6 .dot:nth-child(5) { bottom: 18px; left: 18px; }
+    .face-6 .dot:nth-child(6) { bottom: 18px; right: 18px; }
+
+    /* Splash particles */
+    .splash {
+      position: absolute;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    @keyframes splashOut {
+      0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(0.3);
+        opacity: 0;
+      }
+    }
+
+    /* Result display */
+    .result-display {
+      margin-top: 30px;
+      font-size: 32px;
+      font-weight: 700;
+      color: #333;
+      min-height: 50px;
+    }
+
+    .result-display .total {
+      color: #4CAF50;
+      font-size: 48px;
+    }
+
+    /* Color options */
+    .color-options {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .color-btn {
+      width: 40px;
+      height: 40px;
+      border: 3px solid #333;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .color-btn:hover {
+      transform: scale(1.1);
+    }
+
+    .color-btn.selected {
+      box-shadow: 0 0 0 3px white, 0 0 0 6px #333;
+    }
+
+    /* Mobile */
+    @media (max-width: 500px) {
+      .dice-table, .dice-ground {
+        width: 320px;
+        height: 320px;
+      }
+
+      .dice-container {
+        width: 320px;
+        height: 320px;
+      }
+
+      .dice {
+        width: 70px;
+        height: 70px;
+      }
+
+      .face {
+        width: 70px;
+        height: 70px;
+      }
+
+      .face-1 { transform: rotateY(0deg) translateZ(35px); }
+      .face-6 { transform: rotateY(180deg) translateZ(35px); }
+      .face-2 { transform: rotateY(-90deg) translateZ(35px); }
+      .face-5 { transform: rotateY(90deg) translateZ(35px); }
+      .face-3 { transform: rotateX(90deg) translateZ(35px); }
+      .face-4 { transform: rotateX(-90deg) translateZ(35px); }
+
+      .dot {
+        width: 11px;
+        height: 11px;
+      }
+
+      .face-2 .dot:nth-child(1) { top: 12px; left: 12px; }
+      .face-2 .dot:nth-child(2) { bottom: 12px; right: 12px; }
+      .face-3 .dot:nth-child(1) { top: 12px; left: 12px; }
+      .face-3 .dot:nth-child(3) { bottom: 12px; right: 12px; }
+      .face-4 .dot:nth-child(1) { top: 12px; left: 12px; }
+      .face-4 .dot:nth-child(2) { top: 12px; right: 12px; }
+      .face-4 .dot:nth-child(3) { bottom: 12px; left: 12px; }
+      .face-4 .dot:nth-child(4) { bottom: 12px; right: 12px; }
+      .face-5 .dot:nth-child(1) { top: 12px; left: 12px; }
+      .face-5 .dot:nth-child(2) { top: 12px; right: 12px; }
+      .face-5 .dot:nth-child(4) { bottom: 12px; left: 12px; }
+      .face-5 .dot:nth-child(5) { bottom: 12px; right: 12px; }
+      .face-6 .dot:nth-child(1) { top: 12px; left: 12px; }
+      .face-6 .dot:nth-child(2) { top: 12px; right: 12px; }
+      .face-6 .dot:nth-child(3) { top: 50%; left: 12px; }
+      .face-6 .dot:nth-child(4) { top: 50%; right: 12px; }
+      .face-6 .dot:nth-child(5) { bottom: 12px; left: 12px; }
+      .face-6 .dot:nth-child(6) { bottom: 12px; right: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <h1>3D Dice Animation</h1>
+
+  <p style="color: #666; margin-bottom: 10px;">How many dice?</p>
+  <div class="controls">
+    <button class="dice-count-btn" data-count="1">1</button>
+    <button class="dice-count-btn" data-count="2">2</button>
+    <button class="dice-count-btn selected" data-count="3">3</button>
+    <button class="dice-count-btn" data-count="4">4</button>
+    <button class="dice-count-btn" data-count="5">5</button>
+  </div>
+
+  <!-- Dice Scene -->
+  <div class="dice-scene">
+    <div class="dice-camera">
+      <div class="dice-table">
+        <div class="dice-ground" id="dice-ground"></div>
+        <div class="dice-container" id="dice-container"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="result-display" id="result-display"></div>
+
+  <p style="color: #666; margin-top: 30px;">Dice color:</p>
+  <div class="color-options">
+    <button class="color-btn selected" data-color="rgb(244, 191, 222)" style="background: rgb(244, 191, 222);"></button>
+    <button class="color-btn" data-color="#fff" style="background: #fff;"></button>
+    <button class="color-btn" data-color="#ff6b6b" style="background: #ff6b6b;"></button>
+    <button class="color-btn" data-color="#4ecdc4" style="background: #4ecdc4;"></button>
+    <button class="color-btn" data-color="#ffe66d" style="background: #ffe66d;"></button>
+    <button class="color-btn" data-color="#a8d8e8" style="background: #a8d8e8;"></button>
+  </div>
+
+  <script>
+    // ==========================================
+    // 3D Dice Animation - Standalone Component
+    // ==========================================
+
+    // Dice face rotations (which rotation shows which face on top)
+    const FACE_ROTATIONS = [
+      { face: 1, rotX: 0, rotY: 0 },
+      { face: 2, rotX: 0, rotY: 90 },
+      { face: 3, rotX: -90, rotY: 0 },
+      { face: 4, rotX: 90, rotY: 0 },
+      { face: 5, rotX: 0, rotY: -90 },
+      { face: 6, rotX: 180, rotY: 0 },
+    ];
+
+    // State
+    let diceCount = 3;
+    let diceColor = 'rgb(244, 191, 222)';
+    let isRolling = false;
+    let diceObjects = [];
+
+    // ==========================================
+    // Dice Class
+    // ==========================================
+    class Dice {
+      constructor(diceEl, index) {
+        this.dice = diceEl;
+        this.index = index;
+        this.isRolling = false;
+        this.result = 1;
+
+        // Set random initial position
+        const initial = FACE_ROTATIONS[Math.floor(Math.random() * 6)];
+        this.currentRotX = initial.rotX;
+        this.currentRotY = initial.rotY;
+        this.currentZ = 48;
+        this.result = initial.face;
+        this.updateTransform();
+      }
+
+      roll() {
+        return new Promise(resolve => {
+          if (this.isRolling) return resolve();
+          this.isRolling = true;
+
+          // Random landing face
+          const landing = FACE_ROTATIONS[Math.floor(Math.random() * 6)];
+          this.result = landing.face;
+
+          const duration = 1200 + Math.random() * 300;
+          const startTime = performance.now();
+
+          const startRotX = this.currentRotX;
+          const startRotY = this.currentRotY;
+
+          // Add multiple full rotations for realistic tumbling
+          const spinsX = (2 + Math.floor(Math.random() * 2)) * 360;
+          const spinsY = (2 + Math.floor(Math.random() * 2)) * 360;
+          const targetRotX = landing.rotX + spinsX;
+          const targetRotY = landing.rotY + spinsY;
+
+          const animate = (currentTime) => {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+
+            // Ease out cubic for natural deceleration
+            const eased = 1 - Math.pow(1 - progress, 3);
+
+            // Bounce height - parabolic arc
+            const heightProgress = progress < 0.5 ? progress * 2 : 2 - progress * 2;
+            const height = 48 + Math.sin(heightProgress * Math.PI) * 280;
+
+            const rotX = startRotX + (targetRotX - startRotX) * eased;
+            const rotY = startRotY + (targetRotY - startRotY) * eased;
+
+            this.currentRotX = rotX;
+            this.currentRotY = rotY;
+            this.currentZ = height;
+            this.updateTransform();
+
+            if (progress < 1) {
+              requestAnimationFrame(animate);
+            } else {
+              // Snap to final position
+              this.currentRotX = landing.rotX;
+              this.currentRotY = landing.rotY;
+              this.currentZ = 48;
+              this.updateTransform();
+              this.isRolling = false;
+              this.createSplash();
+              resolve();
+            }
+          };
+
+          requestAnimationFrame(animate);
+        });
+      }
+
+      updateTransform() {
+        this.dice.style.transform = `
+          translateZ(${this.currentZ}px)
+          rotateX(${this.currentRotX}deg)
+          rotateY(${this.currentRotY}deg)
+        `;
+      }
+
+      createSplash() {
+        const colors = [diceColor, '#a8d8e8', '#e8a850', '#a8d060', '#ffcc66'];
+        const container = this.dice.parentElement;
+
+        for (let i = 0; i < 20; i++) {
+          const splash = document.createElement('div');
+          splash.className = 'splash';
+          splash.style.background = colors[Math.floor(Math.random() * colors.length)];
+          splash.style.left = '48px';
+          splash.style.top = '48px';
+
+          const angle = (i / 20) * 360 + Math.random() * 20;
+          const distance = 60 + Math.random() * 70;
+          const x = Math.cos(angle * Math.PI / 180) * distance;
+          const y = Math.sin(angle * Math.PI / 180) * distance;
+
+          splash.style.animation = 'splashOut 0.5s ease-out forwards';
+          splash.style.setProperty('--x', x + 'px');
+          splash.style.setProperty('--y', y + 'px');
+
+          container.appendChild(splash);
+          setTimeout(() => splash.remove(), 500);
+        }
+      }
+    }
+
+    // ==========================================
+    // Dice HTML Generator
+    // ==========================================
+    function createDiceHTML() {
+      return `
+        <div class="face face-1"><div class="dot"></div></div>
+        <div class="face face-2"><div class="dot"></div><div class="dot"></div></div>
+        <div class="face face-3"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+        <div class="face face-4"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+        <div class="face face-5"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+        <div class="face face-6"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+      `;
+    }
+
+    // ==========================================
+    // Positioning
+    // ==========================================
+    function getDicePositions(count) {
+      const positions = [];
+      const isMobile = window.innerWidth <= 500;
+      const center = isMobile ? 160 : 200;
+
+      if (count === 1) {
+        positions.push({ x: 0, y: 0 });
+      } else if (count === 2) {
+        const s = isMobile ? 50 : 70;
+        positions.push({ x: -s, y: 0 });
+        positions.push({ x: s, y: 0 });
+      } else if (count === 3) {
+        const s = isMobile ? 80 : 100;
+        positions.push({ x: -s, y: 0 });
+        positions.push({ x: 0, y: 0 });
+        positions.push({ x: s, y: 0 });
+      } else if (count === 4) {
+        const s = isMobile ? 55 : 70;
+        positions.push({ x: -s, y: -s });
+        positions.push({ x: s, y: -s });
+        positions.push({ x: -s, y: s });
+        positions.push({ x: s, y: s });
+      } else if (count === 5) {
+        const sx = isMobile ? 80 : 100;
+        const sy = isMobile ? 65 : 80;
+        positions.push({ x: -sx, y: -sy });
+        positions.push({ x: sx, y: -sy });
+        positions.push({ x: 0, y: 0 });
+        positions.push({ x: -sx, y: sy });
+        positions.push({ x: sx, y: sy });
+      }
+
+      return positions;
+    }
+
+    // ==========================================
+    // Initialize Dice
+    // ==========================================
+    function initDice() {
+      const container = document.getElementById('dice-container');
+      container.innerHTML = '';
+      diceObjects = [];
+
+      const positions = getDicePositions(diceCount);
+      const isMobile = window.innerWidth <= 500;
+      const boardCenter = isMobile ? 160 : 200;
+      const diceHalf = isMobile ? 35 : 48;
+
+      for (let i = 0; i < diceCount; i++) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'dice-wrapper';
+
+        const left = boardCenter - diceHalf + positions[i].x;
+        const top = boardCenter - diceHalf + positions[i].y;
+        wrapper.style.left = left + 'px';
+        wrapper.style.top = top + 'px';
+
+        const dice = document.createElement('div');
+        dice.className = 'dice';
+        dice.id = `dice-${i}`;
+        dice.innerHTML = createDiceHTML();
+
+        wrapper.appendChild(dice);
+        container.appendChild(wrapper);
+
+        diceObjects.push(new Dice(dice, i));
+      }
+
+      updateDiceColor();
+      document.getElementById('result-display').innerHTML = '';
+    }
+
+    // ==========================================
+    // Roll All Dice
+    // ==========================================
+    async function rollDice() {
+      if (isRolling) return;
+
+      isRolling = true;
+      document.getElementById('dice-ground').classList.add('rolling');
+      document.getElementById('result-display').innerHTML = '';
+
+      // Roll all dice with slight delays for natural feel
+      const rollPromises = diceObjects.map((dice, i) => {
+        return new Promise(resolve => {
+          setTimeout(() => dice.roll().then(resolve), i * 80);
+        });
+      });
+
+      await Promise.all(rollPromises);
+
+      isRolling = false;
+      document.getElementById('dice-ground').classList.remove('rolling');
+
+      // Show results
+      const values = diceObjects.map(d => d.result);
+      const total = values.reduce((sum, v) => sum + v, 0);
+
+      if (diceCount === 1) {
+        document.getElementById('result-display').innerHTML = `You rolled: <span class="total">${total}</span>`;
+      } else {
+        document.getElementById('result-display').innerHTML =
+          `${values.join(' + ')} = <span class="total">${total}</span>`;
+      }
+    }
+
+    // ==========================================
+    // Update Dice Color
+    // ==========================================
+    function updateDiceColor() {
+      document.querySelectorAll('.face').forEach(face => {
+        face.style.background = diceColor;
+      });
+    }
+
+    // ==========================================
+    // Event Listeners
+    // ==========================================
+    document.getElementById('dice-ground').addEventListener('click', rollDice);
+
+    // Dice count buttons
+    document.querySelectorAll('.dice-count-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.dice-count-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        diceCount = parseInt(btn.dataset.count);
+        initDice();
+      });
+    });
+
+    // Color buttons
+    document.querySelectorAll('.color-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        diceColor = btn.dataset.color;
+        updateDiceColor();
+      });
+    });
+
+    // Initialize on load
+    initDice();
+  </script>
+</body>
+</html>

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D Dice - Embeddable</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* 3D Scene */
+    .dice-scene {
+      perspective: 600px;
+      perspective-origin: 50% 20%; /* Centered, looking down */
+      margin-top: 150px;
+    }
+
+    .dice-camera {
+      transform-style: preserve-3d;
+    }
+
+    .dice-table {
+      position: relative;
+      width: 500px;
+      height: 300px;
+      transform-style: preserve-3d;
+      cursor: pointer;
+    }
+
+    .dice-container {
+      position: absolute;
+      width: 500px;
+      height: 400px;
+      transform-style: preserve-3d;
+      transform-origin: center top;
+      transform: rotateX(65deg);
+    }
+
+    .floor {
+      position: absolute;
+      width: 500px;
+      height: 400px;
+      left: 0;
+      top: 0;
+      background:
+        linear-gradient(90deg, rgba(0,0,0,0.15) 1px, transparent 1px),
+        linear-gradient(rgba(0,0,0,0.15) 1px, transparent 1px),
+        #e8e0d0;
+      background-size: 50px 50px;
+      border: 1px solid rgba(0,0,0,0.2);
+      border-radius: 0;
+      transform-origin: center top;
+      transform: rotateX(65deg);
+    }
+
+    .dice-wrapper {
+      position: absolute;
+      transform-style: preserve-3d;
+    }
+
+    .dice {
+      width: 60px;
+      height: 60px;
+      position: relative;
+      transform-style: preserve-3d;
+    }
+
+    .face {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      background: #f8c8dc;
+      border: 1px solid #1a1a1a;
+      border-radius: 0;
+      backface-visibility: visible;
+    }
+
+    .dot {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: #1a1a1a;
+      border-radius: 50%;
+    }
+
+    /* Face positions */
+    .face-1 { transform: rotateY(0deg) translateZ(30px); }
+    .face-6 { transform: rotateY(180deg) translateZ(30px); }
+    .face-2 { transform: rotateY(-90deg) translateZ(30px); }
+    .face-5 { transform: rotateY(90deg) translateZ(30px); }
+    .face-3 { transform: rotateX(90deg) translateZ(30px); }
+    .face-4 { transform: rotateX(-90deg) translateZ(30px); }
+
+    /* Dot positions */
+    .face-1 .dot { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+    .face-2 .dot:nth-child(1) { top: 10px; left: 10px; }
+    .face-2 .dot:nth-child(2) { bottom: 10px; right: 10px; }
+    .face-3 .dot:nth-child(1) { top: 10px; left: 10px; }
+    .face-3 .dot:nth-child(2) { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+    .face-3 .dot:nth-child(3) { bottom: 10px; right: 10px; }
+    .face-4 .dot:nth-child(1) { top: 10px; left: 10px; }
+    .face-4 .dot:nth-child(2) { top: 10px; right: 10px; }
+    .face-4 .dot:nth-child(3) { bottom: 10px; left: 10px; }
+    .face-4 .dot:nth-child(4) { bottom: 10px; right: 10px; }
+    .face-5 .dot:nth-child(1) { top: 10px; left: 10px; }
+    .face-5 .dot:nth-child(2) { top: 10px; right: 10px; }
+    .face-5 .dot:nth-child(3) { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+    .face-5 .dot:nth-child(4) { bottom: 10px; left: 10px; }
+    .face-5 .dot:nth-child(5) { bottom: 10px; right: 10px; }
+    .face-6 .dot:nth-child(1) { top: 10px; left: 10px; }
+    .face-6 .dot:nth-child(2) { top: 10px; right: 10px; }
+    .face-6 .dot:nth-child(3) { top: 50%; left: 10px; transform: translateY(-50%); }
+    .face-6 .dot:nth-child(4) { top: 50%; right: 10px; transform: translateY(-50%); }
+    .face-6 .dot:nth-child(5) { bottom: 10px; left: 10px; }
+    .face-6 .dot:nth-child(6) { bottom: 10px; right: 10px; }
+
+    /* Splash */
+    .splash {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    @keyframes splashOut {
+      0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+      100% { transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(0.2); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="dice-scene">
+    <div class="dice-camera">
+      <div class="dice-table" id="dice-table">
+        <div class="floor"></div>
+        <div class="dice-container" id="dice-container"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const FACES = [
+      { face: 1, rotX: 0, rotY: 0 },
+      { face: 2, rotX: 0, rotY: 90 },
+      { face: 3, rotX: -90, rotY: 0 },
+      { face: 4, rotX: 90, rotY: 0 },
+      { face: 5, rotX: 0, rotY: -90 },
+      { face: 6, rotX: 180, rotY: 0 },
+    ];
+
+    let isRolling = false;
+    let diceObjects = [];
+
+    class Dice {
+      constructor(el) {
+        this.el = el;
+        const init = FACES[Math.floor(Math.random() * 6)];
+        this.rotX = init.rotX;
+        this.rotY = init.rotY;
+        this.z = 30;
+        this.result = init.face;
+        this.update();
+      }
+
+      roll() {
+        return new Promise(resolve => {
+          const land = FACES[Math.floor(Math.random() * 6)];
+          this.result = land.face;
+
+          const duration = 1200 + Math.random() * 300;
+          const start = performance.now();
+          const startX = this.rotX;
+          const startY = this.rotY;
+          const endX = land.rotX + (2 + Math.floor(Math.random() * 2)) * 360;
+          const endY = land.rotY + (2 + Math.floor(Math.random() * 2)) * 360;
+
+          const animate = (now) => {
+            const t = Math.min((now - start) / duration, 1);
+            const ease = 1 - Math.pow(1 - t, 3);
+            const h = t < 0.5 ? t * 2 : 2 - t * 2;
+
+            this.z = 30 + Math.sin(h * Math.PI) * 200;
+            this.rotX = startX + (endX - startX) * ease;
+            this.rotY = startY + (endY - startY) * ease;
+            this.update();
+
+            if (t < 1) {
+              requestAnimationFrame(animate);
+            } else {
+              this.rotX = land.rotX;
+              this.rotY = land.rotY;
+              this.z = 30;
+              this.update();
+              this.splash();
+              resolve();
+            }
+          };
+          requestAnimationFrame(animate);
+        });
+      }
+
+      update() {
+        this.el.style.transform = `translateZ(${this.z}px) rotateX(${this.rotX}deg) rotateY(${this.rotY}deg)`;
+      }
+
+      splash() {
+        const colors = ['#f8c8dc', '#a8d8e8', '#ffe66d', '#a8d060'];
+        const parent = this.el.parentElement;
+        for (let i = 0; i < 12; i++) {
+          const s = document.createElement('div');
+          s.className = 'splash';
+          s.style.background = colors[Math.floor(Math.random() * colors.length)];
+          s.style.left = '30px';
+          s.style.top = '30px';
+          const angle = (i / 12) * 360;
+          const dist = 40 + Math.random() * 50;
+          s.style.setProperty('--x', Math.cos(angle * Math.PI / 180) * dist + 'px');
+          s.style.setProperty('--y', Math.sin(angle * Math.PI / 180) * dist + 'px');
+          s.style.animation = 'splashOut 0.4s ease-out forwards';
+          parent.appendChild(s);
+          setTimeout(() => s.remove(), 400);
+        }
+      }
+    }
+
+    function createDiceHTML() {
+      return `
+        <div class="face face-1"><div class="dot"></div></div>
+        <div class="face face-2"><div class="dot"></div><div class="dot"></div></div>
+        <div class="face face-3"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+        <div class="face face-4"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+        <div class="face face-5"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+        <div class="face face-6"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+      `;
+    }
+
+    function init() {
+      const container = document.getElementById('dice-container');
+      container.innerHTML = '';
+      diceObjects = [];
+
+      // Dice 1 - front
+      const w1 = document.createElement('div');
+      w1.className = 'dice-wrapper';
+      w1.style.left = '50px';
+      w1.style.top = '150px';
+      const d1 = document.createElement('div');
+      d1.className = 'dice';
+      d1.innerHTML = createDiceHTML();
+      w1.appendChild(d1);
+      container.appendChild(w1);
+
+      // Dice 2 - behind
+      const w2 = document.createElement('div');
+      w2.className = 'dice-wrapper';
+      w2.style.left = '50px';
+      w2.style.top = '50px';
+      const d2 = document.createElement('div');
+      d2.className = 'dice';
+      d2.innerHTML = createDiceHTML();
+      w2.appendChild(d2);
+      container.appendChild(w2);
+
+      diceObjects = [new Dice(d1), new Dice(d2)];
+    }
+
+    async function rollAll() {
+      if (isRolling) return;
+      isRolling = true;
+
+      await Promise.all(diceObjects.map((d, i) =>
+        new Promise(r => setTimeout(() => d.roll().then(r), i * 80))
+      ));
+
+      isRolling = false;
+    }
+
+    document.getElementById('dice-table').addEventListener('click', rollAll);
+    init();
+  </script>
+</body>
+</html>
