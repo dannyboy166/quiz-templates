@@ -59,7 +59,8 @@
 .drop-zone-items {
   position: absolute;
   top: 80px;
-  left: 15px;
+  left: 50%;
+  transform: translateX(-50%);
   width: 90px;
   height: 120px;
   z-index: 5;
@@ -275,6 +276,12 @@
   .drop-zone-label {
     font-size: 12px;
     padding: 3px 10px;
+  }
+
+  .drop-zone-items {
+    top: 60px;
+    width: 70px;
+    height: 90px;
   }
 
   .shape-item {

@@ -85,11 +85,17 @@
     .letter-box.blank.letters-2 { width: 80px; }
     .letter-box.blank.letters-3 { width: 110px; }
     .letter-box.blank.letters-4 { width: 140px; }
+    .letter-box.blank.letters-5 { width: 170px; }
+    .letter-box.blank.letters-6 { width: 200px; }
+    .letter-box.blank.letters-7 { width: 230px; }
 
     .letter-box.blank.small.letters-1 { width: 40px; }
     .letter-box.blank.small.letters-2 { width: 70px; }
     .letter-box.blank.small.letters-3 { width: 100px; }
     .letter-box.blank.small.letters-4 { width: 130px; }
+    .letter-box.blank.small.letters-5 { width: 160px; }
+    .letter-box.blank.small.letters-6 { width: 190px; }
+    .letter-box.blank.small.letters-7 { width: 220px; }
 
     .letter-box.blank.filled {
       background: #E1BEE7;
@@ -171,12 +177,15 @@
     }
 
     .word-context {
-      font-size: 14px;
-      color: #888;
-      background: #f5f5f5;
-      padding: 8px 16px;
-      border-radius: 8px;
+      font-size: 22px;
+      font-weight: 600;
+      color: #333;
+      background: #fff;
+      padding: 12px 24px;
+      border-radius: 12px;
+      border: 3px solid #9C27B0;
       display: inline-block;
+      margin-top: 10px;
     }
 
     .aus-flag {
@@ -484,6 +493,9 @@
       .letter-box.blank.letters-2 { width: 65px; }
       .letter-box.blank.letters-3 { width: 90px; }
       .letter-box.blank.letters-4 { width: 115px; }
+      .letter-box.blank.letters-5 { width: 140px; }
+      .letter-box.blank.letters-6 { width: 165px; }
+      .letter-box.blank.letters-7 { width: 190px; }
       .option-btn {
         min-width: 80px;
         padding: 12px 20px;
@@ -511,11 +523,22 @@
       .letter-box.blank.letters-2 { width: 55px; }
       .letter-box.blank.letters-3 { width: 78px; }
       .letter-box.blank.letters-4 { width: 100px; }
+      .letter-box.blank.letters-5 { width: 122px; }
+      .letter-box.blank.letters-6 { width: 144px; }
+      .letter-box.blank.letters-7 { width: 166px; }
       .option-btn {
         min-width: 60px;
         padding: 10px 16px;
         font-size: 18px;
       }
+    }
+
+    .score-display {
+      text-align: center;
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 10px;
     }
   </style>
 </head>
@@ -564,6 +587,8 @@
         </div>
       </div>
     </div>
+
+    <div class="score-display" id="score-display"></div>
 
     <!-- Rule Selector -->
     <div class="rule-selector" id="rule-selector">

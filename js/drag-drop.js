@@ -126,9 +126,14 @@ class DragDropZone {
     this.draggedItem.classList.add('placed');
     this.draggedItem.classList.add('just-dropped');
 
-    // Random position within jar
-    const randomX = Math.random() * 40;
-    const randomY = Math.random() * 60;
+    // Random position within jar - centered with small offsets
+    const containerWidth = itemsContainer.offsetWidth || 70;
+    const containerHeight = itemsContainer.offsetHeight || 90;
+    const itemSize = 42; // approx size of scaled item (60 * 0.7)
+    const maxX = Math.max(0, containerWidth - itemSize);
+    const maxY = Math.max(0, containerHeight - itemSize);
+    const randomX = Math.random() * maxX;
+    const randomY = Math.random() * maxY;
     const randomRotate = (Math.random() - 0.5) * 30;
     this.draggedItem.style.left = randomX + 'px';
     this.draggedItem.style.top = randomY + 'px';
@@ -227,9 +232,14 @@ class DragDropZone {
       itemsContainer.appendChild(this.draggedItem);
       this.draggedItem.classList.add('placed');
 
-      // Random position within jar
-      const randomX = Math.random() * 40;
-      const randomY = Math.random() * 60;
+      // Random position within jar - centered with small offsets
+      const containerWidth = itemsContainer.offsetWidth || 70;
+      const containerHeight = itemsContainer.offsetHeight || 90;
+      const itemSize = 42; // approx size of scaled item (60 * 0.7)
+      const maxX = Math.max(0, containerWidth - itemSize);
+      const maxY = Math.max(0, containerHeight - itemSize);
+      const randomX = Math.random() * maxX;
+      const randomY = Math.random() * maxY;
       const randomRotate = (Math.random() - 0.5) * 30;
       this.draggedItem.style.left = randomX + 'px';
       this.draggedItem.style.top = randomY + 'px';
