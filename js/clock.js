@@ -283,31 +283,39 @@ class DraggableClock {
     }
   }
 
-  // Check if time matches target
+  // Check if time matches target using degree tolerance
   checkAnswer(targetHour, targetMinute = 0) {
-    const { hour, minute } = this.getTime();
-    const minuteMatch = !this.options.showMinuteHand || minute === targetMinute;
-
-    // Strict hour hand validation: must be PAST targetHour and before targetHour+1
-    // e.g., for 8:50, hour hand must be past 8 and before 9
+    // Calculate expected angles
+    // Hour hand: moves 30° per hour + 0.5° per minute
     const targetHour12 = targetHour % 12;
-    const minAngle = targetHour12 * 30 + 3; // Must be past the hour mark (3° buffer)
-    const maxAngle = (targetHour12 + 1) * 30 - 1; // Before the next hour
+    const expectedHourAngle = (targetHour12 * 30) + (targetMinute * 0.5);
 
-    // Normalize hourAngle to 0-360 range
-    let normalizedHourAngle = this.hourAngle % 360;
-    if (normalizedHourAngle < 0) normalizedHourAngle += 360;
+    // Minute hand: moves 6° per minute (360° / 60 = 6°)
+    const expectedMinuteAngle = targetMinute * 6;
 
-    // Handle the 12 o'clock wrap-around (hour 12 is at 0°/360°)
-    let hourMatch;
-    if (targetHour12 === 0) {
-      // For 12 o'clock times, accept angles past 12 (after 363° or 3°) up to before 1 (29°)
-      hourMatch = normalizedHourAngle >= 333 || (normalizedHourAngle >= 3 && normalizedHourAngle < 29);
-    } else {
-      hourMatch = normalizedHourAngle >= minAngle && normalizedHourAngle <= maxAngle;
-    }
+    // Normalize current angles to 0-360
+    let currentHourAngle = this.hourAngle % 360;
+    if (currentHourAngle < 0) currentHourAngle += 360;
+
+    let currentMinuteAngle = this.minuteAngle % 360;
+    if (currentMinuteAngle < 0) currentMinuteAngle += 360;
+
+    // Check hour hand: within 20 degrees either side
+    const hourDiff = this.angleDifference(currentHourAngle, expectedHourAngle);
+    const hourMatch = hourDiff <= 20;
+
+    // Check minute hand: within 10 degrees either side
+    const minuteDiff = this.angleDifference(currentMinuteAngle, expectedMinuteAngle);
+    const minuteMatch = !this.options.showMinuteHand || minuteDiff <= 10;
 
     return hourMatch && minuteMatch;
+  }
+
+  // Calculate smallest difference between two angles (handles wrap-around)
+  angleDifference(angle1, angle2) {
+    let diff = Math.abs(angle1 - angle2);
+    if (diff > 180) diff = 360 - diff;
+    return diff;
   }
 
   // Add visual feedback
