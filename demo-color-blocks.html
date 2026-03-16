@@ -873,6 +873,11 @@
       return Math.floor(Math.random() * (maxVal - minVal + 1)) + minVal;
     }
 
+    // Random integer between min and max (inclusive)
+    function randomInRange(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
     // ==========================================
     // Regenerate Blocks Based on Target
     // ==========================================
@@ -882,9 +887,10 @@
       const tens = Math.floor((TARGET % 100) / 10);
       const ones = TARGET % 10;
 
-      const hundredsNeeded = Math.max(hundreds, Math.ceil(TARGET / 100));
-      const tensNeeded = Math.max(tens + 2, Math.ceil((TARGET % 100) / 10) + 1); // Extra tens
-      const onesNeeded = Math.max(9, ones + 3); // Always enough ones
+      // Random amount between min needed and 10
+      const hundredsNeeded = hundreds > 0 ? randomInRange(hundreds, 10) : 0;
+      const tensNeeded = tens > 0 ? randomInRange(tens, 10) : 0;
+      const onesNeeded = ones > 0 ? randomInRange(ones, 10) : randomInRange(1, 10); // Always show some ones
 
       // Clear existing blocks
       hundredsSection.innerHTML = '';
