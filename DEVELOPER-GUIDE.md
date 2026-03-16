@@ -588,7 +588,51 @@ Students count the blocks and type the total number. Different numbers are gener
 
 ---
 
-### 17. Dice Addition (`dice-addition`)
+### 17. 3D Sphere (`sphere-3d`)
+
+**Standalone Visual Effect** - Interactive 3D rotating sphere for showcasing topics!
+
+A Three.js powered 3D sphere that can display images/content wrapped around it. Great for visual presentations of topics like "Animal Lifecycles", "World Geography", etc.
+
+| Setting | Value | Description |
+|---------|-------|-------------|
+| Library | Three.js r128 | 3D rendering |
+| Interaction | Drag to rotate | Touch and mouse support |
+| Auto-rotate | Toggleable | Continuous slow rotation |
+
+**Features:**
+- Interactive drag-to-rotate with touch support
+- Auto-rotate toggle button
+- Reset view button
+- Smooth rotation with inertia
+- Decorative cloud elements
+- Gradient sky background (peach → pink → lavender)
+- Title card overlay with topic name
+
+**Controls:**
+- **Drag**: Rotate sphere manually
+- **Auto-Rotate button**: Toggle continuous rotation
+- **Reset View button**: Return to default position
+
+**Customisation:**
+```javascript
+// Change auto-rotate speed (line ~177)
+this.autoRotateSpeed = 1.0; // Higher = faster
+
+// Change sphere texture - replace the image URL in the texture loader
+```
+
+**Use Cases:**
+- Topic introduction screens
+- Visual exploration of concepts
+- Interactive world/globe displays
+- Engaging visual transitions between activities
+
+**Note:** This is a **visual effect** rather than a quiz question type. Use it for engagement and topic exploration.
+
+---
+
+### 18. Dice Addition (`dice-addition`)
 
 **Standalone Speed Challenge** - Roll dice and add them up as fast as possible!
 
@@ -808,6 +852,7 @@ public class QuestionImportService
 | `demo-balloon-pop.html` | `balloon-pop` | Inline styles |
 | `demo-base10-blocks.html` | `base10-blocks` | Inline styles |
 | `demo-dice-addition.html` | `dice-addition` | Inline styles (standalone) |
+| `demo-sphere-3d.html` | `sphere-3d` | Three.js (visual effect) |
 
 ---
 
