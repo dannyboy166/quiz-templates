@@ -28,13 +28,13 @@
     .balloons-container {
       position: relative;
       width: 100%;
-      height: 400px;
+      height: 550px;
       margin-bottom: 40px;
     }
 
     @media (max-width: 600px) {
       .balloons-container {
-        height: 350px;
+        height: 450px;
       }
     }
 
@@ -182,13 +182,27 @@
     }
 
     .game-layout .balloons-container {
-      flex: 0 0 400px; /* Fixed height, don't grow/shrink */
-      margin-bottom: 0;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    .game-layout .balloons-container .balloon {
+      pointer-events: auto;
     }
 
     @media (max-width: 600px) {
-      .game-layout .balloons-container {
-        flex: 0 0 350px;
+      .game-layout .word-area {
+        width: 100%;
+        position: relative;
+        z-index: 5;
+        flex-direction: column;
       }
     }
 
@@ -211,6 +225,32 @@
       padding: 30px;
       border-radius: 16px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .word-area .picture-container {
+      margin-bottom: 0;
+    }
+
+    .word-area .word-display {
+      margin-bottom: 0;
+    }
+
+    .word-area .sound-hint {
+      flex-basis: 100%;
+      margin-bottom: 0;
+    }
+
+    .word-area .feedback {
+      flex-basis: 100%;
+    }
+
+    .word-area .progress-dots {
+      flex-basis: 100%;
     }
 
     .picture-container {
@@ -1281,11 +1321,13 @@
           state.y += state.vy;
 
           // Calculate bounds - balloon positioned at top-left corner via translate
+          // Use balloon body height (not string) for bottom collision - balloon is ~65% of total height
+          const balloonBodyHeight = balloonHeight * 0.65;
           const padding = 10;
           const minX = padding;
           const maxX = Math.max(containerWidth - balloonWidth - padding, minX + 10);
           const minY = padding;
-          const maxY = Math.max(containerHeight - balloonHeight - padding, minY + 10);
+          const maxY = Math.max(containerHeight - balloonBodyHeight - padding, minY + 10);
 
           // Clamp position to valid range
           state.x = Math.max(minX, Math.min(state.x, maxX));
