@@ -281,6 +281,49 @@
       color: #666;
     }
 
+    /* Remove white container, 2-column layout */
+    .content-card {
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .content-card-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      align-items: center;
+    }
+
+    .left-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .right-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .word-display {
+      margin-bottom: 0;
+    }
+
+    .word-info {
+      margin-bottom: 0;
+    }
+
+    .options-container {
+      margin-bottom: 0;
+    }
+
+    .progress-dots {
+      margin-top: 10px;
+    }
+
     /* Modal */
     .modal-overlay {
       display: none;
@@ -422,6 +465,14 @@
 
     /* Mobile responsive */
     @media (max-width: 600px) {
+      .content-card-inner {
+        grid-template-columns: 1fr;
+        gap: 25px;
+      }
+      .left-column {
+        padding-bottom: 20px;
+        border-bottom: 2px dashed rgba(0,0,0,0.15);
+      }
       .rule-selector {
         max-height: none;
         overflow-y: visible;
@@ -590,32 +641,36 @@
     <!-- Content Card -->
     <div class="content-card">
       <div class="content-card-inner">
-        <div class="word-display" id="word-display"></div>
-
-        <div class="word-info">
-          <div class="word-meaning" id="word-meaning">to think something is true</div>
-          <div class="word-context" id="word-context">"I believe you!"</div>
-        </div>
-
-        <div class="options-container" id="options-container"></div>
-
-        <button class="btn-check-answer" id="btn-check">Check Answer</button>
-
-        <div class="feedback" id="feedback">
-          <div class="feedback-badge" id="feedback-badge">
-            <span id="feedback-icon">✓</span>
-            <span id="feedback-text">Correct!</span>
+        <!-- Left Column: Word -->
+        <div class="left-column">
+          <div class="word-display" id="word-display"></div>
+          <div class="word-info">
+            <div class="word-meaning" id="word-meaning">to think something is true</div>
+            <div class="word-context" id="word-context">"I believe you!"</div>
           </div>
-          <button class="btn-try-again" id="btn-try-again">Try Again</button>
-          <button class="btn-next" id="btn-next">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
-            </svg>
-          </button>
         </div>
 
-        <div class="progress-dots" id="progress-dots"></div>
-        <div class="score-display" id="score-display"></div>
+        <!-- Right Column: Options & Check -->
+        <div class="right-column">
+          <div class="options-container" id="options-container"></div>
+          <button class="btn-check-answer" id="btn-check">Check Answer</button>
+
+          <div class="feedback" id="feedback">
+            <div class="feedback-badge" id="feedback-badge">
+              <span id="feedback-icon">✓</span>
+              <span id="feedback-text">Correct!</span>
+            </div>
+            <button class="btn-try-again" id="btn-try-again">Try Again</button>
+            <button class="btn-next" id="btn-next">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="progress-dots" id="progress-dots"></div>
+          <div class="score-display" id="score-display"></div>
+        </div>
       </div>
     </div>
   </div>
