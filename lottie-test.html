@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lottie Assets Library</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 { text-align: center; color: #333; margin-bottom: 10px; }
+        .subtitle { text-align: center; color: #666; margin-bottom: 20px; }
+
+        .filters {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            background: #ddd;
+            font-size: 14px;
+        }
+        .filter-btn.active {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        .card:hover {
+            transform: scale(1.02);
+        }
+        .card.needs-adjustment {
+            border: 2px solid #ff9800;
+        }
+        .lottie-wrapper {
+            width: 140px;
+            height: 140px;
+            margin: 0 auto 8px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .lottie-container {
+            width: 100%;
+            height: 100%;
+        }
+        .filename {
+            font-size: 12px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        .category {
+            font-size: 10px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .scale-info {
+            font-size: 11px;
+            color: #4CAF50;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+        .scale-info.adjusted {
+            color: #ff9800;
+        }
+
+        .instructions {
+            max-width: 800px;
+            margin: 0 auto 30px;
+            background: #fff3cd;
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .instructions h3 { margin-top: 0; }
+        .instructions code {
+            background: #fff;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Lottie Assets Library</h1>
+    <p class="subtitle">62 animations | Config: <code>lottie-config.json</code></p>
+
+    <div class="instructions">
+        <h3>How to adjust sizes:</h3>
+        <p>Tell me which animations need adjusting (e.g., "make bee bigger, make elephant smaller") and I'll update the <code>scale</code> values in <code>lottie-config.json</code>. Animations with adjusted scales will show orange borders.</p>
+    </div>
+
+    <div class="filters">
+        <button class="filter-btn active" data-filter="all">All (62)</button>
+        <button class="filter-btn" data-filter="animals">Animals</button>
+        <button class="filter-btn" data-filter="insects">Insects</button>
+        <button class="filter-btn" data-filter="vehicles">Vehicles</button>
+        <button class="filter-btn" data-filter="objects">Objects</button>
+        <button class="filter-btn" data-filter="nature">Nature</button>
+    </div>
+
+    <div class="grid" id="grid"></div>
+
+    <script>
+        // Load config and render
+        fetch('lottie-assets/lottie-config.json')
+            .then(r => r.json())
+            .then(config => {
+                const grid = document.getElementById('grid');
+                const animations = config.animations;
+
+                Object.keys(animations).sort().forEach(key => {
+                    const anim = animations[key];
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.dataset.category = anim.category;
+
+                    if (anim.scale !== 1.0) {
+                        card.classList.add('needs-adjustment');
+                    }
+
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'lottie-wrapper';
+
+                    const container = document.createElement('div');
+                    container.className = 'lottie-container';
+                    let transform = `scale(${anim.scale})`;
+                    if (anim.offsetY) transform += ` translateY(${anim.offsetY}px)`;
+                    container.style.transform = transform;
+
+                    const filename = document.createElement('div');
+                    filename.className = 'filename';
+                    filename.textContent = key;
+
+                    const category = document.createElement('div');
+                    category.className = 'category';
+                    category.textContent = anim.category;
+
+                    const scaleInfo = document.createElement('div');
+                    const hasAdjustments = anim.scale !== 1.0 || (anim.offsetY && anim.offsetY !== 0);
+                    scaleInfo.className = 'scale-info' + (hasAdjustments ? ' adjusted' : '');
+                    let infoText = `Scale: ${anim.scale}x`;
+                    if (anim.offsetY) infoText += ` | Y: ${anim.offsetY}px`;
+                    scaleInfo.textContent = infoText;
+
+                    wrapper.appendChild(container);
+                    card.appendChild(wrapper);
+                    card.appendChild(filename);
+                    card.appendChild(category);
+                    card.appendChild(scaleInfo);
+                    grid.appendChild(card);
+
+                    lottie.loadAnimation({
+                        container: container,
+                        renderer: 'svg',
+                        loop: true,
+                        autoplay: true,
+                        path: 'lottie-assets/' + anim.file
+                    });
+                });
+
+                // Filter buttons
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+
+                        const filter = btn.dataset.filter;
+                        document.querySelectorAll('.card').forEach(card => {
+                            if (filter === 'all' || card.dataset.category === filter) {
+                                card.style.display = 'block';
+                            } else {
+                                card.style.display = 'none';
+                            }
+                        });
+                    });
+                });
+            });
+    </script>
+</body>
+</html>

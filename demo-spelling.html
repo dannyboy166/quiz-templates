@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Spelling - Quiz Template</title>
   <link rel="stylesheet" href="css/base.css">
-  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
   <style>
     body {
       background: rgb(243, 178, 221);
@@ -120,9 +120,9 @@
         border-radius: 10px;
         min-width: 0;
       }
-      .word-image {
-        width: 60px;
-        height: 50px;
+      .lottie-image {
+        width: 105px;
+        height: 90px;
       }
       .letter-slot {
         width: 14px;
@@ -172,10 +172,9 @@
       padding: 20px;
     }
 
-    .word-image {
-      width: 160px;
-      height: 130px;
-      object-fit: contain;
+    .lottie-image {
+      width: 180px;
+      height: 150px;
     }
 
     /* Letter slots */
@@ -219,8 +218,8 @@
     }
 
     /* Word complete */
-    .word-card.complete .word-image {
-      box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+    .word-card.complete {
+      background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
     }
 
     .word-card.complete .letter-slot {
@@ -427,6 +426,21 @@
       height: 8px;
       display: block;
     }
+
+    /* Page transition */
+    .image-cards {
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .image-cards.fade-out {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+
+    .image-cards.fade-in {
+      opacity: 0;
+      transform: translateX(20px);
+    }
   </style>
 </head>
 <body>
@@ -445,14 +459,7 @@
       </div>
 
       <button class="btn-help" id="header-help">
-        <lottie-player
-          id="help-lottie"
-          background="transparent"
-          speed="1"
-          style="width: 28px; height: 28px;"
-          loop
-          autoplay
-        ></lottie-player>
+        <span style="font-size: 20px;">?</span>
         Help
       </button>
     </header>
@@ -480,8 +487,8 @@
 
     <!-- Question Meta -->
     <div class="question-meta">
-      <span class="badge" style="background: #E91E63; color: white;">ENGLISH</span>
-      <span class="question-progress">Spell 4 words</span>
+      <span class="badge" style="background: #E91E63; color: white;">SPELLING</span>
+      <span class="question-progress" id="word-progress">Spell 16 words (0/16)</span>
     </div>
 
     <!-- Question Title -->
@@ -517,7 +524,7 @@
           <p style="margin: 8px 0;"><strong>🎯 Drag</strong> letters to the correct positions</p>
           <p style="margin: 8px 0;"><strong>📝 Place</strong> any letter in the right spot!</p>
         </div>
-        <p style="text-align: center; font-size: 15px;">Find the right letters for each picture!</p>
+        <p style="text-align: center; font-size: 15px;">Spell all 16 words across 4 pages!</p>
         <button class="modal-close" id="close-help">Let's spell! ⭐</button>
       </div>
     </div>
@@ -535,43 +542,8 @@
     <!-- Main Content -->
     <div class="spelling-container">
       <!-- Image Cards - 4 in a row -->
-      <div class="image-cards">
-        <div class="word-card" data-word="dog">
-          <img src="https://images.emojiterra.com/google/noto-emoji/unicode-15.1/color/512px/1f415.png" alt="Dog" class="word-image">
-          <div class="letter-slots">
-            <div class="letter-slot" data-index="0"></div>
-            <div class="letter-slot" data-index="1"></div>
-            <div class="letter-slot" data-index="2"></div>
-          </div>
-        </div>
-
-        <div class="word-card" data-word="ant">
-          <img src="https://images.emojiterra.com/google/noto-emoji/unicode-15.1/color/512px/1f41c.png" alt="Ant" class="word-image">
-          <div class="letter-slots">
-            <div class="letter-slot" data-index="0"></div>
-            <div class="letter-slot" data-index="1"></div>
-            <div class="letter-slot" data-index="2"></div>
-          </div>
-        </div>
-
-        <div class="word-card" data-word="tree">
-          <img src="https://images.emojiterra.com/google/noto-emoji/unicode-15.1/color/512px/1f333.png" alt="Tree" class="word-image">
-          <div class="letter-slots">
-            <div class="letter-slot" data-index="0"></div>
-            <div class="letter-slot" data-index="1"></div>
-            <div class="letter-slot" data-index="2"></div>
-            <div class="letter-slot" data-index="3"></div>
-          </div>
-        </div>
-
-        <div class="word-card" data-word="car">
-          <img src="https://images.emojiterra.com/google/noto-emoji/unicode-15.1/color/512px/1f697.png" alt="Car" class="word-image">
-          <div class="letter-slots">
-            <div class="letter-slot" data-index="0"></div>
-            <div class="letter-slot" data-index="1"></div>
-            <div class="letter-slot" data-index="2"></div>
-          </div>
-        </div>
+      <div class="image-cards" id="image-cards">
+        <!-- Generated by JS -->
       </div>
 
       <!-- Letter Pool underneath -->
@@ -586,7 +558,7 @@
       <button class="btn-try-again" id="btn-try-again" style="display: none;">
         Try Again 🔄
       </button>
-      <button class="btn-next" id="btn-next" style="display: none;" title="Next Question">
+      <button class="btn-next" id="btn-next" style="display: none;" title="Next Page">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <path d="M5 12h14M12 5l7 7-7 7"/>
         </svg>
@@ -598,6 +570,24 @@
   </div>
 
   <script>
+    // Load Lottie config
+    let lottieConfig = null;
+
+    // All 16 words across 4 pages
+    const allPages = [
+      ['dog', 'ant', 'tree', 'car'],
+      ['cat', 'bee', 'bat', 'fish'],
+      ['frog', 'goat', 'sheep', 'horse'],
+      ['deer', 'mouse', 'snake', 'whale']
+    ];
+
+    const totalWords = 16;
+    let currentPage = 0;
+    let totalWordsCompleted = 0;
+
+    // Track filled slots for each word
+    let wordProgress = {};
+
     // Compass rotation state
     let rotation = 0;
     let spinSpeed = 120;
@@ -635,13 +625,10 @@
       compassContainer.style.left = percentage + '%';
     }
 
-    // Words and their letters
-    const words = ['dog', 'ant', 'tree', 'car'];
-    const allLetters = 'dog ant tree car'.replace(/ /g, '').split('');
-
-    // Add some extra distractor letters
-    const distractors = ['b', 'h', 'n', 'i'];
-    const letterPool = [...allLetters, ...distractors];
+    function updateWordProgressDisplay() {
+      document.getElementById('word-progress').textContent =
+        `Spell 16 words (${totalWordsCompleted}/16)`;
+    }
 
     // Shuffle letters
     function shuffle(array) {
@@ -655,46 +642,124 @@
     // Color classes for letters
     const colorClasses = ['letter-green', 'letter-blue', 'letter-orange', 'letter-yellow'];
 
-    // Generate letter bubbles
-    const letterPoolEl = document.getElementById('letter-pool');
-    const shuffledLetters = shuffle([...letterPool]);
-
-    // Create rows of letters
-    let currentRow;
-    shuffledLetters.forEach((letter, index) => {
-      if (index % 3 === 0) {
-        currentRow = document.createElement('div');
-        currentRow.className = 'letter-row';
-        letterPoolEl.appendChild(currentRow);
-      }
-
-      const bubble = document.createElement('div');
-      bubble.className = `letter-bubble ${colorClasses[index % colorClasses.length]}`;
-      bubble.textContent = letter;
-      bubble.dataset.letter = letter;
-      bubble.draggable = true;
-
-      // Drag events
-      bubble.addEventListener('dragstart', onDragStart);
-      bubble.addEventListener('dragend', onDragEnd);
-
-      // Touch events
-      bubble.addEventListener('touchstart', onTouchStart, { passive: false });
-      bubble.addEventListener('touchmove', onTouchMove, { passive: false });
-      bubble.addEventListener('touchend', onTouchEnd);
-
-      currentRow.appendChild(bubble);
-    });
-
-    // Track filled slots for each word (no longer sequential)
-    const wordProgress = {};
-    words.forEach(word => {
-      wordProgress[word] = new Set(); // Set of filled slot indices
-    });
-
     let draggedLetter = null;
     let draggedElement = null;
     let ghostElement = null;
+
+    function loadPage(pageIndex) {
+      const words = allPages[pageIndex];
+      const imageCardsEl = document.getElementById('image-cards');
+      const letterPoolEl = document.getElementById('letter-pool');
+
+      // Reset word progress for this page
+      wordProgress = {};
+      words.forEach(word => {
+        wordProgress[word] = new Set();
+      });
+
+      // Clear previous content
+      imageCardsEl.innerHTML = '';
+      letterPoolEl.innerHTML = '';
+
+      // Hide feedback and show check button
+      document.getElementById('feedback').style.display = 'none';
+      document.getElementById('btn-check').style.display = 'block';
+
+      // Create word cards with Lottie animations
+      words.forEach(word => {
+        const card = document.createElement('div');
+        card.className = 'word-card';
+        card.dataset.word = word;
+
+        // Lottie container
+        const lottieContainer = document.createElement('div');
+        lottieContainer.className = 'lottie-image';
+        lottieContainer.id = `lottie-${word}`;
+
+        // Letter slots
+        const slotsContainer = document.createElement('div');
+        slotsContainer.className = 'letter-slots';
+
+        for (let i = 0; i < word.length; i++) {
+          const slot = document.createElement('div');
+          slot.className = 'letter-slot';
+          slot.dataset.index = i;
+
+          // Add drop events to slot
+          slot.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!slot.classList.contains('filled')) {
+              slot.classList.add('highlight');
+            }
+          });
+          slot.addEventListener('dragleave', () => slot.classList.remove('highlight'));
+          slot.addEventListener('drop', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            tryPlaceLetter(card, slot);
+          });
+
+          slotsContainer.appendChild(slot);
+        }
+
+        card.appendChild(lottieContainer);
+        card.appendChild(slotsContainer);
+
+        // Card drop events
+        card.addEventListener('dragover', (e) => e.preventDefault());
+        card.addEventListener('drop', (e) => {
+          e.preventDefault();
+          tryPlaceLetterOnCard(card);
+        });
+
+        imageCardsEl.appendChild(card);
+
+        // Load Lottie animation
+        const scale = lottieConfig?.animations?.[word]?.scale || 1.0;
+        const offsetY = lottieConfig?.animations?.[word]?.offsetY || 0;
+        const anim = lottie.loadAnimation({
+          container: lottieContainer,
+          renderer: 'svg',
+          loop: true,
+          autoplay: true,
+          path: `lottie-assets/${word}.json`
+        });
+
+        // Apply scale and offsetY
+        let transform = '';
+        if (scale !== 1.0) transform += `scale(${scale}) `;
+        if (offsetY !== 0) transform += `translateY(${offsetY}px)`;
+        if (transform) {
+          lottieContainer.style.transform = transform.trim();
+        }
+      });
+
+      // Generate letter pool
+      const allLetters = words.join('').split('');
+      const distractors = ['b', 'h', 'n', 'i', 'p', 'k'];
+      const letterPool = [...allLetters, ...distractors.slice(0, 4)];
+      const shuffledLetters = shuffle([...letterPool]);
+
+      shuffledLetters.forEach((letter, index) => {
+        const bubble = document.createElement('div');
+        bubble.className = `letter-bubble ${colorClasses[index % colorClasses.length]}`;
+        bubble.textContent = letter;
+        bubble.dataset.letter = letter;
+        bubble.draggable = true;
+
+        // Drag events
+        bubble.addEventListener('dragstart', onDragStart);
+        bubble.addEventListener('dragend', onDragEnd);
+
+        // Touch events
+        bubble.addEventListener('touchstart', onTouchStart, { passive: false });
+        bubble.addEventListener('touchmove', onTouchMove, { passive: false });
+        bubble.addEventListener('touchend', onTouchEnd);
+
+        letterPoolEl.appendChild(bubble);
+      });
+    }
 
     // Drag and Drop
     function onDragStart(e) {
@@ -712,8 +777,6 @@
       e.target.classList.remove('dragging');
       draggedLetter = null;
       draggedElement = null;
-
-      // Remove all highlights
       document.querySelectorAll('.letter-slot').forEach(slot => {
         slot.classList.remove('highlight');
       });
@@ -729,7 +792,6 @@
       draggedElement = target;
       target.classList.add('dragging');
 
-      // Create ghost
       ghostElement = target.cloneNode(true);
       ghostElement.classList.add('drag-ghost');
       ghostElement.classList.remove('dragging');
@@ -743,7 +805,6 @@
       e.preventDefault();
       updateGhostPosition(e.touches[0]);
 
-      // Highlight slot under touch
       const touch = e.touches[0];
       const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
       const slot = elemBelow?.closest('.letter-slot');
@@ -759,7 +820,6 @@
 
       draggedElement.classList.remove('dragging');
 
-      // Find element under touch
       const touch = e.changedTouches[0];
       const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
       const slot = elemBelow?.closest('.letter-slot');
@@ -769,12 +829,10 @@
         if (slot) {
           tryPlaceLetter(wordCard, slot);
         } else {
-          // Dropped on card/image - place in next slot
           tryPlaceLetterOnCard(wordCard);
         }
       }
 
-      // Cleanup
       if (ghostElement) {
         ghostElement.remove();
         ghostElement = null;
@@ -792,70 +850,31 @@
       }
     }
 
-    // Set up drop zones on individual slots
-    document.querySelectorAll('.letter-slot').forEach(slot => {
-      slot.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (!slot.classList.contains('filled')) {
-          slot.classList.add('highlight');
-        }
-      });
-
-      slot.addEventListener('dragleave', (e) => {
-        slot.classList.remove('highlight');
-      });
-
-      slot.addEventListener('drop', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const wordCard = slot.closest('.word-card');
-        tryPlaceLetter(wordCard, slot);
-      });
-    });
-
-    // Also allow dropping on card (goes to first empty slot)
-    document.querySelectorAll('.word-card').forEach(card => {
-      card.addEventListener('dragover', (e) => {
-        e.preventDefault();
-      });
-
-      card.addEventListener('drop', (e) => {
-        e.preventDefault();
-        tryPlaceLetterOnCard(card);
-      });
-    });
-
     function tryPlaceLetterOnCard(wordCard) {
       const word = wordCard.dataset.word;
-
-      // Find first empty slot
       const emptySlot = wordCard.querySelector('.letter-slot:not(.filled)');
-      if (!emptySlot) return; // Word already complete
+      if (!emptySlot) return;
 
       const slotIndex = parseInt(emptySlot.dataset.index);
       const expectedLetter = word[slotIndex];
 
       if (draggedLetter === expectedLetter) {
-        // Correct letter for this position!
         emptySlot.textContent = draggedLetter;
         emptySlot.classList.add('filled');
         wordProgress[word].add(slotIndex);
 
-        // Mark letter as used
         if (draggedElement) {
           draggedElement.classList.add('used');
         }
 
-        // Check if word complete
         if (wordProgress[word].size === word.length) {
           wordCard.classList.add('complete');
+          totalWordsCompleted++;
+          updateWordProgressDisplay();
         }
 
-        // Check if all words complete
-        checkAllComplete();
+        checkPageComplete();
       } else {
-        // Wrong letter - shake the slot
         emptySlot.classList.add('wrong');
         setTimeout(() => emptySlot.classList.remove('wrong'), 300);
       }
@@ -867,33 +886,27 @@
       const word = wordCard.dataset.word;
       const slotIndex = parseInt(slot.dataset.index);
 
-      // Check if slot is already filled
-      if (slot.classList.contains('filled')) {
-        return;
-      }
+      if (slot.classList.contains('filled')) return;
 
       const expectedLetter = word[slotIndex];
 
       if (draggedLetter === expectedLetter) {
-        // Correct letter for this position!
         slot.textContent = draggedLetter;
         slot.classList.add('filled');
         wordProgress[word].add(slotIndex);
 
-        // Mark letter as used
         if (draggedElement) {
           draggedElement.classList.add('used');
         }
 
-        // Check if word complete
         if (wordProgress[word].size === word.length) {
           wordCard.classList.add('complete');
+          totalWordsCompleted++;
+          updateWordProgressDisplay();
         }
 
-        // Check if all words complete
-        checkAllComplete();
+        checkPageComplete();
       } else {
-        // Wrong letter for this position
         slot.classList.add('wrong');
         setTimeout(() => slot.classList.remove('wrong'), 300);
       }
@@ -901,15 +914,16 @@
       slot.classList.remove('highlight');
     }
 
-    function checkAllComplete() {
-      // Update progress bar based on completed words
-      const completedWords = words.filter(word => wordProgress[word].size === word.length).length;
-      const percentage = (completedWords / words.length) * 100;
+    function checkPageComplete() {
+      // Update overall progress
+      const percentage = (totalWordsCompleted / totalWords) * 100;
       updateCompass(percentage, true);
 
-      const allDone = completedWords === words.length;
-      if (allDone) {
-        // Auto-show success
+      // Check if all words on this page are done
+      const words = allPages[currentPage];
+      const pageComplete = words.every(word => wordProgress[word].size === word.length);
+
+      if (pageComplete) {
         setTimeout(() => {
           document.getElementById('btn-check').click();
         }, 500);
@@ -922,49 +936,75 @@
     const feedbackBadge = document.getElementById('feedback-badge');
     const btnTryAgain = document.getElementById('btn-try-again');
     const btnNext = document.getElementById('btn-next');
-    const progressFill = document.getElementById('progress-fill');
 
     btnCheck.addEventListener('click', () => {
-      const allDone = words.every(word => wordProgress[word].size === word.length);
+      const words = allPages[currentPage];
+      const pageComplete = words.every(word => wordProgress[word].size === word.length);
 
       feedback.style.display = 'flex';
       feedbackBadge.classList.remove('correct', 'incorrect');
 
-      if (allDone) {
+      if (pageComplete) {
         feedbackBadge.classList.add('correct');
-        feedbackBadge.innerHTML = '🎉 Amazing! You spelled all the words!';
+
+        if (currentPage < allPages.length - 1) {
+          feedbackBadge.innerHTML = `🎉 Page ${currentPage + 1} complete! (${totalWordsCompleted}/16 words)`;
+          btnNext.style.display = 'flex';
+          btnNext.title = 'Next Page';
+        } else {
+          feedbackBadge.innerHTML = '🏆 Amazing! You spelled all 16 words!';
+          btnNext.style.display = 'flex';
+          btnNext.title = 'Finish';
+        }
+
         btnCheck.style.display = 'none';
         btnTryAgain.style.display = 'none';
-        btnNext.style.display = 'flex';
         document.querySelector('.image-cards').classList.add('celebrate');
       } else {
         const completed = words.filter(word => wordProgress[word].size === word.length).length;
         feedbackBadge.classList.add('incorrect');
-        feedbackBadge.innerHTML = `💪 ${completed}/${words.length} words done - keep going!`;
+        feedbackBadge.innerHTML = `💪 ${completed}/4 words on this page - keep going!`;
         btnTryAgain.style.display = 'none';
       }
     });
 
-    // Next Question
+    // Next Page
     btnNext.addEventListener('click', () => {
-      window.location.href = 'index.html';
+      if (currentPage < allPages.length - 1) {
+        currentPage++;
+
+        // Page transition
+        const imageCards = document.getElementById('image-cards');
+        imageCards.classList.add('fade-out');
+
+        setTimeout(() => {
+          loadPage(currentPage);
+          imageCards.classList.remove('fade-out');
+          imageCards.classList.add('fade-in');
+
+          setTimeout(() => {
+            imageCards.classList.remove('fade-in');
+          }, 50);
+        }, 300);
+      } else {
+        // All done - go back to index
+        window.location.href = 'index.html';
+      }
     });
 
     // Read Aloud
     const btnReadAloud = document.getElementById('btn-read-aloud');
-    const questionText = "Join the letters to write the word. Look at each picture and drag the letters to spell what you see. Spell dog, ant, tree, and car.";
 
     btnReadAloud.addEventListener('click', () => {
+      const words = allPages[currentPage];
+      const questionText = `Join the letters to write the word. Look at each picture and drag the letters to spell what you see. Spell ${words.join(', ')}.`;
+
       speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(questionText);
       utterance.rate = 0.9;
       btnReadAloud.classList.add('active');
       utterance.onend = () => btnReadAloud.classList.remove('active');
       speechSynthesis.speak(utterance);
-    });
-
-    document.querySelector('.btn-read-aloud').addEventListener('click', () => {
-      btnReadAloud.click();
     });
 
     // Get Help
@@ -987,10 +1027,10 @@
     const closeHint = document.getElementById('close-hint');
 
     btnGetHint.addEventListener('click', () => {
-      // Find first incomplete word and its first empty slot
+      const words = allPages[currentPage];
+
       for (const word of words) {
         if (wordProgress[word].size < word.length) {
-          // Find first empty slot index
           let emptySlotIndex = -1;
           for (let i = 0; i < word.length; i++) {
             if (!wordProgress[word].has(i)) {
@@ -1005,7 +1045,6 @@
           hintText.innerHTML = `For <strong>${word.toUpperCase()}</strong>, position ${emptySlotIndex + 1} needs <strong style="font-size: 32px;">${hintLetter.toUpperCase()}</strong>`;
           hintModal.classList.add('active');
 
-          // Highlight the letter in the pool
           document.querySelectorAll('.letter-bubble').forEach(bubble => {
             if (bubble.dataset.letter === hintLetter && !bubble.classList.contains('used')) {
               bubble.style.animation = 'pulse 0.5s ease-in-out 3';
@@ -1016,8 +1055,8 @@
         }
       }
 
-      hintTitle.innerHTML = "🎉 All done!";
-      hintText.innerHTML = "You've spelled all the words! Click Check Answer!";
+      hintTitle.innerHTML = "🎉 Page complete!";
+      hintText.innerHTML = "You've spelled all words on this page! Click Check Answer!";
       hintModal.classList.add('active');
     });
 
@@ -1026,10 +1065,17 @@
       if (e.target === hintModal) hintModal.classList.remove('active');
     });
 
-    // Load Lottie animation
-    const helpLottie = document.getElementById('help-lottie');
-    const lottieData = {"v":"5.4.4","fr":60,"ip":0,"op":132,"w":100,"h":100,"nm":"Question 2","assets":[],"layers":[{"ind":1,"ty":4,"nm":"? Outlines","sr":1,"ks":{"o":{"a":0,"k":100},"r":{"a":0,"k":0},"p":{"a":0,"k":[50.713,49.149,0]},"a":{"a":0,"k":[-0.214,-10.242,0]},"s":{"a":1,"k":[{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":61,"s":[200,200,100],"e":[210,210,100]},{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":71,"s":[210,210,100],"e":[200,200,100]},{"t":80}]}},"ao":0,"shapes":[{"ty":"gr","it":[{"ind":0,"ty":"sh","ks":{"a":0,"k":{"i":[[0,0],[0,0],[0,0],[0,3.203],[4.23,0],[0.242,-3.897],[0,0],[-1.601,0],[0,-1.541],[1.692,0],[0,0]],"o":[[0,0],[0,0],[3.565,-0.483],[0,-3.988],[-4.592,0],[0,0],[0.121,-1.45],[1.601,0],[0,1.662],[0,0],[0,0]],"v":[[-2.556,-6.617],[1.16,-6.617],[1.311,-8.369],[7.142,-14.17],[-0.199,-20.816],[-7.571,-14.351],[-2.828,-14.351],[-0.048,-16.738],[2.61,-14.17],[-0.381,-11.541],[-2.858,-11.541]],"c":true}},"nm":"?"},{"ind":1,"ty":"sh","ks":{"a":0,"k":{"i":[[-1.42,0],[0,1.45],[1.45,0],[0,-1.45]],"o":[[1.45,0],[0,-1.45],[-1.42,0],[0,1.45]],"v":[[-0.834,0.332],[1.825,-2.206],[-0.834,-4.743],[-3.462,-2.206]],"c":true}},"nm":"?"},{"ty":"mm","mm":1,"nm":"Merge Paths 1"},{"ty":"fl","c":{"a":0,"k":[1,1,1,1]},"o":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":61,"s":[0],"e":[100]},{"t":71}]},"r":1,"nm":"Fill 1"},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":0},"o":{"a":0,"k":100},"sk":{"a":0,"k":0},"sa":{"a":0,"k":0},"nm":"Transform"}],"nm":"?"},{"ty":"tm","s":{"a":0,"k":0},"e":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":37,"s":[0],"e":[100]},{"t":61}]},"o":{"a":0,"k":0},"m":1,"nm":"Trim Paths 1"},{"ty":"st","c":{"a":0,"k":[1,1,1,1]},"o":{"a":0,"k":100},"w":{"a":0,"k":1},"lc":1,"lj":1,"ml":4,"nm":"Stroke 1"}],"ip":0,"op":132,"st":0},{"ind":3,"ty":3,"nm":"▽ Group 6","sr":1,"ks":{"o":{"a":0,"k":100},"r":{"a":0,"k":0},"p":{"a":0,"k":[50,50,0]},"a":{"a":0,"k":[42,42,0]},"s":{"a":0,"k":[100,100,100]}},"ao":0,"ip":0,"op":132,"st":0},{"ind":4,"ty":4,"nm":"Rectangle 6 Copy","parent":3,"sr":1,"ks":{"o":{"a":0,"k":100},"r":{"a":0,"k":0},"p":{"a":0,"k":[42,42,0]},"a":{"a":0,"k":[0,0,0]},"s":{"a":1,"k":[{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":21,"s":[100,100,100],"e":[110,110,100]},{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":29,"s":[110,110,100],"e":[100,100,100]},{"t":36}]}},"ao":0,"shapes":[{"ty":"gr","it":[{"ty":"rc","d":1,"s":{"a":0,"k":[42,42]},"p":{"a":0,"k":[0,0]},"r":{"a":0,"k":21},"nm":"Rectangle Path 1"},{"ty":"tm","s":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":0,"s":[0],"e":[100]},{"t":22}]},"e":{"a":0,"k":0},"o":{"a":0,"k":-90},"m":1,"nm":"Trim Paths 1"},{"ty":"st","c":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":13,"s":[0.74,0.729,0.709,1],"e":[0.961,0.694,0.196,1]},{"t":22}]},"o":{"a":0,"k":100},"w":{"a":0,"k":2},"lc":2,"lj":1,"ml":4,"nm":"Stroke 1"},{"ty":"fl","c":{"a":0,"k":[0.953,0.691,0.256,1]},"o":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":21,"s":[1],"e":[100]},{"t":26}]},"r":1,"nm":"Fill 1"},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[200,200]},"r":{"a":0,"k":0},"o":{"a":0,"k":100},"sk":{"a":0,"k":0},"sa":{"a":0,"k":0},"nm":"Transform"}],"nm":"Rectangle 6 Copy"}],"ip":0,"op":132,"st":0}],"markers":[]};
-    helpLottie.load(lottieData);
+    // Initialize
+    fetch('lottie-assets/lottie-config.json')
+      .then(r => r.json())
+      .then(config => {
+        lottieConfig = config;
+        loadPage(0);
+      })
+      .catch(() => {
+        // Config not available, load anyway
+        loadPage(0);
+      });
   </script>
 </body>
 </html>

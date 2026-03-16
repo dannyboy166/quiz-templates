@@ -1,0 +1,398 @@
+{
+  "_info": {
+    "description": "Master configuration for all Lottie animations",
+    "usage": "Import this config in templates to get consistent sizing and metadata",
+    "lastUpdated": "2026-03-17",
+    "properties": {
+      "scale": "Size multiplier (1.0 = default, 1.5 = 50% bigger)",
+      "offsetY": "Vertical shift in pixels (positive = down, negative = up)"
+    }
+  },
+  "animations": {
+    "ant": {
+      "file": "ant.json",
+      "scale": 1.0,
+      "category": "insects",
+      "notes": ""
+    },
+    "ant-1": {
+      "file": "ant-1.json",
+      "scale": 1.0,
+      "category": "insects",
+      "notes": ""
+    },
+    "balloon": {
+      "file": "balloon.json",
+      "scale": 1.0,
+      "category": "objects",
+      "notes": ""
+    },
+    "balloons": {
+      "file": "balloons.json",
+      "scale": 1.0,
+      "category": "objects",
+      "notes": ""
+    },
+    "balloons-2": {
+      "file": "balloons-2.json",
+      "scale": 2.0,
+      "category": "objects",
+      "notes": "Scaled up 2x - was too small"
+    },
+    "ballons-1": {
+      "file": "ballons-1.json",
+      "scale": 1.0,
+      "category": "objects",
+      "notes": "Note: filename has typo 'ballons'"
+    },
+    "bat": {
+      "file": "bat.json",
+      "scale": 1.0,
+      "category": "animals",
+      "notes": ""
+    },
+    "bat-1": {
+      "file": "bat-1.json",
+      "scale": 1.0,
+      "category": "animals",
+      "notes": ""
+    },
+    "bee": {
+      "file": "bee.json",
+      "scale": 1.3,
+      "category": "insects",
+      "notes": "Scaled up - was too small"
+    },
+    "car": {
+      "file": "car.json",
+      "scale": 1.2,
+      "offsetY": 25,
+      "category": "vehicles",
+      "notes": "Scaled up, moved down"
+    },
+    "car-1": {
+      "file": "car-1.json",
+      "scale": 1.2,
+      "offsetY": 25,
+      "category": "vehicles",
+      "notes": "Scaled up, moved down"
+    },
+    "car-2": {
+      "file": "car-2.json",
+      "scale": 1.2,
+      "offsetY": 25,
+      "category": "vehicles",
+      "notes": "Scaled up, moved down"
+    },
+    "cat": {
+      "file": "cat.json",
+      "scale": 1.0,
+      "category": "animals",
+      "notes": ""
+    },
+    "cat-1": {
+      "file": "cat-1.json",
+      "scale": 1.0,
+      "category": "animals",
+      "notes": ""
+    },
+    "cat-2": {
+      "file": "cat-2.json",
+      "scale": 1.0,
+      "category": "animals",
+      "notes": ""
+    },
+    "cat-3": {
+      "file": "cat-3.json",
+      "scale": 1.0,
+      "category": "animals",
+      "notes": ""
+    },
+    "chicken": {
+      "file": "chicken.json",
+      "scale": 1.0,
+      "category": "animals",
+      "notes": ""
+    },
+    "chicken-1": {
+      "file": "chicken-1.json",
+      "scale": 1.0,
+      "category": "animals",
+      "notes": ""
+    },
+    "creative-idea": {
+      "file": "creative-idea.json",
+      "scale": 1.0,
+      "category": "objects",
+      "notes": "Lightbulb/idea icon"
+    },
+    "crocodile": {
+      "file": "crocodile.json",
+      "scale": 1.0,
+      "category": "animals",
+      "notes": ""
+    },
+    "crocodile-1": {
+      "file": "crocodile-1.json",
+      "scale": 1.2,
+      "category": "animals",
+      "notes": "Slightly scaled up"
+    },
+    "deer": {
+      "file": "deer.json",
+      "scale": 1.0,
+      "category": "animals",
+      "notes": ""
+    },
+    "deer-1": {
+      "file": "deer-1.json",
+      "scale": 1.5,
+      "category": "animals",
+      "notes": "Scaled up 1.5x"
+    },
+    "dice-roll": {
+      "file": "dice-roll.json",
+      "scale": 1.0,
+      "category": "objects",
+      "notes": "Good for random/game questions"
+    },
+    "dinosaur": {
+      "file": "dinosaur.json",
+      "scale": 1.15,
+      "category": "animals",
+      "notes": "Slightly scaled up"
+    },
+    "dinosaur-1": {
+      "file": "dinosaur-1.json",
+      "scale": 1.15,
+      "category": "animals",
+      "notes": "Slightly scaled up"
+    },
+    "dog": {
+      "file": "dog.json",
+      "scale": 1.0,
+      "category": "animals",
+      "notes": ""
+    },
+    "dog-1": {
+      "file": "dog-1.json",
+      "scale": 1.0,
+      "category": "animals",
+      "notes": ""
+    },
+    "dog-2": {
+      "file": "dog-2.json",
+      "scale": 1.0,
+      "category": "animals",
+      "notes": ""
+    },
+    "dog-3": {
+      "file": "dog-3.json",
+      "scale": 1.0,
+      "category": "animals",
+      "notes": ""
+    },
+    "dolphin": {
+      "file": "dolphin.json",
+      "scale": 1.0,
+      "category": "animals",
+      "notes": ""
+    },
+    "elephant": {
+      "file": "elephant.json",
+      "scale": 1.15,
+      "category": "animals",
+      "notes": "Slightly scaled up"
+    },
+    "elephant-1": {
+      "file": "elephant-1.json",
+      "scale": 1.15,
+      "category": "animals",
+      "notes": "Slightly scaled up"
+    },
+    "fish": {
+      "file": "fish.json",
+      "scale": 1.0,
+      "category": "animals",
+      "notes": ""
+    },
+    "fish-1": {
+      "file": "fish-1.json",
+      "scale": 1.0,
+      "category": "animals",
+      "notes": ""
+    },
+    "fish-2": {
+      "file": "fish-2.json",
+      "scale": 1.0,
+      "category": "animals",
+      "notes": ""
+    },
+    "fish-3": {
+      "file": "fish-3.json",
+      "scale": 1.0,
+      "category": "animals",
+      "notes": ""
+    },
+    "frog": {
+      "file": "frog.json",
+      "scale": 1.0,
+      "category": "animals",
+      "notes": ""
+    },
+    "frog-1": {
+      "file": "frog-1.json",
+      "scale": 1.0,
+      "category": "animals",
+      "notes": ""
+    },
+    "giraffe": {
+      "file": "giraffe.json",
+      "scale": 1.15,
+      "category": "animals",
+      "notes": "Slightly scaled up"
+    },
+    "goat": {
+      "file": "goat.json",
+      "scale": 1.0,
+      "category": "animals",
+      "notes": ""
+    },
+    "goat-1": {
+      "file": "goat-1.json",
+      "scale": 1.0,
+      "category": "animals",
+      "notes": ""
+    },
+    "horse": {
+      "file": "horse.json",
+      "scale": 1.0,
+      "category": "animals",
+      "notes": ""
+    },
+    "mouse": {
+      "file": "mouse.json",
+      "scale": 1.0,
+      "category": "animals",
+      "notes": ""
+    },
+    "rabbit": {
+      "file": "rabbit.json",
+      "scale": 1.0,
+      "category": "animals",
+      "notes": ""
+    },
+    "rabbit-1": {
+      "file": "rabbit-1.json",
+      "scale": 1.0,
+      "category": "animals",
+      "notes": ""
+    },
+    "rocket": {
+      "file": "rocket.json",
+      "scale": 1.0,
+      "category": "vehicles",
+      "notes": ""
+    },
+    "rocket-1": {
+      "file": "rocket-1.json",
+      "scale": 1.0,
+      "category": "vehicles",
+      "notes": ""
+    },
+    "sheep": {
+      "file": "sheep.json",
+      "scale": 1.8,
+      "category": "animals",
+      "notes": "Scaled up"
+    },
+    "sheep-1": {
+      "file": "sheep-1.json",
+      "scale": 1.8,
+      "category": "animals",
+      "notes": "Scaled up"
+    },
+    "sheep-2": {
+      "file": "sheep-2.json",
+      "scale": 1.8,
+      "category": "animals",
+      "notes": "Scaled up"
+    },
+    "snail": {
+      "file": "snail.json",
+      "scale": 1.0,
+      "category": "animals",
+      "notes": ""
+    },
+    "snail-1": {
+      "file": "snail-1.json",
+      "scale": 1.0,
+      "category": "animals",
+      "notes": ""
+    },
+    "snail-2": {
+      "file": "snail-2.json",
+      "scale": 1.0,
+      "category": "animals",
+      "notes": ""
+    },
+    "snake": {
+      "file": "snake.json",
+      "scale": 1.0,
+      "category": "animals",
+      "notes": ""
+    },
+    "snake-1": {
+      "file": "snake-1.json",
+      "scale": 1.0,
+      "category": "animals",
+      "notes": ""
+    },
+    "tree": {
+      "file": "tree.json",
+      "scale": 1.3,
+      "offsetY": 0,
+      "category": "nature",
+      "notes": "Scaled up"
+    },
+    "tree-1": {
+      "file": "tree-1.json",
+      "scale": 1.3,
+      "offsetY": 0,
+      "category": "nature",
+      "notes": "Scaled up"
+    },
+    "tree-2": {
+      "file": "tree-2.json",
+      "scale": 1.3,
+      "offsetY": 0,
+      "category": "nature",
+      "notes": "Scaled up"
+    },
+    "whale": {
+      "file": "whale.json",
+      "scale": 1.5,
+      "category": "animals",
+      "notes": "Scaled up"
+    },
+    "whale-1": {
+      "file": "whale-1.json",
+      "scale": 1.5,
+      "category": "animals",
+      "notes": "Scaled up"
+    },
+    "zebra": {
+      "file": "zebra.json",
+      "scale": 1.0,
+      "category": "animals",
+      "notes": ""
+    }
+  },
+  "categories": {
+    "animals": "Land and sea animals",
+    "insects": "Bugs and small creatures",
+    "vehicles": "Cars, rockets, etc.",
+    "objects": "Balloons, dice, lightbulbs, etc.",
+    "nature": "Trees, plants, etc."
+  }
+}
