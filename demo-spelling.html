@@ -125,15 +125,19 @@
         height: 50px;
       }
       .letter-slot {
-        width: 16px;
-        height: 20px;
-        font-size: 14px;
+        width: 14px;
+        min-width: 10px;
+        height: 18px;
+        font-size: 12px;
         border-bottom-width: 2px;
+        flex-shrink: 1;
       }
       .letter-slots {
         gap: 1px;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
         justify-content: center;
+        width: 100%;
+        max-width: 100%;
       }
       .letter-bubble {
         width: 36px;

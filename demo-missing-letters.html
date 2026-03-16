@@ -374,8 +374,65 @@
       display: block;
     }
 
+    /* Remove white container */
+    .content-card {
+      background: transparent;
+      box-shadow: none;
+    }
+
+    /* Two column layout */
+    .content-card-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      align-items: center;
+    }
+
+    .left-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .right-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .word-display {
+      margin-bottom: 0;
+    }
+
+    .word-meaning {
+      margin: 0;
+      text-align: center;
+    }
+
+    .options-container {
+      margin-bottom: 0;
+    }
+
+    .btn-check-answer {
+      margin-top: 0;
+    }
+
+    .progress-dots {
+      margin-top: 10px;
+    }
+
     /* Mobile responsive */
     @media (max-width: 600px) {
+      .content-card-inner {
+        grid-template-columns: 1fr;
+        gap: 25px;
+      }
+      .left-column {
+        padding-bottom: 20px;
+        border-bottom: 2px dashed rgba(0,0,0,0.15);
+      }
       .letter-box {
         width: 45px;
         height: 55px;
@@ -388,6 +445,7 @@
       .options-container {
         flex-wrap: wrap;
         gap: 12px;
+        margin-bottom: 15px;
       }
       .option-btn {
         min-width: 90px;
@@ -504,39 +562,39 @@
     <!-- Content Card -->
     <div class="content-card">
       <div class="content-card-inner">
-        <!-- Word Display -->
-        <div class="word-display" id="word-display">
-          <!-- Letters will be inserted here -->
-        </div>
-
-        <!-- Word Meaning -->
-        <div class="word-meaning" id="word-meaning">to think something is true</div>
-
-        <!-- Options -->
-        <div class="options-container" id="options-container">
-          <!-- Options will be inserted here -->
-        </div>
-
-        <!-- Check Button -->
-        <button class="btn-check-answer" id="btn-check">Check Answer</button>
-
-        <!-- Feedback -->
-        <div class="feedback" id="feedback">
-          <div class="feedback-badge" id="feedback-badge">
-            <span id="feedback-icon">✓</span>
-            <span id="feedback-text">Correct!</span>
+        <!-- Left Column: Word -->
+        <div class="left-column">
+          <div class="word-display" id="word-display">
+            <!-- Letters will be inserted here -->
           </div>
-          <button class="btn-try-again" id="btn-try-again">Try Again</button>
-          <button class="btn-next" id="btn-next">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
-            </svg>
-          </button>
+          <div class="word-meaning" id="word-meaning">to think something is true</div>
         </div>
 
-        <!-- Progress Dots -->
-        <div class="progress-dots" id="progress-dots">
-          <!-- Dots will be inserted here -->
+        <!-- Right Column: Options & Check -->
+        <div class="right-column">
+          <div class="options-container" id="options-container">
+            <!-- Options will be inserted here -->
+          </div>
+          <button class="btn-check-answer" id="btn-check">Check Answer</button>
+
+          <!-- Feedback -->
+          <div class="feedback" id="feedback">
+            <div class="feedback-badge" id="feedback-badge">
+              <span id="feedback-icon">✓</span>
+              <span id="feedback-text">Correct!</span>
+            </div>
+            <button class="btn-try-again" id="btn-try-again">Try Again</button>
+            <button class="btn-next" id="btn-next">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Progress Dots -->
+          <div class="progress-dots" id="progress-dots">
+            <!-- Dots will be inserted here -->
+          </div>
         </div>
       </div>
     </div>
