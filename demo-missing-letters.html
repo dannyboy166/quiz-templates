@@ -373,6 +373,52 @@
       height: 8px;
       display: block;
     }
+
+    /* Mobile responsive */
+    @media (max-width: 600px) {
+      .letter-box {
+        width: 45px;
+        height: 55px;
+        font-size: 32px;
+      }
+      .letter-box.blank.letters-1 { width: 45px; }
+      .letter-box.blank.letters-2 { width: 75px; }
+      .letter-box.blank.letters-3 { width: 105px; }
+      .letter-box.blank.letters-4 { width: 135px; }
+      .options-container {
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+      .option-btn {
+        min-width: 90px;
+        padding: 14px 24px;
+        font-size: 24px;
+      }
+      .rule-hint {
+        font-size: 14px;
+        padding: 12px 16px;
+      }
+      .help-item {
+        padding: 12px 16px;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .letter-box {
+        width: 36px;
+        height: 46px;
+        font-size: 26px;
+      }
+      .letter-box.blank.letters-1 { width: 36px; }
+      .letter-box.blank.letters-2 { width: 62px; }
+      .letter-box.blank.letters-3 { width: 88px; }
+      .letter-box.blank.letters-4 { width: 114px; }
+      .option-btn {
+        min-width: 70px;
+        padding: 12px 18px;
+        font-size: 20px;
+      }
+    }
   </style>
 </head>
 <body>

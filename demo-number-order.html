@@ -371,6 +371,57 @@
       height: 8px;
       display: block;
     }
+
+    /* Mobile responsive */
+    @media (max-width: 600px) {
+      .order-container {
+        gap: 25px;
+        padding: 15px;
+      }
+      .order-slots {
+        padding: 15px 20px;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .order-slot {
+        width: 60px;
+        height: 60px;
+        font-size: 20px;
+      }
+      .number-bubble {
+        width: 55px;
+        height: 55px;
+        font-size: 26px;
+      }
+      .number-pool {
+        gap: 10px;
+        padding: 15px;
+      }
+      .slot-arrow {
+        font-size: 20px;
+      }
+      .help-item {
+        padding: 12px 16px;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .order-slots {
+        padding: 12px 15px;
+        gap: 6px;
+      }
+      .order-slot {
+        width: 50px;
+        height: 50px;
+        font-size: 18px;
+      }
+      .number-bubble {
+        width: 48px;
+        height: 48px;
+        font-size: 22px;
+      }
+    }
   </style>
 </head>
 <body>
