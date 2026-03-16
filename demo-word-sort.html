@@ -306,54 +306,6 @@
       box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     }
 
-    /* Tap-to-select mode (mobile) */
-    .word-item.selected {
-      background: #2196F3;
-      color: white;
-      transform: scale(1.1);
-      box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.4);
-      animation: selectedPulse 1s ease-in-out infinite;
-    }
-
-    @keyframes selectedPulse {
-      0%, 100% { box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.4); }
-      50% { box-shadow: 0 0 0 5px rgba(33, 150, 243, 0.6); }
-    }
-
-    .notebook.tap-target {
-      box-shadow: 0 0 0 3px #4CAF50;
-      animation: targetPulse 1s ease-in-out infinite;
-    }
-
-    .notebook.tap-target::after {
-      content: 'Tap to place';
-      position: absolute;
-      bottom: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #4CAF50;
-      color: white;
-      padding: 6px 12px;
-      border-radius: 15px;
-      font-size: 12px;
-      font-weight: 600;
-      white-space: nowrap;
-    }
-
-    @keyframes targetPulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.02); }
-    }
-
-    #tap-mode-hint {
-      animation: fadeInUp 0.3s ease;
-    }
-
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateX(-50%) translateY(20px); }
-      to { opacity: 1; transform: translateX(-50%) translateY(0); }
-    }
-
     /* Mobile responsive */
     @media (max-width: 600px) {
       .sort-layout {
@@ -674,7 +626,7 @@
       {
         prompt: 'Drag the words onto the correct list',
         hint: 'Look at where "st" appears in each word - at the start or at the end?',
-        words: ['Lost', 'Just', 'Star', 'Stamp', 'Stay', 'Dentist', 'Stop', 'List', 'Stand', 'Storm', 'Toast', 'Nest', 'Story', 'Best'],
+        words: ['Stop', 'Nest', 'Star', 'Best', 'Stay', 'Lost', 'Storm', 'Toast'],
         categories: [
           { id: 'st-start', header: 'st__', example: 'stop', pattern: /^st/i },
           { id: 'st-end', header: '__st', example: 'nest', pattern: /st$/i }
@@ -683,7 +635,7 @@
       {
         prompt: 'Sort the words by their ending sound',
         hint: 'Listen to how each word ends - does it end with "ing" or "ed"?',
-        words: ['Walking', 'Jumped', 'Running', 'Played', 'Singing', 'Wanted', 'Dancing', 'Helped', 'Swimming', 'Called'],
+        words: ['Walking', 'Jumped', 'Running', 'Played', 'Singing', 'Wanted', 'Dancing', 'Helped'],
         categories: [
           { id: 'ing', header: '__ing', example: 'walking', pattern: /ing$/i },
           { id: 'ed', header: '__ed', example: 'jumped', pattern: /ed$/i }
@@ -692,7 +644,7 @@
       {
         prompt: 'Sort the words by their beginning blend',
         hint: 'Look at the first two letters of each word!',
-        words: ['Bring', 'Crown', 'Brown', 'Crab', 'Brush', 'Crisp', 'Brick', 'Cream', 'Bread', 'Cross'],
+        words: ['Bring', 'Crown', 'Brown', 'Crab', 'Brush', 'Crisp', 'Brick', 'Cream'],
         categories: [
           { id: 'br', header: 'br__', example: 'bring', pattern: /^br/i },
           { id: 'cr', header: 'cr__', example: 'crown', pattern: /^cr/i }
@@ -705,13 +657,6 @@
     let sortedWords = {}; // { categoryId: [words] }
     let draggedWord = null;
     let ghostElement = null;
-
-    // Tap-to-select state
-    let selectedWord = null;
-    let selectedElement = null;
-    let touchStartTime = 0;
-    let touchStartPos = { x: 0, y: 0 };
-    let isTapMode = false;
 
     // DOM elements
     const wordListEl = document.getElementById('word-list');
@@ -788,9 +733,6 @@
         notebook.addEventListener('dragleave', onDragLeave);
         notebook.addEventListener('drop', onDrop);
 
-        // Tap-to-place for mobile
-        notebook.addEventListener('click', onNotebookTap);
-
         sortListsEl.appendChild(notebook);
       });
     }
@@ -831,118 +773,67 @@
       placeWord(word, categoryId);
     }
 
-    // Touch handlers - TAP TO SELECT MODE
+    // Touch handlers - regular drag
     function onTouchStart(e) {
       const target = e.target.closest('.word-item');
       if (!target || target.classList.contains('placed')) return;
 
-      // Record touch start for tap detection
-      touchStartTime = Date.now();
-      const touch = e.touches[0];
-      touchStartPos = { x: touch.clientX, y: touch.clientY };
-      isTapMode = true;
-      // Don't prevent default - allow scrolling
+      e.preventDefault();
+      draggedWord = target.dataset.word;
+      target.classList.add('dragging');
+
+      // Create ghost
+      ghostElement = document.createElement('div');
+      ghostElement.className = 'drag-ghost';
+      ghostElement.textContent = draggedWord;
+      document.body.appendChild(ghostElement);
+      updateGhostPosition(e.touches[0]);
     }
 
     function onTouchMove(e) {
-      if (!isTapMode) return;
+      if (!ghostElement) return;
+      e.preventDefault();
+      updateGhostPosition(e.touches[0]);
 
-      // If moved more than 10px, it's a scroll not a tap
+      // Highlight notebook under touch
       const touch = e.touches[0];
-      const dx = Math.abs(touch.clientX - touchStartPos.x);
-      const dy = Math.abs(touch.clientY - touchStartPos.y);
-
-      if (dx > 10 || dy > 10) {
-        isTapMode = false; // Cancel tap, allow scroll
-      }
+      document.querySelectorAll('.notebook').forEach(notebook => {
+        const rect = notebook.getBoundingClientRect();
+        if (touch.clientX >= rect.left && touch.clientX <= rect.right &&
+            touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+          notebook.classList.add('drag-over');
+        } else {
+          notebook.classList.remove('drag-over');
+        }
+      });
     }
 
     function onTouchEnd(e) {
-      const target = e.target.closest('.word-item');
-      if (!target || target.classList.contains('placed')) return;
+      if (!draggedWord) return;
 
-      // Check if it was a tap (quick, no movement)
-      const tapDuration = Date.now() - touchStartTime;
+      const touch = e.changedTouches[0];
+      let targetNotebook = null;
 
-      if (isTapMode && tapDuration < 300) {
-        e.preventDefault();
-        toggleWordSelection(target);
+      document.querySelectorAll('.notebook').forEach(notebook => {
+        const rect = notebook.getBoundingClientRect();
+        if (touch.clientX >= rect.left && touch.clientX <= rect.right &&
+            touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+          targetNotebook = notebook;
+        }
+        notebook.classList.remove('drag-over');
+      });
+
+      if (targetNotebook) {
+        placeWord(draggedWord, targetNotebook.dataset.category);
       }
 
-      isTapMode = false;
-    }
-
-    function toggleWordSelection(element) {
-      const word = element.dataset.word;
-
-      // If already selected, deselect
-      if (selectedElement === element) {
-        selectedElement.classList.remove('selected');
-        selectedElement = null;
-        selectedWord = null;
-        showSelectionHint(false);
-        document.querySelectorAll('.notebook').forEach(n => n.classList.remove('tap-target'));
-        return;
+      // Cleanup
+      document.querySelectorAll('.word-item.dragging').forEach(el => el.classList.remove('dragging'));
+      if (ghostElement) {
+        ghostElement.remove();
+        ghostElement = null;
       }
-
-      // Deselect previous
-      if (selectedElement) {
-        selectedElement.classList.remove('selected');
-      }
-
-      // Select new word
-      selectedElement = element;
-      selectedWord = word;
-      element.classList.add('selected');
-      showSelectionHint(true);
-
-      // Highlight notebooks as targets
-      document.querySelectorAll('.notebook').forEach(n => n.classList.add('tap-target'));
-    }
-
-    function onNotebookTap(e) {
-      if (!selectedWord) return;
-
-      const notebook = e.currentTarget;
-      const categoryId = notebook.dataset.category;
-
-      // Place the selected word
-      placeWord(selectedWord, categoryId);
-
-      // Clear selection
-      if (selectedElement) {
-        selectedElement.classList.remove('selected');
-      }
-      selectedElement = null;
-      selectedWord = null;
-      showSelectionHint(false);
-      document.querySelectorAll('.notebook').forEach(n => n.classList.remove('tap-target'));
-    }
-
-    function showSelectionHint(show) {
-      let hint = document.getElementById('tap-mode-hint');
-
-      if (show && !hint) {
-        hint = document.createElement('div');
-        hint.id = 'tap-mode-hint';
-        hint.innerHTML = 'Tap a list to place the word';
-        hint.style.cssText = `
-          position: fixed;
-          bottom: 100px;
-          left: 50%;
-          transform: translateX(-50%);
-          background: #333;
-          color: white;
-          padding: 12px 24px;
-          border-radius: 25px;
-          font-size: 16px;
-          font-weight: 600;
-          z-index: 1000;
-        `;
-        document.body.appendChild(hint);
-      } else if (!show && hint) {
-        hint.remove();
-      }
+      draggedWord = null;
     }
 
     function updateGhostPosition(touch) {
