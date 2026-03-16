@@ -109,7 +109,39 @@
 
     @media (max-width: 500px) {
       .image-cards {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+      }
+      .word-card {
+        padding: 10px;
+        gap: 6px;
+      }
+      .word-image {
+        width: 80px;
+        height: 65px;
+      }
+      .letter-slot {
+        width: 28px;
+        height: 32px;
+        font-size: 20px;
+      }
+      .letter-slots {
+        gap: 4px;
+      }
+      .letter-bubble {
+        width: 42px;
+        height: 42px;
+        font-size: 22px;
+      }
+      .letter-rows {
+        gap: 8px;
+        padding: 10px;
+      }
+      .letter-row {
+        gap: 6px;
+      }
+      .help-item {
+        padding: 12px 16px;
       }
     }
 
