@@ -300,9 +300,9 @@ class DraggableClock {
     let currentMinuteAngle = this.minuteAngle % 360;
     if (currentMinuteAngle < 0) currentMinuteAngle += 360;
 
-    // Check hour hand: within 20 degrees either side
+    // Check hour hand: within 10 degrees either side
     const hourDiff = this.angleDifference(currentHourAngle, expectedHourAngle);
-    const hourMatch = hourDiff <= 20;
+    const hourMatch = hourDiff <= 10;
 
     // Check minute hand: within 10 degrees either side
     const minuteDiff = this.angleDifference(currentMinuteAngle, expectedMinuteAngle);
