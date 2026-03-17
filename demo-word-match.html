@@ -93,17 +93,16 @@
     }
 
     .image-box {
-      width: 120px;
-      height: 100px;
+      width: 180px;
+      height: 150px;
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
+      overflow: visible;
     }
 
     .image-box lottie-player {
-      width: 100%;
-      height: 100%;
+      /* Size set via inline style for per-animation scaling */
     }
 
     /* Word drop zone */
@@ -146,6 +145,23 @@
       border-radius: 8px;
       padding: 8px 16px;
       cursor: grab;
+      user-select: none;
+      touch-action: none;
+    }
+
+    .word-slot .placed-word:hover {
+      border-color: #999;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    .word-slot .placed-word.dragging {
+      opacity: 0.5;
+    }
+
+    .word-bank.highlight {
+      background: rgba(196, 227, 89, 0.3);
+      border: 2px dashed #C4E359;
+      border-radius: 12px;
     }
 
     /* Image card complete state */
@@ -374,8 +390,8 @@
         padding: 12px;
       }
       .image-box {
-        width: 90px;
-        height: 75px;
+        width: 135px;
+        height: 113px;
       }
     }
 
@@ -397,8 +413,8 @@
         border-radius: 10px;
       }
       .image-box {
-        width: 70px;
-        height: 60px;
+        width: 105px;
+        height: 90px;
       }
       .word-slot {
         min-width: 50px;
@@ -429,8 +445,8 @@
         gap: 6px;
       }
       .image-box {
-        width: 65px;
-        height: 55px;
+        width: 98px;
+        height: 83px;
       }
     }
   </style>
@@ -619,7 +635,7 @@
           { lottie: 'cat.json', word: 'cat', hint: 'This animal meows and loves to sleep!' },
           { lottie: 'fish.json', word: 'fish', hint: 'This animal swims in water!' },
           { lottie: 'frog.json', word: 'frog', hint: 'This animal says "ribbit" and jumps!' },
-          { lottie: 'bee.json', word: 'bee', scale: 1.3, hint: 'This insect makes honey!' },
+          { lottie: 'bee.json', word: 'bee', scale: 2.6, hint: 'This insect makes honey!' },
           { lottie: 'ant.json', word: 'ant', hint: 'This tiny insect is very strong!' }
         ],
         distractors: ['bat', 'rat']
@@ -627,9 +643,9 @@
       // Page 2: Safari animals
       {
         items: [
-          { lottie: 'elephant.json', word: 'elephant', scale: 1.15, hint: 'This big animal has a long trunk!' },
+          { lottie: 'elephant.json', word: 'elephant', scale: 1.5, hint: 'This big animal has a long trunk!' },
           { lottie: 'giraffe.json', word: 'giraffe', scale: 1.15, hint: 'This animal has a very long neck!' },
-          { lottie: 'zebra.json', word: 'zebra', hint: 'This animal has black and white stripes!' },
+          { lottie: 'zebra.json', word: 'zebra', scale: 1.3, hint: 'This animal has black and white stripes!' },
           { lottie: 'horse.json', word: 'horse', hint: 'People ride on this animal!' },
           { lottie: 'sheep.json', word: 'sheep', scale: 1.8, hint: 'This fluffy animal says "baa"!' },
           { lottie: 'goat.json', word: 'goat', hint: 'This animal has horns and a beard!' }
@@ -640,7 +656,7 @@
       {
         items: [
           { lottie: 'rabbit.json', word: 'rabbit', hint: 'This animal has long ears and hops!' },
-          { lottie: 'mouse.json', word: 'mouse', hint: 'This tiny animal loves cheese!' },
+          { lottie: 'chicken.json', word: 'chicken', hint: 'This bird lays eggs!' },
           { lottie: 'snake.json', word: 'snake', hint: 'This animal slithers on the ground!' },
           { lottie: 'dolphin.json', word: 'dolphin', hint: 'This smart animal lives in the ocean!' },
           { lottie: 'whale.json', word: 'whale', scale: 1.5, hint: 'This is the biggest animal in the sea!' },
@@ -651,12 +667,12 @@
       // Page 4: Mixed animals
       {
         items: [
-          { lottie: 'chicken.json', word: 'chicken', hint: 'This bird lays eggs!' },
+          { lottie: 'mouse.json', word: 'mouse', hint: 'This tiny animal loves cheese!' },
           { lottie: 'deer.json', word: 'deer', hint: 'This animal has antlers!' },
           { lottie: 'snail.json', word: 'snail', hint: 'This slow animal carries its house!' },
           { lottie: 'dinosaur.json', word: 'dinosaur', scale: 1.15, hint: 'This animal lived millions of years ago!' },
           { lottie: 'crocodile.json', word: 'crocodile', hint: 'This reptile has big teeth!' },
-          { lottie: 'car.json', word: 'car', scale: 1.2, offsetY: 25, hint: 'You drive this on the road!' }
+          { lottie: 'car.json', word: 'car', scale: 1.8, offsetY: 25, hint: 'You drive this on the road!' }
         ],
         distractors: ['bus', 'van']
       }
@@ -730,6 +746,16 @@
         wordBank.appendChild(option);
       });
 
+      // Allow dropping back to word bank
+      wordBank.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        if (dragSourceCard) wordBank.classList.add('highlight');
+      });
+      wordBank.addEventListener('dragleave', () => {
+        wordBank.classList.remove('highlight');
+      });
+      wordBank.addEventListener('drop', onDropToBank);
+
       // Generate image grid with Lotties
       imageGrid.innerHTML = '';
       shuffle(items).forEach((item, index) => {
@@ -740,7 +766,6 @@
 
         const scale = item.scale || 1.0;
         const offsetY = item.offsetY || 0;
-        const size = 100 * scale;
 
         card.innerHTML = `
           <div class="image-box">
@@ -748,7 +773,7 @@
               src="lottie-assets/${item.lottie}"
               background="transparent"
               speed="1"
-              style="width: ${size}px; height: ${size}px; transform: translateY(${offsetY}px);"
+              style="width: 150px; height: 150px; transform: scale(${scale}) translateY(${offsetY}px);"
               loop
               autoplay
             ></lottie-player>
@@ -802,10 +827,25 @@
       const slot = card.querySelector('.word-slot');
 
       if (slot && draggedWord) {
+        // If dragging from another card, clear the source first
+        if (dragSourceCard && dragSourceCard !== card) {
+          returnWordToBank(dragSourceCard);
+        }
         placeWord(card, slot, draggedWord, draggedElement);
+        dragSourceCard = null; // Prevent onPlacedDragEnd from also removing
       }
 
       slot.classList.remove('highlight');
+    }
+
+    // Drop on word bank to return word
+    function onDropToBank(e) {
+      e.preventDefault();
+      if (dragSourceCard) {
+        returnWordToBank(dragSourceCard);
+        dragSourceCard = null;
+      }
+      wordBank.classList.remove('highlight');
     }
 
     // Touch events
@@ -887,7 +927,7 @@
       }
 
       // Place new word
-      slot.innerHTML = `<span class="placed-word">${word}</span>`;
+      slot.innerHTML = `<span class="placed-word" draggable="true">${word}</span>`;
       slot.dataset.filled = word;
       slot.classList.add('filled');
       placements[card.dataset.answer] = word;
@@ -896,6 +936,112 @@
       if (sourceElement) {
         sourceElement.classList.add('used');
       }
+
+      // Make placed word draggable for removal
+      const placedWord = slot.querySelector('.placed-word');
+      placedWord.addEventListener('dragstart', onPlacedDragStart);
+      placedWord.addEventListener('dragend', onPlacedDragEnd);
+      placedWord.addEventListener('touchstart', onPlacedTouchStart, { passive: false });
+      placedWord.addEventListener('touchmove', onTouchMove, { passive: false });
+      placedWord.addEventListener('touchend', onPlacedTouchEnd);
+    }
+
+    // Track if dragging from a placed word
+    let dragSourceCard = null;
+
+    function onPlacedDragStart(e) {
+      const placedWord = e.target;
+      const card = placedWord.closest('.image-card');
+      dragSourceCard = card;
+      draggedWord = placedWord.textContent;
+      draggedElement = null; // No source element from bank
+      placedWord.classList.add('dragging');
+      e.dataTransfer.setData('text/plain', draggedWord);
+    }
+
+    function onPlacedDragEnd(e) {
+      e.target.classList.remove('dragging');
+      document.querySelectorAll('.word-slot').forEach(s => s.classList.remove('highlight'));
+
+      // If not dropped on a valid target, return to bank
+      if (dragSourceCard && !e.dataTransfer.dropEffect || e.dataTransfer.dropEffect === 'none') {
+        returnWordToBank(dragSourceCard);
+      }
+
+      draggedWord = null;
+      draggedElement = null;
+      dragSourceCard = null;
+    }
+
+    function onPlacedTouchStart(e) {
+      const placedWord = e.target.closest('.placed-word');
+      if (!placedWord) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      const card = placedWord.closest('.image-card');
+      dragSourceCard = card;
+      draggedWord = placedWord.textContent;
+      draggedElement = null;
+      placedWord.classList.add('dragging');
+
+      ghostElement = document.createElement('div');
+      ghostElement.className = 'word-option drag-ghost';
+      ghostElement.textContent = draggedWord;
+      document.body.appendChild(ghostElement);
+
+      updateGhostPosition(e.touches[0]);
+    }
+
+    function onPlacedTouchEnd(e) {
+      if (!dragSourceCard) return;
+
+      const touch = e.changedTouches[0];
+      const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+      const targetCard = elemBelow?.closest('.image-card');
+
+      if (targetCard && targetCard !== dragSourceCard) {
+        // Dropped on a different card - move word there
+        const slot = targetCard.querySelector('.word-slot');
+        if (slot) {
+          // First return old word from source
+          returnWordToBank(dragSourceCard);
+          // Then place in new location
+          placeWord(targetCard, slot, draggedWord, null);
+        }
+      } else if (!targetCard) {
+        // Dropped outside any card - return to bank
+        returnWordToBank(dragSourceCard);
+      }
+      // If dropped on same card, do nothing
+
+      if (ghostElement) {
+        ghostElement.remove();
+        ghostElement = null;
+      }
+
+      document.querySelectorAll('.word-slot').forEach(s => s.classList.remove('highlight'));
+      document.querySelectorAll('.placed-word').forEach(p => p.classList.remove('dragging'));
+      draggedWord = null;
+      draggedElement = null;
+      dragSourceCard = null;
+    }
+
+    function returnWordToBank(card) {
+      const slot = card.querySelector('.word-slot');
+      const word = slot.dataset.filled;
+      if (!word) return;
+
+      // Return word to bank
+      const option = document.querySelector(`.word-option[data-word="${word}"]`);
+      if (option) option.classList.remove('used');
+
+      // Clear slot
+      slot.innerHTML = '';
+      slot.dataset.filled = '';
+      slot.classList.remove('filled', 'correct', 'incorrect');
+      delete placements[card.dataset.answer];
     }
 
     // Check answers
@@ -972,15 +1118,19 @@
         loadPage(currentPage + 1, true);
       } else {
         // Quiz complete!
+        wordBank.style.display = 'none';
+        imageGrid.style.flex = '1';
+        imageGrid.style.display = 'flex';
+        imageGrid.style.justifyContent = 'center';
+        imageGrid.style.alignItems = 'center';
         imageGrid.innerHTML = `
-          <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
+          <div style="text-align: center; padding: 40px;">
             <div style="font-size: 60px; margin-bottom: 20px;">🎉</div>
             <h2 style="font-size: 28px; margin-bottom: 10px;">Quiz Complete!</h2>
             <p style="font-size: 18px; color: #666;">You matched all 24 words correctly!</p>
             <button onclick="window.location='index.html'" style="margin-top: 20px; padding: 15px 40px; background: black; color: white; border: none; border-radius: 25px; font-size: 16px; cursor: pointer;">Back to Home</button>
           </div>
         `;
-        wordBank.innerHTML = '';
         btnCheck.style.display = 'none';
         feedback.style.display = 'none';
       }
