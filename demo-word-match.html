@@ -757,6 +757,25 @@
     let draggedWord = null;
     let draggedElement = null;
     let ghostElement = null;
+    let autoScrollInterval = null;
+
+    // Auto-scroll when dragging near edges
+    const SCROLL_EDGE_SIZE = 60; // pixels from edge to trigger scroll
+    const SCROLL_SPEED = 8; // pixels per frame
+
+    function startAutoScroll(direction) {
+      if (autoScrollInterval) return;
+      autoScrollInterval = setInterval(() => {
+        window.scrollBy(0, direction * SCROLL_SPEED);
+      }, 16); // ~60fps
+    }
+
+    function stopAutoScroll() {
+      if (autoScrollInterval) {
+        clearInterval(autoScrollInterval);
+        autoScrollInterval = null;
+      }
+    }
 
     // DOM elements
     const wordBank = document.getElementById('word-bank');
@@ -943,6 +962,17 @@
       updateGhostPosition(e.touches[0]);
 
       const touch = e.touches[0];
+
+      // Auto-scroll when near top or bottom edge
+      const viewportHeight = window.innerHeight;
+      if (touch.clientY < SCROLL_EDGE_SIZE) {
+        startAutoScroll(-1); // Scroll up
+      } else if (touch.clientY > viewportHeight - SCROLL_EDGE_SIZE) {
+        startAutoScroll(1); // Scroll down
+      } else {
+        stopAutoScroll();
+      }
+
       const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
       const card = elemBelow?.closest('.image-card');
 
@@ -958,6 +988,7 @@
     function onTouchEnd(e) {
       if (!draggedElement) return;
 
+      stopAutoScroll(); // Stop any auto-scrolling
       draggedElement.classList.remove('dragging');
 
       const touch = e.changedTouches[0];
@@ -1068,6 +1099,7 @@
     function onPlacedTouchEnd(e) {
       if (!dragSourceCard) return;
 
+      stopAutoScroll(); // Stop any auto-scrolling
       const touch = e.changedTouches[0];
       const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
       const targetCard = elemBelow?.closest('.image-card');
