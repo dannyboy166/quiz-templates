@@ -11,7 +11,6 @@ This project contains reusable HTML/CSS/JavaScript templates for interactive qui
 Our developer is building a quiz/education portal using Blazor WebAssembly (.NET). He has limited time and bandwidth to work on both the backend logic AND the frontend design/animations for every question type.
 
 **Challenge:** The quiz system needs multiple interactive question formats:
-- Written answers
 - Draggable clock hands (set the time)
 - Drag-and-drop sorting (shapes into categories)
 - Line matching (connect related items)
@@ -71,7 +70,6 @@ quiz-templates/
 │   ├── clock.js           # DraggableClock class
 │   └── drag-drop.js       # DragDropZone class
 │
-├── demo-written-answer.html   # Text input question demo
 ├── demo-clock.html            # Draggable clock demo
 ├── demo-drag-drop.html        # Shapes into jars demo
 ├── demo-matching.html         # Line matching demo
@@ -86,19 +84,7 @@ quiz-templates/
 
 ## Question Types Included
 
-### 1. Written Answer (`demo-written-answer.html`)
-- Student types answer in text box
-- Shows correct (green) or incorrect (red) feedback
-- Displays the correct answer if wrong
-
-**Key elements:**
-- `.answer-input` - The text input field
-- `.answer-input.correct` / `.answer-input.incorrect` - Feedback states
-- `.feedback-badge` - Shows result message
-
----
-
-### 2. Draggable Clock (`demo-clock.html`)
+### 1. Draggable Clock (`demo-clock.html`)
 - SVG clock with draggable hour hand (minute hand optional)
 - Student rotates hands to set the time
 - Supports snapping to hours or 5-minute intervals
@@ -121,7 +107,7 @@ clock.checkAnswer(3, 0); // Returns true if set to 3 o'clock
 
 ---
 
-### 3. Drag & Drop Sorting (`demo-drag-drop.html`)
+### 2. Drag & Drop Sorting (`demo-drag-drop.html`)
 - Draggable items (shapes, numbers, images, text)
 - Drop zones (jars, boxes, categories)
 - Works on desktop and mobile/touch
@@ -144,7 +130,7 @@ const result = sorter.checkAnswers();
 
 ---
 
-### 4. Line Matching (`demo-matching.html`)
+### 3. Line Matching (`demo-matching.html`)
 - Two columns of items
 - Click dots to draw connecting lines
 - Validates correct matches

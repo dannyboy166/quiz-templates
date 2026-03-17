@@ -12,29 +12,7 @@ These templates are **UI/UX prototypes** demonstrating interactive question type
 
 ## Template Types & Required Data Fields
 
-### 1. Written Answer (`written-answer`)
-
-Simple text input where student types an answer.
-
-| Column | Type | Required | Description |
-|--------|------|----------|-------------|
-| `template_type` | string | Yes | `"written-answer"` |
-| `question_text` | string | Yes | The question to display |
-| `correct_answer` | string | Yes | Expected answer (case-insensitive match) |
-| `hint` | string | No | Optional hint text |
-| `image_url` | string | No | Optional image to show with question |
-
-**Example Excel Row:**
-```
-template_type: written-answer
-question_text: What is 5 + 3?
-correct_answer: 8
-hint: Count on your fingers!
-```
-
----
-
-### 2. Draggable Clock (`clock`)
+### 1. Draggable Clock (`clock`)
 
 Student drags clock hands to show a time. Supports difficulty-based random generation.
 
@@ -61,7 +39,7 @@ The template generates 4 random times per round based on the selected difficulty
 
 ---
 
-### 3. Drag & Drop Sorting (`drag-drop`)
+### 2. Drag & Drop Sorting (`drag-drop`)
 
 Drag items into categorized containers (e.g., shapes into jars by sides).
 
@@ -84,7 +62,7 @@ categories: [{"id":"3","label":"3 Sides"},{"id":"4","label":"4 Sides"},{"id":"5"
 
 ---
 
-### 4. Colour the Blocks (`color-blocks`)
+### 3. Colour the Blocks (`color-blocks`)
 
 **Standalone Auto-Generated Template** - No Excel import needed!
 
@@ -123,7 +101,7 @@ Click 3D isometric blocks to colour tens and ones to make a number. Fully auto-g
 
 ---
 
-### 5. Spelling Letters (`spelling`)
+### 4. Spelling Letters (`spelling`)
 
 Drag letters to spell a word shown by a picture.
 
@@ -146,7 +124,7 @@ extra_letters: bfm
 
 ---
 
-### 6. Word Match (`word-match`)
+### 5. Word Match (`word-match`)
 
 Match words to pictures by dragging.
 
@@ -167,7 +145,7 @@ distractor_words: ["car","bat","map"]
 
 ---
 
-### 7. Number Order (`number-order`)
+### 6. Number Order (`number-order`)
 
 Drag numbers into order from smallest to biggest.
 
@@ -200,7 +178,7 @@ order: ascending
 
 ---
 
-### 8. Sound Select (`sound-select`)
+### 7. Sound Select (`sound-select`)
 
 Select all images that begin with a target letter sound (phonics). Multi-select.
 
@@ -225,7 +203,7 @@ hint: Say each picture's name out loud. Does it start with "mmm"?
 
 ---
 
-### 9. Line Match (`line-match`)
+### 8. Line Match (`line-match`)
 
 Draw lines to connect matching pairs (shapes to sides, animals to sounds, numbers to words, etc.).
 
@@ -273,7 +251,7 @@ hint: Think about what sound each animal makes!
 
 ---
 
-### 10. Word Sort (`word-sort`)
+### 9. Word Sort (`word-sort`)
 
 Sort words into categories based on spelling patterns (e.g., st__ vs __st, -ing vs -ed endings).
 
@@ -317,7 +295,7 @@ hint: Look at where the 'st' appears in each word!
 
 ---
 
-### 11. Missing Letters (`missing-letters`)
+### 10. Missing Letters (`missing-letters`)
 
 Choose missing letters to complete a word. Great for spelling rules like "i before e except after c".
 
@@ -354,7 +332,7 @@ rule: i before e, except after c
 
 ---
 
-### 12. Spelling Rules (`spelling-rules`)
+### 11. Spelling Rules (`spelling-rules`)
 
 Comprehensive spelling rules practice with multiple rule categories. Students switch between rules.
 
@@ -427,7 +405,7 @@ questions: [{"word":"colour","blank":[3,4,5],"options":["our","or"],"correct":"o
 
 ---
 
-### 13. Picture Equations (`picture-equations`)
+### 12. Picture Equations (`picture-equations`)
 
 Visual maths with pictures showing addition/subtraction. Some pictures are crossed out to show subtraction.
 
@@ -482,7 +460,7 @@ equations: [{"type":"subtraction","total":8,"subtract":3,"result":5,"given":["to
 
 ---
 
-### 14. Fractions (`fractions`)
+### 13. Fractions (`fractions`)
 
 Click to shade parts of shapes to represent fractions. Supports circles (pizza) and rectangles (chocolate bar). Supports difficulty-based random generation.
 
@@ -514,7 +492,7 @@ The template generates 8 random fraction questions based on the selected difficu
 
 ---
 
-### 15. Skip Counting (`skip-counting`)
+### 14. Skip Counting (`skip-counting`)
 
 Fill in missing numbers in a counting sequence. Supports difficulty-based random generation.
 
@@ -546,7 +524,7 @@ The template generates 6 random skip counting questions based on the selected di
 
 ---
 
-### 16. Base 10 Blocks (`base10-blocks`)
+### 15. Base 10 Blocks (`base10-blocks`)
 
 Count base-10 blocks (hundreds, tens, ones) to identify the number shown. Uses isometric 3D SVG blocks.
 
@@ -588,7 +566,7 @@ Students count the blocks and type the total number. Different numbers are gener
 
 ---
 
-### 17. 3D Sphere (`sphere-3d`)
+### 16. 3D Sphere (`sphere-3d`)
 
 **Standalone Visual Effect** - Interactive 3D rotating sphere for showcasing topics!
 
@@ -632,7 +610,7 @@ this.autoRotateSpeed = 1.0; // Higher = faster
 
 ---
 
-### 18. Dice Addition (`dice-addition`)
+### 17. Dice Addition (`dice-addition`)
 
 **Standalone Speed Challenge** - Roll dice and add them up as fast as possible!
 
@@ -691,9 +669,9 @@ One Excel sheet with all questions. Use `template_type` column to route to corre
 
 | id | template_type | question_text | correct_answer | target_number | word | items | ... |
 |----|---------------|---------------|----------------|---------------|------|-------|-----|
-| 1 | written-answer | What is 2+2? | 4 | | | | |
-| 2 | color-blocks | Make 23 | | 23 | | | |
-| 3 | spelling | Spell the word | | | dog | | |
+| 1 | color-blocks | Make 23 | | 23 | | | |
+| 2 | spelling | Spell the word | | | dog | | |
+| 3 | clock | Set the time | | | | | |
 
 **Pros:** Simple, one file
 **Cons:** Many empty columns, JSON in cells is awkward
@@ -702,9 +680,9 @@ One Excel sheet with all questions. Use `template_type` column to route to corre
 
 One Excel file with separate sheets per template type:
 
-- Sheet: `WrittenAnswer` - columns specific to written answer
 - Sheet: `Clock` - columns specific to clock
 - Sheet: `DragDrop` - columns specific to drag/drop
+- Sheet: `ColorBlocks` - columns specific to colour blocks
 - etc.
 
 **Pros:** Clean columns per type, no empty cells
@@ -720,11 +698,6 @@ Questions (base table)
 ├── topic_id
 ├── difficulty
 └── created_at
-
-WrittenAnswerData
-├── question_id (FK)
-├── correct_answer
-└── hint
 
 ClockData
 ├── question_id (FK)
@@ -765,7 +738,6 @@ public abstract class QuestionComponentBase : ComponentBase
 
 ```
 /Components/Questions/
-├── WrittenAnswerQuestion.razor
 ├── ClockQuestion.razor
 ├── DragDropQuestion.razor
 ├── ColorBlocksQuestion.razor
@@ -791,9 +763,6 @@ public abstract class QuestionComponentBase : ComponentBase
 @* QuestionRenderer.razor *@
 @switch (Question.TemplateType)
 {
-    case "written-answer":
-        <WrittenAnswerQuestion Question="@Question" OnAnswerSubmitted="@HandleAnswer" />
-        break;
     case "clock":
         <ClockQuestion Question="@Question" OnAnswerSubmitted="@HandleAnswer" />
         break;
@@ -834,7 +803,6 @@ public class QuestionImportService
 
 | Demo File | Template Type | Key CSS/JS |
 |-----------|---------------|------------|
-| `demo-written-answer.html` | `written-answer` | `css/base.css` |
 | `demo-clock.html` | `clock` | `css/clock.css`, `js/clock.js` |
 | `demo-drag-drop.html` | `drag-drop` | `css/drag-drop.css`, `js/drag-drop.js` |
 | `demo-color-blocks.html` | `color-blocks` | Inline styles |

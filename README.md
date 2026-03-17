@@ -30,7 +30,6 @@ open index.html
 | Spelling Rules | Apply spelling rules |
 | Word Match | Match words to definitions/images |
 | Word Sort | Sort words into categories |
-| Written Answer | Text input with correct/incorrect feedback |
 
 ## Auto-Generated Templates (No Excel Import Needed!)
 
