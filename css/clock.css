@@ -212,11 +212,14 @@
 }
 
 .clock-svg .hand {
-  fill: #C62828;
   cursor: grab;
 }
 
-.clock-svg .hand:hover {
+.clock-svg .hand-visible {
+  fill: #C62828;
+}
+
+.clock-svg .hand:hover .hand-visible {
   filter: drop-shadow(0 0 4px rgba(198, 40, 40, 0.5));
 }
 

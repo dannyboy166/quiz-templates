@@ -116,15 +116,35 @@ class DraggableClock {
   }
 
   createHand(type, center, length, width) {
+    // Create a group to hold both the visible hand and the touch target
+    const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    group.classList.add('hand', type);
+    group.dataset.type = type;
+
+    // Invisible touch target (much wider for easier grabbing on mobile)
+    const touchWidth = Math.max(width * 3, 30); // At least 30px wide
+    const touchTarget = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    touchTarget.setAttribute('x', center - touchWidth / 2);
+    touchTarget.setAttribute('y', center - length - 10);
+    touchTarget.setAttribute('width', touchWidth);
+    touchTarget.setAttribute('height', length + 15);
+    touchTarget.setAttribute('fill', 'transparent');
+    touchTarget.classList.add('hand-touch-target', type);
+    touchTarget.dataset.type = type;
+    group.appendChild(touchTarget);
+
+    // Visible hand
     const hand = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
     hand.setAttribute('x', center - width / 2);
     hand.setAttribute('y', center - length);
     hand.setAttribute('width', width);
     hand.setAttribute('height', length);
     hand.setAttribute('rx', width / 2);
-    hand.classList.add('hand', type);
+    hand.classList.add('hand-visible', type);
     hand.dataset.type = type;
-    return hand;
+    group.appendChild(hand);
+
+    return group;
   }
 
   attachEvents() {
@@ -141,10 +161,12 @@ class DraggableClock {
 
   onDragStart(e) {
     const target = e.target;
-    if (target.classList.contains('hand')) {
+    // Check if clicked on hand group, touch target, or visible hand
+    const handGroup = target.closest('.hand') || (target.dataset.type ? target : null);
+    if (handGroup && handGroup.dataset.type) {
       e.preventDefault();
-      this.dragging = target.dataset.type;
-      target.classList.add('dragging');
+      this.dragging = handGroup.dataset.type;
+      handGroup.classList.add('dragging');
     }
   }
 
@@ -213,7 +235,7 @@ class DraggableClock {
 
   onDragEnd() {
     if (this.dragging) {
-      const hand = this.svg.querySelector(`.hand.${this.dragging}`);
+      const hand = this.svg.querySelector(`g.hand.${this.dragging}`);
       if (hand) hand.classList.remove('dragging');
       this.dragging = null;
       this.prevDragAngle = null; // Reset for next drag
