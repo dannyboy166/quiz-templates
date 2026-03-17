@@ -200,10 +200,13 @@
       text-align: center;
       padding: 20px;
       display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
     }
 
     .feedback-area.show {
-      display: block;
+      display: flex;
     }
 
     .feedback-message {
@@ -220,7 +223,7 @@
       color: #C62828;
     }
 
-    .try-again-btn, .next-btn {
+    .try-again-btn {
       padding: 14px 40px;
       border: none;
       border-radius: 25px;
@@ -248,11 +251,16 @@
       height: 48px;
       border-radius: 50%;
       cursor: pointer;
-      display: flex;
+      display: none;
       align-items: center;
       justify-content: center;
       transition: transform 0.2s, background 0.2s;
       box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      color: white;
+    }
+
+    .next-btn.show {
+      display: flex;
     }
 
     .next-btn:hover {
@@ -471,7 +479,7 @@
     <div class="feedback-area" id="feedback-area">
       <div class="feedback-message" id="feedback-message"></div>
       <div class="score-display" id="score-display"></div>
-      <button class="try-again-btn" id="try-again-btn">Try Again</button>
+      <button class="try-again-btn" id="try-again-btn" style="display: none;">Try Again</button>
       <button class="next-btn" id="btn-next" title="Next Question">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <path d="M5 12h14M12 5l7 7-7 7"/>
@@ -607,6 +615,8 @@
       feedbackArea.classList.remove('show');
       checkBtn.style.display = 'block';
       checkBtn.disabled = false;
+      nextBtn.classList.remove('show');
+      tryAgainBtn.style.display = 'none';
 
       // Generate image cards
       imageGrid.innerHTML = '';
@@ -676,7 +686,7 @@
         feedbackMessage.textContent = 'Perfect! Well done!';
         feedbackMessage.className = 'feedback-message correct';
         tryAgainBtn.style.display = 'none';
-        nextBtn.style.display = 'flex';
+        nextBtn.classList.add('show');
 
         // Celebration
         imageGrid.classList.add('celebrating');
@@ -685,7 +695,7 @@
         feedbackMessage.textContent = 'Not quite right!';
         feedbackMessage.className = 'feedback-message incorrect';
         tryAgainBtn.style.display = 'inline-block';
-        nextBtn.style.display = 'flex';
+        nextBtn.classList.add('show');
 
         scoreDisplay.textContent = `You got ${correctCount} of ${correctIndices.length} correct.`;
       }
