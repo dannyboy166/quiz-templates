@@ -1092,7 +1092,7 @@
 
           const hintLetter = word[emptySlotIndex];
           hintTitle.innerHTML = "💡 Hint!";
-          hintText.innerHTML = `For <strong>${word.toUpperCase()}</strong>, position ${emptySlotIndex + 1} needs <strong style="font-size: 32px;">${hintLetter.toUpperCase()}</strong>`;
+          hintText.innerHTML = `For <strong>${word}</strong>, position ${emptySlotIndex + 1} needs <strong style="font-size: 32px;">${hintLetter}</strong>`;
           hintModal.classList.add('active');
           playAudio('audio/spelling/hint.mp3');
 
