@@ -657,6 +657,25 @@
     let sortedWords = {}; // { categoryId: [words] }
     let draggedWord = null;
     let ghostElement = null;
+    let autoScrollInterval = null;
+
+    // Auto-scroll when dragging near edges
+    const SCROLL_EDGE_SIZE = 60;
+    const SCROLL_SPEED = 8;
+
+    function startAutoScroll(direction) {
+      if (autoScrollInterval) return;
+      autoScrollInterval = setInterval(() => {
+        window.scrollBy(0, direction * SCROLL_SPEED);
+      }, 16);
+    }
+
+    function stopAutoScroll() {
+      if (autoScrollInterval) {
+        clearInterval(autoScrollInterval);
+        autoScrollInterval = null;
+      }
+    }
 
     // DOM elements
     const wordListEl = document.getElementById('word-list');
@@ -795,8 +814,19 @@
       e.preventDefault();
       updateGhostPosition(e.touches[0]);
 
-      // Highlight notebook under touch
       const touch = e.touches[0];
+
+      // Auto-scroll when near top or bottom edge
+      const viewportHeight = window.innerHeight;
+      if (touch.clientY < SCROLL_EDGE_SIZE) {
+        startAutoScroll(-1);
+      } else if (touch.clientY > viewportHeight - SCROLL_EDGE_SIZE) {
+        startAutoScroll(1);
+      } else {
+        stopAutoScroll();
+      }
+
+      // Highlight notebook under touch
       document.querySelectorAll('.notebook').forEach(notebook => {
         const rect = notebook.getBoundingClientRect();
         if (touch.clientX >= rect.left && touch.clientX <= rect.right &&
@@ -811,6 +841,7 @@
     function onTouchEnd(e) {
       if (!draggedWord) return;
 
+      stopAutoScroll();
       const touch = e.changedTouches[0];
       let targetNotebook = null;
 

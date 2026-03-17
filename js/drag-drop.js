@@ -27,8 +27,27 @@ class DragDropZone {
     this.draggedItem = null;
     this.draggedClone = null;
     this.placements = {};
+    this.autoScrollInterval = null;
+
+    // Auto-scroll settings
+    this.SCROLL_EDGE_SIZE = 60;
+    this.SCROLL_SPEED = 8;
 
     this.init();
+  }
+
+  startAutoScroll(direction) {
+    if (this.autoScrollInterval) return;
+    this.autoScrollInterval = setInterval(() => {
+      window.scrollBy(0, direction * this.SCROLL_SPEED);
+    }, 16);
+  }
+
+  stopAutoScroll() {
+    if (this.autoScrollInterval) {
+      clearInterval(this.autoScrollInterval);
+      this.autoScrollInterval = null;
+    }
   }
 
   init() {
@@ -207,6 +226,16 @@ class DragDropZone {
     const touch = e.touches[0];
     this.updateClonePosition(touch.clientX, touch.clientY);
 
+    // Auto-scroll when near top or bottom edge
+    const viewportHeight = window.innerHeight;
+    if (touch.clientY < this.SCROLL_EDGE_SIZE) {
+      this.startAutoScroll(-1);
+    } else if (touch.clientY > viewportHeight - this.SCROLL_EDGE_SIZE) {
+      this.startAutoScroll(1);
+    } else {
+      this.stopAutoScroll();
+    }
+
     // Check which zone we're over
     const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
     const zone = elemBelow?.closest(this.options.zoneSelector);
@@ -220,6 +249,8 @@ class DragDropZone {
 
   onTouchEnd(e) {
     if (!this.draggedItem) return;
+
+    this.stopAutoScroll();
 
     // Find zone at drop position
     const touch = e.changedTouches[0];

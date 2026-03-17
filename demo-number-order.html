@@ -684,6 +684,25 @@
     let draggedElement = null;
     let draggedFromSlot = null;
     let ghostElement = null;
+    let autoScrollInterval = null;
+
+    // Auto-scroll when dragging near edges
+    const SCROLL_EDGE_SIZE = 60;
+    const SCROLL_SPEED = 8;
+
+    function startAutoScroll(direction) {
+      if (autoScrollInterval) return;
+      autoScrollInterval = setInterval(() => {
+        window.scrollBy(0, direction * SCROLL_SPEED);
+      }, 16);
+    }
+
+    function stopAutoScroll() {
+      if (autoScrollInterval) {
+        clearInterval(autoScrollInterval);
+        autoScrollInterval = null;
+      }
+    }
 
     function onDragStart(e) {
       draggedNumber = parseInt(e.target.dataset.number);
@@ -756,6 +775,17 @@
       updateGhostPosition(e.touches[0]);
 
       const touch = e.touches[0];
+
+      // Auto-scroll when near top or bottom edge
+      const viewportHeight = window.innerHeight;
+      if (touch.clientY < SCROLL_EDGE_SIZE) {
+        startAutoScroll(-1);
+      } else if (touch.clientY > viewportHeight - SCROLL_EDGE_SIZE) {
+        startAutoScroll(1);
+      } else {
+        stopAutoScroll();
+      }
+
       const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
       const slot = elemBelow?.closest('.order-slot');
 
@@ -768,6 +798,7 @@
     function onTouchEnd(e) {
       if (!draggedElement) return;
 
+      stopAutoScroll();
       draggedElement.classList.remove('dragging');
 
       const touch = e.changedTouches[0];
