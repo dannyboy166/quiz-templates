@@ -65,10 +65,10 @@
     },
     "car": {
       "file": "car.json",
-      "scale": 1.2,
+      "scale": 1.8,
       "offsetY": 25,
       "category": "vehicles",
-      "notes": "Scaled up, moved down"
+      "notes": "Scaled up 50% from 1.2"
     },
     "car-1": {
       "file": "car-1.json",
