@@ -905,6 +905,20 @@
     let results = [];
     let hasPopped = false;
 
+    // Audio Player (Vonnie Voice)
+    let currentAudio = null;
+
+    function playAudio(src, onEnd) {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      currentAudio = new Audio(src);
+      if (onEnd) currentAudio.onended = onEnd;
+      currentAudio.play();
+      return currentAudio;
+    }
+
     // Create balloon SVG
     function createBalloonSVG(text, colorClass) {
       const colors = {
@@ -1143,14 +1157,8 @@
       dot.classList.remove('current');
       dot.classList.add(isCorrect ? 'correct' : 'incorrect');
 
-      // Read aloud feedback
-      if ('speechSynthesis' in window) {
-        const utterance = new SpeechSynthesisUtterance(
-          isCorrect ? `Correct! The word is ${q.word}.` : `The answer is ${q.correct}. The word is ${q.word}.`
-        );
-        utterance.rate = 0.85;
-        speechSynthesis.speak(utterance);
-      }
+      // Play feedback audio
+      playAudio(isCorrect ? 'audio/balloon-pop/feedback-correct.mp3' : 'audio/balloon-pop/feedback-incorrect.mp3');
     }
 
     function tryAgain() {
@@ -1178,15 +1186,11 @@
     }
 
     function readAloud() {
-      if ('speechSynthesis' in window) {
-        speechSynthesis.cancel();
-        const q = questions[currentQuestion];
-        const utterance = new SpeechSynthesisUtterance(
-          `Pop the balloon to complete the word. Look at the picture: ${q.word}. Which sound completes the word?`
-        );
-        utterance.rate = 0.85;
-        speechSynthesis.speak(utterance);
-      }
+      const btn = document.getElementById('btn-read-aloud');
+      btn.classList.add('active');
+      playAudio('audio/balloon-pop/question.mp3', () => {
+        btn.classList.remove('active');
+      });
     }
 
     function openModal(id) {
@@ -1203,7 +1207,11 @@
       document.getElementById('btn-read-aloud').addEventListener('click', readAloud);
       document.getElementById('btn-get-help').addEventListener('click', () => openModal('help-modal'));
       document.getElementById('header-help').addEventListener('click', () => openModal('help-modal'));
-      document.getElementById('btn-get-hint').addEventListener('click', () => openModal('hint-modal'));
+      document.getElementById('btn-get-hint').addEventListener('click', () => {
+        openModal('hint-modal');
+        const q = questions[currentQuestion];
+        playAudio(`audio/balloon-pop/hint-${q.word}.mp3`);
+      });
 
       // Close modals on overlay click
       document.querySelectorAll('.modal-overlay').forEach(modal => {

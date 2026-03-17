@@ -127,10 +127,35 @@ async function generateAudio(text, outputPath) {
   }
 }
 
+// ==========================================
+// BALLOON POP
+// ==========================================
+const balloonPopAudio = [
+  // Main question
+  { file: 'audio/balloon-pop/question.mp3', text: 'Pop the balloon to complete the word! Look at the picture and choose the correct sound.' },
+
+  // Hints for each word
+  { file: 'audio/balloon-pop/hint-fish.mp3', text: 'This word ends with a quiet sound, like when you tell someone to be quiet: Shhh!' },
+  { file: 'audio/balloon-pop/hint-chair.mp3', text: 'Think about the sound a train makes: Choo-choo!' },
+  { file: 'audio/balloon-pop/hint-phone.mp3', text: 'These two letters together make an F sound!' },
+  { file: 'audio/balloon-pop/hint-three.mp3', text: 'Put your tongue between your teeth and blow gently!' },
+  { file: 'audio/balloon-pop/hint-ship.mp3', text: 'This sound is like telling someone to be quiet!' },
+  { file: 'audio/balloon-pop/hint-cheese.mp3', text: 'What do you say when someone takes your picture? Say cheese!' },
+
+  // Feedback
+  { file: 'audio/balloon-pop/feedback-correct.mp3', text: 'Correct! Well done!' },
+  { file: 'audio/balloon-pop/feedback-incorrect.mp3', text: 'Not quite. Let\'s try the next one!' },
+  { file: 'audio/balloon-pop/feedback-complete.mp3', text: 'Quiz Complete! Great job popping those balloons!' },
+
+  // Help
+  { file: 'audio/balloon-pop/help.mp3', text: 'Look at the picture and the word with missing letters. Pop the balloon with the correct sound to complete the word!' },
+];
+
 // All templates
 const allTemplates = {
   'word-match': wordMatchAudio,
   'base10-blocks': base10BlocksAudio,
+  'balloon-pop': balloonPopAudio,
 };
 
 async function main() {
