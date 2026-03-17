@@ -356,9 +356,9 @@ const soundSelectAudio = [
   { file: 'audio/sound-select/question.mp3', text: 'Select the images that begin with the target sound!' },
 
   // Hints for each sound
-  { file: 'audio/sound-select/hint-c.mp3', text: 'Say each picture\'s name out loud. Does it start with the "cuh" sound, like cat or car?' },
+  { file: 'audio/sound-select/hint-c.mp3', text: 'Say each picture\'s name out loud. Does it start with c, like cat or car?' },
   { file: 'audio/sound-select/hint-s.mp3', text: 'Say each picture\'s name out loud. Does it start with the "sss" sound, like sun or snake?' },
-  { file: 'audio/sound-select/hint-d.mp3', text: 'Say each picture\'s name out loud. Does it start with the "duh" sound, like dog or dinosaur?' },
+  { file: 'audio/sound-select/hint-d.mp3', text: 'Say each picture\'s name out loud. Does it start with d, like dog or dinosaur?' },
 
   // Feedback
   { file: 'audio/sound-select/feedback-correct.mp3', text: 'Perfect! You found all the matches!' },
