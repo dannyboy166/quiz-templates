@@ -1,0 +1,27 @@
+# Environment variables (API keys - NEVER commit!)
+.env
+.env.local
+.env.*.local
+
+# Node modules
+node_modules/
+
+# Generated audio (optional - can be large)
+# audio/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Temporary files
+*.log
+*.tmp
+
+# Large media files (optional)
+*.zip
+*.MP4
+*.mp4
