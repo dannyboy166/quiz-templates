@@ -56,7 +56,27 @@ See `DOCUMENTATION.md` for full integration guide.
 
 ## Recent Updates
 
-**March 2025:**
+**March 2025 (Latest):**
+- **Lottie Animations** - Word Match and Sound Select now use animated Lottie images
+- **Professional Voice Audio** - ElevenLabs "Vonnie Voice" replaces browser speech synthesis
+- **New Hint System** - Word Match highlights the specific image needing help (no blocking overlay)
+- **Improved Mobile UX** - Larger touch targets on clock hands for easier grabbing
+- **Cleaner UI** - Removed white containers from picture-equations template
+
+**Word Match Template Features:**
+- 24 animated animal/object images across 4 pages
+- Drag words to match images
+- Pre-generated MP3 audio for all hints, feedback, and instructions
+- Inline hint highlighting: shows exactly which image needs help
+- Full Lottie animation support with configurable scaling
+
+**Audio Generation:**
+```bash
+npm install
+npm run generate-audio  # Requires .env with ElevenLabs API key
+```
+
+**Earlier March 2025:**
 - Added spinning compass progress bar to ALL templates
 - Added difficulty start screens to: Clock, Skip Counting, Color Blocks, Base 10 Blocks, Fractions
 - Colored difficulty buttons (cyan/purple/coral/charcoal) for consistent UX
