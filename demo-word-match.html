@@ -173,6 +173,53 @@
       box-shadow: 0 0 15px rgba(76, 175, 80, 0.4);
     }
 
+    /* Hint highlight system */
+    .image-card.dimmed {
+      opacity: 0.3;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+
+    .image-card.hint-active {
+      position: relative;
+      z-index: 50;
+      transform: scale(1.05);
+      box-shadow: 0 0 30px rgba(255, 193, 7, 0.8), 0 0 60px rgba(255, 193, 7, 0.4);
+      border: 3px solid #FFC107;
+    }
+
+    .hint-tooltip {
+      position: absolute;
+      bottom: -80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #333;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 500;
+      white-space: nowrap;
+      max-width: 280px;
+      white-space: normal;
+      text-align: center;
+      z-index: 60;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+
+    .hint-tooltip::before {
+      content: '';
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 10px solid transparent;
+      border-bottom-color: #333;
+      border-top: none;
+    }
+
+    /* No overlay needed - clicking dimmed cards dismisses hint */
+
     /* Modals */
     .modal-overlay {
       display: none;
@@ -1179,43 +1226,68 @@
       if (e.target === helpModal) helpModal.classList.remove('active');
     });
 
-    // Hint Modal
+    // Hint System - highlight image with tooltip
     const btnGetHint = document.getElementById('btn-get-hint');
-    const hintModal = document.getElementById('hint-modal');
-    const hintTitle = document.getElementById('hint-title');
-    const hintText = document.getElementById('hint-text');
-    const closeHint = document.getElementById('close-hint');
+
+    function clearHint() {
+      // Remove all hint classes and elements
+      document.querySelectorAll('.image-card').forEach(c => {
+        c.classList.remove('dimmed', 'hint-active');
+      });
+      document.querySelectorAll('.hint-tooltip').forEach(t => t.remove());
+    }
 
     btnGetHint.addEventListener('click', () => {
+      // Clear any existing hint
+      clearHint();
+
       // Find first empty or incorrect slot
+      let targetCard = null;
       for (const card of document.querySelectorAll('.image-card')) {
         const slot = card.querySelector('.word-slot');
         if (!slot.dataset.filled || slot.classList.contains('incorrect')) {
-          const hint = card.dataset.hint;
-          const word = card.dataset.answer;
-          hintTitle.innerHTML = "💡 Hint!";
-          hintText.innerHTML = hint;
-          hintModal.classList.add('active');
-
-          // Play hint audio
-          if (currentAudio) {
-            currentAudio.pause();
-            currentAudio.currentTime = 0;
-          }
-          currentAudio = new Audio(`audio/word-match/hint-${word}.mp3`);
-          currentAudio.play();
-          return;
+          targetCard = card;
+          break;
         }
       }
 
-      hintTitle.innerHTML = "🎉 All done!";
-      hintText.innerHTML = "All images have words! Click Check Answer!";
-      hintModal.classList.add('active');
-    });
+      if (targetCard) {
+        const hint = targetCard.dataset.hint;
+        const word = targetCard.dataset.answer;
 
-    closeHint.addEventListener('click', () => hintModal.classList.remove('active'));
-    hintModal.addEventListener('click', (e) => {
-      if (e.target === hintModal) hintModal.classList.remove('active');
+        // Dim all other cards
+        document.querySelectorAll('.image-card').forEach(c => {
+          if (c !== targetCard) {
+            c.classList.add('dimmed');
+          }
+        });
+
+        // Highlight the target card
+        targetCard.classList.add('hint-active');
+
+        // Add tooltip with hint text
+        const tooltip = document.createElement('div');
+        tooltip.className = 'hint-tooltip';
+        tooltip.innerHTML = `💡 ${hint}`;
+        targetCard.appendChild(tooltip);
+
+        // Dismiss hint when user starts dragging a word
+        document.querySelectorAll('.word-option').forEach(opt => {
+          opt.addEventListener('dragstart', clearHint, { once: true });
+          opt.addEventListener('touchstart', clearHint, { once: true });
+        });
+
+        // Play hint audio
+        if (currentAudio) {
+          currentAudio.pause();
+          currentAudio.currentTime = 0;
+        }
+        currentAudio = new Audio(`audio/word-match/hint-${word}.mp3`);
+        currentAudio.play();
+      } else {
+        // All cards filled - show a brief message
+        alert('All images have words! Click Check Answer!');
+      }
     });
 
     // Load Lottie for help button
