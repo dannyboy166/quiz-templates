@@ -798,7 +798,8 @@
     const hintModal = document.getElementById('hint-modal');
     document.getElementById('btn-get-hint').addEventListener('click', () => {
       hintModal.classList.add('active');
-      playAudio('audio/sound-select/hint.mp3');
+      const currentSound = questions[currentQuestion].sound;
+      playAudio(`audio/sound-select/hint-${currentSound}.mp3`);
     });
     document.getElementById('close-hint').addEventListener('click', () => hintModal.classList.remove('active'));
     hintModal.addEventListener('click', (e) => {
