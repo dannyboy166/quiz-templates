@@ -17,7 +17,9 @@ if (!API_KEY || !VOICE_ID) {
   process.exit(1);
 }
 
-// All audio to generate for word-match template
+// ==========================================
+// WORD MATCH
+// ==========================================
 const wordMatchAudio = [
   // Main question
   { file: 'audio/word-match/question.mp3', text: 'Match the correct word to label the images. Look at each picture and drag the word that matches it.' },
@@ -63,6 +65,27 @@ const wordMatchAudio = [
   { file: 'audio/word-match/help.mp3', text: 'Look at each animated picture. Drag the right word to match. Check your answers when done!' },
 ];
 
+// ==========================================
+// BASE 10 BLOCKS
+// ==========================================
+const base10BlocksAudio = [
+  // Main question
+  { file: 'audio/base10-blocks/question.mp3', text: 'How many blocks are there? Count the blue flats for hundreds, red rods for tens, and orange cubes for ones.' },
+
+  // Hints for each place value
+  { file: 'audio/base10-blocks/hint-hundreds.mp3', text: 'Count the big blue flats. Each one is worth one hundred!' },
+  { file: 'audio/base10-blocks/hint-tens.mp3', text: 'Count the red rods. Each one is worth ten!' },
+  { file: 'audio/base10-blocks/hint-ones.mp3', text: 'Count the small orange cubes. Each one is worth one!' },
+
+  // Feedback
+  { file: 'audio/base10-blocks/feedback-correct.mp3', text: 'Awesome! That\'s right!' },
+  { file: 'audio/base10-blocks/feedback-incorrect.mp3', text: 'Not quite. Give it another go!' },
+  { file: 'audio/base10-blocks/feedback-complete.mp3', text: 'Quiz Complete! Great job counting those blocks!' },
+
+  // Help
+  { file: 'audio/base10-blocks/help.mp3', text: 'Count the blocks to find the total. Blue flats are hundreds, red rods are tens, and orange cubes are ones. Add them all together!' },
+];
+
 async function generateAudio(text, outputPath) {
   console.log(`Generating: ${outputPath}`);
 
@@ -104,16 +127,42 @@ async function generateAudio(text, outputPath) {
   }
 }
 
+// All templates
+const allTemplates = {
+  'word-match': wordMatchAudio,
+  'base10-blocks': base10BlocksAudio,
+};
+
 async function main() {
+  // Get template from command line args
+  const template = process.argv[2];
+
+  let audioToGenerate;
+  let templateName;
+
+  if (template && allTemplates[template]) {
+    audioToGenerate = allTemplates[template];
+    templateName = template;
+  } else if (template) {
+    console.error(`Unknown template: ${template}`);
+    console.log('Available templates:', Object.keys(allTemplates).join(', '));
+    process.exit(1);
+  } else {
+    // Generate all if no template specified
+    audioToGenerate = Object.values(allTemplates).flat();
+    templateName = 'ALL';
+  }
+
   console.log('='.repeat(50));
   console.log('ElevenLabs Audio Generation Script');
   console.log('='.repeat(50));
   console.log(`Voice ID: ${VOICE_ID}`);
-  console.log(`Files to generate: ${wordMatchAudio.length}`);
+  console.log(`Template: ${templateName}`);
+  console.log(`Files to generate: ${audioToGenerate.length}`);
   console.log('='.repeat(50));
   console.log('');
 
-  for (const item of wordMatchAudio) {
+  for (const item of audioToGenerate) {
     await generateAudio(item.text, item.file);
   }
 

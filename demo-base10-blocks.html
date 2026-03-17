@@ -914,6 +914,9 @@
       const hintBox = document.getElementById(`hint-${hintType}`);
       if (hintBox) hintBox.classList.add('show');
 
+      // Play audio for this hint type
+      playAudio(`audio/base10-blocks/hint-${hintType}.mp3`);
+
       // Show the plus sign that comes BEFORE this hint (after the previous one)
       if (hintIndex > 0) {
         const prevHint = hintOrder[hintIndex - 1];
@@ -947,6 +950,7 @@
 
       if (isCorrect) {
         feedbackBadge.innerHTML = '&#127881; Awesome! That\'s right!';
+        playAudio('audio/base10-blocks/feedback-correct.mp3');
         answerInput.disabled = true;
         btnCheck.style.display = 'none';
         btnTryAgain.style.display = 'none';
@@ -959,6 +963,7 @@
         }, 500);
       } else {
         feedbackBadge.innerHTML = '&#128170; Not quite - give it another go!';
+        playAudio('audio/base10-blocks/feedback-incorrect.mp3');
         btnTryAgain.style.display = 'block';
         btnNext.style.display = 'none';
       }
@@ -1009,17 +1014,31 @@
     });
 
     // ==========================================
+    // Audio Player (Vonnie Voice)
+    // ==========================================
+    let currentAudio = null;
+
+    function playAudio(src, onEnd) {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      currentAudio = new Audio(src);
+      if (onEnd) currentAudio.onended = onEnd;
+      currentAudio.play();
+      return currentAudio;
+    }
+
+    // ==========================================
     // Read Aloud
     // ==========================================
     const btnReadAloud = document.getElementById('btn-read-aloud');
 
     btnReadAloud.addEventListener('click', () => {
-      speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance("How many blocks are there? Count the blue flats for hundreds, red rods for tens, and orange cubes for ones.");
-      utterance.rate = 0.9;
       btnReadAloud.classList.add('active');
-      utterance.onend = () => btnReadAloud.classList.remove('active');
-      speechSynthesis.speak(utterance);
+      playAudio('audio/base10-blocks/question.mp3', () => {
+        btnReadAloud.classList.remove('active');
+      });
     });
 
     // ==========================================
