@@ -777,12 +777,12 @@
   <!-- Help Modal -->
   <div class="modal-overlay" id="help-modal">
     <div class="modal-content">
-      <button class="modal-close" onclick="closeModal('help-modal')">×</button>
+      <div style="font-size: 48px; text-align: center; margin-bottom: 10px;">🎲</div>
       <h2>How to Play</h2>
       <div style="text-align: left; background: #FFF9E6; padding: 20px; border-radius: 12px; margin: 20px 0;">
         <p style="margin-bottom: 12px;">1. Tap the table to roll the dice</p>
-        <p style="margin-bottom: 12px;">2. Add up all the dots</p>
-        <p style="margin-bottom: 12px;">3. Click the correct answer</p>
+        <p style="margin-bottom: 12px;">2. Count the dots on the top face of each dice</p>
+        <p style="margin-bottom: 12px;">3. Add them up and click the correct answer</p>
         <p style="margin-bottom: 12px;">4. Wrong answer = +5 seconds penalty!</p>
         <p>5. Complete 10 rounds as fast as you can!</p>
       </div>
@@ -1294,6 +1294,7 @@
     document.getElementById('start-btn').addEventListener('click', startGame);
     document.getElementById('header-help').addEventListener('click', () => {
       document.getElementById('help-modal').classList.add('show');
+      playAudio('audio/dice-addition/help.mp3');
     });
 
     // Dice count selector

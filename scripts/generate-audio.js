@@ -213,6 +213,9 @@ const diceAdditionAudio = [
 
   // Start/Ready
   { file: 'audio/dice-addition/ready.mp3', text: 'Get ready! Add the dice as fast as you can!' },
+
+  // Help
+  { file: 'audio/dice-addition/help.mp3', text: 'Tap the table to roll the dice. Count the dots on the top face of each dice and add them up. Click the correct answer. Wrong answers add 5 seconds. Complete 10 rounds as fast as you can!' },
 ];
 
 // ==========================================

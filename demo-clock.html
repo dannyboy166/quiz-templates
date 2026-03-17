@@ -932,6 +932,15 @@
     ];
 
     btnGetHint.addEventListener('click', () => {
+      // Check if game has started
+      if (clocks.length === 0) {
+        hintTitle.innerHTML = "&#128161; Getting Started";
+        hintText.innerHTML = "First, choose a difficulty level and click <strong>Start!</strong><br><br>Then drag the clock hands to show the times displayed below each clock.";
+        hintModal.classList.add('active');
+        playAudio('audio/clock/help.mp3');
+        return;
+      }
+
       // Find first incorrect clock
       let foundIncorrect = false;
       for (let i = 0; i < 4; i++) {
