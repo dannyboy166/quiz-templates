@@ -209,7 +209,7 @@ const diceAdditionAudio = [
   // Feedback
   { file: 'audio/dice-addition/feedback-correct.mp3', text: 'Correct!' },
   { file: 'audio/dice-addition/feedback-incorrect.mp3', text: 'Oops! Plus 5 seconds!' },
-  { file: 'audio/dice-addition/feedback-complete.mp3', text: 'Time\'s up! Great job with those dice!' },
+  { file: 'audio/dice-addition/feedback-complete.mp3', text: 'All done! Great job with those dice!' },
 
   // Start/Ready
   { file: 'audio/dice-addition/ready.mp3', text: 'Get ready! Add the dice as fast as you can!' },

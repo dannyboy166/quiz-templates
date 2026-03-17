@@ -850,6 +850,7 @@
     let totalPenalty = 0;
     let isRolling = false;
     let hasRolled = false;
+    let pendingRoll = false; // Queue roll if tapped during transition
     let diceObjects = [];
     let currentTotal = 0;
 
@@ -1052,7 +1053,12 @@
 
     // Roll all dice
     async function rollDice() {
-      if (isRolling || hasRolled) return;
+      // If waiting for next round, queue the roll
+      if (hasRolled && !isRolling) {
+        pendingRoll = true;
+        return;
+      }
+      if (isRolling) return;
 
       isRolling = true;
       document.getElementById('dice-ground').classList.add('rolling');
@@ -1160,7 +1166,8 @@
       document.getElementById('equation-display').innerHTML =
         values.join(' <span class="operator">+</span> ') + ' <span class="operator">=</span> ' + currentTotal;
 
-      // Next round
+      // Next round - faster for correct answers
+      const delay = (answer === currentTotal) ? 400 : 800;
       setTimeout(() => {
         currentRound++;
         if (currentRound >= 10) {
@@ -1168,7 +1175,7 @@
         } else {
           nextRound();
         }
-      }, 800);
+      }, delay);
     }
 
     // Show penalty popup
@@ -1210,6 +1217,12 @@
       // Update compass progress
       const percentage = (currentRound / 10) * 100;
       updateCompass(percentage, true);
+
+      // If user tapped during transition, auto-roll
+      if (pendingRoll) {
+        pendingRoll = false;
+        rollDice();
+      }
     }
 
     // Timer
@@ -1272,6 +1285,7 @@
       penaltyCount = 0;
       totalPenalty = 0;
       hasRolled = false;
+      pendingRoll = false;
 
       document.getElementById('start-screen').style.display = 'none';
       document.getElementById('game-area').classList.add('show');
