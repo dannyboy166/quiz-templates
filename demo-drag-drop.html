@@ -140,14 +140,49 @@
       animation: celebrate 0.5s ease-in-out;
     }
 
-    /* Hint highlight for shapes */
-    .hint-highlight {
-      animation: pulseHint 1s ease-in-out 3;
+    /* Hint system - tooltip style like word-match */
+    .draggable-item.dimmed {
+      opacity: 0.3;
+      transition: opacity 0.3s;
     }
 
-    @keyframes pulseHint {
-      0%, 100% { transform: scale(1); box-shadow: none; }
-      50% { transform: scale(1.15); box-shadow: 0 0 20px rgba(255, 152, 0, 0.8); }
+    .draggable-item.hint-active {
+      position: relative;
+      z-index: 50;
+      transform: scale(1.15);
+      box-shadow: 0 0 30px rgba(255, 193, 7, 0.8), 0 0 60px rgba(255, 193, 7, 0.4);
+      border: 3px solid #FFC107;
+      border-radius: 12px;
+    }
+
+    .hint-tooltip {
+      position: absolute;
+      bottom: -85px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #333;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 500;
+      white-space: normal;
+      text-align: center;
+      z-index: 60;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      min-width: 180px;
+      max-width: 250px;
+    }
+
+    .hint-tooltip::before {
+      content: '';
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 10px solid transparent;
+      border-bottom-color: #333;
+      border-top: none;
     }
 
     /* Progress Bar with Compass */
@@ -344,14 +379,7 @@
     </div>
 
     <!-- Hint Modal -->
-    <div class="modal-overlay" id="hint-modal">
-      <div class="modal">
-        <div style="font-size: 40px; text-align: center; margin-bottom: 10px;">&#128161;</div>
-        <h2 style="text-align: center;" id="hint-title">Here's a hint!</h2>
-        <p style="text-align: center; font-size: 18px; margin: 20px 0;" id="hint-text"></p>
-        <button class="modal-close" id="close-hint">Thanks! &#128077;</button>
-      </div>
-    </div>
+    <!-- Hint is now shown as tooltip on the shape -->
 
     <!-- Content Card -->
     <div class="content-card">
@@ -671,13 +699,9 @@
     });
 
     // ==========================================
-    // Get Hint
+    // Get Hint - Tooltip style (like word-match)
     // ==========================================
     const btnGetHint = document.getElementById('btn-get-hint');
-    const hintModal = document.getElementById('hint-modal');
-    const hintTitle = document.getElementById('hint-title');
-    const hintText = document.getElementById('hint-text');
-    const closeHint = document.getElementById('close-hint');
 
     const shapeHints = {
       'triangle': { name: 'Triangle', sides: 3 },
@@ -690,10 +714,21 @@
       'hexagon': { name: 'Hexagon', sides: 6 }
     };
 
+    function clearHint() {
+      // Remove all hint classes and tooltips
+      document.querySelectorAll('.draggable-item').forEach(item => {
+        item.classList.remove('dimmed', 'hint-active');
+      });
+      document.querySelectorAll('.hint-tooltip').forEach(t => t.remove());
+    }
+
     btnGetHint.addEventListener('click', () => {
+      // Clear any existing hint
+      clearHint();
+
       // Find a shape that's not in the right place
       const items = document.querySelectorAll('.draggable-item');
-      let hintGiven = false;
+      let targetItem = null;
 
       for (const item of items) {
         const itemId = item.dataset.id;
@@ -701,35 +736,43 @@
         const correctZone = correctAnswers[itemId];
 
         if (!currentZone || currentZone.dataset.zone !== correctZone) {
-          // This shape needs help
-          const hint = shapeHints[itemId];
-          hintTitle.innerHTML = `&#128161; Look at the ${hint.name}!`;
-          hintText.innerHTML = `Count the sides carefully...<br><br>The <strong>${hint.name}</strong> has <strong>${hint.sides} sides</strong>!<br><br>Drag it to the jar that says "${hint.sides} sides"`;
-
-          // Highlight the shape
-          item.classList.remove('hint-highlight');
-          void item.offsetWidth;
-          item.classList.add('hint-highlight');
-
-          hintModal.classList.add('active');
-          hintGiven = true;
+          targetItem = item;
           break;
         }
       }
 
-      if (!hintGiven) {
-        hintTitle.innerHTML = "&#127881; Looking good!";
-        hintText.innerHTML = "All shapes seem to be in the right place!<br><br>Click <strong>Check Answer</strong> to see if you got them all!";
-        hintModal.classList.add('active');
+      if (targetItem) {
+        const itemId = targetItem.dataset.id;
+        const hint = shapeHints[itemId];
+
+        // Dim all other shapes
+        document.querySelectorAll('.draggable-item').forEach(item => {
+          if (item !== targetItem) {
+            item.classList.add('dimmed');
+          }
+        });
+
+        // Highlight the target shape
+        targetItem.classList.add('hint-active');
+
+        // Add tooltip with hint text
+        const tooltip = document.createElement('div');
+        tooltip.className = 'hint-tooltip';
+        tooltip.innerHTML = `💡 This ${hint.name} has <strong>${hint.sides} sides</strong>!`;
+        targetItem.appendChild(tooltip);
+
+        // Play hint audio
+        playAudio('audio/drag-drop/help.mp3');
+
+        // Dismiss hint when user starts dragging
+        document.querySelectorAll('.draggable-item').forEach(item => {
+          item.addEventListener('mousedown', clearHint, { once: true });
+          item.addEventListener('touchstart', clearHint, { once: true });
+        });
+      } else {
+        // All shapes in correct place
+        alert('All shapes look correct! Click Check Answer!');
       }
-    });
-
-    closeHint.addEventListener('click', () => {
-      hintModal.classList.remove('active');
-    });
-
-    hintModal.addEventListener('click', (e) => {
-      if (e.target === hintModal) hintModal.classList.remove('active');
     });
 
     // Load Lottie animation inline
