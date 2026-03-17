@@ -357,7 +357,7 @@ const soundSelectAudio = [
 
   // Hints for each sound
   { file: 'audio/sound-select/hint-c.mp3', text: 'Say each picture\'s name out loud. Does it start with c, like cat or car?' },
-  { file: 'audio/sound-select/hint-s.mp3', text: 'Say each picture\'s name out loud. Does it start with the "sss" sound, like sun or snake?' },
+  { file: 'audio/sound-select/hint-s.mp3', text: 'Say each picture\'s name out loud. Does it start with s, like sun or snake?' },
   { file: 'audio/sound-select/hint-d.mp3', text: 'Say each picture\'s name out loud. Does it start with d, like dog or dinosaur?' },
 
   // Feedback
