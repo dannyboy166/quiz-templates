@@ -853,6 +853,20 @@
     let diceObjects = [];
     let currentTotal = 0;
 
+    // Audio Player (Vonnie Voice)
+    let currentAudio = null;
+
+    function playAudio(src, onEnd) {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      currentAudio = new Audio(src);
+      if (onEnd) currentAudio.onended = onEnd;
+      currentAudio.play();
+      return currentAudio;
+    }
+
     // Dice class
     class Dice {
       constructor(diceEl, index) {
@@ -1123,12 +1137,14 @@
         btn.classList.add('correct');
         correctCount++;
         updateRoundDot(currentRound, true);
+        playAudio('audio/dice-addition/feedback-correct.mp3');
       } else {
         btn.classList.add('incorrect');
         penaltyCount++;
         totalPenalty += 5000; // 5 seconds
         showPenalty();
         updateRoundDot(currentRound, false);
+        playAudio('audio/dice-addition/feedback-incorrect.mp3');
 
         // Show correct answer
         for (let i = 0; i < 4; i++) {
@@ -1226,6 +1242,7 @@
       document.getElementById('penalty-count').textContent = penaltyCount;
 
       document.getElementById('game-over-modal').classList.add('show');
+      playAudio('audio/dice-addition/feedback-complete.mp3');
     }
 
     // Play again

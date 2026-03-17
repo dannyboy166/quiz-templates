@@ -151,11 +151,78 @@ const balloonPopAudio = [
   { file: 'audio/balloon-pop/help.mp3', text: 'Look at the picture and the word with missing letters. Pop the balloon with the correct sound to complete the word!' },
 ];
 
+// ==========================================
+// CLOCK
+// ==========================================
+const clockAudio = [
+  // Main question
+  { file: 'audio/clock/question.mp3', text: 'Set each clock to show the time below it. Drag the hands to the correct positions!' },
+
+  // Difficulty intros
+  { file: 'audio/clock/difficulty-hours.mp3', text: 'Hours only mode! Set the clocks to show times like 3 o\'clock.' },
+  { file: 'audio/clock/difficulty-half.mp3', text: 'Half hours mode! Set the clocks to show times like half past 3.' },
+  { file: 'audio/clock/difficulty-quarters.mp3', text: 'Quarter hours mode! Set the clocks to quarter past and quarter to times.' },
+  { file: 'audio/clock/difficulty-five.mp3', text: 'Five minute intervals! Set the clocks to any five-minute time.' },
+
+  // Hints
+  { file: 'audio/clock/hint-hour.mp3', text: 'The short hand points to the hour. Look at the number below the clock!' },
+  { file: 'audio/clock/hint-minute.mp3', text: 'The long hand points to the minutes. Remember, each number is 5 minutes!' },
+  { file: 'audio/clock/hint-all-correct.mp3', text: 'All your clocks look right! Click Check All Answers to confirm!' },
+
+  // Feedback
+  { file: 'audio/clock/feedback-correct.mp3', text: 'Well done! All clocks are set correctly!' },
+  { file: 'audio/clock/feedback-incorrect.mp3', text: 'Not quite right. Check the clocks highlighted in red.' },
+  { file: 'audio/clock/feedback-complete.mp3', text: 'Quiz Complete! You\'re a clock reading champion!' },
+
+  // Help
+  { file: 'audio/clock/help.mp3', text: 'The short hand shows the hour. The long hand shows the minutes. Drag them to match the time shown below each clock!' },
+];
+
+// ==========================================
+// COLOR BLOCKS
+// ==========================================
+const colorBlocksAudio = [
+  // Main question
+  { file: 'audio/color-blocks/question.mp3', text: 'Click the blocks to colour them and make the target number!' },
+
+  // Hints
+  { file: 'audio/color-blocks/hint-hundreds.mp3', text: 'Each big flat represents 100. Count how many hundreds you need!' },
+  { file: 'audio/color-blocks/hint-tens.mp3', text: 'Each tall column has 10 blocks. Count how many tens you need!' },
+  { file: 'audio/color-blocks/hint-ones.mp3', text: 'Each small cube is worth 1. Count how many ones you need!' },
+
+  // Feedback
+  { file: 'audio/color-blocks/feedback-correct.mp3', text: 'Perfect! You coloured the right number of blocks!' },
+  { file: 'audio/color-blocks/feedback-incorrect.mp3', text: 'Not quite. Try counting the blocks again!' },
+  { file: 'audio/color-blocks/feedback-complete.mp3', text: 'Quiz Complete! Great job colouring those blocks!' },
+
+  // Help
+  { file: 'audio/color-blocks/help.mp3', text: 'Click blocks to colour them. Big flats are 100, tall columns are 10, and small cubes are 1. Colour enough to match the target number!' },
+];
+
+// ==========================================
+// DICE ADDITION
+// ==========================================
+const diceAdditionAudio = [
+  // Main question
+  { file: 'audio/dice-addition/question.mp3', text: 'Add up the dice as fast as you can! Type your answer and press enter.' },
+
+  // Feedback
+  { file: 'audio/dice-addition/feedback-correct.mp3', text: 'Correct!' },
+  { file: 'audio/dice-addition/feedback-incorrect.mp3', text: 'Oops! Plus 5 seconds!' },
+  { file: 'audio/dice-addition/feedback-complete.mp3', text: 'Time\'s up! Great job with those dice!' },
+
+  // Start/Ready
+  { file: 'audio/dice-addition/ready.mp3', text: 'Get ready! Add the dice as fast as you can!' },
+];
+
 // All templates
 const allTemplates = {
   'word-match': wordMatchAudio,
   'base10-blocks': base10BlocksAudio,
   'balloon-pop': balloonPopAudio,
+  'clock': clockAudio,
+  'color-blocks': colorBlocksAudio,
+  'dice-addition': diceAdditionAudio,
 };
 
 async function main() {

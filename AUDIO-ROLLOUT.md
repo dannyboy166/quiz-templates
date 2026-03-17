@@ -28,14 +28,14 @@ Add ElevenLabs "Vonnie Voice" audio to ALL quiz templates, replacing browser spe
 - [x] **demo-word-match.html** - 29 audio files (question, 24 hints, feedback, help)
 - [x] **demo-base10-blocks.html** - 8 audio files (question, 3 place-value hints, feedback, help)
 - [x] **demo-balloon-pop.html** - 11 audio files (question, 6 word hints, feedback, help)
+- [x] **demo-clock.html** - 12 audio files (question, difficulty intros, hints, feedback, help)
+- [x] **demo-color-blocks.html** - 8 audio files (question, place-value hints, feedback, help)
+- [x] **demo-dice-addition.html** - 5 audio files (question, feedback, ready)
 
 ### IN PROGRESS
-- [ ] **demo-clock.html**
+- [ ] **demo-fractions.html**
 
 ### TODO (Quiz Templates)
-- [ ] demo-clock.html
-- [ ] demo-color-blocks.html
-- [ ] demo-dice-addition.html
 - [ ] demo-drag-drop.html
 - [ ] demo-fractions.html
 - [ ] demo-line-match.html

@@ -851,6 +851,22 @@
     let totalQuestions = 10;
     let score = 0;
 
+    // ==========================================
+    // Audio Player (Vonnie Voice)
+    // ==========================================
+    let currentAudio = null;
+
+    function playAudio(src, onEnd) {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      currentAudio = new Audio(src);
+      if (onEnd) currentAudio.onended = onEnd;
+      currentAudio.play();
+      return currentAudio;
+    }
+
     // DOM Elements
     const hundredsSection = document.getElementById('hundreds-section');
     const tensSection = document.getElementById('tens-section');
@@ -1187,6 +1203,7 @@
         score++;
         feedbackBadge.classList.add('correct');
         feedbackBadge.innerHTML = `&#127881; Perfect! You coloured exactly ${TARGET} blocks!`;
+        playAudio('audio/color-blocks/feedback-correct.mp3');
         btnCheck.style.display = 'none';
         btnTryAgain.style.display = 'none';
         btnNext.style.display = 'flex';
@@ -1201,6 +1218,7 @@
         } else {
           feedbackBadge.innerHTML = `&#128170; You coloured ${coloredCount} blocks. That's ${coloredCount - TARGET} too many!`;
         }
+        playAudio('audio/color-blocks/feedback-incorrect.mp3');
         btnTryAgain.style.display = 'block';
         btnNext.style.display = 'none';
       }
@@ -1229,35 +1247,15 @@
     });
 
     // ==========================================
-    // Read Aloud
+    // Read Aloud - Vonnie Voice
     // ==========================================
     const btnReadAloud = document.getElementById('btn-read-aloud');
 
     btnReadAloud.addEventListener('click', () => {
-      speechSynthesis.cancel();
-      const hundreds = Math.floor(TARGET / 100);
-      const tens = Math.floor((TARGET % 100) / 10);
-      const ones = TARGET % 10;
-      let questionText = `Colour the blocks to make ${TARGET}. `;
-      if (hundreds > 0) {
-        questionText += `Each flat is 100 blocks. `;
-      }
-      if (tens > 0 || hundreds > 0) {
-        questionText += `Each tall column has 10 blocks. `;
-      }
-      questionText += `You need to colour `;
-      if (hundreds > 0) {
-        questionText += `${hundreds} hundred flat${hundreds !== 1 ? 's' : ''}, `;
-      }
-      if (tens > 0) {
-        questionText += `${tens} column${tens !== 1 ? 's' : ''}, `;
-      }
-      questionText += `and ${ones} single block${ones !== 1 ? 's' : ''} to make ${TARGET}.`;
-      const utterance = new SpeechSynthesisUtterance(questionText);
-      utterance.rate = 0.9;
       btnReadAloud.classList.add('active');
-      utterance.onend = () => btnReadAloud.classList.remove('active');
-      speechSynthesis.speak(utterance);
+      playAudio('audio/color-blocks/question.mp3', () => {
+        btnReadAloud.classList.remove('active');
+      });
     });
 
     // ==========================================
@@ -1313,6 +1311,16 @@
       hintTitle.innerHTML = "&#128161; Hint!";
       hintText.innerHTML = hints[hintIndex % hints.length];
       hintModal.classList.add('active');
+
+      // Play appropriate hint audio
+      if (hintIndex === 0 && hundreds > 0) {
+        playAudio('audio/color-blocks/hint-hundreds.mp3');
+      } else if (hintIndex <= 1 && tens > 0) {
+        playAudio('audio/color-blocks/hint-tens.mp3');
+      } else {
+        playAudio('audio/color-blocks/hint-ones.mp3');
+      }
+
       hintIndex = (hintIndex + 1);
     });
 

@@ -633,6 +633,22 @@
     let currentRound = 0;
     const totalRounds = 6;
 
+    // ==========================================
+    // Audio Player (Vonnie Voice)
+    // ==========================================
+    let currentAudio = null;
+
+    function playAudio(src, onEnd) {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      currentAudio = new Audio(src);
+      if (onEnd) currentAudio.onended = onEnd;
+      currentAudio.play();
+      return currentAudio;
+    }
+
     // DOM Elements
     const btnCheck = document.getElementById('btn-check');
     const feedback = document.getElementById('feedback');
@@ -817,15 +833,18 @@
         if (currentRound >= totalRounds) {
           feedbackBadge.innerHTML = '&#127881; Amazing! You completed all 6 rounds!';
           btnNext.title = 'Play Again';
+          playAudio('audio/clock/feedback-complete.mp3');
         } else {
           feedbackBadge.innerHTML = `&#127881; Round ${currentRound} complete! ${totalRounds - currentRound} more to go!`;
           btnNext.title = 'Next Round';
+          playAudio('audio/clock/feedback-correct.mp3');
         }
 
         // Celebrate animation
         document.querySelectorAll('.clock-item').forEach(item => item.classList.add('celebrate'));
       } else {
         feedbackBadge.innerHTML = `&#128170; ${correctCount}/4 correct - Keep trying, you've got this!`;
+        playAudio('audio/clock/feedback-incorrect.mp3');
         btnTryAgain.style.display = 'block';
         btnNext.style.display = 'none';
       }
@@ -859,27 +878,15 @@
     btnNext.addEventListener('click', nextRound);
 
     // ==========================================
-    // Read Aloud - Uses Web Speech API
+    // Read Aloud - Vonnie Voice
     // ==========================================
     const btnReadAloud = document.getElementById('btn-read-aloud');
 
     btnReadAloud.addEventListener('click', () => {
-      // Stop any current speech
-      speechSynthesis.cancel();
-
-      // Build the text to read with dynamic times
-      const targetTimeLabels = targets.map(t => formatTime(t.hour, t.minute));
-      const textToRead = `${questionText}. The four times are: ${targetTimeLabels.join(', ')}.`;
-
-      const utterance = new SpeechSynthesisUtterance(textToRead);
-      utterance.rate = 0.9;
-      utterance.pitch = 1;
-
-      // Visual feedback
       btnReadAloud.classList.add('active');
-      utterance.onend = () => btnReadAloud.classList.remove('active');
-
-      speechSynthesis.speak(utterance);
+      playAudio('audio/clock/question.mp3', () => {
+        btnReadAloud.classList.remove('active');
+      });
     });
 
     // ==========================================
@@ -963,6 +970,8 @@
           hintText.innerHTML = `${encourage}<br><br>This clock should show <strong>${targetTime}</strong><br><br>${hintDetails}`;
 
           hintModal.classList.add('active');
+          // Play appropriate hint audio
+          playAudio(targetMin === 0 ? 'audio/clock/hint-hour.mp3' : 'audio/clock/hint-minute.mp3');
 
           hintIndex = (checkIndex + 1) % 4;
           foundIncorrect = true;
@@ -974,6 +983,7 @@
         hintTitle.innerHTML = "&#127881; Amazing!";
         hintText.innerHTML = "All your clocks look right!<br><br>Click <strong>Check All Answers</strong> to see if you got them all!";
         hintModal.classList.add('active');
+        playAudio('audio/clock/hint-all-correct.mp3');
       }
     });
 
