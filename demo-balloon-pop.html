@@ -76,6 +76,14 @@
       cursor: pointer;
     }
 
+    /* Debug mode - shows clickable hitbox (toggle with ?debug in URL) */
+    .debug-hitbox .balloon svg ellipse:first-of-type {
+      stroke: red !important;
+      stroke-width: 4 !important;
+      stroke-dasharray: 5,5;
+      fill-opacity: 0.7;
+    }
+
     .balloon.popped svg ellipse,
     .balloon.disabled svg ellipse {
       pointer-events: none;
@@ -196,8 +204,9 @@
       pointer-events: none;
     }
 
+    /* Balloon wrapper is click-through, only ellipse captures clicks */
     .game-layout .balloons-container .balloon {
-      pointer-events: auto;
+      pointer-events: none;
     }
 
     @media (max-width: 600px) {
@@ -1395,6 +1404,12 @@
         cancelAnimationFrame(floatingAnimationId);
         floatingAnimationId = null;
       }
+    }
+
+    // Debug mode - add ?debug to URL to see balloon hitboxes
+    if (window.location.search.includes('debug')) {
+      document.body.classList.add('debug-hitbox');
+      console.log('Debug mode: showing balloon hitboxes');
     }
 
     // Start
