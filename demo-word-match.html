@@ -48,12 +48,13 @@
       border: 2px solid #ddd;
       border-radius: 8px;
       padding: 12px 8px;
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 600;
       text-align: center;
       cursor: grab;
       transition: all 0.2s;
       user-select: none;
+      text-transform: capitalize;
     }
 
     .word-option:hover {
@@ -88,21 +89,21 @@
       gap: 10px;
       background: white;
       border-radius: 16px;
-      padding: 20px;
+      padding: 15px;
     }
 
     .image-box {
-      width: 140px;
-      height: 110px;
+      width: 120px;
+      height: 100px;
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
     }
 
-    .image-box img {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
+    .image-box lottie-player {
+      width: 100%;
+      height: 100%;
     }
 
     /* Word drop zone */
@@ -113,9 +114,10 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 600;
       transition: all 0.2s;
+      text-transform: capitalize;
     }
 
     .word-slot.highlight {
@@ -238,6 +240,7 @@
       align-items: center;
       justify-content: center;
       box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      color: white;
     }
 
     .btn-next:hover {
@@ -368,22 +371,22 @@
         gap: 15px;
       }
       .image-card {
-        padding: 15px;
+        padding: 12px;
       }
       .image-box {
-        width: 100px;
-        height: 80px;
+        width: 90px;
+        height: 75px;
       }
     }
 
     @media (max-width: 500px) {
       .word-bank {
-        grid-template-columns: repeat(5, 1fr);
+        grid-template-columns: repeat(4, 1fr);
         gap: 6px;
       }
       .word-option {
         padding: 8px 4px;
-        font-size: 14px;
+        font-size: 13px;
       }
       .image-grid {
         grid-template-columns: repeat(3, 1fr);
@@ -395,7 +398,7 @@
       }
       .image-box {
         width: 70px;
-        height: 55px;
+        height: 60px;
       }
       .word-slot {
         min-width: 50px;
@@ -414,12 +417,12 @@
 
     @media (max-width: 380px) {
       .word-bank {
-        grid-template-columns: repeat(5, 1fr);
+        grid-template-columns: repeat(4, 1fr);
         gap: 4px;
       }
       .word-option {
         padding: 6px 2px;
-        font-size: 12px;
+        font-size: 11px;
       }
       .image-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -427,7 +430,7 @@
       }
       .image-box {
         width: 65px;
-        height: 50px;
+        height: 55px;
       }
     }
   </style>
@@ -484,7 +487,7 @@
     <!-- Question Meta -->
     <div class="question-meta">
       <span class="badge" style="background: #E91E63; color: white;">ENGLISH</span>
-      <span class="question-progress">Question <span id="current-q">1</span> of <span id="total-q">1</span></span>
+      <span class="question-progress">Question <span id="current-q">1</span> of <span id="total-q">4</span></span>
     </div>
 
     <!-- Question Title -->
@@ -516,7 +519,7 @@
         <div style="font-size: 40px; text-align: center; margin-bottom: 10px;">🏷️</div>
         <h2 style="text-align: center;">Match the Words!</h2>
         <div style="background: #FFF9E6; padding: 15px; border-radius: 12px; margin: 15px 0;">
-          <p style="margin: 8px 0;"><strong>👀 Look</strong> at each picture carefully</p>
+          <p style="margin: 8px 0;"><strong>👀 Look</strong> at each animated picture</p>
           <p style="margin: 8px 0;"><strong>🎯 Drag</strong> the right word to match</p>
           <p style="margin: 8px 0;"><strong>✅ Check</strong> your answers when done!</p>
         </div>
@@ -605,18 +608,77 @@
       compassContainer.style.left = percentage + '%';
     }
 
-    // Image-word pairs (answer key)
-    const imageWords = [
-      { image: 'https://images.emojiterra.com/google/noto-emoji/unicode-15.1/color/512px/1f442.png', word: 'Ear', hint: 'You hear with this!' },
-      { image: 'https://images.emojiterra.com/google/noto-emoji/unicode-15.1/color/512px/1f3cf.png', word: 'Bat', hint: 'You hit a ball with this!' },
-      { image: 'https://images.emojiterra.com/google/noto-emoji/unicode-15.1/color/512px/1f622.png', word: 'Sad', hint: 'A feeling when you\'re not happy' },
-      { image: 'https://images.emojiterra.com/google/noto-emoji/unicode-15.1/color/512px/1f969.png', word: 'Ham', hint: 'A type of meat' },
-      { image: 'https://images.emojiterra.com/google/noto-emoji/unicode-15.1/color/512px/1f6b0.png', word: 'Tap', hint: 'Water comes out of this' },
-      { image: 'https://images.emojiterra.com/google/noto-emoji/unicode-15.1/color/512px/1f5fa.png', word: 'Map', hint: 'Shows you where places are' }
+    // ==========================================
+    // Question Data - 4 pages x 6 Lottie images each
+    // ==========================================
+    const allPages = [
+      // Page 1: Common animals
+      {
+        items: [
+          { lottie: 'dog.json', word: 'dog', hint: 'This animal barks and is man\'s best friend!' },
+          { lottie: 'cat.json', word: 'cat', hint: 'This animal meows and loves to sleep!' },
+          { lottie: 'fish.json', word: 'fish', hint: 'This animal swims in water!' },
+          { lottie: 'frog.json', word: 'frog', hint: 'This animal says "ribbit" and jumps!' },
+          { lottie: 'bee.json', word: 'bee', scale: 1.3, hint: 'This insect makes honey!' },
+          { lottie: 'ant.json', word: 'ant', hint: 'This tiny insect is very strong!' }
+        ],
+        distractors: ['bat', 'rat']
+      },
+      // Page 2: Safari animals
+      {
+        items: [
+          { lottie: 'elephant.json', word: 'elephant', scale: 1.15, hint: 'This big animal has a long trunk!' },
+          { lottie: 'giraffe.json', word: 'giraffe', scale: 1.15, hint: 'This animal has a very long neck!' },
+          { lottie: 'zebra.json', word: 'zebra', hint: 'This animal has black and white stripes!' },
+          { lottie: 'horse.json', word: 'horse', hint: 'People ride on this animal!' },
+          { lottie: 'sheep.json', word: 'sheep', scale: 1.8, hint: 'This fluffy animal says "baa"!' },
+          { lottie: 'goat.json', word: 'goat', hint: 'This animal has horns and a beard!' }
+        ],
+        distractors: ['cow', 'pig']
+      },
+      // Page 3: More animals
+      {
+        items: [
+          { lottie: 'rabbit.json', word: 'rabbit', hint: 'This animal has long ears and hops!' },
+          { lottie: 'mouse.json', word: 'mouse', hint: 'This tiny animal loves cheese!' },
+          { lottie: 'snake.json', word: 'snake', hint: 'This animal slithers on the ground!' },
+          { lottie: 'dolphin.json', word: 'dolphin', hint: 'This smart animal lives in the ocean!' },
+          { lottie: 'whale.json', word: 'whale', scale: 1.5, hint: 'This is the biggest animal in the sea!' },
+          { lottie: 'bat.json', word: 'bat', hint: 'This animal flies at night!' }
+        ],
+        distractors: ['rat', 'hen']
+      },
+      // Page 4: Mixed animals
+      {
+        items: [
+          { lottie: 'chicken.json', word: 'chicken', hint: 'This bird lays eggs!' },
+          { lottie: 'deer.json', word: 'deer', hint: 'This animal has antlers!' },
+          { lottie: 'snail.json', word: 'snail', hint: 'This slow animal carries its house!' },
+          { lottie: 'dinosaur.json', word: 'dinosaur', scale: 1.15, hint: 'This animal lived millions of years ago!' },
+          { lottie: 'crocodile.json', word: 'crocodile', hint: 'This reptile has big teeth!' },
+          { lottie: 'car.json', word: 'car', scale: 1.2, offsetY: 25, hint: 'You drive this on the road!' }
+        ],
+        distractors: ['bus', 'van']
+      }
     ];
 
-    // All word options (6 correct + 4 distractors = 10 total)
-    const allWords = ['Tap', 'Ham', 'Bat', 'Sad', 'Map', 'Ear', 'Cat', 'Hat', 'Tag', 'Man'];
+    let currentPage = 0;
+    const totalPages = allPages.length;
+
+    // Track placements
+    let placements = {};
+    let draggedWord = null;
+    let draggedElement = null;
+    let ghostElement = null;
+
+    // DOM elements
+    const wordBank = document.getElementById('word-bank');
+    const imageGrid = document.getElementById('image-grid');
+    const btnCheck = document.getElementById('btn-check');
+    const feedback = document.getElementById('feedback');
+    const feedbackBadge = document.getElementById('feedback-badge');
+    const btnTryAgain = document.getElementById('btn-try-again');
+    const btnNext = document.getElementById('btn-next');
 
     // Shuffle array
     function shuffle(arr) {
@@ -628,52 +690,80 @@
       return a;
     }
 
-    // Generate word bank
-    const wordBank = document.getElementById('word-bank');
-    shuffle(allWords).forEach(word => {
-      const option = document.createElement('div');
-      option.className = 'word-option';
-      option.textContent = word;
-      option.dataset.word = word;
-      option.draggable = true;
+    // Load a page
+    function loadPage(pageIndex, animate = false) {
+      currentPage = pageIndex;
+      placements = {};
 
-      option.addEventListener('dragstart', onDragStart);
-      option.addEventListener('dragend', onDragEnd);
-      option.addEventListener('touchstart', onTouchStart, { passive: false });
-      option.addEventListener('touchmove', onTouchMove, { passive: false });
-      option.addEventListener('touchend', onTouchEnd);
+      const page = allPages[pageIndex];
+      const items = page.items;
 
-      wordBank.appendChild(option);
-    });
+      // Update progress
+      document.getElementById('current-q').textContent = pageIndex + 1;
+      document.getElementById('total-q').textContent = totalPages;
+      updateCompass((pageIndex / totalPages) * 100, animate);
 
-    // Generate image grid
-    const imageGrid = document.getElementById('image-grid');
-    shuffle(imageWords).forEach((item, index) => {
-      const card = document.createElement('div');
-      card.className = 'image-card';
-      card.dataset.answer = item.word;
-      card.dataset.hint = item.hint;
+      // Reset UI
+      feedback.style.display = 'none';
+      btnCheck.style.display = 'block';
+      btnTryAgain.style.display = 'none';
+      btnNext.style.display = 'none';
 
-      card.innerHTML = `
-        <div class="image-box">
-          <img src="${item.image}" alt="Image ${index + 1}">
-        </div>
-        <div class="word-slot" data-filled=""></div>
-      `;
+      // Get all words (correct + distractors)
+      const allWords = [...items.map(i => i.word), ...page.distractors];
 
-      // Drop events
-      card.addEventListener('dragover', onDragOver);
-      card.addEventListener('dragleave', onDragLeave);
-      card.addEventListener('drop', onDrop);
+      // Generate word bank
+      wordBank.innerHTML = '';
+      shuffle(allWords).forEach(word => {
+        const option = document.createElement('div');
+        option.className = 'word-option';
+        option.textContent = word;
+        option.dataset.word = word;
+        option.draggable = true;
 
-      imageGrid.appendChild(card);
-    });
+        option.addEventListener('dragstart', onDragStart);
+        option.addEventListener('dragend', onDragEnd);
+        option.addEventListener('touchstart', onTouchStart, { passive: false });
+        option.addEventListener('touchmove', onTouchMove, { passive: false });
+        option.addEventListener('touchend', onTouchEnd);
 
-    // Track placements
-    let placements = {};
-    let draggedWord = null;
-    let draggedElement = null;
-    let ghostElement = null;
+        wordBank.appendChild(option);
+      });
+
+      // Generate image grid with Lotties
+      imageGrid.innerHTML = '';
+      shuffle(items).forEach((item, index) => {
+        const card = document.createElement('div');
+        card.className = 'image-card';
+        card.dataset.answer = item.word;
+        card.dataset.hint = item.hint;
+
+        const scale = item.scale || 1.0;
+        const offsetY = item.offsetY || 0;
+        const size = 100 * scale;
+
+        card.innerHTML = `
+          <div class="image-box">
+            <lottie-player
+              src="lottie-assets/${item.lottie}"
+              background="transparent"
+              speed="1"
+              style="width: ${size}px; height: ${size}px; transform: translateY(${offsetY}px);"
+              loop
+              autoplay
+            ></lottie-player>
+          </div>
+          <div class="word-slot" data-filled=""></div>
+        `;
+
+        // Drop events
+        card.addEventListener('dragover', onDragOver);
+        card.addEventListener('dragleave', onDragLeave);
+        card.addEventListener('drop', onDrop);
+
+        imageGrid.appendChild(card);
+      });
+    }
 
     function onDragStart(e) {
       if (e.target.classList.contains('used')) {
@@ -809,15 +899,10 @@
     }
 
     // Check answers
-    const btnCheck = document.getElementById('btn-check');
-    const feedback = document.getElementById('feedback');
-    const feedbackBadge = document.getElementById('feedback-badge');
-    const btnTryAgain = document.getElementById('btn-try-again');
-    const btnNext = document.getElementById('btn-next');
-
     btnCheck.addEventListener('click', () => {
+      const items = allPages[currentPage].items;
       let correct = 0;
-      let total = imageWords.length;
+      let total = items.length;
 
       document.querySelectorAll('.image-card').forEach(card => {
         const answer = card.dataset.answer;
@@ -848,7 +933,11 @@
         btnCheck.style.display = 'none';
         btnTryAgain.style.display = 'none';
         btnNext.style.display = 'flex';
-        updateCompass(100, true);
+
+        if (currentPage === totalPages - 1) {
+          updateCompass(100, true);
+        }
+
         document.querySelector('.image-grid').classList.add('celebrate');
       } else {
         feedbackBadge.classList.add('incorrect');
@@ -879,7 +968,22 @@
 
     // Next Question
     btnNext.addEventListener('click', () => {
-      window.location.href = 'index.html';
+      if (currentPage < totalPages - 1) {
+        loadPage(currentPage + 1, true);
+      } else {
+        // Quiz complete!
+        imageGrid.innerHTML = `
+          <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
+            <div style="font-size: 60px; margin-bottom: 20px;">🎉</div>
+            <h2 style="font-size: 28px; margin-bottom: 10px;">Quiz Complete!</h2>
+            <p style="font-size: 18px; color: #666;">You matched all 24 words correctly!</p>
+            <button onclick="window.location='index.html'" style="margin-top: 20px; padding: 15px 40px; background: black; color: white; border: none; border-radius: 25px; font-size: 16px; cursor: pointer;">Back to Home</button>
+          </div>
+        `;
+        wordBank.innerHTML = '';
+        btnCheck.style.display = 'none';
+        feedback.style.display = 'none';
+      }
     });
 
     // Read Aloud
@@ -893,10 +997,6 @@
       btnReadAloud.classList.add('active');
       utterance.onend = () => btnReadAloud.classList.remove('active');
       speechSynthesis.speak(utterance);
-    });
-
-    document.querySelector('.btn-read-aloud').addEventListener('click', () => {
-      btnReadAloud.click();
     });
 
     // Help Modal
@@ -941,10 +1041,13 @@
       if (e.target === hintModal) hintModal.classList.remove('active');
     });
 
-    // Load Lottie
+    // Load Lottie for help button
     const helpLottie = document.getElementById('help-lottie');
     const lottieData = {"v":"5.4.4","fr":60,"ip":0,"op":132,"w":100,"h":100,"nm":"Question 2","assets":[],"layers":[{"ind":1,"ty":4,"nm":"? Outlines","sr":1,"ks":{"o":{"a":0,"k":100},"r":{"a":0,"k":0},"p":{"a":0,"k":[50.713,49.149,0]},"a":{"a":0,"k":[-0.214,-10.242,0]},"s":{"a":1,"k":[{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":61,"s":[200,200,100],"e":[210,210,100]},{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":71,"s":[210,210,100],"e":[200,200,100]},{"t":80}]}},"ao":0,"shapes":[{"ty":"gr","it":[{"ind":0,"ty":"sh","ks":{"a":0,"k":{"i":[[0,0],[0,0],[0,0],[0,3.203],[4.23,0],[0.242,-3.897],[0,0],[-1.601,0],[0,-1.541],[1.692,0],[0,0]],"o":[[0,0],[0,0],[3.565,-0.483],[0,-3.988],[-4.592,0],[0,0],[0.121,-1.45],[1.601,0],[0,1.662],[0,0],[0,0]],"v":[[-2.556,-6.617],[1.16,-6.617],[1.311,-8.369],[7.142,-14.17],[-0.199,-20.816],[-7.571,-14.351],[-2.828,-14.351],[-0.048,-16.738],[2.61,-14.17],[-0.381,-11.541],[-2.858,-11.541]],"c":true}},"nm":"?"},{"ind":1,"ty":"sh","ks":{"a":0,"k":{"i":[[-1.42,0],[0,1.45],[1.45,0],[0,-1.45]],"o":[[1.45,0],[0,-1.45],[-1.42,0],[0,1.45]],"v":[[-0.834,0.332],[1.825,-2.206],[-0.834,-4.743],[-3.462,-2.206]],"c":true}},"nm":"?"},{"ty":"mm","mm":1,"nm":"Merge Paths 1"},{"ty":"fl","c":{"a":0,"k":[1,1,1,1]},"o":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":61,"s":[0],"e":[100]},{"t":71}]},"r":1,"nm":"Fill 1"},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":0},"o":{"a":0,"k":100},"sk":{"a":0,"k":0},"sa":{"a":0,"k":0},"nm":"Transform"}],"nm":"?"},{"ty":"tm","s":{"a":0,"k":0},"e":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":37,"s":[0],"e":[100]},{"t":61}]},"o":{"a":0,"k":0},"m":1,"nm":"Trim Paths 1"},{"ty":"st","c":{"a":0,"k":[1,1,1,1]},"o":{"a":0,"k":100},"w":{"a":0,"k":1},"lc":1,"lj":1,"ml":4,"nm":"Stroke 1"}],"ip":0,"op":132,"st":0},{"ind":3,"ty":3,"nm":"▽ Group 6","sr":1,"ks":{"o":{"a":0,"k":100},"r":{"a":0,"k":0},"p":{"a":0,"k":[50,50,0]},"a":{"a":0,"k":[42,42,0]},"s":{"a":0,"k":[100,100,100]}},"ao":0,"ip":0,"op":132,"st":0},{"ind":4,"ty":4,"nm":"Rectangle 6 Copy","parent":3,"sr":1,"ks":{"o":{"a":0,"k":100},"r":{"a":0,"k":0},"p":{"a":0,"k":[42,42,0]},"a":{"a":0,"k":[0,0,0]},"s":{"a":1,"k":[{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":21,"s":[100,100,100],"e":[110,110,100]},{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":29,"s":[110,110,100],"e":[100,100,100]},{"t":36}]}},"ao":0,"shapes":[{"ty":"gr","it":[{"ty":"rc","d":1,"s":{"a":0,"k":[42,42]},"p":{"a":0,"k":[0,0]},"r":{"a":0,"k":21},"nm":"Rectangle Path 1"},{"ty":"tm","s":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":0,"s":[0],"e":[100]},{"t":22}]},"e":{"a":0,"k":0},"o":{"a":0,"k":-90},"m":1,"nm":"Trim Paths 1"},{"ty":"st","c":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":13,"s":[0.74,0.729,0.709,1],"e":[0.961,0.694,0.196,1]},{"t":22}]},"o":{"a":0,"k":100},"w":{"a":0,"k":2},"lc":2,"lj":1,"ml":4,"nm":"Stroke 1"},{"ty":"fl","c":{"a":0,"k":[0.953,0.691,0.256,1]},"o":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":21,"s":[1],"e":[100]},{"t":26}]},"r":1,"nm":"Fill 1"},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[200,200]},"r":{"a":0,"k":0},"o":{"a":0,"k":100},"sk":{"a":0,"k":0},"sa":{"a":0,"k":0},"nm":"Transform"}],"nm":"Rectangle 6 Copy"}],"ip":0,"op":132,"st":0}],"markers":[]};
     helpLottie.load(lottieData);
+
+    // Start
+    loadPage(0);
   </script>
 </body>
 </html>
