@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Balloon Pop - Quiz Template</title>
   <link rel="stylesheet" href="css/base.css">
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
   <style>
     body {
       background: rgb(178, 235, 242);
@@ -254,17 +255,21 @@
     .picture-container {
       margin-bottom: 20px;
       overflow: visible;
+      width: 180px;
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    .picture-emoji {
-      font-size: 160px;
-      line-height: 1.2;
-      display: inline-block;
+    .picture-container lottie-player {
+      pointer-events: none;
     }
 
     @media (max-width: 600px) {
-      .picture-emoji {
-        font-size: 110px;
+      .picture-container {
+        width: 140px;
+        height: 140px;
       }
     }
 
@@ -701,8 +706,8 @@
           <!-- Word Area -->
           <div class="word-area">
             <!-- Picture -->
-            <div class="picture-container">
-              <span class="picture-emoji" id="picture-emoji">🐟</span>
+            <div class="picture-container" id="picture-container">
+              <!-- Lottie player will be inserted by JS -->
             </div>
 
             <!-- Word Display -->
@@ -818,85 +823,91 @@
     // Balloon colors
     const balloonColors = ['balloon-red', 'balloon-blue', 'balloon-yellow', 'balloon-green', 'balloon-purple', 'balloon-orange'];
 
-    // Question data - supports 2-8 balloons per question
+    // Question data - using Lottie animations
     const questions = [
       {
         word: "fish",
-        blankPosition: "end", // where the digraph goes: "start" or "end"
+        blankPosition: "end",
         blankLetters: "sh",
-        displayWord: ["fi", "_"],  // parts of the word, _ = blank
-        options: ["ch", "sh"],  // 2 balloons - easier
+        displayWord: ["fi", "_"],
+        options: ["ch", "sh"],
         correct: "sh",
-        emoji: "🐟",
+        lottie: "fish.json",
+        scale: 1.0,
         soundName: "sh",
-        soundDescription: "Shhh! Like a quiet whisper or a fishy kiss!",
+        soundDescription: "Shhh! Like a quiet whisper!",
         soundExamples: "ship, shoe, shell",
         hint: "This word ends with a quiet sound, like when you tell someone to be quiet: Shhh!"
       },
       {
-        word: "chair",
+        word: "sheep",
+        blankPosition: "start",
+        blankLetters: "sh",
+        displayWord: ["_", "eep"],
+        options: ["sh", "ch", "th"],
+        correct: "sh",
+        lottie: "sheep.json",
+        scale: 1.8,
+        soundName: "sh",
+        soundDescription: "Shhh! Like the sound this fluffy animal makes!",
+        soundExamples: "ship, shell, shore",
+        hint: "This sound is like telling someone to be quiet: Shhh!"
+      },
+      {
+        word: "chicken",
         blankPosition: "start",
         blankLetters: "ch",
-        displayWord: ["_", "air"],
-        options: ["ch", "sh", "th"],  // 3 balloons
+        displayWord: ["_", "icken"],
+        options: ["ch", "sh", "th", "ph"],
         correct: "ch",
-        emoji: "🪑",
+        lottie: "chicken.json",
+        scale: 1.0,
         soundName: "ch",
         soundDescription: "Ch-ch-ch! Like a choo-choo train!",
-        soundExamples: "cheese, chicken, chocolate",
+        soundExamples: "cheese, chocolate, cherry",
         hint: "Think about the sound a train makes: Choo-choo!"
       },
       {
-        word: "phone",
+        word: "whale",
         blankPosition: "start",
+        blankLetters: "wh",
+        displayWord: ["_", "ale"],
+        options: ["wh", "sh", "ch", "th", "ph"],
+        correct: "wh",
+        lottie: "whale.json",
+        scale: 1.5,
+        soundName: "wh",
+        soundDescription: "Wh! Like asking a question: What? Where? Why?",
+        soundExamples: "what, where, white",
+        hint: "This sound is at the start of question words like 'what' and 'where'!"
+      },
+      {
+        word: "dolphin",
+        blankPosition: "middle",
         blankLetters: "ph",
-        displayWord: ["_", "one"],
-        options: ["ph", "th", "ch", "sh"],  // 4 balloons
+        displayWord: ["dol", "_", "in"],
+        options: ["ph", "th", "ch", "sh", "wh", "ff"],
         correct: "ph",
-        emoji: "📱",
+        lottie: "dolphin.json",
+        scale: 1.0,
         soundName: "ph",
         soundDescription: "Ph makes an 'f' sound! Funny, right?",
-        soundExamples: "photo, elephant, alphabet",
+        soundExamples: "phone, photo, elephant",
         hint: "These two letters together make an 'f' sound!"
       },
       {
-        word: "three",
-        blankPosition: "start",
-        blankLetters: "th",
-        displayWord: ["_", "ree"],
-        options: ["th", "sh", "ch", "ph", "wh"],  // 5 balloons
-        correct: "th",
-        emoji: "3️⃣",
-        soundName: "th",
-        soundDescription: "Th! Stick your tongue out a little!",
-        soundExamples: "think, thumb, throw",
-        hint: "Put your tongue between your teeth and blow gently!"
-      },
-      {
-        word: "ship",
-        blankPosition: "start",
-        blankLetters: "sh",
-        displayWord: ["_", "ip"],
-        options: ["sh", "ch", "th", "ph", "wh", "ck"],  // 6 balloons
-        correct: "sh",
-        emoji: "🚢",
-        soundName: "sh",
-        soundDescription: "Shhh! Like waves on the ocean!",
-        soundExamples: "shark, shell, shore",
-        hint: "This sound is like telling someone to be quiet!"
-      },
-      {
-        word: "cheese",
-        blankPosition: "start",
-        blankLetters: "ch",
-        displayWord: ["_", "eese"],
-        options: ["ch", "sh", "ph", "th", "wh", "ck", "ng"],  // 7 balloons
-        correct: "ch",
-        emoji: "🧀",
-        soundName: "ch",
-        soundDescription: "Say cheese! Smile for the camera!",
-        soundExamples: "cherry, church, chin",
-        hint: "What do you say when someone takes your picture? Say ___!"
+        word: "elephant",
+        blankPosition: "middle",
+        blankLetters: "ph",
+        displayWord: ["ele", "_", "ant"],
+        options: ["ph", "th", "ch", "sh", "wh", "ff", "gh"],
+        correct: "ph",
+        lottie: "elephant.json",
+        scale: 1.5,
+        soundName: "ph",
+        soundDescription: "Ph makes an 'f' sound in this big animal's name!",
+        soundExamples: "phone, photo, alphabet",
+        hint: "These two letters make the same sound as the letter 'f'!"
       }
     ];
 
@@ -1003,8 +1014,19 @@
       // Render word
       renderWord(q);
 
-      // Update picture
-      document.getElementById('picture-emoji').textContent = q.emoji;
+      // Update picture with Lottie animation
+      const pictureContainer = document.getElementById('picture-container');
+      const size = (q.scale || 1.0) * 150;
+      pictureContainer.innerHTML = `
+        <lottie-player
+          src="lottie-assets/${q.lottie}"
+          background="transparent"
+          speed="1"
+          style="width: ${size}px; height: ${size}px;"
+          loop
+          autoplay
+        ></lottie-player>
+      `;
 
       // Update sound hint
       const soundHint = document.getElementById('sound-hint');

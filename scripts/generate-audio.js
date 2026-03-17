@@ -136,11 +136,11 @@ const balloonPopAudio = [
 
   // Hints for each word
   { file: 'audio/balloon-pop/hint-fish.mp3', text: 'This word ends with a quiet sound, like when you tell someone to be quiet: Shhh!' },
-  { file: 'audio/balloon-pop/hint-chair.mp3', text: 'Think about the sound a train makes: Choo-choo!' },
-  { file: 'audio/balloon-pop/hint-phone.mp3', text: 'These two letters together make an F sound!' },
-  { file: 'audio/balloon-pop/hint-three.mp3', text: 'Put your tongue between your teeth and blow gently!' },
-  { file: 'audio/balloon-pop/hint-ship.mp3', text: 'This sound is like telling someone to be quiet!' },
-  { file: 'audio/balloon-pop/hint-cheese.mp3', text: 'What do you say when someone takes your picture? Say cheese!' },
+  { file: 'audio/balloon-pop/hint-sheep.mp3', text: 'This word starts with a quiet sound, like when you tell someone to be quiet: Shhh!' },
+  { file: 'audio/balloon-pop/hint-chicken.mp3', text: 'Think about the sound a train makes: Choo-choo! This word starts with that sound.' },
+  { file: 'audio/balloon-pop/hint-whale.mp3', text: 'This sound is at the start of question words like what and where!' },
+  { file: 'audio/balloon-pop/hint-dolphin.mp3', text: 'These two letters together make an F sound!' },
+  { file: 'audio/balloon-pop/hint-elephant.mp3', text: 'These two letters make the same sound as the letter F!' },
 
   // Feedback
   { file: 'audio/balloon-pop/feedback-correct.mp3', text: 'Correct! Well done!' },
