@@ -1,0 +1,25 @@
+{
+  "name": "quiz-templates",
+  "version": "1.0.0",
+  "description": "Frontend templates for interactive quiz questions - ready for developer integration into Blazor.",
+  "main": "index.js",
+  "scripts": {
+    "generate-audio": "node scripts/generate-audio.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dannyboy166/quiz-templates.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dannyboy166/quiz-templates/issues"
+  },
+  "homepage": "https://github.com/dannyboy166/quiz-templates#readme",
+  "dependencies": {
+    "@elevenlabs/elevenlabs-js": "^2.39.0",
+    "dotenv": "^17.3.1"
+  }
+}

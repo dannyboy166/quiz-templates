@@ -99,10 +99,12 @@
       align-items: center;
       justify-content: center;
       overflow: visible;
+      pointer-events: none; /* Prevent overflow from blocking word slot */
     }
 
     .image-box lottie-player {
       /* Size set via inline style for per-animation scaling */
+      pointer-events: none;
     }
 
     /* Word drop zone */
@@ -117,6 +119,8 @@
       font-weight: 600;
       transition: all 0.2s;
       text-transform: capitalize;
+      position: relative;
+      z-index: 10;
     }
 
     .word-slot.highlight {
@@ -1080,6 +1084,11 @@
         btnTryAgain.style.display = 'none';
         btnNext.style.display = 'flex';
 
+        // Play success audio
+        if (currentAudio) { currentAudio.pause(); }
+        currentAudio = new Audio('audio/word-match/feedback-perfect.mp3');
+        currentAudio.play();
+
         if (currentPage === totalPages - 1) {
           updateCompass(100, true);
         }
@@ -1090,6 +1099,11 @@
         feedbackBadge.innerHTML = `💪 ${correct}/${total} correct - keep trying!`;
         btnTryAgain.style.display = 'block';
         btnNext.style.display = 'none';
+
+        // Play keep trying audio
+        if (currentAudio) { currentAudio.pause(); }
+        currentAudio = new Audio('audio/word-match/feedback-keep-trying.mp3');
+        currentAudio.play();
       }
     });
 
@@ -1136,17 +1150,21 @@
       }
     });
 
-    // Read Aloud
+    // Read Aloud - using ElevenLabs pre-generated audio
     const btnReadAloud = document.getElementById('btn-read-aloud');
-    const questionText = "Match the correct word to label the images. Look at each picture and drag the word that matches it.";
+    let currentAudio = null;
 
     btnReadAloud.addEventListener('click', () => {
-      speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(questionText);
-      utterance.rate = 0.9;
+      // Stop any currently playing audio
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+
+      currentAudio = new Audio('audio/word-match/question.mp3');
       btnReadAloud.classList.add('active');
-      utterance.onend = () => btnReadAloud.classList.remove('active');
-      speechSynthesis.speak(utterance);
+      currentAudio.onended = () => btnReadAloud.classList.remove('active');
+      currentAudio.play();
     });
 
     // Help Modal
@@ -1174,9 +1192,18 @@
         const slot = card.querySelector('.word-slot');
         if (!slot.dataset.filled || slot.classList.contains('incorrect')) {
           const hint = card.dataset.hint;
+          const word = card.dataset.answer;
           hintTitle.innerHTML = "💡 Hint!";
           hintText.innerHTML = hint;
           hintModal.classList.add('active');
+
+          // Play hint audio
+          if (currentAudio) {
+            currentAudio.pause();
+            currentAudio.currentTime = 0;
+          }
+          currentAudio = new Audio(`audio/word-match/hint-${word}.mp3`);
+          currentAudio.play();
           return;
         }
       }
