@@ -624,6 +624,21 @@
 
   <script>
     // ==========================================
+    // Audio Player (Vonnie Voice)
+    // ==========================================
+    let currentAudio = null;
+    function playAudio(src, onEnd) {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      currentAudio = new Audio(src);
+      if (onEnd) currentAudio.onended = onEnd;
+      currentAudio.play();
+      return currentAudio;
+    }
+
+    // ==========================================
     // Compass Rotation
     // ==========================================
     let compassRotation = 0;
@@ -894,15 +909,8 @@
 
       updateScore();
 
-      // Read aloud
-      if ('speechSynthesis' in window) {
-        const q = questions[currentQuestion];
-        const utterance = new SpeechSynthesisUtterance(
-          allCorrect ? 'Correct! Well done!' : `The pattern is ${q.sequence.join(', ')}`
-        );
-        utterance.rate = 0.8;
-        speechSynthesis.speak(utterance);
-      }
+      // Play audio feedback
+      playAudio(allCorrect ? 'audio/skip-counting/feedback-correct.mp3' : 'audio/skip-counting/feedback-incorrect.mp3');
     }
 
     function updateScore() {
@@ -926,25 +934,15 @@
       } else {
         // Complete - update compass to 100%
         updateCompass(100, true);
-        alert(`🎉 Well done!\n\nYou got ${correctCount} out of ${questions.length} correct!`);
-        // Return to start screen
-        playAgain();
+        playAudio('audio/skip-counting/feedback-complete.mp3', () => {
+          alert(`Well done!\n\nYou got ${correctCount} out of ${questions.length} correct!`);
+          playAgain();
+        });
       }
     }
 
     function readAloud() {
-      if ('speechSynthesis' in window) {
-        const q = questions[currentQuestion];
-        const spoken = q.sequence.map((num, i) =>
-          q.blanks.includes(i) ? 'blank' : num
-        ).join(', ');
-
-        const utterance = new SpeechSynthesisUtterance(
-          `Count by ${currentSkip}s. Fill in the missing numbers: ${spoken}`
-        );
-        utterance.rate = 0.8;
-        speechSynthesis.speak(utterance);
-      }
+      playAudio('audio/skip-counting/question.mp3');
     }
 
     function openModal(id) { document.getElementById(id).classList.add('show'); }
@@ -955,9 +953,18 @@
       document.getElementById('btn-try-again').addEventListener('click', tryAgain);
       document.getElementById('btn-next').addEventListener('click', nextQuestion);
       document.getElementById('btn-read-aloud').addEventListener('click', readAloud);
-      document.getElementById('btn-get-help').addEventListener('click', () => openModal('help-modal'));
-      document.getElementById('header-help').addEventListener('click', () => openModal('help-modal'));
-      document.getElementById('btn-get-hint').addEventListener('click', () => openModal('hint-modal'));
+      document.getElementById('btn-get-help').addEventListener('click', () => {
+        openModal('help-modal');
+        playAudio('audio/skip-counting/help.mp3');
+      });
+      document.getElementById('header-help').addEventListener('click', () => {
+        openModal('help-modal');
+        playAudio('audio/skip-counting/help.mp3');
+      });
+      document.getElementById('btn-get-hint').addEventListener('click', () => {
+        openModal('hint-modal');
+        playAudio('audio/skip-counting/hint.mp3');
+      });
 
       // Difficulty selector
       document.querySelectorAll('.difficulty-option').forEach(btn => {

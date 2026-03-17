@@ -709,6 +709,21 @@
 
   <script>
     // ==========================================
+    // Audio Player (Vonnie Voice)
+    // ==========================================
+    let currentAudio = null;
+    function playAudio(src, onEnd) {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      currentAudio = new Audio(src);
+      if (onEnd) currentAudio.onended = onEnd;
+      currentAudio.play();
+      return currentAudio;
+    }
+
+    // ==========================================
     // Compass Rotation
     // ==========================================
     let rotation = 0;
@@ -1097,15 +1112,8 @@
       const dot = document.querySelector(`.progress-dot[data-index="${currentQuestion}"]`);
       if (dot) dot.classList.add(isCorrect ? 'correct' : 'incorrect');
 
-      // Read aloud
-      if ('speechSynthesis' in window) {
-        const msg = isCorrect
-          ? (q.pieces ? `Correct! ${q.actualShadeCount} ${q.actualPieces}ths equals ${q.numerator} ${q.denominator}ths!` : 'Correct!')
-          : `You shaded ${shadedParts.size}, but ${q.numerator} ${q.denominator}ths means ${q.actualShadeCount} parts.`;
-        const utterance = new SpeechSynthesisUtterance(msg);
-        utterance.rate = 0.8;
-        speechSynthesis.speak(utterance);
-      }
+      // Play audio feedback
+      playAudio(isCorrect ? 'audio/fractions/feedback-correct.mp3' : 'audio/fractions/feedback-incorrect.mp3');
     }
 
     // ==========================================
@@ -1126,8 +1134,10 @@
         // End of round - show summary and return to start
         updateCompass(100, true);
         const correct = results.filter(r => r === true).length;
-        alert(`Well done!\n\nYou got ${correct} out of ${questions.length} correct!`);
-        playAgain();
+        playAudio('audio/fractions/feedback-complete.mp3', () => {
+          alert(`Well done!\n\nYou got ${correct} out of ${questions.length} correct!`);
+          playAgain();
+        });
       }
     }
 
@@ -1135,14 +1145,7 @@
     // Read Aloud
     // ==========================================
     function readAloud() {
-      if ('speechSynthesis' in window && questions[currentQuestion]) {
-        const q = questions[currentQuestion];
-        const utterance = new SpeechSynthesisUtterance(
-          `Shade ${q.numerator} ${q.denominator}ths of the shape. Click ${q.numerator} out of ${q.denominator} parts.`
-        );
-        utterance.rate = 0.8;
-        speechSynthesis.speak(utterance);
-      }
+      playAudio('audio/fractions/question.mp3');
     }
 
     // ==========================================
@@ -1159,9 +1162,18 @@
       document.getElementById('btn-try-again').addEventListener('click', tryAgain);
       document.getElementById('btn-next').addEventListener('click', nextQuestion);
       document.getElementById('btn-read-aloud').addEventListener('click', readAloud);
-      document.getElementById('btn-get-help').addEventListener('click', () => openModal('help-modal'));
-      document.getElementById('header-help').addEventListener('click', () => openModal('help-modal'));
-      document.getElementById('btn-get-hint').addEventListener('click', () => openModal('hint-modal'));
+      document.getElementById('btn-get-help').addEventListener('click', () => {
+        openModal('help-modal');
+        playAudio('audio/fractions/help.mp3');
+      });
+      document.getElementById('header-help').addEventListener('click', () => {
+        openModal('help-modal');
+        playAudio('audio/fractions/help.mp3');
+      });
+      document.getElementById('btn-get-hint').addEventListener('click', () => {
+        openModal('hint-modal');
+        playAudio('audio/fractions/hint.mp3');
+      });
 
       document.querySelectorAll('.modal-overlay').forEach(modal => {
         modal.addEventListener('click', (e) => {

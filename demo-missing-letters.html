@@ -633,6 +633,21 @@
 
   <script>
     // ==========================================
+    // Audio Player (Vonnie Voice)
+    // ==========================================
+    let currentAudio = null;
+    function playAudio(src, onEnd) {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      currentAudio = new Audio(src);
+      if (onEnd) currentAudio.onended = onEnd;
+      currentAudio.play();
+      return currentAudio;
+    }
+
+    // ==========================================
     // Compass Rotation
     // ==========================================
     let compassRotation = 0;
@@ -902,14 +917,8 @@
       const dot = document.querySelector(`.progress-dot[data-index="${currentQuestion}"]`);
       dot.classList.add(isCorrect ? 'correct' : 'incorrect');
 
-      // Read aloud feedback
-      if ('speechSynthesis' in window) {
-        const utterance = new SpeechSynthesisUtterance(
-          isCorrect ? `Correct! ${q.word}` : `The answer is ${q.correct}. ${q.word}`
-        );
-        utterance.rate = 0.8;
-        speechSynthesis.speak(utterance);
-      }
+      // Play audio feedback
+      playAudio(isCorrect ? 'audio/missing-letters/feedback-correct.mp3' : 'audio/missing-letters/feedback-incorrect.mp3');
     }
 
     function tryAgain() {
@@ -924,30 +933,14 @@
         // Quiz complete - update compass to 100%
         updateCompass(100, true);
         const correct = results.filter(r => r === true).length;
-        alert(`Quiz Complete!\n\nYou got ${correct} out of ${questions.length} correct!`);
+        playAudio('audio/missing-letters/feedback-complete.mp3', () => {
+          alert(`Quiz Complete!\n\nYou got ${correct} out of ${questions.length} correct!`);
+        });
       }
     }
 
     function readAloud() {
-      if ('speechSynthesis' in window) {
-        const q = questions[currentQuestion];
-        // Read the word with blanks as "blank"
-        const letters = q.word.split('');
-        let spoken = '';
-        letters.forEach((letter, i) => {
-          if (q.blank.includes(i)) {
-            if (!spoken.endsWith('blank ')) spoken += 'blank ';
-          } else {
-            spoken += letter;
-          }
-        });
-
-        const utterance = new SpeechSynthesisUtterance(
-          `Choose the missing letters. ${spoken}. ${q.meaning}`
-        );
-        utterance.rate = 0.8;
-        speechSynthesis.speak(utterance);
-      }
+      playAudio('audio/missing-letters/question.mp3');
     }
 
     function openModal(id) {
@@ -963,9 +956,18 @@
       document.getElementById('btn-try-again').addEventListener('click', tryAgain);
       document.getElementById('btn-next').addEventListener('click', nextQuestion);
       document.getElementById('btn-read-aloud').addEventListener('click', readAloud);
-      document.getElementById('btn-get-help').addEventListener('click', () => openModal('help-modal'));
-      document.getElementById('header-help').addEventListener('click', () => openModal('help-modal'));
-      document.getElementById('btn-get-hint').addEventListener('click', () => openModal('hint-modal'));
+      document.getElementById('btn-get-help').addEventListener('click', () => {
+        openModal('help-modal');
+        playAudio('audio/missing-letters/help.mp3');
+      });
+      document.getElementById('header-help').addEventListener('click', () => {
+        openModal('help-modal');
+        playAudio('audio/missing-letters/help.mp3');
+      });
+      document.getElementById('btn-get-hint').addEventListener('click', () => {
+        openModal('hint-modal');
+        playAudio('audio/missing-letters/hint.mp3');
+      });
 
       // Close modals on overlay click
       document.querySelectorAll('.modal-overlay').forEach(modal => {

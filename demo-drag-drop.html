@@ -508,6 +508,21 @@
   <script src="js/drag-drop.js"></script>
   <script>
     // ==========================================
+    // Audio Player (Vonnie Voice)
+    // ==========================================
+    let currentAudio = null;
+    function playAudio(src, onEnd) {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      currentAudio = new Audio(src);
+      if (onEnd) currentAudio.onended = onEnd;
+      currentAudio.play();
+      return currentAudio;
+    }
+
+    // ==========================================
     // Compass Rotation
     // ==========================================
     let compassRotation = 0;
@@ -594,11 +609,13 @@
         btnNext.style.display = 'flex';
         updateCompass(100, true);
         document.querySelector('.content-card').classList.add('celebrate');
+        playAudio('audio/drag-drop/feedback-correct.mp3');
       } else {
         feedbackBadge.classList.add('incorrect');
         feedbackBadge.innerHTML = `&#128170; ${correctCount}/${totalCount} correct - Keep trying!`;
         btnTryAgain.style.display = 'block';
         btnNext.style.display = 'none';
+        playAudio('audio/drag-drop/feedback-incorrect.mp3');
       }
     });
 
@@ -620,19 +637,12 @@
     // Read Aloud
     // ==========================================
     const btnReadAloud = document.getElementById('btn-read-aloud');
-    const questionText = "Drag the shapes into the correct jar. Count how many sides each shape has. Triangles have 3 sides, squares and rectangles have 4 sides, pentagons have 5 sides, and hexagons have 6 sides.";
 
     btnReadAloud.addEventListener('click', () => {
-      speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(questionText);
-      utterance.rate = 0.9;
       btnReadAloud.classList.add('active');
-      utterance.onend = () => btnReadAloud.classList.remove('active');
-      speechSynthesis.speak(utterance);
-    });
-
-    document.querySelector('.btn-read-aloud').addEventListener('click', () => {
-      btnReadAloud.click();
+      playAudio('audio/drag-drop/question.mp3', () => {
+        btnReadAloud.classList.remove('active');
+      });
     });
 
     // ==========================================
@@ -644,10 +654,12 @@
 
     btnGetHelp.addEventListener('click', () => {
       helpModal.classList.add('active');
+      playAudio('audio/drag-drop/help.mp3');
     });
 
     document.getElementById('header-help').addEventListener('click', () => {
       helpModal.classList.add('active');
+      playAudio('audio/drag-drop/help.mp3');
     });
 
     closeHelp.addEventListener('click', () => {

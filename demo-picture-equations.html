@@ -564,6 +564,21 @@
 
   <script>
     // ==========================================
+    // Audio Player (Vonnie Voice)
+    // ==========================================
+    let currentAudio = null;
+    function playAudio(src, onEnd) {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      currentAudio = new Audio(src);
+      if (onEnd) currentAudio.onended = onEnd;
+      currentAudio.play();
+      return currentAudio;
+    }
+
+    // ==========================================
     // Compass Rotation
     // ==========================================
     let compassRotation = 0;
@@ -859,6 +874,7 @@
         text.textContent = 'Correct!';
         tryAgain.style.display = 'none';
         next.style.display = 'flex';
+        playAudio('audio/picture-equations/feedback-correct.mp3');
       } else if (mathCorrect) {
         // Math is correct but doesn't match the picture
         correctCount++;
@@ -871,6 +887,7 @@
         }
         tryAgain.style.display = 'none';
         next.style.display = 'flex';
+        playAudio('audio/picture-equations/feedback-correct.mp3');
       } else {
         // Wrong answer
         badge.className = 'feedback-badge incorrect';
@@ -878,6 +895,7 @@
         text.textContent = 'Not quite right';
         tryAgain.style.display = 'inline-block';
         next.style.display = 'flex';
+        playAudio('audio/picture-equations/feedback-incorrect.mp3');
 
         // Show correct answers
         inputs.forEach(input => {
@@ -904,16 +922,18 @@
       } else {
         // Complete - update compass to 100%
         updateCompass(100, true);
-        alert(`🎉 Well done!\n\nYou got ${correctCount} out of ${questions.length} correct!`);
-        // Reset for new round
-        currentQuestionIndex = 0;
-        correctCount = 0;
-        questionSets[currentOperation] = currentOperation === 'subtraction'
-          ? generateSubtractionQuestions()
-          : currentOperation === 'addition'
-            ? generateAdditionQuestions()
-            : generateMixedQuestions();
-        loadQuestion();
+        playAudio('audio/picture-equations/feedback-complete.mp3', () => {
+          alert(`Well done!\n\nYou got ${correctCount} out of ${questions.length} correct!`);
+          // Reset for new round
+          currentQuestionIndex = 0;
+          correctCount = 0;
+          questionSets[currentOperation] = currentOperation === 'subtraction'
+            ? generateSubtractionQuestions()
+            : currentOperation === 'addition'
+              ? generateAdditionQuestions()
+              : generateMixedQuestions();
+          loadQuestion();
+        });
       }
     }
 
@@ -950,18 +970,7 @@
     }
 
     function readAloud() {
-      if ('speechSynthesis' in window) {
-        const q = questionSets[currentOperation][currentQuestionIndex];
-        let text = '';
-        if (q.type === 'subtraction') {
-          text = `Look at the ${q.emoji}. There are ${q.total} altogether. ${q.subtract} are crossed out. How many are left?`;
-        } else {
-          text = `Count the ${q.emoji}. There are ${q.num1} in the first group and ${q.num2} in the second group. How many altogether?`;
-        }
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.rate = 0.8;
-        speechSynthesis.speak(utterance);
-      }
+      playAudio('audio/picture-equations/question.mp3');
     }
 
     function openModal(id) { document.getElementById(id).classList.add('show'); }
@@ -972,9 +981,18 @@
       document.getElementById('btn-try-again').addEventListener('click', tryAgain);
       document.getElementById('btn-next').addEventListener('click', nextQuestion);
       document.getElementById('btn-read-aloud').addEventListener('click', readAloud);
-      document.getElementById('btn-get-help').addEventListener('click', () => openModal('help-modal'));
-      document.getElementById('header-help').addEventListener('click', () => openModal('help-modal'));
-      document.getElementById('btn-get-hint').addEventListener('click', () => openModal('hint-modal'));
+      document.getElementById('btn-get-help').addEventListener('click', () => {
+        openModal('help-modal');
+        playAudio('audio/picture-equations/help.mp3');
+      });
+      document.getElementById('header-help').addEventListener('click', () => {
+        openModal('help-modal');
+        playAudio('audio/picture-equations/help.mp3');
+      });
+      document.getElementById('btn-get-hint').addEventListener('click', () => {
+        openModal('hint-modal');
+        playAudio('audio/picture-equations/hint.mp3');
+      });
 
       // Operation switcher
       document.querySelectorAll('.op-btn').forEach(btn => {

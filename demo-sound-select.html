@@ -494,6 +494,21 @@
   </div>
 
   <script>
+    // ==========================================
+    // Audio Player (Vonnie Voice)
+    // ==========================================
+    let currentAudio = null;
+    function playAudio(src, onEnd) {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      currentAudio = new Audio(src);
+      if (onEnd) currentAudio.onended = onEnd;
+      currentAudio.play();
+      return currentAudio;
+    }
+
     // Compass rotation state
     let rotation = 0;
     let spinSpeed = 120;
@@ -705,6 +720,7 @@
         feedbackMessage.className = 'feedback-message correct';
         tryAgainBtn.style.display = 'none';
         nextBtn.classList.add('show');
+        playAudio('audio/sound-select/feedback-correct.mp3');
 
         // Celebration
         imageGrid.classList.add('celebrating');
@@ -714,6 +730,7 @@
         feedbackMessage.className = 'feedback-message incorrect';
         tryAgainBtn.style.display = 'inline-block';
         nextBtn.classList.add('show');
+        playAudio('audio/sound-select/feedback-incorrect.mp3');
 
         scoreDisplay.textContent = `You got ${correctCount} of ${correctIndices.length} correct.`;
       }
@@ -740,6 +757,7 @@
         loadQuestion(true);
       } else {
         // Quiz complete
+        playAudio('audio/sound-select/feedback-complete.mp3');
         imageGrid.innerHTML = `
           <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
             <div style="font-size: 60px; margin-bottom: 20px;">&#127881;</div>
@@ -756,19 +774,21 @@
 
     // Read Aloud
     function readQuestion() {
-      speechSynthesis.cancel();
-      const q = questions[currentQuestion];
-      const utterance = new SpeechSynthesisUtterance(q.prompt);
-      utterance.rate = 0.9;
-      speechSynthesis.speak(utterance);
+      playAudio('audio/sound-select/question.mp3');
     }
 
     document.getElementById('btn-read-aloud').addEventListener('click', readQuestion);
 
     // Help Modal
     const helpModal = document.getElementById('help-modal');
-    document.getElementById('btn-get-help').addEventListener('click', () => helpModal.classList.add('active'));
-    document.getElementById('header-help').addEventListener('click', () => helpModal.classList.add('active'));
+    document.getElementById('btn-get-help').addEventListener('click', () => {
+      helpModal.classList.add('active');
+      playAudio('audio/sound-select/help.mp3');
+    });
+    document.getElementById('header-help').addEventListener('click', () => {
+      helpModal.classList.add('active');
+      playAudio('audio/sound-select/help.mp3');
+    });
     document.getElementById('close-help').addEventListener('click', () => helpModal.classList.remove('active'));
     helpModal.addEventListener('click', (e) => {
       if (e.target === helpModal) helpModal.classList.remove('active');
@@ -776,7 +796,10 @@
 
     // Hint Modal
     const hintModal = document.getElementById('hint-modal');
-    document.getElementById('btn-get-hint').addEventListener('click', () => hintModal.classList.add('active'));
+    document.getElementById('btn-get-hint').addEventListener('click', () => {
+      hintModal.classList.add('active');
+      playAudio('audio/sound-select/hint.mp3');
+    });
     document.getElementById('close-hint').addEventListener('click', () => hintModal.classList.remove('active'));
     hintModal.addEventListener('click', (e) => {
       if (e.target === hintModal) hintModal.classList.remove('active');

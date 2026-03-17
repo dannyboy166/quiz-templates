@@ -215,6 +215,212 @@ const diceAdditionAudio = [
   { file: 'audio/dice-addition/ready.mp3', text: 'Get ready! Add the dice as fast as you can!' },
 ];
 
+// ==========================================
+// FRACTIONS
+// ==========================================
+const fractionsAudio = [
+  // Main question
+  { file: 'audio/fractions/question.mp3', text: 'Click to shade the fraction shown. Shade the correct number of parts!' },
+
+  // Hints
+  { file: 'audio/fractions/hint.mp3', text: 'The top number tells you how many parts to shade. The bottom number tells you how many parts there are in total!' },
+
+  // Feedback
+  { file: 'audio/fractions/feedback-correct.mp3', text: 'Excellent! You shaded the correct fraction!' },
+  { file: 'audio/fractions/feedback-incorrect.mp3', text: 'Not quite. Try counting the parts again!' },
+  { file: 'audio/fractions/feedback-complete.mp3', text: 'Quiz Complete! You\'re a fractions superstar!' },
+
+  // Help
+  { file: 'audio/fractions/help.mp3', text: 'A fraction has two parts. The bottom number is how many pieces the shape is cut into. The top number is how many pieces to shade!' },
+];
+
+// ==========================================
+// SKIP COUNTING
+// ==========================================
+const skipCountingAudio = [
+  // Main question
+  { file: 'audio/skip-counting/question.mp3', text: 'Fill in the missing numbers! Count by the skip number to complete the pattern.' },
+
+  // Hints
+  { file: 'audio/skip-counting/hint.mp3', text: 'Add the skip number to the previous number to find the next one!' },
+
+  // Feedback
+  { file: 'audio/skip-counting/feedback-correct.mp3', text: 'Perfect! You completed the pattern!' },
+  { file: 'audio/skip-counting/feedback-incorrect.mp3', text: 'Some numbers are wrong. Check your counting!' },
+  { file: 'audio/skip-counting/feedback-complete.mp3', text: 'Quiz Complete! Great job skip counting!' },
+
+  // Help
+  { file: 'audio/skip-counting/help.mp3', text: 'Skip counting means adding the same number each time. For example, counting by 2s: 2, 4, 6, 8, 10!' },
+];
+
+// ==========================================
+// DRAG DROP
+// ==========================================
+const dragDropAudio = [
+  // Main question
+  { file: 'audio/drag-drop/question.mp3', text: 'Sort the shapes into the correct jars! Drag each shape to where it belongs.' },
+
+  // Feedback
+  { file: 'audio/drag-drop/feedback-correct.mp3', text: 'Well done! All shapes sorted correctly!' },
+  { file: 'audio/drag-drop/feedback-incorrect.mp3', text: 'Some shapes are in the wrong jar. Try again!' },
+  { file: 'audio/drag-drop/feedback-complete.mp3', text: 'Quiz Complete! You sorted all the shapes!' },
+
+  // Help
+  { file: 'audio/drag-drop/help.mp3', text: 'Look at each shape and count its sides. Then drag it to the jar with that number!' },
+];
+
+// ==========================================
+// LINE MATCH
+// ==========================================
+const lineMatchAudio = [
+  // Main question
+  { file: 'audio/line-match/question.mp3', text: 'Draw lines to match the items on the left with their matches on the right!' },
+
+  // Hints
+  { file: 'audio/line-match/hint.mp3', text: 'Look carefully at each item and think about what it matches with!' },
+
+  // Feedback
+  { file: 'audio/line-match/feedback-correct.mp3', text: 'Perfect! All matches are correct!' },
+  { file: 'audio/line-match/feedback-incorrect.mp3', text: 'Not quite right. Try again!' },
+  { file: 'audio/line-match/feedback-complete.mp3', text: 'Quiz Complete! Great job matching!' },
+
+  // Help
+  { file: 'audio/line-match/help.mp3', text: 'Pick a colour, tap an item on the left, then tap its match on the right. A line will connect them!' },
+];
+
+// ==========================================
+// MISSING LETTERS
+// ==========================================
+const missingLettersAudio = [
+  // Main question
+  { file: 'audio/missing-letters/question.mp3', text: 'Choose the missing letters to complete the word!' },
+
+  // Hints
+  { file: 'audio/missing-letters/hint.mp3', text: 'Remember: i before e, except after c! Look at the letter before the blank.' },
+
+  // Feedback
+  { file: 'audio/missing-letters/feedback-correct.mp3', text: 'Correct! Well done!' },
+  { file: 'audio/missing-letters/feedback-incorrect.mp3', text: 'Not quite. Let me show you the right answer!' },
+  { file: 'audio/missing-letters/feedback-complete.mp3', text: 'Quiz Complete! Great spelling practice!' },
+
+  // Help
+  { file: 'audio/missing-letters/help.mp3', text: 'Look at the word with missing letters. Choose which letters complete the word correctly. Remember: i before e, except after c!' },
+];
+
+// ==========================================
+// NUMBER ORDER
+// ==========================================
+const numberOrderAudio = [
+  // Main question
+  { file: 'audio/number-order/question.mp3', text: 'Put the numbers in order from smallest to biggest! Drag them into the circles.' },
+
+  // Hints
+  { file: 'audio/number-order/hint.mp3', text: 'Start with the smallest number. Which number is the smallest?' },
+
+  // Feedback
+  { file: 'audio/number-order/feedback-correct.mp3', text: 'Perfect! The numbers are in the right order!' },
+  { file: 'audio/number-order/feedback-incorrect.mp3', text: 'Not quite right. Keep trying!' },
+  { file: 'audio/number-order/feedback-complete.mp3', text: 'Quiz Complete! Great job ordering those numbers!' },
+
+  // Help
+  { file: 'audio/number-order/help.mp3', text: 'Drag the number bubbles into the circles. Put them in order from smallest to biggest. The smallest number goes first!' },
+];
+
+// ==========================================
+// PICTURE EQUATIONS
+// ==========================================
+const pictureEquationsAudio = [
+  // Main question
+  { file: 'audio/picture-equations/question.mp3', text: 'Complete the number sentences! Look at the pictures and fill in the missing numbers.' },
+
+  // Hints
+  { file: 'audio/picture-equations/hint.mp3', text: 'Count the pictures carefully. The crossed-out ones are being taken away!' },
+
+  // Feedback
+  { file: 'audio/picture-equations/feedback-correct.mp3', text: 'Correct! Great counting!' },
+  { file: 'audio/picture-equations/feedback-incorrect.mp3', text: 'Not quite right. Try counting again!' },
+  { file: 'audio/picture-equations/feedback-complete.mp3', text: 'Quiz Complete! Great job with those equations!' },
+
+  // Help
+  { file: 'audio/picture-equations/help.mp3', text: 'Look at the pictures. For subtraction, count all items, then count the crossed-out ones. For addition, count each group and add them together!' },
+];
+
+// ==========================================
+// SOUND SELECT
+// ==========================================
+const soundSelectAudio = [
+  // Main question
+  { file: 'audio/sound-select/question.mp3', text: 'Select the images that begin with the target sound!' },
+
+  // Hints
+  { file: 'audio/sound-select/hint.mp3', text: 'Say each picture\'s name out loud. Does it start with the target sound?' },
+
+  // Feedback
+  { file: 'audio/sound-select/feedback-correct.mp3', text: 'Perfect! You found all the matches!' },
+  { file: 'audio/sound-select/feedback-incorrect.mp3', text: 'Not quite right. Try again!' },
+  { file: 'audio/sound-select/feedback-complete.mp3', text: 'Quiz Complete! Great job with those sounds!' },
+
+  // Help
+  { file: 'audio/sound-select/help.mp3', text: 'Look at the target sound and find all pictures that begin with it. Tap each correct picture!' },
+];
+
+// ==========================================
+// SPELLING
+// ==========================================
+const spellingAudio = [
+  // Main question
+  { file: 'audio/spelling/question.mp3', text: 'Join the letters to write the word! Look at each picture and drag the letters to spell what you see.' },
+
+  // Hints
+  { file: 'audio/spelling/hint.mp3', text: 'Find the first letter of the word. What sound does the picture start with?' },
+
+  // Feedback
+  { file: 'audio/spelling/feedback-correct.mp3', text: 'Page complete! Well done!' },
+  { file: 'audio/spelling/feedback-incorrect.mp3', text: 'Keep going! You can do it!' },
+  { file: 'audio/spelling/feedback-complete.mp3', text: 'Amazing! You spelled all the words!' },
+
+  // Help
+  { file: 'audio/spelling/help.mp3', text: 'Look at each picture. Drag letters from the pool to spell the word. Each letter can only be used once!' },
+];
+
+// ==========================================
+// SPELLING RULES
+// ==========================================
+const spellingRulesAudio = [
+  // Main question
+  { file: 'audio/spelling-rules/question.mp3', text: 'Apply the spelling rule! Choose the correct ending for each word.' },
+
+  // Hints
+  { file: 'audio/spelling-rules/hint.mp3', text: 'Think about the spelling rule. Look at the base word and apply the pattern!' },
+
+  // Feedback
+  { file: 'audio/spelling-rules/feedback-correct.mp3', text: 'Correct! You applied the rule perfectly!' },
+  { file: 'audio/spelling-rules/feedback-incorrect.mp3', text: 'Not quite. Check the spelling rule and try again!' },
+  { file: 'audio/spelling-rules/feedback-complete.mp3', text: 'Quiz Complete! Great spelling work!' },
+
+  // Help
+  { file: 'audio/spelling-rules/help.mp3', text: 'Read the spelling rule carefully. Look at each word and choose the option that follows the rule!' },
+];
+
+// ==========================================
+// WORD SORT
+// ==========================================
+const wordSortAudio = [
+  // Main question
+  { file: 'audio/word-sort/question.mp3', text: 'Sort the words into the correct lists! Drag each word to where it belongs.' },
+
+  // Hints
+  { file: 'audio/word-sort/hint.mp3', text: 'Read each word carefully. Think about which category it fits into!' },
+
+  // Feedback
+  { file: 'audio/word-sort/feedback-correct.mp3', text: 'Perfect! All words sorted correctly!' },
+  { file: 'audio/word-sort/feedback-incorrect.mp3', text: 'Some words are in the wrong list. Try again!' },
+  { file: 'audio/word-sort/feedback-complete.mp3', text: 'Quiz Complete! Great job sorting those words!' },
+
+  // Help
+  { file: 'audio/word-sort/help.mp3', text: 'Read each word from the list. Drag it to the correct category. Look at the spelling pattern to help you decide!' },
+];
+
 // All templates
 const allTemplates = {
   'word-match': wordMatchAudio,
@@ -223,6 +429,17 @@ const allTemplates = {
   'clock': clockAudio,
   'color-blocks': colorBlocksAudio,
   'dice-addition': diceAdditionAudio,
+  'fractions': fractionsAudio,
+  'skip-counting': skipCountingAudio,
+  'drag-drop': dragDropAudio,
+  'line-match': lineMatchAudio,
+  'missing-letters': missingLettersAudio,
+  'number-order': numberOrderAudio,
+  'picture-equations': pictureEquationsAudio,
+  'sound-select': soundSelectAudio,
+  'spelling': spellingAudio,
+  'spelling-rules': spellingRulesAudio,
+  'word-sort': wordSortAudio,
 };
 
 async function main() {

@@ -31,22 +31,21 @@ Add ElevenLabs "Vonnie Voice" audio to ALL quiz templates, replacing browser spe
 - [x] **demo-clock.html** - 12 audio files (question, difficulty intros, hints, feedback, help)
 - [x] **demo-color-blocks.html** - 8 audio files (question, place-value hints, feedback, help)
 - [x] **demo-dice-addition.html** - 5 audio files (question, feedback, ready)
+- [x] **demo-fractions.html** - 6 audio files (question, hint, feedback, help)
+- [x] **demo-skip-counting.html** - 6 audio files (question, hint, feedback, help)
+- [x] **demo-drag-drop.html** - 5 audio files (question, feedback, help)
+- [x] **demo-line-match.html** - 6 audio files (question, hint, feedback, help)
+- [x] **demo-missing-letters.html** - 6 audio files (question, hint, feedback, help)
+- [x] **demo-number-order.html** - 6 audio files (question, hint, feedback, help)
 
-### IN PROGRESS
-- [ ] **demo-fractions.html**
+- [x] **demo-picture-equations.html** - 6 audio files (question, hint, feedback, help)
+- [x] **demo-sound-select.html** - 6 audio files (question, hint, feedback, help)
+- [x] **demo-spelling.html** - 6 audio files (question, hint, feedback, help)
+- [x] **demo-spelling-rules.html** - 6 audio files (question, hint, feedback, help)
+- [x] **demo-word-sort.html** - 6 audio files (question, hint, feedback, help)
 
-### TODO (Quiz Templates)
-- [ ] demo-drag-drop.html
-- [ ] demo-fractions.html
-- [ ] demo-line-match.html
-- [ ] demo-missing-letters.html
-- [ ] demo-number-order.html
-- [ ] demo-picture-equations.html
-- [ ] demo-skip-counting.html
-- [ ] demo-sound-select.html
-- [ ] demo-spelling-rules.html
-- [ ] demo-spelling.html
-- [ ] demo-word-sort.html
+### ALL COMPLETE! 🎉
+**Total: 17 templates, 125+ audio files**
 
 ### NOT APPLICABLE (Visual/Component Demos)
 - demo-dice-animation.html (animation demo only)

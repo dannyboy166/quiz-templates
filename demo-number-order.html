@@ -566,6 +566,21 @@
 
   <script>
     // ==========================================
+    // Audio Player (Vonnie Voice)
+    // ==========================================
+    let currentAudio = null;
+    function playAudio(src, onEnd) {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      currentAudio = new Audio(src);
+      if (onEnd) currentAudio.onended = onEnd;
+      currentAudio.play();
+      return currentAudio;
+    }
+
+    // ==========================================
     // Compass Rotation
     // ==========================================
     let compassRotation = 0;
@@ -936,11 +951,13 @@
         btnNext.style.display = 'flex';
         updateCompass(100, true);
         document.querySelector('.order-slots').classList.add('celebrate');
+        playAudio('audio/number-order/feedback-correct.mp3');
       } else {
         feedbackBadge.classList.add('incorrect');
         feedbackBadge.innerHTML = `💪 ${correctCount}/${count} correct - keep trying!`;
         btnTryAgain.style.display = 'block';
         btnNext.style.display = 'none';
+        playAudio('audio/number-order/feedback-incorrect.mp3');
       }
     });
 
@@ -968,19 +985,12 @@
 
     // Read Aloud
     const btnReadAloud = document.getElementById('btn-read-aloud');
-    const questionText = `Put the numbers in order from smallest to biggest. The numbers are ${numbers.join(', ')}. Drag them into the circles starting with the smallest number.`;
 
     btnReadAloud.addEventListener('click', () => {
-      speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(questionText);
-      utterance.rate = 0.9;
       btnReadAloud.classList.add('active');
-      utterance.onend = () => btnReadAloud.classList.remove('active');
-      speechSynthesis.speak(utterance);
-    });
-
-    document.querySelector('.btn-read-aloud').addEventListener('click', () => {
-      btnReadAloud.click();
+      playAudio('audio/number-order/question.mp3', () => {
+        btnReadAloud.classList.remove('active');
+      });
     });
 
     // Help Modal
@@ -988,8 +998,14 @@
     const helpModal = document.getElementById('help-modal');
     const closeHelp = document.getElementById('close-help');
 
-    btnGetHelp.addEventListener('click', () => helpModal.classList.add('active'));
-    document.getElementById('header-help').addEventListener('click', () => helpModal.classList.add('active'));
+    btnGetHelp.addEventListener('click', () => {
+      helpModal.classList.add('active');
+      playAudio('audio/number-order/help.mp3');
+    });
+    document.getElementById('header-help').addEventListener('click', () => {
+      helpModal.classList.add('active');
+      playAudio('audio/number-order/help.mp3');
+    });
     closeHelp.addEventListener('click', () => helpModal.classList.remove('active'));
     helpModal.addEventListener('click', (e) => {
       if (e.target === helpModal) helpModal.classList.remove('active');
@@ -1015,6 +1031,7 @@
             hintText.innerHTML = `Position ${i + 1} should be <strong style="font-size: 32px; color: #4CAF50;">${expected}</strong>`;
           }
           hintModal.classList.add('active');
+          playAudio('audio/number-order/hint.mp3');
           return;
         }
       }

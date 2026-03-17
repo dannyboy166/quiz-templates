@@ -720,6 +720,21 @@
 
   <script>
     // ==========================================
+    // Audio Player (Vonnie Voice)
+    // ==========================================
+    let currentAudio = null;
+    function playAudio(src, onEnd) {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      currentAudio = new Audio(src);
+      if (onEnd) currentAudio.onended = onEnd;
+      currentAudio.play();
+      return currentAudio;
+    }
+
+    // ==========================================
     // Compass Rotation
     // ==========================================
     let compassRotation = 0;
@@ -1444,14 +1459,8 @@
 
       updateScore();
 
-      // Speak
-      if ('speechSynthesis' in window) {
-        const utterance = new SpeechSynthesisUtterance(
-          isCorrect ? `Correct! ${q.word}` : `The answer is ${q.correct}. ${q.word}`
-        );
-        utterance.rate = 0.8;
-        speechSynthesis.speak(utterance);
-      }
+      // Play audio feedback
+      playAudio(isCorrect ? 'audio/spelling-rules/feedback-correct.mp3' : 'audio/spelling-rules/feedback-incorrect.mp3');
     }
 
     function updateScore() {
@@ -1474,20 +1483,14 @@
         updateCompass(100, true);
         const correct = results.filter(r => r === true).length;
         const modeName = currentRule === 'shuffle' ? 'Shuffle Mode' : allRules[currentRule].name;
-        alert(`🎉 Finished "${modeName}"!\n\nYou got ${correct} out of ${questions.length} correct!`);
+        playAudio('audio/spelling-rules/feedback-complete.mp3', () => {
+          alert(`Finished "${modeName}"!\n\nYou got ${correct} out of ${questions.length} correct!`);
+        });
       }
     }
 
     function readAloud() {
-      if ('speechSynthesis' in window) {
-        const questions = currentRule === 'shuffle' ? shuffledQuestions : allRules[currentRule].questions;
-        const q = questions[currentQuestion];
-        const utterance = new SpeechSynthesisUtterance(
-          `What are the missing letters? ${q.meaning}. ${q.context}`
-        );
-        utterance.rate = 0.8;
-        speechSynthesis.speak(utterance);
-      }
+      playAudio('audio/spelling-rules/question.mp3');
     }
 
     function openModal(id) { document.getElementById(id).classList.add('show'); }
@@ -1503,9 +1506,18 @@
       document.getElementById('btn-try-again').addEventListener('click', tryAgain);
       document.getElementById('btn-next').addEventListener('click', nextQuestion);
       document.getElementById('btn-read-aloud').addEventListener('click', readAloud);
-      document.getElementById('btn-get-help').addEventListener('click', () => openModal('help-modal'));
-      document.getElementById('header-help').addEventListener('click', () => openModal('help-modal'));
-      document.getElementById('btn-get-hint').addEventListener('click', () => openModal('hint-modal'));
+      document.getElementById('btn-get-help').addEventListener('click', () => {
+        openModal('help-modal');
+        playAudio('audio/spelling-rules/help.mp3');
+      });
+      document.getElementById('header-help').addEventListener('click', () => {
+        openModal('help-modal');
+        playAudio('audio/spelling-rules/help.mp3');
+      });
+      document.getElementById('btn-get-hint').addEventListener('click', () => {
+        openModal('hint-modal');
+        playAudio('audio/spelling-rules/hint.mp3');
+      });
 
       document.querySelectorAll('.modal-overlay').forEach(modal => {
         modal.addEventListener('click', (e) => {

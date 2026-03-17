@@ -570,6 +570,21 @@
   </div>
 
   <script>
+    // ==========================================
+    // Audio Player (Vonnie Voice)
+    // ==========================================
+    let currentAudio = null;
+    function playAudio(src, onEnd) {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      currentAudio = new Audio(src);
+      if (onEnd) currentAudio.onended = onEnd;
+      currentAudio.play();
+      return currentAudio;
+    }
+
     // Load Lottie config
     let lottieConfig = null;
 
@@ -982,10 +997,12 @@
           feedbackBadge.innerHTML = `🎉 Page ${currentPage + 1} complete! (${totalWordsCompleted}/16 words)`;
           btnNext.style.display = 'flex';
           btnNext.title = 'Next Page';
+          playAudio('audio/spelling/feedback-correct.mp3');
         } else {
           feedbackBadge.innerHTML = '🏆 Amazing! You spelled all 16 words!';
           btnNext.style.display = 'flex';
           btnNext.title = 'Finish';
+          playAudio('audio/spelling/feedback-complete.mp3');
         }
 
         btnCheck.style.display = 'none';
@@ -996,6 +1013,7 @@
         feedbackBadge.classList.add('incorrect');
         feedbackBadge.innerHTML = `💪 ${completed}/4 words on this page - keep going!`;
         btnTryAgain.style.display = 'none';
+        playAudio('audio/spelling/feedback-incorrect.mp3');
       }
     });
 
@@ -1027,15 +1045,10 @@
     const btnReadAloud = document.getElementById('btn-read-aloud');
 
     btnReadAloud.addEventListener('click', () => {
-      const words = allPages[currentPage];
-      const questionText = `Join the letters to write the word. Look at each picture and drag the letters to spell what you see. Spell ${words.join(', ')}.`;
-
-      speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(questionText);
-      utterance.rate = 0.9;
       btnReadAloud.classList.add('active');
-      utterance.onend = () => btnReadAloud.classList.remove('active');
-      speechSynthesis.speak(utterance);
+      playAudio('audio/spelling/question.mp3', () => {
+        btnReadAloud.classList.remove('active');
+      });
     });
 
     // Get Help
@@ -1043,8 +1056,14 @@
     const helpModal = document.getElementById('help-modal');
     const closeHelp = document.getElementById('close-help');
 
-    btnGetHelp.addEventListener('click', () => helpModal.classList.add('active'));
-    document.getElementById('header-help').addEventListener('click', () => helpModal.classList.add('active'));
+    btnGetHelp.addEventListener('click', () => {
+      helpModal.classList.add('active');
+      playAudio('audio/spelling/help.mp3');
+    });
+    document.getElementById('header-help').addEventListener('click', () => {
+      helpModal.classList.add('active');
+      playAudio('audio/spelling/help.mp3');
+    });
     closeHelp.addEventListener('click', () => helpModal.classList.remove('active'));
     helpModal.addEventListener('click', (e) => {
       if (e.target === helpModal) helpModal.classList.remove('active');
@@ -1075,6 +1094,7 @@
           hintTitle.innerHTML = "💡 Hint!";
           hintText.innerHTML = `For <strong>${word.toUpperCase()}</strong>, position ${emptySlotIndex + 1} needs <strong style="font-size: 32px;">${hintLetter.toUpperCase()}</strong>`;
           hintModal.classList.add('active');
+          playAudio('audio/spelling/hint.mp3');
 
           document.querySelectorAll('.letter-bubble').forEach(bubble => {
             if (bubble.dataset.letter === hintLetter && !bubble.classList.contains('used')) {

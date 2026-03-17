@@ -584,6 +584,21 @@
   </div>
 
   <script>
+    // ==========================================
+    // Audio Player (Vonnie Voice)
+    // ==========================================
+    let currentAudio = null;
+    function playAudio(src, onEnd) {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      currentAudio = new Audio(src);
+      if (onEnd) currentAudio.onended = onEnd;
+      currentAudio.play();
+      return currentAudio;
+    }
+
     // Compass rotation state
     let rotation = 0;
     let spinSpeed = 120;
@@ -967,6 +982,7 @@
         btnCheck.style.display = 'none';
         btnTryAgain.style.display = 'none';
         btnNext.style.display = 'flex';
+        playAudio('audio/word-sort/feedback-correct.mp3');
       } else if (totalWords < q.words.length) {
         feedbackBadge.classList.add('incorrect');
         feedbackBadge.innerHTML = `📝 ${allPlaced.length}/${q.words.length} words placed. Keep going!`;
@@ -975,6 +991,7 @@
         feedbackBadge.classList.add('incorrect');
         feedbackBadge.innerHTML = `💪 ${correctCount}/${totalWords} correct - try again!`;
         btnTryAgain.style.display = 'inline-block';
+        playAudio('audio/word-sort/feedback-incorrect.mp3');
       }
     });
 
@@ -1002,6 +1019,7 @@
         loadQuestion(true);
       } else {
         // Quiz complete
+        playAudio('audio/word-sort/feedback-complete.mp3');
         sortListsEl.innerHTML = `
           <div style="text-align: center; padding: 60px 20px; background: white; border-radius: 16px; width: 100%;">
             <div style="font-size: 80px; margin-bottom: 20px;">🎉</div>
@@ -1019,19 +1037,21 @@
 
     // Read Aloud
     function readQuestion() {
-      speechSynthesis.cancel();
-      const q = questions[currentQuestion];
-      const utterance = new SpeechSynthesisUtterance(q.prompt);
-      utterance.rate = 0.9;
-      speechSynthesis.speak(utterance);
+      playAudio('audio/word-sort/question.mp3');
     }
 
     document.getElementById('btn-read-aloud').addEventListener('click', readQuestion);
 
     // Help Modal
     const helpModal = document.getElementById('help-modal');
-    document.getElementById('btn-get-help').addEventListener('click', () => helpModal.classList.add('active'));
-    document.getElementById('header-help').addEventListener('click', () => helpModal.classList.add('active'));
+    document.getElementById('btn-get-help').addEventListener('click', () => {
+      helpModal.classList.add('active');
+      playAudio('audio/word-sort/help.mp3');
+    });
+    document.getElementById('header-help').addEventListener('click', () => {
+      helpModal.classList.add('active');
+      playAudio('audio/word-sort/help.mp3');
+    });
     document.getElementById('close-help').addEventListener('click', () => helpModal.classList.remove('active'));
     helpModal.addEventListener('click', (e) => {
       if (e.target === helpModal) helpModal.classList.remove('active');
@@ -1039,7 +1059,10 @@
 
     // Hint Modal
     const hintModal = document.getElementById('hint-modal');
-    document.getElementById('btn-get-hint').addEventListener('click', () => hintModal.classList.add('active'));
+    document.getElementById('btn-get-hint').addEventListener('click', () => {
+      hintModal.classList.add('active');
+      playAudio('audio/word-sort/hint.mp3');
+    });
     document.getElementById('close-hint').addEventListener('click', () => hintModal.classList.remove('active'));
     hintModal.addEventListener('click', (e) => {
       if (e.target === hintModal) hintModal.classList.remove('active');

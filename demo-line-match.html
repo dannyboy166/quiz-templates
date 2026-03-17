@@ -583,6 +583,21 @@
 
   <script>
     // ==========================================
+    // Audio Player (Vonnie Voice)
+    // ==========================================
+    let currentAudio = null;
+    function playAudio(src, onEnd) {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      currentAudio = new Audio(src);
+      if (onEnd) currentAudio.onended = onEnd;
+      currentAudio.play();
+      return currentAudio;
+    }
+
+    // ==========================================
     // Compass Rotation
     // ==========================================
     let compassRotation = 0;
@@ -1110,10 +1125,12 @@
         btnCheck.style.display = 'none';
         btnTryAgain.style.display = 'none';
         btnNext.style.display = 'flex';
+        playAudio('audio/line-match/feedback-correct.mp3');
       } else {
         feedbackBadge.classList.add('incorrect');
         feedbackBadge.innerHTML = `💪 ${correctCount}/${q.leftItems.length} correct - try again!`;
         btnTryAgain.style.display = 'inline-block';
+        playAudio('audio/line-match/feedback-incorrect.mp3');
       }
     });
 
@@ -1138,6 +1155,7 @@
         btnNext.style.display = 'none';
       } else {
         // Quiz complete
+        playAudio('audio/line-match/feedback-complete.mp3');
         matchArea.innerHTML = `
           <div style="text-align: center; padding: 60px 20px;">
             <div style="font-size: 80px; margin-bottom: 20px;">🎉</div>
@@ -1159,19 +1177,21 @@
 
     // Read Aloud
     function readQuestion() {
-      speechSynthesis.cancel();
-      const q = questions[currentQuestion];
-      const utterance = new SpeechSynthesisUtterance(q.prompt);
-      utterance.rate = 0.9;
-      speechSynthesis.speak(utterance);
+      playAudio('audio/line-match/question.mp3');
     }
 
     document.getElementById('btn-read-aloud').addEventListener('click', readQuestion);
 
     // Help Modal
     const helpModal = document.getElementById('help-modal');
-    document.getElementById('btn-get-help').addEventListener('click', () => helpModal.classList.add('active'));
-    document.getElementById('header-help').addEventListener('click', () => helpModal.classList.add('active'));
+    document.getElementById('btn-get-help').addEventListener('click', () => {
+      helpModal.classList.add('active');
+      playAudio('audio/line-match/help.mp3');
+    });
+    document.getElementById('header-help').addEventListener('click', () => {
+      helpModal.classList.add('active');
+      playAudio('audio/line-match/help.mp3');
+    });
     document.getElementById('close-help').addEventListener('click', () => helpModal.classList.remove('active'));
     helpModal.addEventListener('click', (e) => {
       if (e.target === helpModal) helpModal.classList.remove('active');
@@ -1179,7 +1199,10 @@
 
     // Hint Modal
     const hintModal = document.getElementById('hint-modal');
-    document.getElementById('btn-get-hint').addEventListener('click', () => hintModal.classList.add('active'));
+    document.getElementById('btn-get-hint').addEventListener('click', () => {
+      hintModal.classList.add('active');
+      playAudio('audio/line-match/hint.mp3');
+    });
     document.getElementById('close-hint').addEventListener('click', () => hintModal.classList.remove('active'));
     hintModal.addEventListener('click', (e) => {
       if (e.target === hintModal) hintModal.classList.remove('active');
