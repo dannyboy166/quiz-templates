@@ -990,6 +990,17 @@
         playAudio('audio/picture-equations/help.mp3');
       });
       document.getElementById('btn-get-hint').addEventListener('click', () => {
+        // Update hint text based on current operation/question
+        const q = questionSets[currentOperation][currentQuestionIndex];
+        let hintText = '';
+
+        if (q.type === 'subtraction') {
+          hintText = 'Count the pictures carefully! The crossed-out ones are being taken away.';
+        } else {
+          hintText = 'Count the pictures in each group, then add them together!';
+        }
+
+        document.getElementById('hint-text').textContent = hintText;
         openModal('hint-modal');
         playAudio('audio/picture-equations/hint.mp3');
       });
