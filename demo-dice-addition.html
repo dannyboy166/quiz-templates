@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dice Addition - Speed Challenge</title>
   <link rel="stylesheet" href="css/base.css">
-  <script src="js/color-cycle.js"></script>
   <style>
     body {
       background: rgb(178, 235, 242);
@@ -1212,7 +1211,6 @@
 
     // Next round
     function nextRound() {
-      cycleColor();
       hasRolled = false;
       document.getElementById('current-round').textContent = currentRound + 1;
       document.getElementById('current-q').textContent = currentRound + 1;
@@ -1336,9 +1334,6 @@
       document.getElementById('help-modal').classList.add('show');
       playAudio('audio/dice-addition/help.mp3');
     });
-
-    // Initialize color cycling
-    initColorCycle();
 
     // Dice count selector
     document.querySelectorAll('.dice-option').forEach(btn => {
