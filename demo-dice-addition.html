@@ -854,6 +854,7 @@
     let pendingRoll = false; // Queue roll if tapped during transition
     let diceObjects = [];
     let currentTotal = 0;
+    let pauseStart = 0; // Track when timer was paused
 
     // Audio Player (Vonnie Voice)
     let currentAudio = null;
@@ -1301,6 +1302,27 @@
     // Modal
     function closeModal(id) {
       document.getElementById(id).classList.remove('show');
+      if (id === 'help-modal') {
+        resumeTimer();
+      }
+    }
+
+    // Pause/Resume timer for help modal
+    function pauseTimer() {
+      if (timerInterval) {
+        pauseStart = performance.now();
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+
+    function resumeTimer() {
+      if (pauseStart && !timerInterval) {
+        // Adjust timerStart to account for pause duration
+        timerStart += performance.now() - pauseStart;
+        pauseStart = 0;
+        timerInterval = setInterval(updateTimer, 50);
+      }
     }
 
     // Event listeners - listen on both ground and container since container is on top
@@ -1308,6 +1330,7 @@
     document.getElementById('dice-container').addEventListener('click', rollDice);
     document.getElementById('start-btn').addEventListener('click', startGame);
     document.getElementById('header-help').addEventListener('click', () => {
+      pauseTimer();
       document.getElementById('help-modal').classList.add('show');
       playAudio('audio/dice-addition/help.mp3');
     });
