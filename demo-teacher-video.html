@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teacher Video - Demo</title>
+  <link rel="stylesheet" href="css/base.css">
+  <style>
+    body {
+      background: var(--bg-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .video-container {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      padding: 30px;
+      box-shadow: var(--shadow-card);
+      max-width: 620px;
+      width: 100%;
+    }
+
+    .video-header {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .video-header h1 {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .video-header p {
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    .video-wrapper {
+      position: relative;
+      width: 100%;
+      padding-bottom: 56.25%; /* 16:9 aspect ratio */
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: #000;
+    }
+
+    .video-wrapper iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .back-link {
+      margin-top: 20px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .back-link:hover {
+      color: var(--text-primary);
+    }
+  </style>
+</head>
+<body>
+  <div class="video-container">
+    <div class="video-header">
+      <h1>Teacher Video</h1>
+      <p>Watch and learn from the AI teacher</p>
+    </div>
+    <div class="video-wrapper">
+      <iframe
+        width="560"
+        height="315"
+        src="https://app.heygen.com/embeds/176c5a276e3848cca983b11e44062961"
+        title="Teacher Sample 1"
+        allow="encrypted-media; fullscreen;"
+        allowfullscreen>
+      </iframe>
+    </div>
+  </div>
+  <a href="index.html" class="back-link">← Back to all templates</a>
+</body>
+</html>
