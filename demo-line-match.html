@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Line Match - Quiz Template</title>
   <link rel="stylesheet" href="css/base.css">
+  <script src="js/color-cycle.js"></script>
   <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
   <style>
     body {
@@ -1149,6 +1150,7 @@
 
     // Next question
     btnNext.addEventListener('click', () => {
+      cycleColor();
       currentQuestion++;
       if (currentQuestion < questions.length) {
         loadQuestion();
@@ -1214,6 +1216,7 @@
     helpLottie.load(lottieData);
 
     // Start
+    initColorCycle();
     loadQuestion();
   </script>
 </body>

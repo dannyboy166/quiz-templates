@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fractions - Quiz Template</title>
   <link rel="stylesheet" href="css/base.css">
+  <script src="js/color-cycle.js"></script>
   <style>
     body {
       background: #FFE280;
@@ -1127,6 +1128,7 @@
     // Next Question
     // ==========================================
     function nextQuestion() {
+      cycleColor();
       if (currentQuestion < questions.length - 1) {
         currentQuestion++;
         loadQuestion(currentQuestion);
@@ -1183,6 +1185,7 @@
     }
 
     // Initialize event listeners (but don't start game automatically)
+    initColorCycle();
     setupEventListeners();
   </script>
 </body>

@@ -6,6 +6,7 @@
   <title>Draggable Clock - Quiz Template</title>
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/clock.css">
+  <script src="js/color-cycle.js"></script>
   <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
   <style>
     body {
@@ -770,6 +771,7 @@
     // Next Round or Finish
     // ==========================================
     function nextRound() {
+      cycleColor();
       if (currentRound >= totalRounds) {
         // All rounds complete - return to start
         currentRound = 0;
@@ -1005,6 +1007,11 @@
         hintModal.classList.remove('active');
       }
     });
+
+    // ==========================================
+    // Initialize color cycling
+    // ==========================================
+    initColorCycle();
 
     // ==========================================
     // Load Lottie animation inline (avoids CORS issues)

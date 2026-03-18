@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Picture Equations - Quiz Template</title>
   <link rel="stylesheet" href="css/base.css">
+  <script src="js/color-cycle.js"></script>
   <style>
     body {
       background: #FFE280;
@@ -915,6 +916,7 @@
     }
 
     function nextQuestion() {
+      cycleColor();
       const questions = questionSets[currentOperation];
       if (currentQuestionIndex < questions.length - 1) {
         currentQuestionIndex++;
@@ -1018,6 +1020,7 @@
       });
     }
 
+    initColorCycle();
     init();
   </script>
 </body>

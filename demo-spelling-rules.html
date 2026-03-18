@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Spelling Rules - Quiz Template</title>
   <link rel="stylesheet" href="css/base.css">
+  <script src="js/color-cycle.js"></script>
   <style>
     body {
       background: rgb(243, 178, 221);
@@ -1474,6 +1475,7 @@
     }
 
     function nextQuestion() {
+      cycleColor();
       const questions = currentRule === 'shuffle' ? shuffledQuestions : allRules[currentRule].questions;
       if (currentQuestion < questions.length - 1) {
         currentQuestion++;
@@ -1526,6 +1528,7 @@
       });
     }
 
+    initColorCycle();
     init();
   </script>
 </body>

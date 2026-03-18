@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Spelling - Quiz Template</title>
   <link rel="stylesheet" href="css/base.css">
+  <script src="js/color-cycle.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
   <style>
     body {
@@ -1020,6 +1021,7 @@
 
     // Next Page
     btnNext.addEventListener('click', () => {
+      cycleColor();
       if (currentPage < allPages.length - 1) {
         currentPage++;
 
@@ -1116,6 +1118,9 @@
     hintModal.addEventListener('click', (e) => {
       if (e.target === hintModal) hintModal.classList.remove('active');
     });
+
+    // Initialize color cycling
+    initColorCycle();
 
     // Initialize
     fetch('lottie-assets/lottie-config.json')

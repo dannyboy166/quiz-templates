@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Word Match - Quiz Template</title>
   <link rel="stylesheet" href="css/base.css">
+  <script src="js/color-cycle.js"></script>
   <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
   <style>
     body {
@@ -1227,6 +1228,7 @@
 
     // Next Question
     btnNext.addEventListener('click', () => {
+      cycleColor();
       if (currentPage < totalPages - 1) {
         loadPage(currentPage + 1, true);
       } else {
@@ -1348,6 +1350,7 @@
     helpLottie.load(lottieData);
 
     // Start
+    initColorCycle();
     loadPage(0);
   </script>
 </body>

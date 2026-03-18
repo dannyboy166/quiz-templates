@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Base 10 Blocks - Quiz Template</title>
   <link rel="stylesheet" href="css/base.css">
+  <script src="js/color-cycle.js"></script>
   <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
   <style>
     body {
@@ -988,6 +989,7 @@
 
     // Next Question
     btnNext.addEventListener('click', () => {
+      cycleColor();
       currentQuestion++;
       if (currentQuestion > totalQuestions) {
         // Quiz complete - show results or restart
@@ -1076,6 +1078,7 @@
     // ==========================================
     // Initialize
     // ==========================================
+    initColorCycle();
     generateQuestion();
 
     // Load Lottie animation

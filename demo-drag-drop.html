@@ -6,6 +6,7 @@
   <title>Drag & Drop Shapes - Quiz Template</title>
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/drag-drop.css">
+  <script src="js/color-cycle.js"></script>
   <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
   <style>
     body {
@@ -678,6 +679,7 @@
 
     // Play Again
     btnNext.addEventListener('click', () => {
+      cycleColor();
       sorter.reset();
       feedback.style.display = 'none';
       btnNext.style.display = 'none';
@@ -796,6 +798,9 @@
         alert('All shapes look correct! Click Check Answer!');
       }
     });
+
+    // Initialize color cycling
+    initColorCycle();
 
     // Load Lottie animation inline
     const helpLottie = document.getElementById('help-lottie');
