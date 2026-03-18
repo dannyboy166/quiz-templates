@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Color Cycle Test - Quiz Templates</title>
+  <link rel="stylesheet" href="css/base.css">
+  <style>
+    body {
+      transition: background-color 0.5s ease;
+    }
+
+    .quiz-container {
+      transition: background-color 0.5s ease;
+    }
+
+    /* Current color indicator */
+    .color-indicator {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: white;
+      padding: 15px 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+      z-index: 100;
+      font-size: 14px;
+    }
+
+    .color-indicator .swatch {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      vertical-align: middle;
+      margin-right: 8px;
+      border: 2px solid rgba(0,0,0,0.1);
+      transition: background-color 0.5s ease;
+    }
+
+    .color-indicator .name {
+      font-weight: 600;
+    }
+
+    /* Simple question card */
+    .question-card {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 600px;
+      margin: 40px auto;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .question-number {
+      font-size: 18px;
+      color: #666;
+      margin-bottom: 10px;
+    }
+
+    .question-text {
+      font-size: 32px;
+      font-weight: 600;
+      margin-bottom: 30px;
+    }
+
+    .answer-input {
+      width: 120px;
+      height: 80px;
+      font-size: 40px;
+      text-align: center;
+      border: 3px solid #333;
+      border-radius: 12px;
+      margin-bottom: 30px;
+    }
+
+    .answer-input:focus {
+      outline: none;
+      border-color: #2196F3;
+    }
+
+    .btn-check {
+      padding: 16px 50px;
+      font-size: 18px;
+      font-weight: 600;
+      background: #333;
+      color: white;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .btn-check:hover {
+      transform: scale(1.05);
+    }
+
+    .feedback {
+      margin-top: 20px;
+      padding: 15px 25px;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 600;
+      display: none;
+    }
+
+    .feedback.correct {
+      background: #C8E6C9;
+      color: #2E7D32;
+      display: block;
+    }
+
+    .feedback.incorrect {
+      background: #FFCDD2;
+      color: #C62828;
+      display: block;
+    }
+
+    .btn-next {
+      margin-top: 20px;
+      padding: 14px 40px;
+      font-size: 16px;
+      font-weight: 600;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      display: none;
+    }
+
+    .btn-next.show {
+      display: inline-block;
+    }
+
+    .btn-next:hover {
+      background: #43A047;
+    }
+
+    /* Color preview row */
+    .color-preview {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 40px;
+    }
+
+    .color-preview .chip {
+      width: 50px;
+      height: 50px;
+      border-radius: 10px;
+      border: 3px solid transparent;
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+
+    .color-preview .chip:hover {
+      transform: scale(1.1);
+    }
+
+    .color-preview .chip.active {
+      border-color: #333;
+      transform: scale(1.15);
+    }
+
+    .settings {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      max-width: 400px;
+      margin: 20px auto;
+      text-align: center;
+    }
+
+    .settings label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .settings input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Color Indicator -->
+  <div class="color-indicator">
+    <span class="swatch" id="current-swatch"></span>
+    <span class="name" id="current-name">Yellow</span>
+  </div>
+
+  <div class="quiz-container">
+    <header class="quiz-header">
+      <button class="btn-back" onclick="window.location='index.html'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Back
+      </button>
+      <div class="user-profile"></div>
+      <button class="btn-help">Help</button>
+    </header>
+
+    <!-- Settings -->
+    <div class="settings">
+      <label>
+        <input type="checkbox" id="cycle-enabled" checked>
+        Cycle colors on next question
+      </label>
+    </div>
+
+    <!-- Question Card -->
+    <div class="question-card">
+      <div class="question-number">Question <span id="q-num">1</span> of 10</div>
+      <div class="question-text" id="question"></div>
+      <input type="text" class="answer-input" id="answer" inputmode="numeric" maxlength="3">
+      <br>
+      <button class="btn-check" id="btn-check">Check Answer</button>
+      <div class="feedback" id="feedback"></div>
+      <button class="btn-next" id="btn-next">Next Question →</button>
+    </div>
+
+    <!-- Color Preview -->
+    <div class="color-preview">
+      <div class="chip active" style="background: #FFE280;" data-color="#FFE280" data-name="Yellow" title="Yellow"></div>
+      <div class="chip" style="background: rgb(209, 253, 145);" data-color="rgb(209, 253, 145)" data-name="Light Green" title="Light Green"></div>
+      <div class="chip" style="background: rgb(243, 178, 221);" data-color="rgb(243, 178, 221)" data-name="Pink" title="Pink"></div>
+      <div class="chip" style="background: rgb(178, 235, 242);" data-color="rgb(178, 235, 242)" data-name="Cyan" title="Cyan"></div>
+    </div>
+  </div>
+
+  <script>
+    // 4 background colors
+    const colors = [
+      { value: '#FFE280', name: 'Yellow' },
+      { value: 'rgb(209, 253, 145)', name: 'Light Green' },
+      { value: 'rgb(243, 178, 221)', name: 'Pink' },
+      { value: 'rgb(178, 235, 242)', name: 'Cyan' }
+    ];
+
+    let currentColorIndex = 0;
+    let currentQuestion = 1;
+    let correctAnswer = 0;
+
+    const body = document.body;
+    const quizContainer = document.querySelector('.quiz-container');
+    const questionEl = document.getElementById('question');
+    const answerEl = document.getElementById('answer');
+    const feedbackEl = document.getElementById('feedback');
+    const btnCheck = document.getElementById('btn-check');
+    const btnNext = document.getElementById('btn-next');
+    const qNumEl = document.getElementById('q-num');
+    const currentSwatch = document.getElementById('current-swatch');
+    const currentName = document.getElementById('current-name');
+    const cycleEnabled = document.getElementById('cycle-enabled');
+
+    // Set initial color
+    setColor(0);
+
+    // Generate question
+    function generateQuestion() {
+      const a = Math.floor(Math.random() * 10) + 1;
+      const b = Math.floor(Math.random() * 10) + 1;
+      correctAnswer = a + b;
+      questionEl.textContent = `${a} + ${b} = ?`;
+      qNumEl.textContent = currentQuestion;
+      answerEl.value = '';
+      answerEl.focus();
+      feedbackEl.className = 'feedback';
+      feedbackEl.textContent = '';
+      btnNext.classList.remove('show');
+      btnCheck.style.display = 'inline-block';
+    }
+
+    // Set background color
+    function setColor(index) {
+      currentColorIndex = index;
+      const color = colors[index];
+      body.style.backgroundColor = color.value;
+      quizContainer.style.backgroundColor = color.value;
+      currentSwatch.style.backgroundColor = color.value;
+      currentName.textContent = color.name;
+
+      // Update chips
+      document.querySelectorAll('.color-preview .chip').forEach((chip, i) => {
+        chip.classList.toggle('active', i === index);
+      });
+    }
+
+    // Cycle to next color
+    function cycleColor() {
+      const nextIndex = (currentColorIndex + 1) % colors.length;
+      setColor(nextIndex);
+    }
+
+    // Check answer
+    btnCheck.addEventListener('click', () => {
+      const userAnswer = parseInt(answerEl.value);
+
+      if (isNaN(userAnswer)) {
+        answerEl.focus();
+        return;
+      }
+
+      if (userAnswer === correctAnswer) {
+        feedbackEl.className = 'feedback correct';
+        feedbackEl.textContent = '✓ Correct!';
+      } else {
+        feedbackEl.className = 'feedback incorrect';
+        feedbackEl.textContent = `✗ The answer was ${correctAnswer}`;
+      }
+
+      btnCheck.style.display = 'none';
+      btnNext.classList.add('show');
+    });
+
+    // Next question
+    btnNext.addEventListener('click', () => {
+      currentQuestion++;
+
+      // Cycle color if enabled
+      if (cycleEnabled.checked) {
+        cycleColor();
+      }
+
+      if (currentQuestion > 10) {
+        questionEl.textContent = 'Quiz Complete!';
+        feedbackEl.className = 'feedback';
+        feedbackEl.textContent = '';
+        btnNext.classList.remove('show');
+        answerEl.style.display = 'none';
+        btnCheck.style.display = 'none';
+      } else {
+        generateQuestion();
+      }
+    });
+
+    // Click chips to manually set color
+    document.querySelectorAll('.color-preview .chip').forEach((chip, index) => {
+      chip.addEventListener('click', () => setColor(index));
+    });
+
+    // Enter key to check
+    answerEl.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        if (btnNext.classList.contains('show')) {
+          btnNext.click();
+        } else {
+          btnCheck.click();
+        }
+      }
+    });
+
+    // Start
+    generateQuestion();
+  </script>
+</body>
+</html>
