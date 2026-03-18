@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Color Debug - Quiz Templates</title>
+  <link rel="stylesheet" href="css/base.css">
+  <style>
+    body {
+      background: #f5f5f5;
+      padding: 40px 20px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    h2 {
+      margin: 40px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #333;
+    }
+
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+
+    .color-card {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .color-swatch {
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 600;
+      color: rgba(0,0,0,0.5);
+    }
+
+    .color-info {
+      padding: 15px;
+    }
+
+    .color-name {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+
+    .color-value {
+      font-family: monospace;
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 8px;
+    }
+
+    .color-usage {
+      font-size: 12px;
+      color: #999;
+    }
+
+    .color-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .color-chip {
+      width: 60px;
+      height: 60px;
+      border-radius: 8px;
+      border: 2px solid rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .color-chip:hover {
+      transform: scale(1.1);
+    }
+
+    .section {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .section h3 {
+      margin-bottom: 20px;
+      font-size: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+
+    th {
+      background: #f9f9f9;
+      font-weight: 600;
+    }
+
+    .swatch-cell {
+      width: 50px;
+    }
+
+    .swatch-mini {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      border: 2px solid rgba(0,0,0,0.1);
+    }
+
+    code {
+      background: #f0f0f0;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+    <h1>Color Debug - Quiz Templates</h1>
+
+    <!-- Background Colors -->
+    <div class="section">
+      <h3>Background Colors (4 Main)</h3>
+      <div class="color-grid">
+        <div class="color-card">
+          <div class="color-swatch" style="background: #FFE280;">Yellow</div>
+          <div class="color-info">
+            <div class="color-name">Yellow</div>
+            <div class="color-value">#FFE280</div>
+            <div class="color-usage">clock, picture-equations, missing-letters, fractions, color-blocks, base10-blocks, progress-bar, number-order</div>
+          </div>
+        </div>
+
+        <div class="color-card">
+          <div class="color-swatch" style="background: rgb(209, 253, 145);">Light Green</div>
+          <div class="color-info">
+            <div class="color-name">Light Green</div>
+            <div class="color-value">rgb(209, 253, 145)</div>
+            <div class="color-usage">word-sort, word-match, sound-select, skip-counting, drag-drop</div>
+          </div>
+        </div>
+
+        <div class="color-card">
+          <div class="color-swatch" style="background: rgb(243, 178, 221);">Pink</div>
+          <div class="color-info">
+            <div class="color-name">Pink</div>
+            <div class="color-value">rgb(243, 178, 221)</div>
+            <div class="color-usage">spelling, spelling-rules, line-match</div>
+          </div>
+        </div>
+
+        <div class="color-card">
+          <div class="color-swatch" style="background: rgb(178, 235, 242);">Cyan</div>
+          <div class="color-info">
+            <div class="color-name">Cyan</div>
+            <div class="color-value">rgb(178, 235, 242)</div>
+            <div class="color-usage">balloon-pop, dice-addition</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feedback Colors -->
+    <div class="section">
+      <h3>Feedback Colors</h3>
+      <table>
+        <tr>
+          <th class="swatch-cell">Color</th>
+          <th>Name</th>
+          <th>Value</th>
+          <th>CSS Variable</th>
+        </tr>
+        <tr>
+          <td><div class="swatch-mini" style="background: #C8E6C9;"></div></td>
+          <td>Correct Background</td>
+          <td><code>#C8E6C9</code></td>
+          <td><code>--correct-bg</code></td>
+        </tr>
+        <tr>
+          <td><div class="swatch-mini" style="background: #66BB6A;"></div></td>
+          <td>Correct Border</td>
+          <td><code>#66BB6A</code></td>
+          <td><code>--correct-border</code></td>
+        </tr>
+        <tr>
+          <td><div class="swatch-mini" style="background: #2E7D32;"></div></td>
+          <td>Correct Text</td>
+          <td><code>#2E7D32</code></td>
+          <td><code>--correct-text</code></td>
+        </tr>
+        <tr>
+          <td><div class="swatch-mini" style="background: #FFCDD2;"></div></td>
+          <td>Incorrect Background</td>
+          <td><code>#FFCDD2</code></td>
+          <td><code>--incorrect-bg</code></td>
+        </tr>
+        <tr>
+          <td><div class="swatch-mini" style="background: #E57373;"></div></td>
+          <td>Incorrect Border</td>
+          <td><code>#E57373</code></td>
+          <td><code>--incorrect-border</code></td>
+        </tr>
+        <tr>
+          <td><div class="swatch-mini" style="background: #C62828;"></div></td>
+          <td>Incorrect Text</td>
+          <td><code>#C62828</code></td>
+          <td><code>--incorrect-text</code></td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- UI Colors -->
+    <div class="section">
+      <h3>UI Colors</h3>
+      <table>
+        <tr>
+          <th class="swatch-cell">Color</th>
+          <th>Name</th>
+          <th>Value</th>
+          <th>Usage</th>
+        </tr>
+        <tr>
+          <td><div class="swatch-mini" style="background: #4CAF50;"></div></td>
+          <td>Success / Next Button</td>
+          <td><code>#4CAF50</code></td>
+          <td>Next button, correct states</td>
+        </tr>
+        <tr>
+          <td><div class="swatch-mini" style="background: #FF9800;"></div></td>
+          <td>Try Again Button</td>
+          <td><code>#FF9800</code></td>
+          <td>Try again / retry actions</td>
+        </tr>
+        <tr>
+          <td><div class="swatch-mini" style="background: #F44336;"></div></td>
+          <td>Error / Penalty</td>
+          <td><code>#F44336</code></td>
+          <td>Penalty popup, error states</td>
+        </tr>
+        <tr>
+          <td><div class="swatch-mini" style="background: #9C27B0;"></div></td>
+          <td>Current / Active</td>
+          <td><code>#9C27B0</code></td>
+          <td>Current progress dot</td>
+        </tr>
+        <tr>
+          <td><div class="swatch-mini" style="background: #333333;"></div></td>
+          <td>Primary Button</td>
+          <td><code>#333333</code></td>
+          <td>Check Answer, modal buttons</td>
+        </tr>
+        <tr>
+          <td><div class="swatch-mini" style="background: #2196F3;"></div></td>
+          <td>Math Badge</td>
+          <td><code>#2196F3</code></td>
+          <td>Math subject badge</td>
+        </tr>
+        <tr>
+          <td><div class="swatch-mini" style="background: #E91E63;"></div></td>
+          <td>English Badge</td>
+          <td><code>#E91E63</code></td>
+          <td>English/Spelling subject badge</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Progress Bar Colors -->
+    <div class="section">
+      <h3>Progress Bar / Compass</h3>
+      <table>
+        <tr>
+          <th class="swatch-cell">Color</th>
+          <th>Name</th>
+          <th>Value</th>
+        </tr>
+        <tr>
+          <td><div class="swatch-mini" style="background: #3a3a3a;"></div></td>
+          <td>Track Background</td>
+          <td><code>#3a3a3a</code></td>
+        </tr>
+        <tr>
+          <td><div class="swatch-mini" style="background: linear-gradient(90deg, #5E58F9 0%, #EFA1D5 100%);"></div></td>
+          <td>Progress Fill</td>
+          <td><code>#5E58F9 → #EFA1D5</code></td>
+        </tr>
+        <tr>
+          <td><div class="swatch-mini" style="background: #5E58F9;"></div></td>
+          <td>Progress Start (Purple)</td>
+          <td><code>#5E58F9</code></td>
+        </tr>
+        <tr>
+          <td><div class="swatch-mini" style="background: #EFA1D5;"></div></td>
+          <td>Progress End (Pink)</td>
+          <td><code>#EFA1D5</code></td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Answer Option Colors (from clock/skip-counting) -->
+    <div class="section">
+      <h3>Answer Option Colors (2048 Style)</h3>
+      <div class="color-row">
+        <div class="color-chip" style="background: #a7f0f5;" title="Cyan">Cyan</div>
+        <div class="color-chip" style="background: #d793fa;" title="Purple">Purple</div>
+        <div class="color-chip" style="background: #ee836b;" title="Coral">Coral</div>
+        <div class="color-chip" style="background: #3c3a32; color: white;" title="Charcoal">Charcoal</div>
+      </div>
+      <p style="color: #666; font-size: 14px;">Used in: clock, skip-counting, fractions, color-blocks</p>
+    </div>
+
+    <!-- Letter Bubble Colors -->
+    <div class="section">
+      <h3>Letter Bubble Colors (Spelling)</h3>
+      <div class="color-row">
+        <div class="color-chip" style="background: #C4E359;">Green</div>
+        <div class="color-chip" style="background: #96DDF5;">Blue</div>
+        <div class="color-chip" style="background: #FFB366;">Orange</div>
+        <div class="color-chip" style="background: #FAE48A;">Yellow</div>
+      </div>
+    </div>
+
+    <!-- Number Bubble Colors -->
+    <div class="section">
+      <h3>Number Bubble Colors (Number Order)</h3>
+      <div class="color-row">
+        <div class="color-chip" style="background: linear-gradient(135deg, #FF6B6B, #EE5A5A); color: white;">Red</div>
+        <div class="color-chip" style="background: linear-gradient(135deg, #FFA94D, #FF922B); color: white;">Orange</div>
+        <div class="color-chip" style="background: linear-gradient(135deg, #FFD93D, #FCC419);">Yellow</div>
+        <div class="color-chip" style="background: linear-gradient(135deg, #69DB7C, #51CF66);">Green</div>
+        <div class="color-chip" style="background: linear-gradient(135deg, #74C0FC, #4DABF7);">Blue</div>
+        <div class="color-chip" style="background: linear-gradient(135deg, #B197FC, #9775FA);">Purple</div>
+        <div class="color-chip" style="background: linear-gradient(135deg, #F783AC, #E64980); color: white;">Pink</div>
+        <div class="color-chip" style="background: linear-gradient(135deg, #63E6BE, #38D9A9);">Teal</div>
+      </div>
+    </div>
+
+    <!-- Line Match Colors -->
+    <div class="section">
+      <h3>Line Colors (Line Match)</h3>
+      <div class="color-row">
+        <div class="color-chip" style="background: #EF5350; color: white;">Red</div>
+        <div class="color-chip" style="background: #66BB6A; color: white;">Green</div>
+        <div class="color-chip" style="background: #42A5F5; color: white;">Blue</div>
+        <div class="color-chip" style="background: #AB47BC; color: white;">Purple</div>
+        <div class="color-chip" style="background: #FFA726;">Orange</div>
+        <div class="color-chip" style="background: #EC407A; color: white;">Pink</div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>
