@@ -31,7 +31,9 @@ open index.html
 | Word Match | Match words to definitions/images |
 | Word Sort | Sort words into categories |
 
-## Auto-Generated Templates (No Excel Import Needed!)
+## Template Types
+
+### Auto-Generated (No Excel Import Needed!)
 
 These templates generate random questions automatically - just select difficulty and play:
 
@@ -43,6 +45,34 @@ These templates generate random questions automatically - just select difficulty
 | Dice Addition | 10 per round | 2-5 dice (speed challenge) |
 | Fractions | 8 per round | Halves, Quarters, Mixed, Eighths |
 | Skip Counting | 6 per round | Easy (1,2), Medium (3,5,10), Hard (4,6), Expert (7,8,9) |
+| Number Order | 1 session | Random 5 numbers (1-20) |
+
+### Data-Driven (Excel Import Needed)
+
+These templates have hardcoded questions that would need Excel/database import for production:
+
+| Template | Data Required | Current Questions |
+|----------|--------------|-------------------|
+| Balloon Pop | word, blank_position, options, sound_hint | 6 phonics questions (sh, ch, th, wh, ph) |
+| Drag & Drop | items (JSON), categories (JSON) | 8 shapes sorted by sides |
+| Line Match | left_items, right_items, correct matches | Shapes to sides |
+| Missing Letters | word, blank_positions, options | Spelling practice |
+| Picture Equations | operation, emoji, equations (JSON) | Visual math |
+| Sound Select | target_sound, images with correct flags | Phonics images |
+| Spelling | word, image, extra_letters | 4 word-letter matching |
+| Spelling Rules | rule_id, questions (JSON) | 20 rules × 6 questions each |
+| Word Match | pairs (word + image) | 9 image-word pairs |
+| Word Sort | words, categories | Spelling pattern sorting |
+
+### Visual Demos (Not Quizzes)
+
+| Demo | Purpose |
+|------|---------|
+| Progress Bar | Compass progress bar component |
+| Sphere 3D | 3D rotating sphere effect |
+| Spinning Sphere | Alternative sphere animation |
+| Dice Animation | 3D dice rolling demo |
+| Dice Embed | Embeddable dice component |
 
 ## For Developer
 

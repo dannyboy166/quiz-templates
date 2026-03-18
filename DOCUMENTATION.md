@@ -1,4 +1,12 @@
-# Quiz Question Templates - Documentation
+# ⚠️ DEPRECATED - See DEVELOPER-GUIDE.md
+
+> **This file is outdated.** Please refer to **[DEVELOPER-GUIDE.md](DEVELOPER-GUIDE.md)** for current documentation.
+>
+> This file only covers 4 of the original templates. The project now has 17+ templates with many additional features (Lottie animations, ElevenLabs audio, color cycling, etc.)
+
+---
+
+# Quiz Question Templates - Documentation (LEGACY)
 
 ## Overview
 

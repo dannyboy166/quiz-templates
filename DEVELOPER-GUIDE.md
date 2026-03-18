@@ -661,6 +661,149 @@ To change available dice options:
 
 ---
 
+### 18. Balloon Pop (`balloon-pop`)
+
+Pop balloons to reveal letters and complete words. Great for phonics and digraph practice (sh, ch, th, wh, ph).
+
+| Column | Type | Required | Description |
+|--------|------|----------|-------------|
+| `template_type` | string | Yes | `"balloon-pop"` |
+| `word` | string | Yes | The complete word (e.g., "fish") |
+| `blank_position` | string | Yes | `"start"`, `"middle"`, or `"end"` |
+| `blank_letters` | string | Yes | The missing letters (e.g., "sh", "ch") |
+| `display_word` | JSON array | Yes | Word split around blank: `["fi", "_"]` or `["_", "eep"]` |
+| `options` | JSON array | Yes | Balloon choices: `["ch", "sh", "th"]` |
+| `correct` | string | Yes | The correct option |
+| `lottie` | string | No | Lottie animation filename for picture hint |
+| `scale` | number | No | Lottie animation scale (default 1.0) |
+| `sound_name` | string | No | The phonetic sound being practiced |
+| `sound_description` | string | No | Description of the sound |
+| `sound_examples` | string | No | Example words with this sound |
+| `hint` | string | No | Hint text for the question |
+
+**Example Excel Row:**
+```
+template_type: balloon-pop
+word: ship
+blank_position: start
+blank_letters: sh
+display_word: ["_", "ip"]
+options: ["sh", "ch", "th", "wh"]
+correct: sh
+lottie: ship.json
+sound_name: sh
+sound_description: Shhh! Like a quiet whisper!
+sound_examples: ship, shoe, shell
+hint: This sound is like telling someone to be quiet: Shhh!
+```
+
+**Features:**
+- Animated floating balloons with pop effect and confetti
+- Phonics/digraph sound hints with Lottie picture support
+- Audio read-aloud support (ElevenLabs Vonnie Voice)
+- 6 questions per round
+- Compass progress bar
+
+**Current Questions (hardcoded):**
+The demo includes 6 questions covering sh, ch, th, wh sounds:
+- fish (sh at end)
+- sheep (sh at start)
+- chicken (ch at start)
+- whale (wh at start)
+- dolphin (ph in middle)
+- birthday (th in middle)
+
+---
+
+## Recent Features (March 2025)
+
+### Lottie Animations
+Many templates use animated Lottie images for visual engagement.
+- **Location:** `/lottie-assets/` (65+ JSON animation files)
+- **Library:** `lottie-player` loaded from CDN
+- **Templates using Lottie:** Word Match, Sound Select, Balloon Pop, Spelling, Drag & Drop
+
+**Blazor Integration:**
+```csharp
+// Option 1: Use lottie-player web component via JS interop
+// Option 2: Use a Blazor Lottie library like LottieSharp
+```
+
+### ElevenLabs Audio ("Vonnie Voice")
+Professional voice audio replaces browser speech synthesis.
+- **Location:** `/audio/{template-name}/` directories (17 directories)
+- **Files per template:** question.mp3, hint.mp3, help.mp3, feedback-correct.mp3, feedback-incorrect.mp3
+- **Total:** 125+ MP3 files across all templates
+- **Generation:** `npm run generate-audio` (requires .env with ELEVENLABS_API_KEY)
+
+**Audio File Structure:**
+```
+/audio/
+├── balloon-pop/
+│   ├── question.mp3
+│   ├── hint-sh.mp3, hint-ch.mp3, hint-th.mp3...
+│   ├── feedback-correct.mp3
+│   └── feedback-incorrect.mp3
+├── clock/
+├── color-blocks/
+├── ... (17 template directories)
+```
+
+### Color Cycling
+Background color cycles through 4 colors on each "next question" action.
+- **Colors:** Yellow (#FFE280) → Light Green (rgb(209,253,145)) → Pink (rgb(243,178,221)) → Cyan (rgb(178,235,242))
+- **Script:** `/js/color-cycle.js`
+- **Persistence:** sessionStorage (continues across page navigation)
+- **Note:** Dice Addition does NOT use color cycling (excluded by design)
+
+**Usage in templates:**
+```javascript
+// In <head>
+<script src="js/color-cycle.js"></script>
+
+// On page load
+initColorCycle();
+
+// In next question function
+cycleColor();
+```
+
+### Progress Bar with Spinning Compass
+All templates include an animated progress bar with compass indicator.
+- **Gradient fill:** Purple (#5E58F9) → Pink (#EFA1D5)
+- **Compass:** Spinning diamond marker that speeds up on progress
+- **Track:** Dark gray (#3a3a3a) rounded bar
+
+**HTML Structure:**
+```html
+<div class="progress-container">
+  <div class="progress-track">
+    <div class="progress-fill" id="progress-fill"></div>
+  </div>
+  <div class="compass-container" id="compass-container">
+    <div class="compass">
+      <div class="compass-diamond"><!-- SVG diamond --></div>
+    </div>
+  </div>
+</div>
+```
+
+### Difficulty Selection Screens
+Templates with auto-generated questions have difficulty selectors on start:
+- **Clock:** Hours Only, Half Hours, Quarters, 5 Minutes
+- **Color Blocks:** Ones Only (1-9), Easy (10-50), Medium (51-99), Hard (100-999)
+- **Base 10 Blocks:** Easy (1-20), Medium (1-100), Hard (100-999)
+- **Fractions:** Halves, Quarters, Mixed, Eighths
+- **Skip Counting:** Easy (1,2), Medium (3,5,10), Hard (4,6), Expert (7,8,9)
+
+**Button Color Palette (2048-style):**
+- Cyan: `#a7f0f5`
+- Purple: `#d793fa`
+- Coral: `#ee836b`
+- Charcoal: `#3c3a32`
+
+---
+
 ## Suggested Excel Import Structure
 
 ### Option A: Single Table (Simple)
@@ -801,26 +944,47 @@ public class QuestionImportService
 
 ## File Reference
 
-| Demo File | Template Type | Key CSS/JS |
-|-----------|---------------|------------|
-| `demo-clock.html` | `clock` | `css/clock.css`, `js/clock.js` |
-| `demo-drag-drop.html` | `drag-drop` | `css/drag-drop.css`, `js/drag-drop.js` |
-| `demo-color-blocks.html` | `color-blocks` | Inline styles |
-| `demo-spelling.html` | `spelling` | Inline styles |
-| `demo-word-match.html` | `word-match` | Inline styles |
-| `demo-number-order.html` | `number-order` | Inline styles |
-| `demo-sound-select.html` | `sound-select` | Inline styles |
-| `demo-line-match.html` | `line-match` | Inline styles |
-| `demo-word-sort.html` | `word-sort` | Inline styles |
-| `demo-missing-letters.html` | `missing-letters` | Inline styles |
-| `demo-spelling-rules.html` | `spelling-rules` | Inline styles |
-| `demo-picture-equations.html` | `picture-equations` | Inline styles |
-| `demo-fractions.html` | `fractions` | Inline styles |
-| `demo-skip-counting.html` | `skip-counting` | Inline styles |
-| `demo-balloon-pop.html` | `balloon-pop` | Inline styles |
-| `demo-base10-blocks.html` | `base10-blocks` | Inline styles |
-| `demo-dice-addition.html` | `dice-addition` | Inline styles (standalone) |
-| `demo-sphere-3d.html` | `sphere-3d` | Three.js (visual effect) |
+### Quiz Templates (17)
+
+| Demo File | Template Type | Data Source | Key Dependencies |
+|-----------|---------------|-------------|------------------|
+| `demo-clock.html` | `clock` | Auto-generated | `css/clock.css`, `js/clock.js` |
+| `demo-drag-drop.html` | `drag-drop` | Hardcoded/Excel | `css/drag-drop.css`, `js/drag-drop.js` |
+| `demo-color-blocks.html` | `color-blocks` | Auto-generated | `js/color-cycle.js` |
+| `demo-spelling.html` | `spelling` | Hardcoded/Excel | `js/color-cycle.js`, Lottie |
+| `demo-word-match.html` | `word-match` | Hardcoded/Excel | `js/color-cycle.js`, Lottie |
+| `demo-number-order.html` | `number-order` | Auto-generated | `js/color-cycle.js`, Lottie |
+| `demo-sound-select.html` | `sound-select` | Hardcoded/Excel | `js/color-cycle.js`, Lottie |
+| `demo-line-match.html` | `line-match` | Hardcoded/Excel | `js/color-cycle.js` |
+| `demo-word-sort.html` | `word-sort` | Hardcoded/Excel | `js/color-cycle.js` |
+| `demo-missing-letters.html` | `missing-letters` | Hardcoded/Excel | `js/color-cycle.js` |
+| `demo-spelling-rules.html` | `spelling-rules` | Hardcoded/Excel | `js/color-cycle.js` |
+| `demo-picture-equations.html` | `picture-equations` | Hardcoded/Excel | `js/color-cycle.js` |
+| `demo-fractions.html` | `fractions` | Auto-generated | `js/color-cycle.js` |
+| `demo-skip-counting.html` | `skip-counting` | Auto-generated | `js/color-cycle.js` |
+| `demo-balloon-pop.html` | `balloon-pop` | Hardcoded/Excel | `js/color-cycle.js`, Lottie |
+| `demo-base10-blocks.html` | `base10-blocks` | Auto-generated | `js/color-cycle.js` |
+| `demo-dice-addition.html` | `dice-addition` | Auto-generated | Standalone (no color cycle) |
+
+### Visual Demos (5)
+
+| Demo File | Purpose |
+|-----------|---------|
+| `demo-progress-bar.html` | Compass progress bar component demo |
+| `demo-sphere-3d.html` | 3D rotating sphere (Three.js) |
+| `demo-spinning-sphere.html` | Alternative sphere effect |
+| `demo-dice-animation.html` | 3D dice animation demo |
+| `demo-dice-embed.html` | Embeddable dice component |
+
+### Shared Resources
+
+| Directory | Contents |
+|-----------|----------|
+| `/css/` | base.css, clock.css, drag-drop.css |
+| `/js/` | clock.js, drag-drop.js, color-cycle.js |
+| `/audio/` | 17 subdirectories with 125+ MP3 files (ElevenLabs) |
+| `/lottie-assets/` | 65+ JSON animation files |
+| `/images/` | Static images and icons |
 
 ---
 
@@ -828,17 +992,32 @@ public class QuestionImportService
 
 All templates use consistent styling:
 
+### Background Colors (4-Color Cycle)
+| Color | Value | Used By |
+|-------|-------|---------|
+| Yellow | `#FFE280` | Default starting color |
+| Light Green | `rgb(209, 253, 145)` | Cycle color 2 |
+| Pink | `rgb(243, 178, 221)` | Cycle color 3 |
+| Cyan | `rgb(178, 235, 242)` | Cycle color 4 |
+
+### UI Elements
 | Element | Value |
 |---------|-------|
-| Background (default) | `#FAE38E` (yellow) |
-| Background (spelling) | `#F2ADE2` (pink) |
-| Background (word-match) | `#87CEEB` (sky blue) |
-| Card background | `#FFFFFF` |
-| Correct feedback | `#C8E6C9` (green) |
-| Incorrect feedback | `#FFCDD2` (red/pink) |
-| Primary button | `#000000` |
+| Card background | `#FFFFFF` (or transparent for modern look) |
+| Correct feedback | `#C8E6C9` (light green) |
+| Incorrect feedback | `#FFCDD2` (light red/pink) |
+| Primary button | `#333333` |
+| Next button | `#4CAF50` (green, circular) |
+| Try Again button | `#FF9800` (orange) |
 | Border radius | `12px` (cards), `8px` (buttons) |
 | Font | System fonts |
+
+### Progress Bar
+| Element | Value |
+|---------|-------|
+| Track | `#3a3a3a` (dark gray) |
+| Fill gradient | `#5E58F9` → `#EFA1D5` (purple to pink) |
+| Compass border | `#333333` |
 
 ---
 
