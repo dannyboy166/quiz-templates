@@ -73,10 +73,11 @@ These templates have hardcoded questions that would need Excel/database import f
 | Spinning Sphere | Alternative sphere animation |
 | Dice Animation | 3D dice rolling demo |
 | Dice Embed | Embeddable dice component |
+| Teacher Video | AI avatar teacher video (HeyGen) |
 
 ## For Developer
 
-See `DOCUMENTATION.md` for full integration guide.
+See `DEVELOPER-GUIDE.md` for full integration guide.
 
 **TL;DR:**
 1. CSS files work directly in Blazor
