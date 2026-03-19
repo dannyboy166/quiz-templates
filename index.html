@@ -65,6 +65,36 @@
       line-height: 1.6;
     }
 
+    /* Priority templates styling */
+    .demo-card.priority {
+      border: 3px solid #FFD700;
+      background: linear-gradient(135deg, #FFFEF0 0%, #FFFFFF 100%);
+    }
+
+    .section-header {
+      margin: 40px 0 20px 0;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #ddd;
+    }
+
+    .section-header:first-of-type {
+      margin-top: 0;
+    }
+
+    .section-header h2 {
+      font-size: 24px;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-header p {
+      color: var(--text-secondary);
+      font-size: 14px;
+      margin-top: 5px;
+    }
+
     .demo-icon {
       width: 40px;
       height: 40px;
@@ -121,22 +151,50 @@
       <p>Interactive question components for your developer to integrate</p>
     </div>
 
+    <!-- Priority Templates Section -->
+    <div class="section-header">
+      <h2>⭐ Julie's Favourites</h2>
+    </div>
+
     <div class="demo-cards">
-      <a href="demo-clock.html" class="demo-card">
+      <a href="demo-clock.html" class="demo-card priority">
         <h2><span class="demo-icon">🕐</span> Draggable Clock</h2>
         <p>Interactive clock with draggable hands. Students set the time by rotating the hour and minute hands.</p>
       </a>
 
-      <a href="demo-dice-addition.html" class="demo-card">
+      <a href="demo-dice-addition.html" class="demo-card priority">
         <h2><span class="demo-icon">🎲</span> Dice Addition</h2>
         <p>Roll 2-5 dice and add them up! Speed challenge with timer and 5-second penalty for wrong answers.</p>
       </a>
 
-      <a href="demo-balloon-pop.html" class="demo-card">
+      <a href="demo-balloon-pop.html" class="demo-card priority">
         <h2><span class="demo-icon">🎈</span> Balloon Pop</h2>
         <p>Pop the balloon with the correct digraph (ch, sh, th, ph) to complete the word! Fun phonics practice.</p>
       </a>
 
+      <a href="demo-word-match.html" class="demo-card priority">
+        <h2><span class="demo-icon">🏷️</span> Word Match</h2>
+        <p>Match words to pictures by dragging. Includes distractor words to choose from.</p>
+      </a>
+
+      <a href="demo-spelling.html" class="demo-card priority">
+        <h2><span class="demo-icon">🔡</span> Spelling Letters</h2>
+        <p>Drag letters to spell words for each picture. Letters must be placed in order.</p>
+      </a>
+
+      <a href="demo-sound-select.html" class="demo-card priority">
+        <h2><span class="demo-icon">🔊</span> Select the Sound</h2>
+        <p>Select all images that begin with a target sound. Multi-select phonics practice!</p>
+      </a>
+    </div>
+
+    <!-- Other Templates Section -->
+    <div class="section-header">
+      <h2>📚 Other Templates</h2>
+      <p>Additional quiz types ready for integration</p>
+    </div>
+
+    <div class="demo-cards">
       <a href="demo-base10-blocks.html" class="demo-card">
         <h2><span class="demo-icon">🧮</span> Base 10 Blocks</h2>
         <p>Count the blocks! Random numbers 1-100 shown with hundreds, tens, and ones. Three difficulty levels.</p>
@@ -152,24 +210,9 @@
         <p>Click blocks to colour them to make a number. Teaches place value with tens and ones.</p>
       </a>
 
-      <a href="demo-spelling.html" class="demo-card">
-        <h2><span class="demo-icon">🔡</span> Spelling Letters</h2>
-        <p>Drag letters to spell words for each picture. Letters must be placed in order.</p>
-      </a>
-
-      <a href="demo-word-match.html" class="demo-card">
-        <h2><span class="demo-icon">🏷️</span> Word Match</h2>
-        <p>Match words to pictures by dragging. Includes distractor words to choose from.</p>
-      </a>
-
       <a href="demo-number-order.html" class="demo-card">
         <h2><span class="demo-icon">🔢</span> Number Order</h2>
         <p>Drag numbers into order from smallest to biggest. Random numbers each time!</p>
-      </a>
-
-      <a href="demo-sound-select.html" class="demo-card">
-        <h2><span class="demo-icon">🔊</span> Sound Select</h2>
-        <p>Select all images that begin with a target sound. Multi-select phonics practice!</p>
       </a>
 
       <a href="demo-line-match.html" class="demo-card">
