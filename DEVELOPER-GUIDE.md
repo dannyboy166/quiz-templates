@@ -769,10 +769,25 @@ cycleColor();
 ```
 
 ### Progress Bar with Spinning Compass
-All templates include an animated progress bar with compass indicator.
-- **Gradient fill:** Purple (#5E58F9) → Pink (#EFA1D5)
-- **Compass:** Spinning diamond marker that speeds up on progress
-- **Track:** Dark gray (#3a3a3a) rounded bar
+
+**PRIORITY COMPONENT** - All templates include this animated progress bar. See `demo-progress-bar.html` for the complete working implementation.
+
+**Features:**
+- Gradient fill bar: Purple (#5E58F9) → Pink (#EFA1D5)
+- Spinning compass diamond that follows progress
+- Spins **faster** when progressing forward
+- Spins **backwards** when going to previous question
+- Returns to slow idle spin when stationary
+
+**Colors:**
+| Element | Value |
+|---------|-------|
+| Track | `#3a3a3a` (dark gray) |
+| Fill start | `#5E58F9` (purple) |
+| Fill end | `#EFA1D5` (pink) |
+| Compass border | `#333` |
+| Pink kite | `#EFA1D5` |
+| Blue kite | `#5E58F9` |
 
 **HTML Structure:**
 ```html
@@ -782,11 +797,147 @@ All templates include an animated progress bar with compass indicator.
   </div>
   <div class="compass-container" id="compass-container">
     <div class="compass">
-      <div class="compass-diamond"><!-- SVG diamond --></div>
+      <!-- Cardinal dots -->
+      <div class="compass-dot top"></div>
+      <div class="compass-dot bottom"></div>
+      <div class="compass-dot left"></div>
+      <div class="compass-dot right"></div>
+      <!-- Spinning bowtie kites -->
+      <div class="compass-diamond">
+        <svg viewBox="0 0 28 8">
+          <polygon points="0,4 10,0 14,4 10,8" fill="#EFA1D5" stroke="#333" stroke-width="0.5"/>
+          <polygon points="28,4 18,0 14,4 18,8" fill="#5E58F9" stroke="#333" stroke-width="0.5"/>
+        </svg>
+      </div>
     </div>
   </div>
 </div>
 ```
+
+**JavaScript Implementation:**
+```javascript
+let currentQuestion = 1;
+const totalQuestions = 8;
+
+// Rotation state
+let rotation = 0;
+let spinSpeed = 120; // degrees per second (slow idle)
+const slowSpeed = 120;
+const fastSpeed = 720;
+let lastTime = performance.now();
+let slowDownTimer = null;
+
+// Continuous spin loop
+function spinCompass(currentTime) {
+  const delta = (currentTime - lastTime) / 1000;
+  lastTime = currentTime;
+
+  rotation += spinSpeed * delta;
+  rotation %= 360;
+
+  const compassDiamond = document.querySelector('.compass-diamond');
+  if (compassDiamond) {
+    compassDiamond.style.transform = `rotate(${rotation}deg)`;
+  }
+
+  requestAnimationFrame(spinCompass);
+}
+
+// Start spinning on page load
+requestAnimationFrame(spinCompass);
+
+function updateProgress(animate = false, backwards = false) {
+  const progressFill = document.getElementById('progress-fill');
+  const compassContainer = document.getElementById('compass-container');
+
+  // Calculate percentage
+  const percentage = (currentQuestion / totalQuestions) * 100;
+
+  // Speed up spin while moving (negative = backwards)
+  if (animate) {
+    if (slowDownTimer) clearTimeout(slowDownTimer);
+    spinSpeed = backwards ? -fastSpeed : fastSpeed;
+    slowDownTimer = setTimeout(() => {
+      spinSpeed = slowSpeed;
+    }, 500);
+  }
+
+  // Update fill and compass position
+  progressFill.style.width = percentage + '%';
+  compassContainer.style.left = percentage + '%';
+}
+
+function nextQuestion() {
+  if (currentQuestion < totalQuestions) {
+    currentQuestion++;
+    updateProgress(true, false); // animate forward
+  }
+}
+
+function prevQuestion() {
+  if (currentQuestion > 1) {
+    currentQuestion--;
+    updateProgress(true, true); // animate backwards
+  }
+}
+```
+
+**CSS (key styles):**
+```css
+.progress-container {
+  position: relative;
+  width: 100%;
+  height: 24px;
+  margin: 40px 0;
+}
+
+.progress-track {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 16px;
+  background: #3a3a3a;
+  border-radius: 8px;
+  transform: translateY(-50%);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #5E58F9 0%, #EFA1D5 100%);
+  border-radius: 8px;
+  transition: width 0.5s ease-out;
+}
+
+.compass-container {
+  position: absolute;
+  top: 50%;
+  left: 0%;
+  transform: translate(-50%, -50%);
+  transition: left 0.5s ease-out;
+  z-index: 10;
+}
+
+.compass {
+  width: 44px;
+  height: 44px;
+  background: white;
+  border: 2px solid #333;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+```
+
+**Blazor Integration:**
+The spinning animation uses `requestAnimationFrame`. In Blazor, you can either:
+1. Keep the JS animation via interop (recommended for smooth 60fps)
+2. Use CSS animations with `@keyframes` for simpler implementation
+
+**Full working demo:** `demo-progress-bar.html` - copy CSS/JS directly from this file.
 
 ### Difficulty Selection Screens
 Templates with auto-generated questions have difficulty selectors on start:
