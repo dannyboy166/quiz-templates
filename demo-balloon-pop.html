@@ -683,7 +683,7 @@
 
     <!-- Question Title -->
     <div class="question-title">
-      <h1 id="question-text">Pop the balloon to complete the word!</h1>
+      <h1 id="question-text">Pop the balloon with the digraph that completes this word.</h1>
     </div>
 
     <!-- Help Bar -->
@@ -727,9 +727,9 @@
               <!-- Letters will be inserted by JS -->
             </div>
 
-            <!-- Sound Hint -->
+            <!-- Digraph Hint -->
             <div class="sound-hint" id="sound-hint">
-              <strong>The 'sh' Sound</strong> - Shhh! Like a quiet whisper or a fishy kiss!
+              <strong>The 'sh' Digraph</strong> - Shhh! Like a quiet whisper or a fishy kiss!
               <span class="sound-example">Examples: ship, shoe, shell</span>
             </div>
 
@@ -767,10 +767,11 @@
       <h2>How to Play</h2>
       <div class="modal-instruction">
         <p>🎈 Look at the picture and the word with missing letters.</p>
-        <p>👆 <strong>Pop the balloon</strong> with the correct sound to complete the word!</p>
-        <p>🔤 Each balloon has a different letter combination:</p>
+        <p>👆 <strong>Pop the balloon</strong> with the digraph that completes this word!</p>
+        <p>🔤 Each balloon has a different digraph.</p>
+        <p>📖 A digraph is 2 letters that make one sound.</p>
         <ul style="margin-left: 20px; margin-top: 8px;">
-          <li><strong>ch</strong> - like in "chair" or "cheese"</li>
+          <li><strong>ch</strong> - like in "chop" or "chip"</li>
           <li><strong>sh</strong> - like in "ship" or "shell"</li>
           <li><strong>th</strong> - like in "think" or "three"</li>
           <li><strong>ph</strong> - like in "phone" or "photo"</li>
@@ -876,7 +877,7 @@
         scale: 1.0,
         soundName: "ch",
         soundDescription: "Ch-ch-ch! Like a choo-choo train!",
-        soundExamples: "cheese, chocolate, cherry",
+        soundExamples: "chop, chip, cherry",
         hint: "Think about the sound a train makes: Choo-choo!"
       },
       {
@@ -1040,10 +1041,10 @@
         ></lottie-player>
       `;
 
-      // Update sound hint
+      // Update digraph hint
       const soundHint = document.getElementById('sound-hint');
       soundHint.innerHTML = `
-        <strong>The '${q.soundName}' Sound</strong> - ${q.soundDescription}
+        <strong>The '${q.soundName}' Digraph</strong> - ${q.soundDescription}
         <span class="sound-example">Examples: ${q.soundExamples}</span>
       `;
 
