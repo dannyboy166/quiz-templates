@@ -1022,8 +1022,12 @@
       } else {
         // Quiz complete
         playAudio('audio/word-sort/feedback-complete.mp3');
+        // Hide word bank and replace entire sort-layout with centered message
+        document.querySelector('.word-bank').style.display = 'none';
+        sortListsEl.style.width = '100%';
+        sortListsEl.style.justifyContent = 'center';
         sortListsEl.innerHTML = `
-          <div style="text-align: center; padding: 60px 20px; background: white; border-radius: 16px; width: 100%;">
+          <div style="text-align: center; padding: 60px 20px; background: white; border-radius: 16px; width: 100%; max-width: 500px; margin: 0 auto;">
             <div style="font-size: 80px; margin-bottom: 20px;">🎉</div>
             <h2 style="font-size: 32px; margin-bottom: 15px;">Quiz Complete!</h2>
             <p style="font-size: 18px; color: #666; margin-bottom: 30px;">Great job sorting words!</p>
