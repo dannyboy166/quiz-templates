@@ -485,8 +485,9 @@
     </div>
 
     <!-- Question Title -->
-    <div class="question-title">
-      <h1 id="question-text">Complete the subtraction sentences</h1>
+    <div class="question-title" style="display: flex; flex-direction: column; align-items: center;">
+      <h1 id="question-text">Complete the number sentence.</h1>
+      <p style="font-size: 16px; color: #555; margin-top: 4px;">Fill in the missing number to complete this number sentence.</p>
     </div>
 
     <!-- Help Bar -->
@@ -541,11 +542,10 @@
       <button class="modal-close" onclick="closeModal('help-modal')">×</button>
       <h2>How to Play</h2>
       <div class="modal-instruction">
-        <p>🖼️ Look at the pictures - some have a red line through them!</p>
-        <p>➖ <strong>Subtraction:</strong> Count all items, then count crossed-out ones. Fill in: total - crossed = remaining</p>
-        <p>➕ <strong>Addition:</strong> Count items in each group. Fill in: group1 + group2 = total</p>
-        <p>✏️ Type numbers in the empty boxes to complete each equation.</p>
-        <p>✅ Press "Check Answer" when you're done!</p>
+        <p>🖼️ Look at the pictures – some have a red line through them – this means they have been taken away.</p>
+        <p>➖ <strong>Subtraction</strong> means to start with a number and take some away to see what is left.</p>
+        <p>➕ <strong>Addition</strong> means adding more. Putting groups together to find the total.</p>
+        <p>✏️ Type a number in the empty box to make this number sentence correct.</p>
       </div>
       <button class="modal-btn" onclick="closeModal('help-modal')">Got it!</button>
     </div>
@@ -716,13 +716,8 @@
       const percentage = (currentQuestionIndex / questions.length) * 100;
       updateCompass(percentage, currentQuestionIndex > 0);
 
-      // Update title based on operation
-      const titles = {
-        subtraction: 'Complete the subtraction sentences',
-        addition: 'Complete the addition sentences',
-        mixed: 'Complete the number sentences'
-      };
-      document.getElementById('question-text').textContent = titles[currentOperation];
+      // Title is now static
+      document.getElementById('question-text').textContent = 'Complete the number sentence.';
 
       renderEquation(q);
 
