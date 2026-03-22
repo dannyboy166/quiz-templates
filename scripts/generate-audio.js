@@ -156,7 +156,7 @@ const balloonPopAudio = [
 // ==========================================
 const clockAudio = [
   // Main question
-  { file: 'audio/clock/question.mp3', text: 'Set each clock to show the correct time. Drag the short hand to change the hour. Drag the long hand to change the minutes.' },
+  { file: 'audio/clock/question.mp3', text: 'Set each clock to show the correct time.' },
 
   // Difficulty intros
   { file: 'audio/clock/difficulty-hours.mp3', text: 'Hours only mode! Set the clocks to show times like 3 o\'clock.' },
@@ -175,7 +175,7 @@ const clockAudio = [
   { file: 'audio/clock/feedback-complete.mp3', text: 'Quiz Complete! You\'re a clock reading champion!' },
 
   // Help
-  { file: 'audio/clock/help.mp3', text: 'Short hand tells us what hour it is. Long hand tells us the minutes. For times like 3 o\'clock, the long hand always points to 12. Just drag the hands with your finger or mouse!' },
+  { file: 'audio/clock/help.mp3', text: 'Short hand tells us what hour it is. Long hand tells us the minutes. For times like 3 o\'clock, the long hand always points to 12. Drag the short hand to change the hour. Drag the long hand to change the minutes.' },
 ];
 
 // ==========================================
