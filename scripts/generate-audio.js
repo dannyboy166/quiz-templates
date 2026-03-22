@@ -132,7 +132,7 @@ async function generateAudio(text, outputPath) {
 // ==========================================
 const balloonPopAudio = [
   // Main question
-  { file: 'audio/balloon-pop/question.mp3', text: 'Pop the balloon to complete the word! Look at the picture and choose the correct sound.' },
+  { file: 'audio/balloon-pop/question.mp3', text: 'Pop the balloon with the digraph that completes this word.' },
 
   // Hints for each word
   { file: 'audio/balloon-pop/hint-fish.mp3', text: 'This word ends with a quiet sound, like when you tell someone to be quiet: Shhh!' },
@@ -148,7 +148,7 @@ const balloonPopAudio = [
   { file: 'audio/balloon-pop/feedback-complete.mp3', text: 'Quiz Complete! Great job popping those balloons!' },
 
   // Help
-  { file: 'audio/balloon-pop/help.mp3', text: 'Look at the picture and the word with missing letters. Pop the balloon with the correct sound to complete the word!' },
+  { file: 'audio/balloon-pop/help.mp3', text: 'Look at the picture and the word with missing letters. Pop the balloon with the digraph that completes this word. Each balloon has a different digraph. A digraph is 2 letters that make one sound. Like ch in chop, sh in ship, th in think, and ph in phone.' },
 ];
 
 // ==========================================
@@ -156,7 +156,7 @@ const balloonPopAudio = [
 // ==========================================
 const clockAudio = [
   // Main question
-  { file: 'audio/clock/question.mp3', text: 'Set each clock to show the time below it. Drag the hands to the correct positions!' },
+  { file: 'audio/clock/question.mp3', text: 'Set each clock to show the correct time. Drag the short hand to change the hour. Drag the long hand to change the minutes.' },
 
   // Difficulty intros
   { file: 'audio/clock/difficulty-hours.mp3', text: 'Hours only mode! Set the clocks to show times like 3 o\'clock.' },
@@ -175,7 +175,7 @@ const clockAudio = [
   { file: 'audio/clock/feedback-complete.mp3', text: 'Quiz Complete! You\'re a clock reading champion!' },
 
   // Help
-  { file: 'audio/clock/help.mp3', text: 'The short hand shows the hour. The long hand shows the minutes. Drag them to match the time shown below each clock!' },
+  { file: 'audio/clock/help.mp3', text: 'Short hand tells us what hour it is. Long hand tells us the minutes. For times like 3 o\'clock, the long hand always points to 12. Just drag the hands with your finger or mouse!' },
 ];
 
 // ==========================================
@@ -334,7 +334,7 @@ const numberOrderAudio = [
 // ==========================================
 const pictureEquationsAudio = [
   // Main question
-  { file: 'audio/picture-equations/question.mp3', text: 'Complete the number sentences! Look at the pictures and fill in the missing numbers.' },
+  { file: 'audio/picture-equations/question.mp3', text: 'Complete the number sentence. Fill in the missing number to complete this number sentence.' },
 
   // Hints
   { file: 'audio/picture-equations/hint.mp3', text: 'Count the pictures carefully. The crossed-out ones are being taken away!' },
@@ -345,7 +345,7 @@ const pictureEquationsAudio = [
   { file: 'audio/picture-equations/feedback-complete.mp3', text: 'Quiz Complete! Great job with those equations!' },
 
   // Help
-  { file: 'audio/picture-equations/help.mp3', text: 'Look at the pictures. For subtraction, count all items, then count the crossed-out ones. For addition, count each group and add them together!' },
+  { file: 'audio/picture-equations/help.mp3', text: 'Look at the pictures. Some have a red line through them, meaning they have been taken away. Subtraction means to start with a number and take some away to see what is left. Addition means adding more, putting groups together to find the total. Type a number in the empty box to make this number sentence correct.' },
 ];
 
 // ==========================================
@@ -353,7 +353,7 @@ const pictureEquationsAudio = [
 // ==========================================
 const soundSelectAudio = [
   // Main question
-  { file: 'audio/sound-select/question.mp3', text: 'Select the images that begin with the target sound!' },
+  { file: 'audio/sound-select/question.mp3', text: 'Select the words that begin with the target letter!' },
 
   // Hints for each sound
   { file: 'audio/sound-select/hint-c.mp3', text: 'Say each picture\'s name out loud. Does it start with c, like cat or car?' },
@@ -366,7 +366,7 @@ const soundSelectAudio = [
   { file: 'audio/sound-select/feedback-complete.mp3', text: 'Quiz Complete! Great job with those sounds!' },
 
   // Help
-  { file: 'audio/sound-select/help.mp3', text: 'Look at the target sound and find all pictures that begin with it. Tap each correct picture!' },
+  { file: 'audio/sound-select/help.mp3', text: 'Look at the letter. What sound does it make? Find pictures that begin with that sound. Tap the pictures that start with that sound.' },
 ];
 
 // ==========================================

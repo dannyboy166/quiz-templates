@@ -457,8 +457,9 @@
     </div>
 
     <!-- Question Title -->
-    <div class="question-title">
-      <h1>Set each clock to show the time below it</h1>
+    <div class="question-title" style="display: flex; flex-direction: column; align-items: center;">
+      <h1>Set each clock to show the correct time.</h1>
+      <p style="font-size: 16px; color: #555; margin-top: 4px;">Drag the short hand to change the hour. Drag the long hand to change the minutes.</p>
     </div>
 
     <!-- Help Bar -->
@@ -485,8 +486,8 @@
         <div style="font-size: 40px; text-align: center; margin-bottom: 10px;">&#128368;</div>
         <h2 style="text-align: center;">How to Read a Clock!</h2>
         <div style="background: #FFF9E6; padding: 15px; border-radius: 12px; margin: 15px 0;">
-          <p style="margin: 8px 0;"><strong>&#128072; Short hand</strong> = What HOUR is it?</p>
-          <p style="margin: 8px 0;"><strong>&#128070; Long hand</strong> = What MINUTE is it?</p>
+          <p style="margin: 8px 0;">&#128072; <strong>Short hand:</strong> tells us what hour it is</p>
+          <p style="margin: 8px 0;">&#128070; <strong>Long hand:</strong> tells us the minutes</p>
         </div>
         <p style="text-align: center; font-size: 15px;">For times like "3 o'clock", the long hand always points to <strong>12</strong>!</p>
         <p style="text-align: center; font-size: 15px;">Just drag the hands with your finger or mouse!</p>
@@ -561,7 +562,6 @@
         </div>
       </div>
 
-      <p class="clock-instructions" style="text-align: center; margin-top: 15px;">Drag the short hand for hours, long hand for minutes</p>
 
       <!-- Feedback -->
       <div class="feedback" id="feedback" style="display: none;">

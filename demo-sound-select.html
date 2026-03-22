@@ -429,7 +429,7 @@
 
     <!-- Question Title -->
     <div class="question-title">
-      <h1 id="question-text">Select the images that begin with the m sound.</h1>
+      <h1 id="question-text">Select the words that begin with c.</h1>
     </div>
 
     <!-- Help Bar -->
@@ -456,9 +456,9 @@
         <div style="font-size: 40px; text-align: center; margin-bottom: 10px;">🔊</div>
         <h2 style="text-align: center;">Sound Selection!</h2>
         <div style="background: #FFF9E6; padding: 15px; border-radius: 12px; margin: 15px 0;">
-          <p style="margin: 8px 0;"><strong>👀 Look</strong> at the target sound</p>
-          <p style="margin: 8px 0;"><strong>🖼️ Find</strong> pictures that start with it</p>
-          <p style="margin: 8px 0;"><strong>👆 Tap</strong> all the correct ones!</p>
+          <p style="margin: 8px 0;">👀 Look at the letter. What sound does it make?</p>
+          <p style="margin: 8px 0;">🖼️ Find pictures that begin with that sound.</p>
+          <p style="margin: 8px 0;">👆 Tap the pictures that start with that sound.</p>
         </div>
         <p style="text-align: center; font-size: 15px;">You can select multiple pictures!</p>
         <button class="modal-close" id="close-help">Let's go! ⭐</button>
@@ -553,14 +553,14 @@
     const questions = [
       {
         sound: 'c',
-        prompt: 'Select the images that begin with the c sound.',
+        prompt: 'Select the words that begin with c.',
         hint: 'Say each picture\'s name out loud. Does it start with c, like cat or car?',
         images: [
           { lottie: 'cat.json', name: 'cat', startsWithSound: true, scale: 1.0 },
           { lottie: 'dog.json', name: 'dog', startsWithSound: false, scale: 1.0 },
           { lottie: 'car.json', name: 'car', startsWithSound: true, scale: 1.8, offsetY: 15 },
           { lottie: 'fish.json', name: 'fish', startsWithSound: false, scale: 1.0 },
-          { lottie: 'chicken.json', name: 'chicken', startsWithSound: true, scale: 1.0 },
+          { lottie: 'horse.json', name: 'horse', startsWithSound: false, scale: 1.0 },
           { lottie: 'rabbit.json', name: 'rabbit', startsWithSound: false, scale: 1.0 },
           { lottie: 'crocodile.json', name: 'crocodile', startsWithSound: true, scale: 1.0 },
           { lottie: 'sheep.json', name: 'sheep', startsWithSound: false, scale: 1.5 },
@@ -570,7 +570,7 @@
       },
       {
         sound: 's',
-        prompt: 'Select the images that begin with the s sound.',
+        prompt: 'Select the words that begin with s.',
         hint: 'Say each picture\'s name out loud. Does it start with s, like sun or snake?',
         images: [
           { lottie: 'snake.json', name: 'snake', startsWithSound: true, scale: 1.0 },
@@ -587,7 +587,7 @@
       },
       {
         sound: 'd',
-        prompt: 'Select the images that begin with the d sound.',
+        prompt: 'Select the words that begin with d.',
         hint: 'Say each picture\'s name out loud. Does it start with d, like dog or dinosaur?',
         images: [
           { lottie: 'dog.json', name: 'dog', startsWithSound: true, scale: 1.0 },
