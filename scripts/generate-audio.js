@@ -334,7 +334,7 @@ const numberOrderAudio = [
 // ==========================================
 const pictureEquationsAudio = [
   // Main question
-  { file: 'audio/picture-equations/question.mp3', text: 'Complete the number sentence. Fill in the missing number to complete this number sentence.' },
+  { file: 'audio/picture-equations/question.mp3', text: 'Complete the number sentence.' },
 
   // Hints
   { file: 'audio/picture-equations/hint.mp3', text: 'Count the pictures carefully. The crossed-out ones are being taken away!' },
@@ -345,7 +345,7 @@ const pictureEquationsAudio = [
   { file: 'audio/picture-equations/feedback-complete.mp3', text: 'Quiz Complete! Great job with those equations!' },
 
   // Help
-  { file: 'audio/picture-equations/help.mp3', text: 'Look at the pictures. Some have a red line through them, meaning they have been taken away. Subtraction means to start with a number and take some away to see what is left. Addition means adding more, putting groups together to find the total. Type a number in the empty box to make this number sentence correct.' },
+  { file: 'audio/picture-equations/help.mp3', text: 'Fill in the missing number to complete this number sentence. Look at the pictures. Some have a red line through them, meaning they have been taken away. Subtraction means to start with a number and take some away to see what is left. Addition means adding more, putting groups together to find the total. Type a number in the empty box to make this number sentence correct.' },
 ];
 
 // ==========================================
