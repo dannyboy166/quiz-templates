@@ -899,11 +899,13 @@
 
     btnGetHelp.addEventListener('click', () => {
       helpModal.classList.add('active');
+      playAudio('audio/clock/help.mp3');
     });
 
     // Header help button also opens modal
     document.querySelector('.btn-help').addEventListener('click', () => {
       helpModal.classList.add('active');
+      playAudio('audio/clock/help.mp3');
     });
 
     closeHelp.addEventListener('click', () => {

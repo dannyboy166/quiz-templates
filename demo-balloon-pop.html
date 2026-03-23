@@ -1241,8 +1241,14 @@
       document.getElementById('btn-try-again').addEventListener('click', tryAgain);
       document.getElementById('btn-next').addEventListener('click', nextQuestion);
       document.getElementById('btn-read-aloud').addEventListener('click', readAloud);
-      document.getElementById('btn-get-help').addEventListener('click', () => openModal('help-modal'));
-      document.getElementById('header-help').addEventListener('click', () => openModal('help-modal'));
+      document.getElementById('btn-get-help').addEventListener('click', () => {
+        openModal('help-modal');
+        playAudio('audio/balloon-pop/help.mp3');
+      });
+      document.getElementById('header-help').addEventListener('click', () => {
+        openModal('help-modal');
+        playAudio('audio/balloon-pop/help.mp3');
+      });
       document.getElementById('btn-get-hint').addEventListener('click', () => {
         openModal('hint-modal');
         const q = questions[currentQuestion];
