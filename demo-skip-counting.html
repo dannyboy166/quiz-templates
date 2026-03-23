@@ -593,24 +593,26 @@
 
   <!-- Help Modal -->
   <div class="modal-overlay" id="help-modal">
-    <div class="modal-content">
+    <div class="modal-content" style="max-width: 650px;">
       <button class="modal-close" onclick="closeModal('help-modal')">×</button>
       <h2>How to Play</h2>
-      <div class="modal-instruction">
-        <p>🔢 Look at the numbers.</p>
-        <p>🔍 Can you see a pattern?</p>
-        <p>🤔 What are you counting by?</p>
-        <p>✏️ Type the missing numbers in the yellow boxes.</p>
-        <p>💡 <strong>Easy:</strong> Count by 1s or 2s</p>
-        <p>💡 <strong>Medium:</strong> Count by 3s, 5s or 10s</p>
-        <p>💡 <strong>Hard:</strong> Count by 4s or 6s</p>
-        <p>💡 <strong>Expert:</strong> Count by 7s, 8s or 9s</p>
-      </div>
-      <!-- Hundreds Chart Visual -->
-      <div style="margin: 15px 0; padding: 8px; background: #f5f5f5; border-radius: 8px;">
-        <p style="font-size: 11px; color: #666; margin-bottom: 6px;">Hundreds Chart:</p>
-        <div style="display: grid; grid-template-columns: repeat(10, 1fr); gap: 0; font-size: 8px; max-width: 220px; margin: 0 auto; border: 1px solid #999;">
-          <script>document.write([...Array(100)].map((_, i) => `<div style="background: white; padding: 2px; text-align: center; border: 1px solid #ddd;">${i+1}</div>`).join(''))</script>
+      <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+        <div class="modal-instruction" style="flex: 1; min-width: 200px;">
+          <p>🔢 Look at the numbers.</p>
+          <p>🔍 Can you see a pattern?</p>
+          <p>🤔 What are you counting by?</p>
+          <p>✏️ Type the missing numbers in the yellow boxes.</p>
+          <p>💡 <strong>Easy:</strong> Count by 1s or 2s</p>
+          <p>💡 <strong>Medium:</strong> Count by 3s, 5s or 10s</p>
+          <p>💡 <strong>Hard:</strong> Count by 4s or 6s</p>
+          <p>💡 <strong>Expert:</strong> Count by 7s, 8s or 9s</p>
+        </div>
+        <!-- Hundreds Chart Visual -->
+        <div style="padding: 8px; background: #f5f5f5; border-radius: 8px; flex-shrink: 0;">
+          <p style="font-size: 11px; color: #666; margin-bottom: 6px;">Hundreds Chart:</p>
+          <div style="display: grid; grid-template-columns: repeat(10, 1fr); gap: 0; font-size: 8px; width: 200px; border: 1px solid #999;">
+            <script>document.write([...Array(100)].map((_, i) => `<div style="background: white; padding: 2px; text-align: center; border: 1px solid #ddd;">${i+1}</div>`).join(''))</script>
+          </div>
         </div>
       </div>
       <button class="modal-btn" onclick="closeModal('help-modal')">Got it!</button>
