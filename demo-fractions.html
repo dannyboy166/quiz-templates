@@ -105,23 +105,25 @@
       border: 2px solid #8B4513;
     }
 
-    /* Rectangle (Chocolate Bar) */
+    /* Rectangle (One whole divided into parts) */
     .rect-shape {
       display: grid;
-      gap: 4px;
-      background: #8B4513;
-      padding: 8px;
+      gap: 0;
+      background: white;
+      padding: 0;
       border-radius: 12px;
+      border: 3px solid #333;
+      overflow: hidden;
     }
 
     .rect-piece {
       width: 50px;
       height: 50px;
-      background: #E0E0E0;
-      border-radius: 6px;
+      background: #E8E8E8;
+      border-radius: 0;
       cursor: pointer;
       transition: all 0.2s;
-      border: 2px solid #999;
+      border: 1px solid #999;
     }
 
     .rect-piece:hover {
@@ -570,7 +572,7 @@
 
     <!-- Question Title -->
     <div class="question-title">
-      <h1 id="question-text">Shade the shape to show the fraction</h1>
+      <h1 id="question-text">Colour parts of the shape to match the fraction.</h1>
     </div>
 
     <!-- Help Bar -->
@@ -685,11 +687,11 @@
       <button class="modal-close" onclick="closeModal('help-modal')">×</button>
       <h2>How to Play</h2>
       <div class="modal-instruction">
-        <p>🍕 Look at the fraction shown (like 3/4)</p>
-        <p>👆 Click on parts of the shape to shade them</p>
-        <p>🔢 The bottom number tells you how many parts total</p>
-        <p>🔢 The top number tells you how many to shade</p>
-        <p>💡 3/4 means shade 3 out of 4 parts!</p>
+        <p>🔢 The bottom number tells us the whole is cut into equal parts.</p>
+        <p>🔢 The top number tells us how many of those parts we have.</p>
+        <p>🧩 These parts are smaller pieces of one whole.</p>
+        <p>👆 Click on parts of the shape to colour them.</p>
+        <p>💡 3/4 means colour 3 out of 4 parts!</p>
         <p>✅ Press "Check Answer" when you're done!</p>
       </div>
       <button class="modal-btn" onclick="closeModal('help-modal')">Got it!</button>

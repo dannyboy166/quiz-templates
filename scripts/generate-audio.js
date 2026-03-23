@@ -223,18 +223,18 @@ const diceAdditionAudio = [
 // ==========================================
 const fractionsAudio = [
   // Main question
-  { file: 'audio/fractions/question.mp3', text: 'Click to shade the fraction shown. Shade the correct number of parts!' },
+  { file: 'audio/fractions/question.mp3', text: 'Colour parts of the shape to match the fraction.' },
 
   // Hints
-  { file: 'audio/fractions/hint.mp3', text: 'The top number tells you how many parts to shade. The bottom number tells you how many parts there are in total!' },
+  { file: 'audio/fractions/hint.mp3', text: 'The top number tells you how many parts to colour. The bottom number tells you how many parts there are in total!' },
 
   // Feedback
-  { file: 'audio/fractions/feedback-correct.mp3', text: 'Excellent! You shaded the correct fraction!' },
+  { file: 'audio/fractions/feedback-correct.mp3', text: 'Excellent! You coloured the correct fraction!' },
   { file: 'audio/fractions/feedback-incorrect.mp3', text: 'Not quite. Try counting the parts again!' },
   { file: 'audio/fractions/feedback-complete.mp3', text: 'Quiz Complete! You\'re a fractions superstar!' },
 
   // Help
-  { file: 'audio/fractions/help.mp3', text: 'A fraction has two parts. The bottom number is how many pieces the shape is cut into. The top number is how many pieces to shade!' },
+  { file: 'audio/fractions/help.mp3', text: 'The bottom number tells us the whole is cut into equal parts. The top number tells us how many of those parts we have. These parts are smaller pieces of one whole.' },
 ];
 
 // ==========================================
