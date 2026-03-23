@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<!--
+  PORTAL EFFECT HOMEPAGE PROTOTYPE
+  ================================
+
+  A scroll-through portal effect where users "enter" through a hallway door
+  into a classroom with an interactive 3D sphere.
+
+  LAYERS (z-index order):
+  - z-index 3: Hallway image (front) - zooms into the door on scroll
+  - z-index 2: Classroom image with transparent hole (middle)
+  - z-index 1: Three.js sphere with video texture (back) - shows through hole
+
+  CONTROLS:
+  - Trackpad: Two-finger swipe up/down to transition
+  - Keyboard: Arrow keys or spacebar
+  - Mouse: Drag to rotate the sphere
+
+  REQUIREMENTS:
+  - Must run via local server (not file://) for video to work
+  - Run: python3 -m http.server 8080
+  - Open: http://localhost:8080/home-prototype.html
+
+  IMAGES:
+  - assets/images/hallway.png - The entrance hallway
+  - assets/images/classroom-transparent.png - Classroom with transparent arch
+  - butterfly.MP4 - Video texture for the sphere
+-->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Effect</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .scene {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            will-change: transform, opacity;
+        }
+
+        .scene img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Hallway (front) */
+        .hallway {
+            z-index: 3;
+            transform-origin: 50% 48%;
+            pointer-events: none;
+        }
+
+        /* Classroom (middle - on top of sphere) */
+        .classroom {
+            z-index: 2;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .classroom img {
+            object-fit: cover;
+            object-position: center 80%;
+        }
+
+        /* Three.js sphere container (behind classroom) */
+        #sphere-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0;
+            pointer-events: auto;
+        }
+
+        /* Hint */
+        .hint {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 14px 28px;
+            border-radius: 50px;
+            font-size: 16px;
+            pointer-events: none;
+            transition: opacity 0.5s;
+        }
+
+        .hint.hidden {
+            opacity: 0;
+        }
+
+        /* Progress bar */
+        .progress-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #ff6b6b, #ffd93d, #6bcb77);
+            z-index: 100;
+            width: 0%;
+            transition: width 0.1s;
+        }
+
+        /* Reset button */
+        .reset-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.5s;
+            pointer-events: none;
+        }
+
+        .reset-btn.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="container">
+        <!-- Hallway - front layer -->
+        <div class="scene hallway" id="hallway">
+            <img src="assets/images/hallway.png" alt="School Hallway">
+        </div>
+
+        <!-- Classroom with transparent hole - middle layer -->
+        <div class="scene classroom" id="classroom">
+            <img src="assets/images/classroom-transparent.png" alt="Classroom">
+        </div>
+
+        <!-- Three.js sphere - back layer (shows through transparent hole) -->
+        <div id="sphere-container"></div>
+
+        <div class="hint" id="hint">Swipe up on trackpad to enter</div>
+        <div class="progress-bar" id="progressBar"></div>
+        <button class="reset-btn" id="resetBtn">Reset</button>
+    </div>
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        // ============ DRAG CONTROLS ============
+        class SimpleOrbitControls {
+            constructor(camera, domElement) {
+                this.camera = camera;
+                this.domElement = domElement;
+                this.autoRotate = true;
+                this.autoRotateSpeed = 1.0;
+                this.rotationX = 0;
+                this.rotationY = 0;
+                this.targetRotationX = 0;
+                this.targetRotationY = 0;
+                this.isDragging = false;
+                this.previousMouseX = 0;
+                this.previousMouseY = 0;
+                this.setupEventListeners();
+            }
+
+            setupEventListeners() {
+                this.domElement.addEventListener('mousedown', (e) => this.onMouseDown(e));
+                this.domElement.addEventListener('mousemove', (e) => this.onMouseMove(e));
+                this.domElement.addEventListener('mouseup', () => this.onMouseUp());
+                this.domElement.addEventListener('mouseleave', () => this.onMouseUp());
+                this.domElement.addEventListener('touchstart', (e) => this.onTouchStart(e));
+                this.domElement.addEventListener('touchmove', (e) => this.onTouchMove(e));
+                this.domElement.addEventListener('touchend', () => this.onMouseUp());
+            }
+
+            onMouseDown(e) {
+                this.isDragging = true;
+                this.previousMouseX = e.clientX;
+                this.previousMouseY = e.clientY;
+            }
+
+            onMouseMove(e) {
+                if (!this.isDragging) return;
+                const deltaX = e.clientX - this.previousMouseX;
+                const deltaY = e.clientY - this.previousMouseY;
+                this.targetRotationY += deltaX * 0.005;
+                this.targetRotationX += deltaY * 0.005;
+                this.targetRotationX = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, this.targetRotationX));
+                this.previousMouseX = e.clientX;
+                this.previousMouseY = e.clientY;
+            }
+
+            onTouchStart(e) {
+                if (e.touches.length === 1) {
+                    this.isDragging = true;
+                    this.previousMouseX = e.touches[0].clientX;
+                    this.previousMouseY = e.touches[0].clientY;
+                }
+            }
+
+            onTouchMove(e) {
+                if (!this.isDragging || e.touches.length !== 1) return;
+                e.preventDefault();
+                const deltaX = e.touches[0].clientX - this.previousMouseX;
+                const deltaY = e.touches[0].clientY - this.previousMouseY;
+                this.targetRotationY += deltaX * 0.005;
+                this.targetRotationX += deltaY * 0.005;
+                this.targetRotationX = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, this.targetRotationX));
+                this.previousMouseX = e.touches[0].clientX;
+                this.previousMouseY = e.touches[0].clientY;
+            }
+
+            onMouseUp() {
+                this.isDragging = false;
+            }
+
+            update() {
+                if (this.autoRotate && !this.isDragging) {
+                    this.targetRotationY += 0.003 * this.autoRotateSpeed;
+                }
+                this.rotationX += (this.targetRotationX - this.rotationX) * 0.05;
+                this.rotationY += (this.targetRotationY - this.rotationY) * 0.05;
+                return { x: this.rotationX, y: this.rotationY };
+            }
+        }
+
+        // ============ THREE.JS SPHERE SETUP ============
+        const sphereContainer = document.getElementById('sphere-container');
+
+        // Scene
+        const scene = new THREE.Scene();
+
+        // Camera
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 3;
+
+        // Renderer
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        sphereContainer.appendChild(renderer.domElement);
+
+        // Create sphere
+        const geometry = new THREE.SphereGeometry(0.95, 128, 128);
+
+        // Video texture
+        const video = document.createElement('video');
+        video.src = 'butterfly.MP4';
+        video.loop = true;
+        video.muted = true;
+        video.playsInline = true;
+        video.crossOrigin = 'anonymous';
+        video.play();
+
+        const videoTexture = new THREE.VideoTexture(video);
+        videoTexture.minFilter = THREE.LinearFilter;
+        videoTexture.magFilter = THREE.LinearFilter;
+
+        const material = new THREE.MeshStandardMaterial({
+            map: videoTexture,
+            roughness: 0.3,
+            metalness: 0.0
+        });
+
+        const sphere = new THREE.Mesh(geometry, material);
+        sphere.position.y = -0.1;
+        scene.add(sphere);
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(5, 3, 5);
+        scene.add(directionalLight);
+
+        // Drag controls
+        const controls = new SimpleOrbitControls(camera, renderer.domElement);
+
+        function animateSphere() {
+            requestAnimationFrame(animateSphere);
+            const rotation = controls.update();
+            sphere.rotation.x = rotation.x;
+            sphere.rotation.y = rotation.y;
+            renderer.render(scene, camera);
+        }
+        animateSphere();
+
+        // Resize handler
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // ============ PORTAL TRANSITION ============
+        const container = document.getElementById('container');
+        const hallway = document.getElementById('hallway');
+        const classroom = document.getElementById('classroom');
+        const hint = document.getElementById('hint');
+        const progressBar = document.getElementById('progressBar');
+        const resetBtn = document.getElementById('resetBtn');
+
+        let progress = 0;
+        const maxScale = 12;
+        const sensitivity = 0.002;
+
+        function updateScene() {
+            progress = Math.max(0, Math.min(1, progress));
+
+            // Scale hallway
+            const scale = 1 + (maxScale - 1) * easeInQuad(progress);
+            const hallwayOpacity = 1 - smoothstep(0.3, 0.7, progress);
+            const classroomOpacity = smoothstep(0.2, 0.6, progress);
+
+            hallway.style.transform = `scale(${scale})`;
+            hallway.style.opacity = hallwayOpacity;
+            classroom.style.opacity = classroomOpacity;
+
+            // Show sphere when classroom is visible
+            sphereContainer.style.opacity = classroomOpacity;
+
+            // Start video when entering
+            if (progress > 0.3 && video.paused) {
+                video.play();
+            }
+
+            progressBar.style.width = `${progress * 100}%`;
+
+            if (progress > 0.05) {
+                hint.classList.add('hidden');
+            } else {
+                hint.classList.remove('hidden');
+            }
+
+            if (progress >= 1) {
+                resetBtn.classList.add('visible');
+            } else {
+                resetBtn.classList.remove('visible');
+            }
+        }
+
+        function easeInQuad(t) {
+            return t * t;
+        }
+
+        function smoothstep(min, max, value) {
+            const x = Math.max(0, Math.min(1, (value - min) / (max - min)));
+            return x * x * (3 - 2 * x);
+        }
+
+        // Wheel/trackpad
+        container.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            progress += e.deltaY * sensitivity;
+            updateScene();
+        }, { passive: false });
+
+        // Touch
+        let touchStartY = 0;
+        container.addEventListener('touchstart', (e) => {
+            touchStartY = e.touches[0].clientY;
+        });
+
+        container.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const delta = touchStartY - e.touches[0].clientY;
+            progress += delta * 0.005;
+            touchStartY = e.touches[0].clientY;
+            updateScene();
+        }, { passive: false });
+
+        // Reset
+        resetBtn.addEventListener('click', () => {
+            progress = 0;
+            updateScene();
+        });
+
+        // Keyboard
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowDown' || e.key === ' ') {
+                e.preventDefault();
+                progress += 0.05;
+                updateScene();
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                progress -= 0.05;
+                updateScene();
+            }
+        });
+
+        updateScene();
+    </script>
+</body>
+</html>
