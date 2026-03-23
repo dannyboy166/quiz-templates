@@ -771,8 +771,8 @@
 
       // Generate letter pool
       const allLetters = words.join('').split('');
-      const distractors = ['b', 'h', 'n', 'i', 'p', 'k'];
-      const letterPool = [...allLetters, ...distractors.slice(0, 4)];
+      const distractors = ['h', 'i', 'p', 'k'];
+      const letterPool = [...allLetters, ...distractors.slice(0, 2)];
       const shuffledLetters = shuffle([...letterPool]);
 
       shuffledLetters.forEach((letter, index) => {
