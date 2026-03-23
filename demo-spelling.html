@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Spelling - Quiz Template</title>
+  <title>Phonics Fun - Quiz Template</title>
   <link rel="stylesheet" href="css/base.css">
   <script src="js/color-cycle.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
@@ -489,13 +489,13 @@
 
     <!-- Question Meta -->
     <div class="question-meta">
-      <span class="badge" style="background: #E91E63; color: white;">SPELLING</span>
-      <span class="question-progress" id="word-progress">Spell 16 words (0/16)</span>
+      <span class="badge" style="background: #E91E63; color: white;">PHONICS</span>
+      <span class="question-progress" id="word-progress">Blend 8 words (0/8)</span>
     </div>
 
     <!-- Question Title -->
     <div class="question-title">
-      <h1>Join the letters to write the word</h1>
+      <h1>Blend the sounds together to make a word.</h1>
     </div>
 
     <!-- Help Bar -->
@@ -520,14 +520,14 @@
     <div class="modal-overlay" id="help-modal">
       <div class="modal">
         <div style="font-size: 40px; text-align: center; margin-bottom: 10px;">🔤</div>
-        <h2 style="text-align: center;">Spelling Time!</h2>
+        <h2 style="text-align: center;">Phonics Fun!</h2>
         <div style="background: #FFF9E6; padding: 15px; border-radius: 12px; margin: 15px 0;">
-          <p style="margin: 8px 0;"><strong>👀 Look</strong> at each picture</p>
-          <p style="margin: 8px 0;"><strong>🎯 Drag</strong> letters to the correct positions</p>
-          <p style="margin: 8px 0;"><strong>📝 Place</strong> any letter in the right spot!</p>
+          <p style="margin: 8px 0;">👀 Look at the picture.</p>
+          <p style="margin: 8px 0;">🎯 Drag each sound into the boxes to make the word.</p>
+          <p style="margin: 8px 0;">🔊 Blend the sounds together to check your answers.</p>
+          <p style="margin: 8px 0;">⭐ See if you can make all the words using your phonics knowledge!</p>
         </div>
-        <p style="text-align: center; font-size: 15px;">Spell all 16 words across 4 pages!</p>
-        <button class="modal-close" id="close-help">Let's spell! ⭐</button>
+        <button class="modal-close" id="close-help">Let's go! ⭐</button>
       </div>
     </div>
 
@@ -590,15 +590,14 @@
     // Load Lottie config
     let lottieConfig = null;
 
-    // All 16 words across 4 pages
+    // All 8 words across 2 pages (phonics - no digraphs)
+    // TODO: Replace 'bat' placeholder on page 2 with new animation when available
     const allPages = [
-      ['dog', 'ant', 'tree', 'car'],
-      ['cat', 'bee', 'bat', 'fish'],
-      ['frog', 'goat', 'sheep', 'horse'],
-      ['deer', 'mouse', 'snake', 'whale']
+      ['ant', 'bat', 'cat', 'dog'],
+      ['car', 'frog', 'zebra', 'bat']  // 'bat' is placeholder - replace when new animation ready
     ];
 
-    const totalWords = 16;
+    const totalWords = 8;
     let currentPage = 0;
     let totalWordsCompleted = 0;
 
@@ -644,7 +643,7 @@
 
     function updateWordProgressDisplay() {
       document.getElementById('word-progress').textContent =
-        `Spell 16 words (${totalWordsCompleted}/16)`;
+        `Blend ${totalWords} words (${totalWordsCompleted}/${totalWords})`;
     }
 
     // Shuffle letters
@@ -996,12 +995,12 @@
         feedbackBadge.classList.add('correct');
 
         if (currentPage < allPages.length - 1) {
-          feedbackBadge.innerHTML = `🎉 Page ${currentPage + 1} complete! (${totalWordsCompleted}/16 words)`;
+          feedbackBadge.innerHTML = `🎉 Page ${currentPage + 1} complete! (${totalWordsCompleted}/${totalWords} words)`;
           btnNext.style.display = 'flex';
           btnNext.title = 'Next Page';
           playAudio('audio/spelling/feedback-correct.mp3');
         } else {
-          feedbackBadge.innerHTML = '🏆 Amazing! You spelled all 16 words!';
+          feedbackBadge.innerHTML = '🏆 Amazing! You made all the words!';
           btnNext.style.display = 'flex';
           btnNext.title = 'Finish';
           playAudio('audio/spelling/feedback-complete.mp3');
@@ -1110,7 +1109,7 @@
       }
 
       hintTitle.innerHTML = "🎉 Page complete!";
-      hintText.innerHTML = "You've spelled all words on this page! Click Check Answer!";
+      hintText.innerHTML = "You've made all the words on this page! Click Check Answer!";
       hintModal.classList.add('active');
     });
 

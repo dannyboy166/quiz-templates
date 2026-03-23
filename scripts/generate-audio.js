@@ -370,22 +370,22 @@ const soundSelectAudio = [
 ];
 
 // ==========================================
-// SPELLING
+// SPELLING (Phonics)
 // ==========================================
 const spellingAudio = [
   // Main question
-  { file: 'audio/spelling/question.mp3', text: 'Join the letters to write the word! Look at each picture and drag the letters to spell what you see.' },
+  { file: 'audio/spelling/question.mp3', text: 'Blend the sounds together to make a word. Look at each picture and drag the sounds to make the word.' },
 
   // Hints
-  { file: 'audio/spelling/hint.mp3', text: 'Find the first letter of the word. What sound does the picture start with?' },
+  { file: 'audio/spelling/hint.mp3', text: 'Find the first sound of the word. What sound does the picture start with?' },
 
   // Feedback
   { file: 'audio/spelling/feedback-correct.mp3', text: 'Page complete! Well done!' },
   { file: 'audio/spelling/feedback-incorrect.mp3', text: 'Keep going! You can do it!' },
-  { file: 'audio/spelling/feedback-complete.mp3', text: 'Amazing! You spelled all the words!' },
+  { file: 'audio/spelling/feedback-complete.mp3', text: 'Amazing! You made all the words!' },
 
   // Help
-  { file: 'audio/spelling/help.mp3', text: 'Look at each picture. Drag letters from the pool to spell the word. Each letter can only be used once!' },
+  { file: 'audio/spelling/help.mp3', text: 'Look at the picture. Drag each sound into the boxes to make the word. Blend the sounds together to check your answers. See if you can make all the words using your phonics knowledge!' },
 ];
 
 // ==========================================
