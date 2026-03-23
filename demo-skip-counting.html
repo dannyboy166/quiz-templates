@@ -331,6 +331,8 @@
       padding: 30px;
       max-width: 500px;
       width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
       text-align: center;
       position: relative;
     }
@@ -593,7 +595,7 @@
 
   <!-- Help Modal -->
   <div class="modal-overlay" id="help-modal">
-    <div class="modal-content" style="max-width: 650px;">
+    <div class="modal-content" style="max-width: 720px;">
       <button class="modal-close" onclick="closeModal('help-modal')">×</button>
       <h2>How to Play</h2>
       <div style="display: flex; gap: 20px; flex-wrap: wrap;">
@@ -610,19 +612,19 @@
         <!-- Interactive Hundreds Chart -->
         <div style="padding: 8px; background: #f5f5f5; border-radius: 8px; flex-shrink: 0;">
           <p style="font-size: 11px; color: #666; margin-bottom: 6px;">Click a pattern to see it on the chart:</p>
-          <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; max-width: 200px;">
-            <button class="chart-btn" onclick="highlightChart(1)" style="padding: 3px 8px; font-size: 10px; border-radius: 4px; border: 1px solid #ccc; background: #a7f0f5; cursor: pointer;">1s</button>
-            <button class="chart-btn" onclick="highlightChart(2)" style="padding: 3px 8px; font-size: 10px; border-radius: 4px; border: 1px solid #ccc; background: #a7f0f5; cursor: pointer;">2s</button>
-            <button class="chart-btn" onclick="highlightChart(3)" style="padding: 3px 8px; font-size: 10px; border-radius: 4px; border: 1px solid #ccc; background: #d793fa; cursor: pointer;">3s</button>
-            <button class="chart-btn" onclick="highlightChart(5)" style="padding: 3px 8px; font-size: 10px; border-radius: 4px; border: 1px solid #ccc; background: #d793fa; cursor: pointer;">5s</button>
-            <button class="chart-btn" onclick="highlightChart(10)" style="padding: 3px 8px; font-size: 10px; border-radius: 4px; border: 1px solid #ccc; background: #d793fa; cursor: pointer;">10s</button>
-            <button class="chart-btn" onclick="highlightChart(4)" style="padding: 3px 8px; font-size: 10px; border-radius: 4px; border: 1px solid #ccc; background: #ee836b; cursor: pointer;">4s</button>
-            <button class="chart-btn" onclick="highlightChart(6)" style="padding: 3px 8px; font-size: 10px; border-radius: 4px; border: 1px solid #ccc; background: #ee836b; cursor: pointer;">6s</button>
-            <button class="chart-btn" onclick="highlightChart(7)" style="padding: 3px 8px; font-size: 10px; border-radius: 4px; border: 1px solid #ccc; background: #3c3a32; color: white; cursor: pointer;">7s</button>
-            <button class="chart-btn" onclick="highlightChart(8)" style="padding: 3px 8px; font-size: 10px; border-radius: 4px; border: 1px solid #ccc; background: #3c3a32; color: white; cursor: pointer;">8s</button>
-            <button class="chart-btn" onclick="highlightChart(9)" style="padding: 3px 8px; font-size: 10px; border-radius: 4px; border: 1px solid #ccc; background: #3c3a32; color: white; cursor: pointer;">9s</button>
+          <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; max-width: 280px;">
+            <button class="chart-btn" onclick="highlightChart(1)" style="padding: 4px 10px; font-size: 12px; border-radius: 4px; border: 1px solid #ccc; background: #a7f0f5; cursor: pointer;">1s</button>
+            <button class="chart-btn" onclick="highlightChart(2)" style="padding: 4px 10px; font-size: 12px; border-radius: 4px; border: 1px solid #ccc; background: #a7f0f5; cursor: pointer;">2s</button>
+            <button class="chart-btn" onclick="highlightChart(3)" style="padding: 4px 10px; font-size: 12px; border-radius: 4px; border: 1px solid #ccc; background: #d793fa; cursor: pointer;">3s</button>
+            <button class="chart-btn" onclick="highlightChart(5)" style="padding: 4px 10px; font-size: 12px; border-radius: 4px; border: 1px solid #ccc; background: #d793fa; cursor: pointer;">5s</button>
+            <button class="chart-btn" onclick="highlightChart(10)" style="padding: 4px 10px; font-size: 12px; border-radius: 4px; border: 1px solid #ccc; background: #d793fa; cursor: pointer;">10s</button>
+            <button class="chart-btn" onclick="highlightChart(4)" style="padding: 4px 10px; font-size: 12px; border-radius: 4px; border: 1px solid #ccc; background: #ee836b; cursor: pointer;">4s</button>
+            <button class="chart-btn" onclick="highlightChart(6)" style="padding: 4px 10px; font-size: 12px; border-radius: 4px; border: 1px solid #ccc; background: #ee836b; cursor: pointer;">6s</button>
+            <button class="chart-btn" onclick="highlightChart(7)" style="padding: 4px 10px; font-size: 12px; border-radius: 4px; border: 1px solid #ccc; background: #3c3a32; color: white; cursor: pointer;">7s</button>
+            <button class="chart-btn" onclick="highlightChart(8)" style="padding: 4px 10px; font-size: 12px; border-radius: 4px; border: 1px solid #ccc; background: #3c3a32; color: white; cursor: pointer;">8s</button>
+            <button class="chart-btn" onclick="highlightChart(9)" style="padding: 4px 10px; font-size: 12px; border-radius: 4px; border: 1px solid #ccc; background: #3c3a32; color: white; cursor: pointer;">9s</button>
           </div>
-          <div id="hundreds-chart" style="display: grid; grid-template-columns: repeat(10, 1fr); gap: 0; font-size: 8px; width: 200px; border: 1px solid #999;">
+          <div id="hundreds-chart" style="display: grid; grid-template-columns: repeat(10, 1fr); gap: 0; font-size: 10px; width: 280px; border: 1px solid #999;">
           </div>
         </div>
       </div>
