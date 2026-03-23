@@ -607,11 +607,22 @@
           <p>💡 <strong>Hard:</strong> Count by 4s or 6s</p>
           <p>💡 <strong>Expert:</strong> Count by 7s, 8s or 9s</p>
         </div>
-        <!-- Hundreds Chart Visual -->
+        <!-- Interactive Hundreds Chart -->
         <div style="padding: 8px; background: #f5f5f5; border-radius: 8px; flex-shrink: 0;">
-          <p style="font-size: 11px; color: #666; margin-bottom: 6px;">Hundreds Chart:</p>
-          <div style="display: grid; grid-template-columns: repeat(10, 1fr); gap: 0; font-size: 8px; width: 200px; border: 1px solid #999;">
-            <script>document.write([...Array(100)].map((_, i) => `<div style="background: white; padding: 2px; text-align: center; border: 1px solid #ddd;">${i+1}</div>`).join(''))</script>
+          <p style="font-size: 11px; color: #666; margin-bottom: 6px;">Click a pattern to see it on the chart:</p>
+          <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; max-width: 200px;">
+            <button class="chart-btn" onclick="highlightChart(1)" style="padding: 3px 8px; font-size: 10px; border-radius: 4px; border: 1px solid #ccc; background: #a7f0f5; cursor: pointer;">1s</button>
+            <button class="chart-btn" onclick="highlightChart(2)" style="padding: 3px 8px; font-size: 10px; border-radius: 4px; border: 1px solid #ccc; background: #a7f0f5; cursor: pointer;">2s</button>
+            <button class="chart-btn" onclick="highlightChart(3)" style="padding: 3px 8px; font-size: 10px; border-radius: 4px; border: 1px solid #ccc; background: #d793fa; cursor: pointer;">3s</button>
+            <button class="chart-btn" onclick="highlightChart(5)" style="padding: 3px 8px; font-size: 10px; border-radius: 4px; border: 1px solid #ccc; background: #d793fa; cursor: pointer;">5s</button>
+            <button class="chart-btn" onclick="highlightChart(10)" style="padding: 3px 8px; font-size: 10px; border-radius: 4px; border: 1px solid #ccc; background: #d793fa; cursor: pointer;">10s</button>
+            <button class="chart-btn" onclick="highlightChart(4)" style="padding: 3px 8px; font-size: 10px; border-radius: 4px; border: 1px solid #ccc; background: #ee836b; cursor: pointer;">4s</button>
+            <button class="chart-btn" onclick="highlightChart(6)" style="padding: 3px 8px; font-size: 10px; border-radius: 4px; border: 1px solid #ccc; background: #ee836b; cursor: pointer;">6s</button>
+            <button class="chart-btn" onclick="highlightChart(7)" style="padding: 3px 8px; font-size: 10px; border-radius: 4px; border: 1px solid #ccc; background: #3c3a32; color: white; cursor: pointer;">7s</button>
+            <button class="chart-btn" onclick="highlightChart(8)" style="padding: 3px 8px; font-size: 10px; border-radius: 4px; border: 1px solid #ccc; background: #3c3a32; color: white; cursor: pointer;">8s</button>
+            <button class="chart-btn" onclick="highlightChart(9)" style="padding: 3px 8px; font-size: 10px; border-radius: 4px; border: 1px solid #ccc; background: #3c3a32; color: white; cursor: pointer;">9s</button>
+          </div>
+          <div id="hundreds-chart" style="display: grid; grid-template-columns: repeat(10, 1fr); gap: 0; font-size: 8px; width: 200px; border: 1px solid #999;">
           </div>
         </div>
       </div>
@@ -994,6 +1005,29 @@
       });
     }
 
+    // Hundreds Chart Interactive
+    function initHundredsChart() {
+      const chart = document.getElementById('hundreds-chart');
+      chart.innerHTML = [...Array(100)].map((_, i) =>
+        `<div class="chart-cell" data-num="${i+1}" style="background: white; padding: 2px; text-align: center; border: 1px solid #ddd; transition: background 0.2s;">${i+1}</div>`
+      ).join('');
+    }
+
+    function highlightChart(skipBy) {
+      const cells = document.querySelectorAll('.chart-cell');
+      cells.forEach(cell => {
+        const num = parseInt(cell.dataset.num);
+        if (num % skipBy === 0) {
+          cell.style.background = '#FFE082';
+          cell.style.fontWeight = 'bold';
+        } else {
+          cell.style.background = 'white';
+          cell.style.fontWeight = 'normal';
+        }
+      });
+    }
+
+    initHundredsChart();
     initColorCycle();
     init();
   </script>
