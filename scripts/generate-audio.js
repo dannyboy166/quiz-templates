@@ -448,8 +448,9 @@ const allTemplates = {
 };
 
 async function main() {
-  // Get template from command line args
+  // Get template and optional filter from command line args
   const template = process.argv[2];
+  const filter = process.argv[3]; // Optional: filter to specific files (e.g., "question", "help")
 
   let audioToGenerate;
   let templateName;
@@ -457,6 +458,21 @@ async function main() {
   if (template && allTemplates[template]) {
     audioToGenerate = allTemplates[template];
     templateName = template;
+
+    // If filter provided, only generate matching files
+    if (filter) {
+      audioToGenerate = audioToGenerate.filter(item =>
+        item.file.toLowerCase().includes(filter.toLowerCase())
+      );
+      templateName = `${template} (filter: ${filter})`;
+
+      if (audioToGenerate.length === 0) {
+        console.error(`No files matching "${filter}" in template "${template}"`);
+        console.log('Available files:');
+        allTemplates[template].forEach(item => console.log(`  - ${item.file}`));
+        process.exit(1);
+      }
+    }
   } else if (template) {
     console.error(`Unknown template: ${template}`);
     console.log('Available templates:', Object.keys(allTemplates).join(', '));
@@ -473,6 +489,11 @@ async function main() {
   console.log(`Voice ID: ${VOICE_ID}`);
   console.log(`Template: ${templateName}`);
   console.log(`Files to generate: ${audioToGenerate.length}`);
+  console.log('');
+  console.log('Usage: node scripts/generate-audio.js [template] [filter]');
+  console.log('  e.g. node scripts/generate-audio.js word-match');
+  console.log('  e.g. node scripts/generate-audio.js word-match question');
+  console.log('  e.g. node scripts/generate-audio.js word-match help');
   console.log('='.repeat(50));
   console.log('');
 
