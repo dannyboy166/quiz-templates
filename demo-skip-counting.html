@@ -527,8 +527,7 @@
     <!-- Start Screen -->
     <div class="content-card start-screen" id="start-screen">
       <div class="content-card-inner">
-        <h2>Choose Difficulty</h2>
-        <p>What skip counting do you want to practice?</p>
+        <h2>Choose a skip counting pattern to practise:</h2>
 
         <div class="difficulty-selector">
           <button class="difficulty-option selected" data-difficulty="easy" data-skips="1,2">
@@ -598,14 +597,21 @@
       <button class="modal-close" onclick="closeModal('help-modal')">×</button>
       <h2>How to Play</h2>
       <div class="modal-instruction">
-        <p>🔢 Look at the number pattern</p>
-        <p>📈 Figure out what number we're counting by</p>
-        <p>✏️ Type the missing numbers in the yellow boxes</p>
+        <p>🔢 Look at the numbers.</p>
+        <p>🔍 Can you see a pattern?</p>
+        <p>🤔 What are you counting by?</p>
+        <p>✏️ Type the missing numbers in the yellow boxes.</p>
         <p>💡 <strong>Easy:</strong> Count by 1s or 2s</p>
         <p>💡 <strong>Medium:</strong> Count by 3s, 5s or 10s</p>
         <p>💡 <strong>Hard:</strong> Count by 4s or 6s</p>
         <p>💡 <strong>Expert:</strong> Count by 7s, 8s or 9s</p>
-        <p>✅ Press "Check Answer" when you're done!</p>
+      </div>
+      <!-- Hundreds Chart Visual -->
+      <div style="margin: 15px 0; padding: 10px; background: #f5f5f5; border-radius: 8px;">
+        <p style="font-size: 12px; color: #666; margin-bottom: 8px;">Hundreds Chart:</p>
+        <div style="display: grid; grid-template-columns: repeat(10, 1fr); gap: 1px; font-size: 10px; max-width: 280px; margin: 0 auto;">
+          <script>document.write([...Array(100)].map((_, i) => `<div style="background: ${(i+1) % 5 === 0 ? '#FFE082' : 'white'}; padding: 3px; text-align: center; border: 1px solid #ddd;">${i+1}</div>`).join(''))</script>
+        </div>
       </div>
       <button class="modal-btn" onclick="closeModal('help-modal')">Got it!</button>
     </div>

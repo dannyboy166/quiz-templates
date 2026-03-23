@@ -253,7 +253,7 @@ const skipCountingAudio = [
   { file: 'audio/skip-counting/feedback-complete.mp3', text: 'Quiz Complete! Great job skip counting!' },
 
   // Help
-  { file: 'audio/skip-counting/help.mp3', text: 'Skip counting means adding the same number each time. For example, counting by 2s: 2, 4, 6, 8, 10!' },
+  { file: 'audio/skip-counting/help.mp3', text: 'Look at the numbers. Can you see a pattern? What are you counting by? Type the missing numbers in the yellow boxes.' },
 ];
 
 // ==========================================
