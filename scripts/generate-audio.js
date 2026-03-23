@@ -22,7 +22,7 @@ if (!API_KEY || !VOICE_ID) {
 // ==========================================
 const wordMatchAudio = [
   // Main question
-  { file: 'audio/word-match/question.mp3', text: 'Match the correct word to label the images. Look at each picture and drag the word that matches it.' },
+  { file: 'audio/word-match/question.mp3', text: 'Match each word with the correct picture.' },
 
   // Page 1 hints - Common animals
   { file: 'audio/word-match/hint-dog.mp3', text: 'This animal barks and is man\'s best friend!' },
@@ -62,7 +62,7 @@ const wordMatchAudio = [
   { file: 'audio/word-match/feedback-complete.mp3', text: 'Quiz Complete! You matched all 24 words correctly!' },
 
   // Help
-  { file: 'audio/word-match/help.mp3', text: 'Look at each animated picture. Drag the right word to match. Check your answers when done!' },
+  { file: 'audio/word-match/help.mp3', text: 'Say the name of the animal. What sound do you hear at the beginning of the word? Drag the correct word to the matching picture. Remember to check your answers. Match all 6 words to a picture. Let\'s go!' },
 ];
 
 // ==========================================
