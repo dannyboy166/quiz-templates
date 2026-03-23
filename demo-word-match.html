@@ -1272,8 +1272,18 @@
     const helpModal = document.getElementById('help-modal');
     const closeHelp = document.getElementById('close-help');
 
-    btnGetHelp.addEventListener('click', () => helpModal.classList.add('active'));
-    document.getElementById('header-help').addEventListener('click', () => helpModal.classList.add('active'));
+    btnGetHelp.addEventListener('click', () => {
+      helpModal.classList.add('active');
+      if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
+      currentAudio = new Audio('audio/word-match/help.mp3');
+      currentAudio.play();
+    });
+    document.getElementById('header-help').addEventListener('click', () => {
+      helpModal.classList.add('active');
+      if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
+      currentAudio = new Audio('audio/word-match/help.mp3');
+      currentAudio.play();
+    });
     closeHelp.addEventListener('click', () => helpModal.classList.remove('active'));
     helpModal.addEventListener('click', (e) => {
       if (e.target === helpModal) helpModal.classList.remove('active');
