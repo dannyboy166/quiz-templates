@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Your Learning Sphere</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        /* Layer 0: Background */
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            background-image: url('sphere_homepage_3.png');
+            background-size: cover;
+            background-position: center 20%;
+            background-repeat: no-repeat;
+        }
+
+        /* Layer 1: Three.js Canvas - clipped at floor line */
+        #sphere-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+            clip-path: inset(0 0 21.7% 0); /* cut off bottom 25% (floor at 75%) */
+        }
+
+        /* Layer 2: UI Elements */
+        .ui-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        /* DEBUG: Visual guides */
+        .debug-line {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: red;
+            z-index: 100;
+            pointer-events: none;
+        }
+        .debug-line.floor {
+            top: 73%; /* approximate floor line */
+            background: red;
+        }
+        .debug-line.center {
+            top: 50%;
+            background: blue;
+        }
+        .debug-line.sphere-bottom {
+            top: 75%;
+            background: green;
+        }
+        .debug-label {
+            position: absolute;
+            right: 10px;
+            color: white;
+            background: rgba(0,0,0,0.7);
+            padding: 2px 6px;
+            font-size: 12px;
+            transform: translateY(-50%);
+        }
+
+        /* Fullscreen Button */
+        .fullscreen-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid #111;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 10;
+        }
+
+        .fullscreen-btn:hover {
+            background: #111;
+            transform: scale(1.05);
+        }
+
+        .fullscreen-btn:hover svg {
+            stroke: white;
+        }
+
+        .fullscreen-btn svg {
+            width: 20px;
+            height: 20px;
+            stroke: #111;
+            stroke-width: 2;
+            fill: none;
+        }
+
+        /* Arrow Buttons */
+        .arrow-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #111;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .arrow-btn:hover {
+            background: #111;
+            transform: translateY(-50%) scale(1.05);
+        }
+
+        .arrow-btn:hover svg {
+            stroke: white;
+        }
+
+        .arrow-btn:active {
+            transform: translateY(-50%) scale(0.95);
+        }
+
+        .arrow-btn svg {
+            width: 28px;
+            height: 28px;
+            stroke: #111;
+            stroke-width: 3;
+            fill: none;
+        }
+
+        .arrow-left {
+            left: 22%;
+        }
+
+        .arrow-right {
+            right: 22%;
+        }
+
+        /* Title Card */
+        .title-card {
+            position: absolute;
+            bottom: 5%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 20px 40px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            pointer-events: auto;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .title-card:hover {
+            transform: translateX(-50%) translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+        }
+
+        .title-card h2 {
+            font-size: 32px;
+            font-weight: 700;
+            color: #111;
+            margin-bottom: 8px;
+        }
+
+        .title-card p {
+            font-size: 14px;
+            color: #666;
+            border: 2px solid #111;
+            border-radius: 4px;
+            padding: 6px 16px;
+            display: inline-block;
+        }
+
+        /* Sphere click areas (invisible, for interaction) */
+        .sphere-hitbox {
+            position: absolute;
+            border-radius: 50%;
+            cursor: pointer;
+            pointer-events: auto;
+        }
+
+        .sphere-hitbox.center {
+            width: 500px;
+            height: 500px;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -40%);
+            cursor: grab;
+        }
+
+        .sphere-hitbox.left {
+            width: 300px;
+            height: 300px;
+            top: 50%;
+            left: 0;
+            transform: translateY(-40%);
+        }
+
+        .sphere-hitbox.right {
+            width: 300px;
+            height: 300px;
+            top: 50%;
+            right: 0;
+            transform: translateY(-40%);
+        }
+    </style>
+</head>
+<body>
+    <!-- Layer 0: Background -->
+    <div class="background"></div>
+
+    <!-- Layer 1: Three.js Canvas -->
+    <canvas id="sphere-canvas"></canvas>
+
+    <!-- Layer 2: UI -->
+    <div class="ui-layer">
+        <!-- Fullscreen Button -->
+        <button class="fullscreen-btn" id="fullscreen-btn" title="Toggle Fullscreen">
+            <svg viewBox="0 0 24 24" id="fullscreen-icon">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+            </svg>
+        </button>
+
+        <!-- Arrow Buttons -->
+        <button class="arrow-btn arrow-left" id="arrow-left">
+            <svg viewBox="0 0 24 24">
+                <path d="M15 18l-6-6 6-6"/>
+            </svg>
+        </button>
+        <button class="arrow-btn arrow-right" id="arrow-right">
+            <svg viewBox="0 0 24 24">
+                <path d="M9 18l6-6-6-6"/>
+            </svg>
+        </button>
+
+        <!-- Title Card -->
+        <div class="title-card" id="title-card">
+            <h2 id="sphere-title">Animal Lifecycles</h2>
+            <p>Select your learning Sphere</p>
+        </div>
+
+        <!-- Invisible hitboxes for sphere clicks -->
+        <div class="sphere-hitbox center" id="hitbox-center"></div>
+        <div class="sphere-hitbox left" id="hitbox-left"></div>
+        <div class="sphere-hitbox right" id="hitbox-right"></div>
+    </div>
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        // ============ SPHERE DATA ============
+        const sphereData = [
+            {
+                title: "Animal Lifecycles",
+                color: 0x1a5fb4,
+                video: 'butterfly.MP4'
+            },
+            {
+                title: "Space Adventures",
+                color: 0xc64600,
+                image: 'Traditional Aboriginal dot art panorama.png'
+            },
+            {
+                title: "Ancient History",
+                color: 0x813d9c,
+                image: '1bf97646-33be-4efa-bb57-dba23277cc8a.jpeg'
+            },
+            {
+                title: "Music & Rhythm",
+                color: 0xe5a50a,
+                image: '0af4d8a0-b9b1-4e79-a63b-1ff2f1e052b9.jpeg'
+            },
+            {
+                title: "Space Explorers",
+                color: 0x1a1a2e,
+                image: 'space.png'
+            }
+        ];
+
+        // ============ STATE ============
+        let currentIndex = 0;
+        let isAnimating = false;
+
+        // Sphere positions - side spheres higher/further back
+        const positions = {
+            left: { x: -4.5, y: 1.6, z: -3, scale: 0.8, opacity: 1.0 },
+            center: { x: 0, y: 0.4, z: -1, scale: 2, opacity: 1.0 },
+            right: { x: 4.5, y: 1.6, z: -3, scale: 0.8, opacity: 1.0 },
+            hiddenLeft: { x: -9, y: 1.3, z: -5, scale: 0.6, opacity: 0 },
+            hiddenRight: { x: 9, y: 1.3, z: -5, scale: 0.6, opacity: 0 }
+        };
+
+        // ============ THREE.JS SETUP ============
+        const canvas = document.getElementById('sphere-canvas');
+        const scene = new THREE.Scene();
+
+        // Camera
+        const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 5;
+        camera.position.y = 0.5;
+
+        // Renderer
+        const renderer = new THREE.WebGLRenderer({
+            canvas: canvas,
+            antialias: true,
+            alpha: true
+        });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.3);
+        directionalLight.position.set(5, 5, 5);
+        scene.add(directionalLight);
+
+        const backLight = new THREE.DirectionalLight(0xffffff, 0.15);
+        backLight.position.set(-5, 3, -5);
+        scene.add(backLight);
+
+        // ============ CREATE SPHERES ============
+        const spheres = [];
+        const videos = [];
+        const sphereGeometry = new THREE.SphereGeometry(1, 64, 64);
+
+        function createSphereMaterial(data, index) {
+            if (data.video) {
+                // Create video element
+                const video = document.createElement('video');
+                video.src = data.video;
+                video.loop = true;
+                video.muted = true;
+                video.playsInline = true;
+                video.crossOrigin = 'anonymous';
+                video.play();
+                videos[index] = video;
+
+                // Create video texture
+                const videoTexture = new THREE.VideoTexture(video);
+                videoTexture.minFilter = THREE.LinearFilter;
+                videoTexture.magFilter = THREE.LinearFilter;
+                videoTexture.generateMipmaps = false;
+
+                return new THREE.MeshStandardMaterial({
+                    map: videoTexture,
+                    roughness: 0.3,
+                    metalness: 0.0,
+                    transparent: true,
+                    opacity: 1
+                });
+            } else if (data.image) {
+                // Load image texture
+                const textureLoader = new THREE.TextureLoader();
+                const texture = textureLoader.load(data.image);
+                texture.minFilter = THREE.LinearFilter;
+                texture.magFilter = THREE.LinearFilter;
+
+                return new THREE.MeshStandardMaterial({
+                    map: texture,
+                    roughness: 0.3,
+                    metalness: 0.0,
+                    transparent: true,
+                    opacity: 1
+                });
+            } else {
+                // Solid color fallback
+                return new THREE.MeshStandardMaterial({
+                    color: data.color,
+                    roughness: 0.3,
+                    metalness: 0.1,
+                    transparent: true,
+                    opacity: 1
+                });
+            }
+        }
+
+        // Create 5 sphere meshes (we show 3 at a time, but have extras for smooth carousel)
+        for (let i = 0; i < sphereData.length; i++) {
+            const material = createSphereMaterial(sphereData[i], i);
+            const sphere = new THREE.Mesh(sphereGeometry, material);
+            sphere.userData.index = i;
+            spheres.push(sphere);
+            scene.add(sphere);
+        }
+
+        // ============ POSITION SPHERES ============
+        function getVisibleIndices() {
+            const total = sphereData.length;
+            const left = (currentIndex - 1 + total) % total;
+            const center = currentIndex;
+            const right = (currentIndex + 1) % total;
+            return { left, center, right };
+        }
+
+        function updateSpherePositions(animate = true) {
+            const visible = getVisibleIndices();
+            const duration = animate ? 500 : 0;
+
+            spheres.forEach((sphere, i) => {
+                let targetPos;
+
+                if (i === visible.center) {
+                    targetPos = positions.center;
+                } else if (i === visible.left) {
+                    targetPos = positions.left;
+                } else if (i === visible.right) {
+                    targetPos = positions.right;
+                } else {
+                    // Hide other spheres
+                    targetPos = positions.hiddenLeft;
+                }
+
+                if (animate) {
+                    animateSphere(sphere, targetPos, duration);
+                } else {
+                    sphere.position.set(targetPos.x, targetPos.y, targetPos.z);
+                    sphere.scale.setScalar(targetPos.scale);
+                    sphere.material.opacity = targetPos.opacity;
+                }
+            });
+
+            // Update title
+            document.getElementById('sphere-title').textContent = sphereData[visible.center].title;
+        }
+
+        function animateSphere(sphere, target, duration) {
+            const startPos = {
+                x: sphere.position.x,
+                y: sphere.position.y,
+                z: sphere.position.z,
+                scale: sphere.scale.x,
+                opacity: sphere.material.opacity
+            };
+            const startTime = performance.now();
+
+            function animate() {
+                const elapsed = performance.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+
+                // Ease out cubic
+                const eased = 1 - Math.pow(1 - progress, 3);
+
+                sphere.position.x = startPos.x + (target.x - startPos.x) * eased;
+                sphere.position.y = startPos.y + (target.y - startPos.y) * eased;
+                sphere.position.z = startPos.z + (target.z - startPos.z) * eased;
+                sphere.scale.setScalar(startPos.scale + (target.scale - startPos.scale) * eased);
+                sphere.material.opacity = startPos.opacity + (target.opacity - startPos.opacity) * eased;
+
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                }
+            }
+            animate();
+        }
+
+        // Initialize positions
+        updateSpherePositions(false);
+
+        // ============ CAROUSEL NAVIGATION ============
+        function goNext() {
+            if (isAnimating) return;
+            isAnimating = true;
+            currentIndex = (currentIndex + 1) % sphereData.length;
+            updateSpherePositions(true);
+            setTimeout(() => { isAnimating = false; }, 500);
+        }
+
+        function goPrev() {
+            if (isAnimating) return;
+            isAnimating = true;
+            currentIndex = (currentIndex - 1 + sphereData.length) % sphereData.length;
+            updateSpherePositions(true);
+            setTimeout(() => { isAnimating = false; }, 500);
+        }
+
+        function selectSphere(index) {
+            if (isAnimating) return;
+            const visible = getVisibleIndices();
+
+            if (index === visible.center) {
+                // Center sphere - do nothing on click (draggable instead)
+                // Could navigate on double-click if needed
+                console.log('Center sphere:', sphereData[index].title);
+            } else if (index === visible.left) {
+                goPrev();
+            } else if (index === visible.right) {
+                goNext();
+            }
+        }
+
+        // ============ DRAG TO ROTATE CENTER SPHERE ============
+        let isDragging = false;
+        let previousMouseX = 0;
+        let previousMouseY = 0;
+        let targetRotationX = 0;
+        let targetRotationY = 0;
+
+        const hitboxCenter = document.getElementById('hitbox-center');
+
+        hitboxCenter.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            previousMouseX = e.clientX;
+            previousMouseY = e.clientY;
+            hitboxCenter.style.cursor = 'grabbing';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+
+            const deltaX = e.clientX - previousMouseX;
+            const deltaY = e.clientY - previousMouseY;
+
+            targetRotationY += deltaX * 0.01;
+            targetRotationX += deltaY * 0.01;
+
+            previousMouseX = e.clientX;
+            previousMouseY = e.clientY;
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            hitboxCenter.style.cursor = 'grab';
+        });
+
+        // Touch support
+        hitboxCenter.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                isDragging = true;
+                previousMouseX = e.touches[0].clientX;
+                previousMouseY = e.touches[0].clientY;
+            }
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            if (!isDragging || e.touches.length !== 1) return;
+
+            const deltaX = e.touches[0].clientX - previousMouseX;
+            const deltaY = e.touches[0].clientY - previousMouseY;
+
+            targetRotationY += deltaX * 0.01;
+            targetRotationX += deltaY * 0.01;
+
+            previousMouseX = e.touches[0].clientX;
+            previousMouseY = e.touches[0].clientY;
+        });
+
+        document.addEventListener('touchend', () => {
+            isDragging = false;
+        });
+
+        // ============ EVENT LISTENERS ============
+        document.getElementById('arrow-left').addEventListener('click', goPrev);
+        document.getElementById('arrow-right').addEventListener('click', goNext);
+
+        document.getElementById('hitbox-center').addEventListener('click', () => {
+            selectSphere(getVisibleIndices().center);
+        });
+        document.getElementById('hitbox-left').addEventListener('click', () => {
+            selectSphere(getVisibleIndices().left);
+        });
+        document.getElementById('hitbox-right').addEventListener('click', () => {
+            selectSphere(getVisibleIndices().right);
+        });
+
+        document.getElementById('title-card').addEventListener('click', () => {
+            selectSphere(getVisibleIndices().center);
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') goPrev();
+            if (e.key === 'ArrowRight') goNext();
+            if (e.key === 'Enter') selectSphere(getVisibleIndices().center);
+        });
+
+        // ============ ANIMATION LOOP ============
+        function render() {
+            const visible = getVisibleIndices();
+
+            spheres.forEach((sphere, i) => {
+                if (i === visible.center) {
+                    // Center sphere - apply drag rotation with smoothing
+                    sphere.rotation.x += (targetRotationX - sphere.rotation.x) * 0.1;
+                    sphere.rotation.y += (targetRotationY - sphere.rotation.y) * 0.1;
+
+                    // Auto-rotate slowly when not dragging
+                    if (!isDragging) {
+                        targetRotationY += 0.002;
+                    }
+                } else {
+                    // Side spheres - gentle auto rotation
+                    sphere.rotation.y += 0.003;
+                }
+            });
+
+            renderer.render(scene, camera);
+            requestAnimationFrame(render);
+        }
+        render();
+
+        // ============ RESIZE ============
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // ============ FULLSCREEN ============
+        const fullscreenBtn = document.getElementById('fullscreen-btn');
+
+        fullscreenBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        });
+
+        document.addEventListener('fullscreenchange', () => {
+            const icon = document.getElementById('fullscreen-icon');
+            if (document.fullscreenElement) {
+                // Show exit fullscreen icon
+                icon.innerHTML = '<path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>';
+            } else {
+                // Show enter fullscreen icon
+                icon.innerHTML = '<path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>';
+            }
+        });
+    </script>
+</body>
+</html>
