@@ -39,10 +39,10 @@
 /* Color Variables */
 :root {
   /* Background Cycling Colors (edit these to change theme colors globally) */
-  --bg-yellow: rgb(250, 227, 142);
-  --bg-green: rgb(209, 254, 146);
-  --bg-pink: rgb(243, 178, 221);
-  --bg-blue: rgb(180, 230, 253);
+  --bg-yellow: rgb(255, 226, 128);
+  --bg-green: rgb(197, 255, 130);
+  --bg-pink: rgb(225, 174, 223);
+  --bg-blue: rgb(165, 233, 255);
 
   /* Primary Colors */
   --bg-primary: var(--bg-yellow);  /* Default background */
