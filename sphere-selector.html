@@ -175,38 +175,66 @@
         /* Title Card */
         .title-card {
             position: absolute;
-            bottom: 5%;
+            bottom: 7%;
             left: 50%;
             transform: translateX(-50%);
-            background: white;
-            padding: 20px 40px;
-            border-radius: 8px;
+            background: linear-gradient(145deg, #ffffff, #f5f5f5);
+            padding: 20px 36px;
+            border-radius: 16px;
             text-align: center;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            box-shadow:
+                0 10px 40px rgba(0,0,0,0.15),
+                0 0 0 1px rgba(255,255,255,0.8) inset;
             pointer-events: auto;
             cursor: pointer;
             transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .title-card::after {
+            content: '';
+            position: absolute;
+            bottom: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            height: 30px;
+            background: radial-gradient(ellipse at center, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.15) 40%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(4px);
         }
 
         .title-card:hover {
-            transform: translateX(-50%) translateY(-4px);
-            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+            transform: translateX(-50%) translateY(-6px);
+            box-shadow:
+                0 16px 50px rgba(0,0,0,0.2),
+                0 0 0 1px rgba(255,255,255,0.8) inset;
         }
 
         .title-card h2 {
-            font-size: 32px;
+            font-size: 26px;
             font-weight: 700;
             color: #111;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
         }
 
         .title-card p {
-            font-size: 14px;
-            color: #666;
-            border: 2px solid #111;
-            border-radius: 4px;
-            padding: 6px 16px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #555;
+            background: #111;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 8px 20px;
             display: inline-block;
+            transition: all 0.2s ease;
+        }
+
+        .title-card:hover p {
+            background: #333;
+            transform: scale(1.02);
         }
 
         /* Sphere click areas (invisible, for interaction) */
