@@ -4,12 +4,19 @@
  * Color persists across page navigation via sessionStorage
  */
 
-const QUIZ_COLORS = [
-  '#FFE280',              // Yellow
-  'rgb(209, 253, 145)',   // Light Green
-  'rgb(243, 178, 221)',   // Pink
-  'rgb(178, 235, 242)'    // Cyan
-];
+/**
+ * Get quiz colors from CSS variables (defined in css/base.css)
+ * This allows colors to be edited in one place
+ */
+function getQuizColors() {
+  const styles = getComputedStyle(document.documentElement);
+  return [
+    styles.getPropertyValue('--bg-yellow').trim() || 'rgb(250, 227, 142)',
+    styles.getPropertyValue('--bg-green').trim() || 'rgb(209, 254, 146)',
+    styles.getPropertyValue('--bg-pink').trim() || 'rgb(243, 178, 221)',
+    styles.getPropertyValue('--bg-blue').trim() || 'rgb(180, 230, 253)'
+  ];
+}
 
 /**
  * Initialize color cycling on page load
@@ -35,8 +42,9 @@ function initColorCycle() {
  * Call this when moving to the next question
  */
 function cycleColor() {
+  const colors = getQuizColors();
   let index = parseInt(sessionStorage.getItem('quizColorIndex') || '0');
-  index = (index + 1) % QUIZ_COLORS.length;
+  index = (index + 1) % colors.length;
   sessionStorage.setItem('quizColorIndex', index.toString());
   setQuizColor(index);
 }
@@ -45,7 +53,8 @@ function cycleColor() {
  * Set the background color by index
  */
 function setQuizColor(index) {
-  const color = QUIZ_COLORS[index];
+  const colors = getQuizColors();
+  const color = colors[index];
   document.body.style.backgroundColor = color;
 
   // Also update quiz-container if it exists (some templates use this)

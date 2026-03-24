@@ -8,6 +8,18 @@ Frontend templates for interactive quiz questions - ready for developer integrat
 open index.html
 ```
 
+## R&D Tax Documentation
+
+This project contains R&D Tax Incentive documentation for claiming under Division 355.
+
+| File | Purpose |
+|------|---------|
+| `R&D-DOCUMENTATION.md` | Full R&D documentation (markdown) |
+| `R&D-DOCUMENTATION.pdf` | Formatted PDF for submission |
+| `r&d.txt` | Plain text backup |
+
+**Note:** Update these files when adding new features that involve technical uncertainty or experimental development (not routine coding).
+
 ## What's Here
 
 | Demo | Description |
@@ -115,6 +127,10 @@ npm run generate-audio  # Requires .env with ElevenLabs API key
 - Removed white containers from game areas for cleaner look
 - 3D isometric SVG blocks in Base 10 Blocks AND Color Blocks
 - Color Blocks now auto-generates 10 questions per round (no Excel needed!)
+
+**March 2025:**
+- Centralized theme colors as CSS variables in `css/base.css` (edit 4 lines to change all colors globally)
+- Updated colors: Yellow (250,227,142), Green (209,254,146), Pink (243,178,221), Blue (180,230,253)
 
 **February 2025:**
 - Updated yellow background color to #FFE280 across templates

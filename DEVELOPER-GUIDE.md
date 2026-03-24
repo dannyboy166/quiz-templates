@@ -751,8 +751,12 @@ Professional voice audio replaces browser speech synthesis.
 
 ### Color Cycling
 Background color cycles through 4 colors on each "next question" action.
-- **Colors:** Yellow (#FFE280) → Light Green (rgb(209,253,145)) → Pink (rgb(243,178,221)) → Cyan (rgb(178,235,242))
-- **Script:** `/js/color-cycle.js`
+- **Colors:** Defined as CSS variables in `css/base.css` (edit there to change globally)
+  - `--bg-yellow`: rgb(250, 227, 142)
+  - `--bg-green`: rgb(209, 254, 146)
+  - `--bg-pink`: rgb(243, 178, 221)
+  - `--bg-blue`: rgb(180, 230, 253)
+- **Script:** `/js/color-cycle.js` (reads colors from CSS variables at runtime)
 - **Persistence:** sessionStorage (continues across page navigation)
 - **Note:** Dice Addition does NOT use color cycling (excluded by design)
 
@@ -1144,12 +1148,14 @@ public class QuestionImportService
 All templates use consistent styling:
 
 ### Background Colors (4-Color Cycle)
-| Color | Value | Used By |
-|-------|-------|---------|
-| Yellow | `#FFE280` | Default starting color |
-| Light Green | `rgb(209, 253, 145)` | Cycle color 2 |
-| Pink | `rgb(243, 178, 221)` | Cycle color 3 |
-| Cyan | `rgb(178, 235, 242)` | Cycle color 4 |
+Defined as CSS variables in `css/base.css`. Edit there to change colors globally.
+
+| Color | CSS Variable | Value |
+|-------|--------------|-------|
+| Yellow | `--bg-yellow` | `rgb(250, 227, 142)` |
+| Green | `--bg-green` | `rgb(209, 254, 146)` |
+| Pink | `--bg-pink` | `rgb(243, 178, 221)` |
+| Blue | `--bg-blue` | `rgb(180, 230, 253)` |
 
 ### UI Elements
 | Element | Value |

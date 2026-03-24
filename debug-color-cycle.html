@@ -228,20 +228,20 @@
 
     <!-- Color Preview -->
     <div class="color-preview">
-      <div class="chip active" style="background: #FFE280;" data-color="#FFE280" data-name="Yellow" title="Yellow"></div>
-      <div class="chip" style="background: rgb(209, 253, 145);" data-color="rgb(209, 253, 145)" data-name="Light Green" title="Light Green"></div>
+      <div class="chip active" style="background: rgb(250, 227, 142);" data-color="rgb(250, 227, 142)" data-name="Yellow" title="Yellow"></div>
+      <div class="chip" style="background: rgb(209, 254, 146);" data-color="rgb(209, 254, 146)" data-name="Light Green" title="Light Green"></div>
       <div class="chip" style="background: rgb(243, 178, 221);" data-color="rgb(243, 178, 221)" data-name="Pink" title="Pink"></div>
-      <div class="chip" style="background: rgb(178, 235, 242);" data-color="rgb(178, 235, 242)" data-name="Cyan" title="Cyan"></div>
+      <div class="chip" style="background: rgb(180, 230, 253);" data-color="rgb(180, 230, 253)" data-name="Blue" title="Blue"></div>
     </div>
   </div>
 
   <script>
-    // 4 background colors
+    // 4 background colors (defined in css/base.css as CSS variables)
     const colors = [
-      { value: '#FFE280', name: 'Yellow' },
-      { value: 'rgb(209, 253, 145)', name: 'Light Green' },
+      { value: 'rgb(250, 227, 142)', name: 'Yellow' },
+      { value: 'rgb(209, 254, 146)', name: 'Light Green' },
       { value: 'rgb(243, 178, 221)', name: 'Pink' },
-      { value: 'rgb(178, 235, 242)', name: 'Cyan' }
+      { value: 'rgb(180, 230, 253)', name: 'Blue' }
     ];
 
     let currentColorIndex = 0;
