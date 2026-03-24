@@ -30,6 +30,26 @@
       font-size: 18px;
     }
 
+    /* Debug Color Squares */
+    .debug-colors {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-bottom: 30px;
+    }
+
+    .debug-square {
+      width: 160px;
+      height: 160px;
+      border-radius: 16px;
+      border: 3px solid #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 18px;
+    }
+
     .demo-cards {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -149,6 +169,22 @@
     <div class="demo-header">
       <h1>Quiz Templates</h1>
       <p>Interactive question components for your developer to integrate</p>
+    </div>
+
+    <!-- Debug Color Squares - Current -->
+    <div class="debug-colors">
+      <div class="debug-square" style="background: var(--bg-yellow);">Yellow</div>
+      <div class="debug-square" style="background: var(--bg-green);">Green</div>
+      <div class="debug-square" style="background: var(--bg-pink);">Pink</div>
+      <div class="debug-square" style="background: var(--bg-blue);">Blue</div>
+    </div>
+
+    <!-- Debug Color Squares - New Test -->
+    <div class="debug-colors">
+      <div class="debug-square" style="background: rgb(250, 227, 142);">Yellow</div>
+      <div class="debug-square" style="background: rgb(209, 254, 146);">Green</div>
+      <div class="debug-square" style="background: rgb(243, 178, 221);">Pink</div>
+      <div class="debug-square" style="background: rgb(180, 231, 252);">Blue</div>
     </div>
 
     <!-- Priority Templates Section -->
