@@ -1069,6 +1069,11 @@
     // Start Game
     // ==========================================
     function startGame() {
+      // Stop any playing audio when starting game
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
       document.getElementById('start-screen').style.display = 'none';
       document.getElementById('game-area').classList.add('show');
 

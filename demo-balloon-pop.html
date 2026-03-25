@@ -1234,6 +1234,11 @@
     }
 
     function closeModal(id) {
+      // Stop any playing audio when closing modals
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
       document.getElementById(id).classList.remove('show');
     }
 

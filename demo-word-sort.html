@@ -1058,9 +1058,23 @@
       helpModal.classList.add('active');
       playAudio('audio/word-sort/help.mp3');
     });
-    document.getElementById('close-help').addEventListener('click', () => helpModal.classList.remove('active'));
+    document.getElementById('close-help').addEventListener('click', () => {
+      // Stop any playing audio when closing help
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      helpModal.classList.remove('active');
+    });
     helpModal.addEventListener('click', (e) => {
-      if (e.target === helpModal) helpModal.classList.remove('active');
+      if (e.target === helpModal) {
+        // Stop any playing audio when closing via overlay
+        if (currentAudio) {
+          currentAudio.pause();
+          currentAudio.currentTime = 0;
+        }
+        helpModal.classList.remove('active');
+      }
     });
 
     // Hint Modal
@@ -1069,9 +1083,23 @@
       hintModal.classList.add('active');
       playAudio('audio/word-sort/hint.mp3');
     });
-    document.getElementById('close-hint').addEventListener('click', () => hintModal.classList.remove('active'));
+    document.getElementById('close-hint').addEventListener('click', () => {
+      // Stop any playing audio when closing hint
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      hintModal.classList.remove('active');
+    });
     hintModal.addEventListener('click', (e) => {
-      if (e.target === hintModal) hintModal.classList.remove('active');
+      if (e.target === hintModal) {
+        // Stop any playing audio when closing via overlay
+        if (currentAudio) {
+          currentAudio.pause();
+          currentAudio.currentTime = 0;
+        }
+        hintModal.classList.remove('active');
+      }
     });
 
     // Load Lottie

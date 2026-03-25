@@ -1282,6 +1282,11 @@
 
     // Start game
     function startGame() {
+      // Stop any playing audio when starting game
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
       currentRound = 0;
       correctCount = 0;
       penaltyCount = 0;
@@ -1301,6 +1306,11 @@
 
     // Modal
     function closeModal(id) {
+      // Stop any playing audio when closing modals
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
       document.getElementById(id).classList.remove('show');
       if (id === 'help-modal') {
         resumeTimer();

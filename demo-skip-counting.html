@@ -790,6 +790,11 @@
     }
 
     function startGame() {
+      // Stop any playing audio when starting game
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
       // Get selected difficulty
       const selected = document.querySelector('.difficulty-option.selected');
       currentDifficulty = selected.dataset.difficulty;
@@ -969,7 +974,14 @@
     }
 
     function openModal(id) { document.getElementById(id).classList.add('show'); }
-    function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+    function closeModal(id) {
+      // Stop any playing audio when closing modals
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      document.getElementById(id).classList.remove('show');
+    }
 
     function setupEventListeners() {
       document.getElementById('btn-check').addEventListener('click', checkAnswer);

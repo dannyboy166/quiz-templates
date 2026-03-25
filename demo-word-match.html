@@ -1284,9 +1284,23 @@
       currentAudio = new Audio('audio/word-match/help.mp3');
       currentAudio.play();
     });
-    closeHelp.addEventListener('click', () => helpModal.classList.remove('active'));
+    closeHelp.addEventListener('click', () => {
+      // Stop any playing audio when closing help
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      helpModal.classList.remove('active');
+    });
     helpModal.addEventListener('click', (e) => {
-      if (e.target === helpModal) helpModal.classList.remove('active');
+      if (e.target === helpModal) {
+        // Stop any playing audio when closing via overlay
+        if (currentAudio) {
+          currentAudio.pause();
+          currentAudio.currentTime = 0;
+        }
+        helpModal.classList.remove('active');
+      }
     });
 
     // Hint System - highlight image with tooltip

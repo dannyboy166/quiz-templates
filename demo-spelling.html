@@ -1065,9 +1065,23 @@
       helpModal.classList.add('active');
       playAudio('audio/spelling/help.mp3');
     });
-    closeHelp.addEventListener('click', () => helpModal.classList.remove('active'));
+    closeHelp.addEventListener('click', () => {
+      // Stop any playing audio when closing help
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      helpModal.classList.remove('active');
+    });
     helpModal.addEventListener('click', (e) => {
-      if (e.target === helpModal) helpModal.classList.remove('active');
+      if (e.target === helpModal) {
+        // Stop any playing audio when closing via overlay
+        if (currentAudio) {
+          currentAudio.pause();
+          currentAudio.currentTime = 0;
+        }
+        helpModal.classList.remove('active');
+      }
     });
 
     // Get Hint
@@ -1112,9 +1126,23 @@
       hintModal.classList.add('active');
     });
 
-    closeHint.addEventListener('click', () => hintModal.classList.remove('active'));
+    closeHint.addEventListener('click', () => {
+      // Stop any playing audio when closing hint
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      hintModal.classList.remove('active');
+    });
     hintModal.addEventListener('click', (e) => {
-      if (e.target === hintModal) hintModal.classList.remove('active');
+      if (e.target === hintModal) {
+        // Stop any playing audio when closing via overlay
+        if (currentAudio) {
+          currentAudio.pause();
+          currentAudio.currentTime = 0;
+        }
+        hintModal.classList.remove('active');
+      }
     });
 
     // Initialize color cycling
