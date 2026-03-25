@@ -9,7 +9,7 @@
   LAYERS (z-index order):
   - z-index 3: Hallway image (front) - zooms into the door on scroll
   - z-index 2: Classroom image with transparent hole (middle)
-  - z-index 1: Three.js sphere with video texture (back) - shows through hole
+  - z-index 1: Three.js sphere with image texture (back) - shows through hole
 
   CONTROLS:
   - Trackpad: Two-finger swipe up/down to transition
@@ -24,7 +24,7 @@
   IMAGES:
   - assets/images/hallway.png - The entrance hallway
   - assets/images/classroom-transparent.png - Classroom with transparent arch
-  - butterfly.MP4 - Video texture for the sphere
+  - Traditional Aboriginal dot art panorama.png - Image texture for the sphere
 -->
 <html lang="en">
 <head>
@@ -133,7 +133,7 @@
         .reset-btn {
             position: absolute;
             top: 20px;
-            right: 20px;
+            left: 20px;
             z-index: 100;
             background: rgba(0, 0, 0, 0.5);
             color: white;
@@ -150,6 +150,42 @@
         .reset-btn.visible {
             opacity: 1;
             pointer-events: auto;
+        }
+
+        /* Fullscreen Button */
+        .fullscreen-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid #111;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .fullscreen-btn:hover {
+            background: #111;
+            transform: scale(1.05);
+        }
+
+        .fullscreen-btn:hover svg {
+            stroke: white;
+        }
+
+        .fullscreen-btn svg {
+            width: 20px;
+            height: 20px;
+            stroke: #111;
+            stroke-width: 2;
+            fill: none;
         }
     </style>
 </head>
@@ -171,6 +207,13 @@
         <div class="hint" id="hint">Swipe up on trackpad to enter</div>
         <div class="progress-bar" id="progressBar"></div>
         <button class="reset-btn" id="resetBtn">Reset</button>
+
+        <!-- Fullscreen Button -->
+        <button class="fullscreen-btn" id="fullscreen-btn" title="Toggle Fullscreen">
+            <svg viewBox="0 0 24 24" id="fullscreen-icon">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+            </svg>
+        </button>
     </div>
 
     <!-- Three.js -->
@@ -274,27 +317,20 @@
         // Create sphere
         const geometry = new THREE.SphereGeometry(0.95, 128, 128);
 
-        // Video texture
-        const video = document.createElement('video');
-        video.src = 'butterfly.MP4';
-        video.loop = true;
-        video.muted = true;
-        video.playsInline = true;
-        video.crossOrigin = 'anonymous';
-        video.play();
-
-        const videoTexture = new THREE.VideoTexture(video);
-        videoTexture.minFilter = THREE.LinearFilter;
-        videoTexture.magFilter = THREE.LinearFilter;
+        // Image texture
+        const textureLoader = new THREE.TextureLoader();
+        const imageTexture = textureLoader.load('Traditional Aboriginal dot art panorama.png');
+        imageTexture.minFilter = THREE.LinearFilter;
+        imageTexture.magFilter = THREE.LinearFilter;
 
         const material = new THREE.MeshStandardMaterial({
-            map: videoTexture,
+            map: imageTexture,
             roughness: 0.3,
             metalness: 0.0
         });
 
         const sphere = new THREE.Mesh(geometry, material);
-        sphere.position.y = -0.1;
+        sphere.position.y = -0.04;
         scene.add(sphere);
 
         // Lighting
@@ -350,11 +386,6 @@
 
             // Show sphere when classroom is visible
             sphereContainer.style.opacity = classroomOpacity;
-
-            // Start video when entering
-            if (progress > 0.3 && video.paused) {
-                video.play();
-            }
 
             progressBar.style.width = `${progress * 100}%`;
 
@@ -421,6 +452,28 @@
         });
 
         updateScene();
+
+        // ============ FULLSCREEN ============
+        const fullscreenBtn = document.getElementById('fullscreen-btn');
+
+        fullscreenBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        });
+
+        document.addEventListener('fullscreenchange', () => {
+            const icon = document.getElementById('fullscreen-icon');
+            if (document.fullscreenElement) {
+                // Show exit fullscreen icon
+                icon.innerHTML = '<path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>';
+            } else {
+                // Show enter fullscreen icon
+                icon.innerHTML = '<path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>';
+            }
+        });
     </script>
 </body>
 </html>

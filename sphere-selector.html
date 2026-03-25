@@ -30,6 +30,8 @@
             background-size: cover;
             background-position: center 20%;
             background-repeat: no-repeat;
+            transform-origin: center 45%;
+            transition: transform 0.05s ease-out;
         }
 
         /* Layer 1: Three.js Canvas - clipped at floor line */
@@ -42,6 +44,8 @@
             z-index: 1;
             pointer-events: none;
             clip-path: inset(0 0 21.7% 0); /* cut off bottom 25% (floor at 75%) */
+            transform-origin: center 45%;
+            transition: transform 0.05s ease-out;
         }
 
         /* Layer 2: UI Elements */
@@ -269,6 +273,101 @@
             right: 0;
             transform: translateY(-40%);
         }
+
+        /* ============ INTERIOR VIEW ============ */
+        .interior-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #interior-video {
+            position: absolute;
+            left: 51.5%;
+            top: 60%;
+            transform: translate(-50%, -50%);
+            width: 77%;
+            height: 87%;
+            object-fit: cover;
+            z-index: 1;
+        }
+
+        .interior-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 2;
+        }
+
+        /* Back button for interior */
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.9);
+            border: 2px solid #111;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .back-btn:hover {
+            background: #111;
+            transform: scale(1.05);
+        }
+
+        .back-btn:hover svg {
+            stroke: white;
+        }
+
+        .back-btn svg {
+            width: 24px;
+            height: 24px;
+            stroke: #111;
+            stroke-width: 2.5;
+            fill: none;
+        }
+
+        /* Hint for scrolling */
+        .scroll-hint {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 14px;
+            z-index: 20;
+            opacity: 1;
+            transition: opacity 0.5s;
+        }
+
+        .scroll-hint.hidden {
+            opacity: 0;
+        }
+
+        /* Fade out selector UI when entering */
+        .ui-layer.fading {
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
     </style>
 </head>
 <body>
@@ -309,6 +408,20 @@
         <div class="sphere-hitbox center" id="hitbox-center"></div>
         <div class="sphere-hitbox left" id="hitbox-left"></div>
         <div class="sphere-hitbox right" id="hitbox-right"></div>
+    </div>
+
+    <!-- Interior View Layer -->
+    <div class="interior-layer" id="interior-layer">
+        <!-- Video behind the frame -->
+        <video id="interior-video" src="Firefly-Video.MP4" loop muted playsinline></video>
+        <!-- Frame with transparent cutout on top -->
+        <img src="bd1f7624-0d54-4dbd-9649-9405e2a9b565.png" class="interior-bg" alt="Sphere Interior">
+        <button class="back-btn" id="back-btn" title="Go Back">
+            <svg viewBox="0 0 24 24">
+                <path d="M19 12H5m0 0l7 7m-7-7l7-7"/>
+            </svg>
+        </button>
+        <div class="scroll-hint" id="scroll-hint">Scroll down to exit</div>
     </div>
 
     <!-- Three.js -->
@@ -352,6 +465,8 @@
         // ============ STATE ============
         let currentIndex = 0;
         let isAnimating = false;
+        let isInside = false;
+        let isTransitioning = false;
 
         // Sphere positions - side spheres higher/further back
         const positions = {
@@ -548,22 +663,160 @@
         }
 
         function selectSphere(index) {
-            if (isAnimating) return;
+            if (isAnimating || isTransitioning) return;
             const visible = getVisibleIndices();
 
-            if (index === visible.center) {
-                // Center sphere - do nothing on click (draggable instead)
-                // Could navigate on double-click if needed
-                console.log('Center sphere:', sphereData[index].title);
-            } else if (index === visible.left) {
+            // Only navigate to side spheres on click - zoom is handled by scroll
+            if (index === visible.left) {
                 goPrev();
             } else if (index === visible.right) {
                 goNext();
             }
+            // Center sphere click does nothing - use scroll to zoom in
         }
+
+        // ============ SCROLL-BASED ZOOM INTO SPHERE ============
+        const interiorLayer = document.getElementById('interior-layer');
+        const interiorVideo = document.getElementById('interior-video');
+        const backBtn = document.getElementById('back-btn');
+        const scrollHint = document.getElementById('scroll-hint');
+        const uiLayer = document.querySelector('.ui-layer');
+        const background = document.querySelector('.background');
+        const sphereCanvas = document.getElementById('sphere-canvas');
+
+        let zoomProgress = 0; // 0 = selector view, 1 = fully inside
+        const zoomSensitivity = 0.0015;
+
+        // Easing functions
+        function easeInQuad(t) { return t * t; }
+        function smoothstep(min, max, value) {
+            const x = Math.max(0, Math.min(1, (value - min) / (max - min)));
+            return x * x * (3 - 2 * x);
+        }
+
+        function updateZoom() {
+            zoomProgress = Math.max(0, Math.min(1, zoomProgress));
+
+            const visible = getVisibleIndices();
+            const centerSphere = spheres[visible.center];
+
+            // Zoom the entire scene (background + canvas) - like walking forward
+            // Scale from 1 to 3 (zooming into the tiled floor)
+            const sceneScale = 1 + zoomProgress * 2;
+            background.style.transform = `scale(${sceneScale})`;
+            sphereCanvas.style.transform = `scale(${sceneScale})`;
+
+            // Fade out UI elements
+            const uiOpacity = 1 - smoothstep(0, 0.3, zoomProgress);
+            uiLayer.style.opacity = uiOpacity;
+
+            // Fade out side spheres
+            const leftSphere = spheres[visible.left];
+            const rightSphere = spheres[visible.right];
+            if (leftSphere) leftSphere.material.opacity = 1 - smoothstep(0, 0.2, zoomProgress);
+            if (rightSphere) rightSphere.material.opacity = 1 - smoothstep(0, 0.2, zoomProgress);
+
+            // Fade in interior
+            const interiorOpacity = smoothstep(0.6, 0.9, zoomProgress);
+            interiorLayer.style.opacity = interiorOpacity;
+
+            // Show/hide interior layer pointer events
+            if (zoomProgress > 0.9) {
+                interiorLayer.style.pointerEvents = 'auto';
+                isInside = true;
+                if (interiorVideo.paused) interiorVideo.play();
+            } else {
+                interiorLayer.style.pointerEvents = 'none';
+                isInside = false;
+                if (!interiorVideo.paused) {
+                    interiorVideo.pause();
+                }
+            }
+
+            // Update scroll hint
+            if (zoomProgress > 0.95) {
+                scrollHint.textContent = 'Scroll down to exit';
+            } else if (zoomProgress > 0.1) {
+                scrollHint.classList.add('hidden');
+            } else {
+                scrollHint.textContent = 'Scroll up to enter sphere';
+                scrollHint.classList.remove('hidden');
+            }
+        }
+
+        // Wheel/trackpad scroll to zoom
+        // Scroll UP (negative deltaY) = zoom IN (move camera forward into sphere)
+        // Scroll DOWN (positive deltaY) = zoom OUT (move camera back)
+        document.addEventListener('wheel', (e) => {
+            // Only zoom when not dragging the sphere
+            if (isDragging) return;
+
+            e.preventDefault();
+            zoomProgress -= e.deltaY * zoomSensitivity;
+            updateZoom();
+        }, { passive: false });
+
+        // Touch support for zoom
+        let touchStartY = 0;
+        let lastTouchY = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                touchStartY = e.touches[0].clientY;
+                lastTouchY = touchStartY;
+            }
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 1 && !isDragging) {
+                const currentY = e.touches[0].clientY;
+                const deltaY = lastTouchY - currentY;
+                // Swipe UP (positive deltaY) = zoom IN (move forward into sphere)
+                zoomProgress += deltaY * 0.003;
+                lastTouchY = currentY;
+                updateZoom();
+            }
+        }, { passive: false });
+
+        // Back button - animate zoom out
+        backBtn.addEventListener('click', () => {
+            animateZoomTo(0);
+        });
+
+        // Animate zoom to target
+        function animateZoomTo(target) {
+            const start = zoomProgress;
+            const duration = 500;
+            const startTime = performance.now();
+
+            function animate() {
+                const elapsed = performance.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3);
+
+                zoomProgress = start + (target - start) * eased;
+                updateZoom();
+
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                }
+            }
+            animate();
+        }
+
+        // Escape key to zoom out
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && zoomProgress > 0) {
+                animateZoomTo(0);
+            }
+        });
+
+        // Initialize zoom state
+        updateZoom();
 
         // ============ DRAG TO ROTATE CENTER SPHERE ============
         let isDragging = false;
+        let hasDragged = false; // Track if actual dragging occurred
         let previousMouseX = 0;
         let previousMouseY = 0;
         let targetRotationX = 0;
@@ -573,6 +826,7 @@
 
         hitboxCenter.addEventListener('mousedown', (e) => {
             isDragging = true;
+            hasDragged = false; // Reset on new drag
             previousMouseX = e.clientX;
             previousMouseY = e.clientY;
             hitboxCenter.style.cursor = 'grabbing';
@@ -583,6 +837,11 @@
 
             const deltaX = e.clientX - previousMouseX;
             const deltaY = e.clientY - previousMouseY;
+
+            // Only count as drag if moved more than a few pixels
+            if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
+                hasDragged = true;
+            }
 
             targetRotationY += deltaX * 0.01;
             targetRotationX += deltaY * 0.01;
@@ -627,7 +886,12 @@
         document.getElementById('arrow-right').addEventListener('click', goNext);
 
         document.getElementById('hitbox-center').addEventListener('click', () => {
-            selectSphere(getVisibleIndices().center);
+            // Don't trigger anything if we were dragging
+            if (hasDragged) {
+                hasDragged = false;
+                return;
+            }
+            // Click on center sphere does nothing - use scroll to zoom in
         });
         document.getElementById('hitbox-left').addEventListener('click', () => {
             selectSphere(getVisibleIndices().left);
@@ -636,15 +900,14 @@
             selectSphere(getVisibleIndices().right);
         });
 
-        document.getElementById('title-card').addEventListener('click', () => {
-            selectSphere(getVisibleIndices().center);
-        });
+        // Title card click - no action, use scroll to enter sphere
 
-        // Keyboard navigation
+        // Keyboard navigation (only when not inside sphere)
         document.addEventListener('keydown', (e) => {
+            if (isInside) return; // Don't navigate carousel when inside
             if (e.key === 'ArrowLeft') goPrev();
             if (e.key === 'ArrowRight') goNext();
-            if (e.key === 'Enter') selectSphere(getVisibleIndices().center);
+            // Enter key does nothing - use scroll to enter sphere
         });
 
         // ============ ANIMATION LOOP ============
