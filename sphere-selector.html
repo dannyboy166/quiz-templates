@@ -307,6 +307,32 @@
             z-index: 2;
         }
 
+        /* Explorer characters on the floor */
+        .explorer {
+            position: absolute;
+            bottom: 5%;
+            height: 28%;
+            z-index: 3;
+            object-fit: contain;
+        }
+
+        .explorer-boy {
+            left: 45%;
+            transform: translateX(-50%);
+        }
+
+        .explorer-girl {
+            right: 45%;
+            transform: translateX(50%);
+        }
+
+        .teddy-bear {
+            left: 50%;
+            transform: translateX(-50%);
+            height: 16%;
+            bottom: 10%;
+        }
+
         /* Back button for interior */
         .back-btn {
             position: absolute;
@@ -416,6 +442,10 @@
         <video id="interior-video" src="Firefly-Video.MP4" loop muted playsinline></video>
         <!-- Frame with transparent cutout on top -->
         <img src="bd1f7624-0d54-4dbd-9649-9405e2a9b565.png" class="interior-bg" alt="Sphere Interior">
+        <!-- Explorer characters on the floor -->
+        <img src="assets/images/explorer-boy.png" class="explorer explorer-boy" alt="Explorer Boy">
+        <img src="assets/images/teddy-bear.png" class="explorer teddy-bear" alt="Teddy Bear">
+        <img src="assets/images/explorer-girl.png" class="explorer explorer-girl" alt="Explorer Girl">
         <button class="back-btn" id="back-btn" title="Go Back">
             <svg viewBox="0 0 24 24">
                 <path d="M19 12H5m0 0l7 7m-7-7l7-7"/>
