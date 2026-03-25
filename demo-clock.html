@@ -841,8 +841,12 @@
           playAudio('audio/clock/feedback-correct.mp3');
         }
 
-        // Celebrate animation
-        document.querySelectorAll('.clock-item').forEach(item => item.classList.add('celebrate'));
+        // Celebrate animation - use reflow trick to ensure animation triggers on all clocks
+        document.querySelectorAll('.clock-item').forEach(item => {
+          item.classList.remove('celebrate');
+          void item.offsetWidth; // Trigger reflow to restart animation
+          item.classList.add('celebrate');
+        });
       } else {
         feedbackBadge.innerHTML = `&#128170; ${correctCount}/4 correct - Keep trying, you've got this!`;
         playAudio('audio/clock/feedback-incorrect.mp3');
