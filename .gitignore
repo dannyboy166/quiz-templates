@@ -23,5 +23,8 @@ Thumbs.db
 
 # Large media files (optional)
 *.zip
-*.MP4
-*.mp4
+
+# Allow specific video files needed for templates
+!butterfly.MP4
+!Firefly-Video.MP4
+!sphere-video.mp4
