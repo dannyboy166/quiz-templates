@@ -82,7 +82,6 @@
 
         .classroom img {
             object-fit: cover;
-            object-position: center 80%;
         }
 
         /* Three.js sphere container (behind classroom) */
@@ -196,8 +195,8 @@
             perspective-origin: 50% 50%;
             opacity: 0;
             pointer-events: none;
-            left: 72px;
-            bottom: -209px;
+            left: 103px;
+            bottom: -256px;
         }
 
         .dice-scene.visible {
@@ -219,7 +218,7 @@
             height: 500px;
             transform-style: preserve-3d;
             transform-origin: center top;
-            transform: rotateX(70deg) rotateZ(0deg);
+            transform: rotateX(73deg) rotateZ(14deg);
         }
 
         .dice-wrapper {
@@ -366,14 +365,14 @@
         <!-- Debug Controls for Dice Positioning -->
         <div class="dice-debug" id="dice-debug" style="display: none;">
             <strong>Dice Position</strong>
-            <label>Left: <span id="debug-left-val">72</span>px</label>
-            <input type="range" id="debug-left" min="0" max="500" value="72">
-            <label>Bottom: <span id="debug-bottom-val">-209</span>px</label>
-            <input type="range" id="debug-bottom" min="-400" max="500" value="-209">
-            <label>Angle (tilt): <span id="debug-angle-val">70</span>°</label>
-            <input type="range" id="debug-angle" min="30" max="85" value="70">
-            <label>Rotation (top): <span id="debug-rotation-val">0</span>°</label>
-            <input type="range" id="debug-rotation" min="-45" max="45" value="0">
+            <label>Left: <span id="debug-left-val">103</span>px</label>
+            <input type="range" id="debug-left" min="0" max="500" value="103">
+            <label>Bottom: <span id="debug-bottom-val">-256</span>px</label>
+            <input type="range" id="debug-bottom" min="-400" max="500" value="-256">
+            <label>Angle (tilt): <span id="debug-angle-val">73</span>°</label>
+            <input type="range" id="debug-angle" min="30" max="85" value="73">
+            <label>Rotation (top): <span id="debug-rotation-val">14</span>°</label>
+            <input type="range" id="debug-rotation" min="-45" max="45" value="14">
             <label>Scale: <span id="debug-scale-val">1</span></label>
             <input type="range" id="debug-scale" min="0.5" max="2" step="0.1" value="1">
         </div>
@@ -782,8 +781,8 @@
             diceScene.style.bottom = val + 'px';
         });
 
-        let currentAngle = 70;
-        let currentRotation = 0;
+        let currentAngle = 73;
+        let currentRotation = 14;
 
         function updateDiceTransform() {
             document.getElementById('dice-container-home').style.transform = `rotateX(${currentAngle}deg) rotateZ(${currentRotation}deg)`;
