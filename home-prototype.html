@@ -3,15 +3,20 @@
   PORTAL EFFECT HOMEPAGE PROTOTYPE
   ================================
 
-  A scroll-through portal effect where users "enter" through a hallway door
-  into a classroom with an interactive 3D sphere.
+  FLOW:
+  1. Intro video plays (assets/videos/intro-animation.mp4)
+  2. Video ends → reveals hallway image (first frame of video)
+  3. User scrolls → portal effect into classroom
+  4. Classroom with interactive 3D sphere and dice
 
   LAYERS (z-index order):
+  - z-index 100: Intro video overlay (plays first, then hides)
   - z-index 3: Hallway image (front) - zooms into the door on scroll
   - z-index 2: Classroom image with transparent hole (middle)
   - z-index 1: Three.js sphere with image texture (back) - shows through hole
 
   CONTROLS:
+  - Click: Skip intro video
   - Trackpad: Two-finger swipe up/down to transition
   - Keyboard: Arrow keys or spacebar
   - Mouse: Drag to rotate the sphere
@@ -21,8 +26,9 @@
   - Run: python3 -m http.server 8080
   - Open: http://localhost:8080/home-prototype.html
 
-  IMAGES:
-  - assets/images/hallway.png - The entrance hallway
+  ASSETS:
+  - assets/videos/intro-animation.mp4 - Intro animation video
+  - assets/images/hallway-intro.png - First frame of intro video
   - assets/images/classroom-transparent.png - Classroom with transparent arch
   - assets/textures/Traditional Aboriginal dot art panorama.png - Image texture for the sphere
 -->
@@ -66,6 +72,27 @@
             object-fit: cover;
         }
 
+        /* Intro video overlay */
+        .intro-video-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 100;
+            background: #000;
+        }
+
+        .intro-video-overlay video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .intro-video-overlay.hidden {
+            display: none;
+        }
+
         /* Hallway (front) */
         .hallway {
             z-index: 3;
@@ -96,25 +123,6 @@
             pointer-events: auto;
         }
 
-        /* Hint */
-        .hint {
-            position: absolute;
-            bottom: 40px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 100;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 14px 28px;
-            border-radius: 50px;
-            font-size: 16px;
-            pointer-events: none;
-            transition: opacity 0.5s;
-        }
-
-        .hint.hidden {
-            opacity: 0;
-        }
 
         /* Progress bar */
         .progress-bar {
@@ -312,6 +320,43 @@
             font-size: 12px;
         }
 
+        .dice-debug.minimized {
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+
+        .dice-debug.minimized .debug-content {
+            display: none;
+        }
+
+        .dice-debug.minimized .debug-header strong {
+            font-size: 10px;
+        }
+
+        .dice-debug .debug-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .dice-debug.minimized .debug-header {
+            margin-bottom: 0;
+        }
+
+        .dice-debug .minimize-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 0 4px;
+            color: #666;
+        }
+
+        .dice-debug .minimize-btn:hover {
+            color: #000;
+        }
+
         .dice-debug label {
             display: block;
             margin: 8px 0 4px;
@@ -323,10 +368,17 @@
     </style>
 </head>
 <body>
+    <!-- Intro Video Overlay - plays first, then reveals hallway -->
+    <div class="intro-video-overlay" id="intro-video-overlay">
+        <video id="intro-video" autoplay muted playsinline>
+            <source src="assets/videos/intro-animation.mp4" type="video/mp4">
+        </video>
+    </div>
+
     <div class="container" id="container">
-        <!-- Hallway - front layer -->
+        <!-- Hallway - front layer (first frame of video) -->
         <div class="scene hallway" id="hallway">
-            <img src="assets/images/hallway.png" alt="School Hallway">
+            <img src="assets/images/hallway-intro.png" alt="School Hallway">
         </div>
 
         <!-- Classroom with transparent hole - middle layer -->
@@ -337,7 +389,6 @@
         <!-- Three.js sphere - back layer (shows through transparent hole) -->
         <div id="sphere-container"></div>
 
-        <div class="hint" id="hint">Swipe up on trackpad to enter</div>
         <div class="progress-bar" id="progressBar"></div>
         <button class="reset-btn" id="resetBtn">Reset</button>
 
@@ -364,17 +415,22 @@
 
         <!-- Debug Controls for Dice Positioning -->
         <div class="dice-debug" id="dice-debug" style="display: none;">
-            <strong>Dice Position</strong>
-            <label>Left: <span id="debug-left-val">103</span>px</label>
-            <input type="range" id="debug-left" min="0" max="500" value="103">
-            <label>Bottom: <span id="debug-bottom-val">-256</span>px</label>
-            <input type="range" id="debug-bottom" min="-400" max="500" value="-256">
-            <label>Angle (tilt): <span id="debug-angle-val">73</span>°</label>
-            <input type="range" id="debug-angle" min="30" max="85" value="73">
-            <label>Rotation (top): <span id="debug-rotation-val">14</span>°</label>
-            <input type="range" id="debug-rotation" min="-45" max="45" value="14">
-            <label>Scale: <span id="debug-scale-val">1</span></label>
-            <input type="range" id="debug-scale" min="0.5" max="2" step="0.1" value="1">
+            <div class="debug-header">
+                <strong>Dice Position</strong>
+                <button class="minimize-btn" id="debug-minimize" title="Minimize">−</button>
+            </div>
+            <div class="debug-content">
+                <label>Left: <span id="debug-left-val">103</span>px</label>
+                <input type="range" id="debug-left" min="0" max="500" value="103">
+                <label>Bottom: <span id="debug-bottom-val">-256</span>px</label>
+                <input type="range" id="debug-bottom" min="-400" max="500" value="-256">
+                <label>Angle (tilt): <span id="debug-angle-val">73</span>°</label>
+                <input type="range" id="debug-angle" min="30" max="85" value="73">
+                <label>Rotation (top): <span id="debug-rotation-val">14</span>°</label>
+                <input type="range" id="debug-rotation" min="-45" max="45" value="14">
+                <label>Scale: <span id="debug-scale-val">1</span></label>
+                <input type="range" id="debug-scale" min="0.5" max="2" step="0.1" value="1">
+            </div>
         </div>
     </div>
 
@@ -526,7 +582,6 @@
         const container = document.getElementById('container');
         const hallway = document.getElementById('hallway');
         const classroom = document.getElementById('classroom');
-        const hint = document.getElementById('hint');
         const progressBar = document.getElementById('progressBar');
         const resetBtn = document.getElementById('resetBtn');
 
@@ -550,12 +605,6 @@
             sphereContainer.style.opacity = classroomOpacity;
 
             progressBar.style.width = `${progress * 100}%`;
-
-            if (progress > 0.05) {
-                hint.classList.add('hidden');
-            } else {
-                hint.classList.remove('hidden');
-            }
 
             if (progress >= 1) {
                 resetBtn.classList.add('visible');
@@ -812,7 +861,81 @@
             diceScene.style.transform = `scale(${val})`;
         });
 
+        // Minimize/maximize debug panel
+        const debugPanel = document.getElementById('dice-debug');
+        const minimizeBtn = document.getElementById('debug-minimize');
+
+        minimizeBtn.addEventListener('click', () => {
+            debugPanel.classList.toggle('minimized');
+            minimizeBtn.textContent = debugPanel.classList.contains('minimized') ? '+' : '−';
+        });
+
+        // Click anywhere on minimized panel to expand
+        debugPanel.addEventListener('click', (e) => {
+            if (debugPanel.classList.contains('minimized') && e.target !== minimizeBtn) {
+                debugPanel.classList.remove('minimized');
+                minimizeBtn.textContent = '−';
+            }
+        });
+
         initDice();
+
+        // ============ INTRO VIDEO HANDLER ============
+        const introVideo = document.getElementById('intro-video');
+        const introOverlay = document.getElementById('intro-video-overlay');
+        let videoEnded = false;
+
+        // Preload classroom image and warm up Three.js while video plays
+        introVideo.addEventListener('play', () => {
+            // Preload classroom image
+            const preloadClassroom = new Image();
+            preloadClassroom.src = 'assets/images/classroom-transparent.png';
+
+            // Warm up the transition by doing a tiny invisible scroll
+            setTimeout(() => {
+                progress = 0.01;
+                updateScene();
+                setTimeout(() => {
+                    progress = 0;
+                    updateScene();
+                }, 100);
+            }, 500);
+        });
+
+        // When video ends, hide overlay to reveal the hallway
+        introVideo.addEventListener('ended', () => {
+            videoEnded = true;
+            introOverlay.classList.add('hidden');
+        });
+
+        // Fallback: if video fails to load, hide overlay immediately
+        introVideo.addEventListener('error', () => {
+            videoEnded = true;
+            introOverlay.classList.add('hidden');
+        });
+
+        // Allow clicking to skip video while playing
+        introOverlay.addEventListener('click', () => {
+            introVideo.pause();
+            videoEnded = true;
+            introOverlay.classList.add('hidden');
+        });
+
+        // Tap screen to replay video (only when video has ended/hidden and not zoomed in)
+        container.addEventListener('click', (e) => {
+            // Don't replay if clicking on dice, debug panel, or other interactive elements
+            if (e.target.closest('.dice-scene') || e.target.closest('.dice-debug') || e.target.closest('.fullscreen-btn') || e.target.closest('.reset-btn')) return;
+
+            // Don't replay if zoomed in at all
+            if (progress > 0) return;
+
+            if (videoEnded) {
+                videoEnded = false;
+                introVideo.currentTime = 0;
+                introOverlay.classList.remove('hidden');
+                introVideo.play();
+            }
+        });
     </script>
 </body>
 </html>
