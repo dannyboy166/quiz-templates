@@ -115,8 +115,8 @@
             object-fit: cover;
         }
 
-        /* Sir Quokkalot video (on top of classroom, in portal area) */
-        #quokkalot-container {
+        /* Character videos container (on top of classroom, in portal area) */
+        #characters-container {
             position: absolute;
             top: 0;
             left: 0;
@@ -127,10 +127,18 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            gap: 5%;
             pointer-events: none;
         }
 
         #quokkalot-video {
+            height: 44%;
+            width: auto;
+            object-fit: cover;
+            margin-top: -5%;
+        }
+
+        #bango-video {
             height: 44%;
             width: auto;
             object-fit: cover;
@@ -413,10 +421,13 @@
             <img src="assets/images/classroom-transparent.png" alt="Classroom">
         </div>
 
-        <!-- Sir Quokkalot video - shows through portal -->
-        <div id="quokkalot-container">
+        <!-- Character videos - show through portal -->
+        <div id="characters-container">
             <video id="quokkalot-video" playsinline>
                 <source src="assets/videos/sir-quokkalot-transparent.webm" type="video/webm">
+            </video>
+            <video id="bango-video" playsinline>
+                <source src="assets/videos/bango-transparent.webm" type="video/webm">
             </video>
         </div>
 
@@ -618,9 +629,10 @@
         const classroom = document.getElementById('classroom');
         const progressBar = document.getElementById('progressBar');
         const resetBtn = document.getElementById('resetBtn');
-        const quokkalotContainer = document.getElementById('quokkalot-container');
+        const charactersContainer = document.getElementById('characters-container');
         const quokkalotVideo = document.getElementById('quokkalot-video');
-        let quokkalotPlaying = false;
+        const bangoVideo = document.getElementById('bango-video');
+        let charactersPlaying = false;
 
         let progress = 0;
         const maxScale = 12;
@@ -638,18 +650,21 @@
             hallway.style.opacity = hallwayOpacity;
             classroom.style.opacity = classroomOpacity;
 
-            // Show sphere and quokkalot when classroom is visible
+            // Show sphere and characters when classroom is visible
             sphereContainer.style.opacity = classroomOpacity;
-            quokkalotContainer.style.opacity = classroomOpacity;
+            charactersContainer.style.opacity = classroomOpacity;
 
-            // Play Sir Quokkalot video when fully zoomed in
-            if (progress >= 1 && !quokkalotPlaying) {
+            // Play character videos when fully zoomed in
+            if (progress >= 1 && !charactersPlaying) {
                 quokkalotVideo.play();
-                quokkalotPlaying = true;
-            } else if (progress < 0.5 && quokkalotPlaying) {
+                bangoVideo.play();
+                charactersPlaying = true;
+            } else if (progress < 0.5 && charactersPlaying) {
                 quokkalotVideo.pause();
                 quokkalotVideo.currentTime = 0;
-                quokkalotPlaying = false;
+                bangoVideo.pause();
+                bangoVideo.currentTime = 0;
+                charactersPlaying = false;
             }
 
             progressBar.style.width = `${progress * 100}%`;
