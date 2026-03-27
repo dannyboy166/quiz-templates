@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Sir Quokkalot</title>
+    <style>
+        body {
+            background: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            font-family: sans-serif;
+        }
+        h1 { margin-bottom: 20px; }
+        video {
+            max-height: 80vh;
+            border: 2px solid #ccc;
+        }
+        .controls {
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Step 3: Green screen removed</h1>
+
+    <video id="video" autoplay loop muted playsinline>
+        <source src="assets/videos/sir-quokkalot-transparent.webm" type="video/webm">
+    </video>
+
+    <div class="controls">
+        <button onclick="video.play()">Play</button>
+        <button onclick="video.pause()">Pause</button>
+    </div>
+</body>
+</html>

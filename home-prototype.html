@@ -11,9 +11,10 @@
 
   LAYERS (z-index order):
   - z-index 100: Intro video overlay (plays first, then hides)
-  - z-index 3: Hallway image (front) - zooms into the door on scroll
-  - z-index 2: Classroom image with transparent hole (middle)
-  - z-index 1: Three.js sphere with image texture (back) - shows through hole
+  - z-index 3: Sir Quokkalot video (on top of classroom, plays when zoomed in)
+  - z-index 2: Hallway image (front) - zooms into the door on scroll
+  - z-index 2: Classroom image (middle)
+  - z-index 0: Three.js sphere with image texture (back)
 
   CONTROLS:
   - Click: Skip intro video
@@ -28,8 +29,11 @@
 
   ASSETS:
   - assets/videos/intro-animation.mp4 - Intro animation video
+  - assets/videos/sir-quokkalot-transparent.webm - Sir Quokkalot with green screen removed
+      Chromakey: color=#7EDB42 (RGB 126,219,66), similarity=0.075, blend=0.03
+      Cropped: top 20% removed (ffmpeg crop=1080:1536:0:384)
   - assets/images/hallway-intro.png - First frame of intro video
-  - assets/images/classroom-transparent.png - Classroom with transparent arch
+  - assets/images/classroom-transparent.png - Classroom scene
   - assets/textures/Traditional Aboriginal dot art panorama.png - Image texture for the sphere
 -->
 <html lang="en">
@@ -111,6 +115,29 @@
             object-fit: cover;
         }
 
+        /* Sir Quokkalot video (on top of classroom, in portal area) */
+        #quokkalot-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 3;
+            opacity: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+
+        #quokkalot-video {
+            height: 55%;
+            width: auto;
+            object-fit: cover;
+            margin-top: -5%;
+        }
+
+
         /* Three.js sphere container (behind classroom) */
         #sphere-container {
             position: absolute;
@@ -118,7 +145,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 1;
+            z-index: 0;
             opacity: 0;
             pointer-events: auto;
         }
@@ -386,6 +413,13 @@
             <img src="assets/images/classroom-transparent.png" alt="Classroom">
         </div>
 
+        <!-- Sir Quokkalot video - shows through portal -->
+        <div id="quokkalot-container">
+            <video id="quokkalot-video" playsinline>
+                <source src="assets/videos/sir-quokkalot-transparent.webm" type="video/webm">
+            </video>
+        </div>
+
         <!-- Three.js sphere - back layer (shows through transparent hole) -->
         <div id="sphere-container"></div>
 
@@ -584,6 +618,9 @@
         const classroom = document.getElementById('classroom');
         const progressBar = document.getElementById('progressBar');
         const resetBtn = document.getElementById('resetBtn');
+        const quokkalotContainer = document.getElementById('quokkalot-container');
+        const quokkalotVideo = document.getElementById('quokkalot-video');
+        let quokkalotPlaying = false;
 
         let progress = 0;
         const maxScale = 12;
@@ -601,8 +638,19 @@
             hallway.style.opacity = hallwayOpacity;
             classroom.style.opacity = classroomOpacity;
 
-            // Show sphere when classroom is visible
+            // Show sphere and quokkalot when classroom is visible
             sphereContainer.style.opacity = classroomOpacity;
+            quokkalotContainer.style.opacity = classroomOpacity;
+
+            // Play Sir Quokkalot video when fully zoomed in
+            if (progress >= 1 && !quokkalotPlaying) {
+                quokkalotVideo.play();
+                quokkalotPlaying = true;
+            } else if (progress < 0.5 && quokkalotPlaying) {
+                quokkalotVideo.pause();
+                quokkalotVideo.currentTime = 0;
+                quokkalotPlaying = false;
+            }
 
             progressBar.style.width = `${progress * 100}%`;
 
