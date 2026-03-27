@@ -1056,14 +1056,27 @@
       document.getElementById('feedback').classList.remove('show');
     }
 
+    // Fisher-Yates shuffle for truly random ordering
+    function shuffleArray(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
     function renderBalloons(options) {
       const container = document.getElementById('balloons-container');
 
+      // Shuffle options so correct answer is in random position
+      const shuffledOptions = shuffleArray(options);
+
       // Shuffle colors
-      const shuffledColors = [...balloonColors].sort(() => Math.random() - 0.5);
+      const shuffledColors = shuffleArray(balloonColors);
 
       // Start balloons at 0,0 with opacity 0 - JS will position them
-      container.innerHTML = options.map((opt, i) => {
+      container.innerHTML = shuffledOptions.map((opt, i) => {
         return `
           <div class="balloon floating ${shuffledColors[i % shuffledColors.length]}"
                data-option="${opt}"
