@@ -288,13 +288,9 @@
 
         #interior-video {
             position: absolute;
-            left: 51.5%;
-            top: 60%;
-            transform: translate(-50%, -50%);
-            width: 77%;
-            height: 87%;
-            object-fit: cover;
+            object-fit: contain;
             z-index: 1;
+            /* Size/position set dynamically by JavaScript to scale with interior-bg */
         }
 
         .interior-bg {
@@ -439,7 +435,7 @@
     <!-- Interior View Layer -->
     <div class="interior-layer" id="interior-layer">
         <!-- Video behind the frame -->
-        <video id="interior-video" src="assets/videos/Firefly-Video.MP4" loop muted playsinline></video>
+        <video id="interior-video" src="assets/videos/butterfly-lifecycle.mp4" loop playsinline></video>
         <!-- Frame with transparent cutout on top -->
         <img src="assets/textures/bd1f7624-0d54-4dbd-9649-9405e2a9b565.png" class="interior-bg" alt="Sphere Interior">
         <!-- Explorer characters on the floor -->
@@ -708,11 +704,62 @@
         // ============ SCROLL-BASED ZOOM INTO SPHERE ============
         const interiorLayer = document.getElementById('interior-layer');
         const interiorVideo = document.getElementById('interior-video');
+        const interiorBg = document.querySelector('.interior-bg');
         const backBtn = document.getElementById('back-btn');
         const scrollHint = document.getElementById('scroll-hint');
         const uiLayer = document.querySelector('.ui-layer');
         const background = document.querySelector('.background');
         const sphereCanvas = document.getElementById('sphere-canvas');
+
+        // Scale video to match interior background image
+        function scaleVideoWithBackground() {
+            if (!interiorBg || !interiorVideo) return;
+
+            const containerW = window.innerWidth;
+            const containerH = window.innerHeight;
+            const imgNaturalW = interiorBg.naturalWidth || 1920;
+            const imgNaturalH = interiorBg.naturalHeight || 1080;
+            const imgRatio = imgNaturalW / imgNaturalH;
+            const containerRatio = containerW / containerH;
+
+            // Calculate rendered size of object-fit: cover image
+            let renderedW, renderedH, offsetX, offsetY;
+            if (containerRatio > imgRatio) {
+                // Container is wider - image fills width, crops top/bottom
+                renderedW = containerW;
+                renderedH = containerW / imgRatio;
+                offsetX = 0;
+                offsetY = (containerH - renderedH) / 2;
+            } else {
+                // Container is taller - image fills height, crops sides
+                renderedH = containerH;
+                renderedW = containerH * imgRatio;
+                offsetX = (containerW - renderedW) / 2;
+                offsetY = 0;
+            }
+
+            // Video position as percentage of image (adjust these values to fit your frame)
+            const videoLeftPct = 0.255;  // 25.8% from left of image
+            const videoTopPct = 0.30;    // 30% from top of image
+            const videoWidthPct = 0.51;  // 51% of image width
+            const videoHeightPct = 0.56; // 56% of image height
+
+            // Calculate pixel values
+            const videoLeft = offsetX + (renderedW * videoLeftPct);
+            const videoTop = offsetY + (renderedH * videoTopPct);
+            const videoWidth = renderedW * videoWidthPct;
+            const videoHeight = renderedH * videoHeightPct;
+
+            interiorVideo.style.left = videoLeft + 'px';
+            interiorVideo.style.top = videoTop + 'px';
+            interiorVideo.style.width = videoWidth + 'px';
+            interiorVideo.style.height = videoHeight + 'px';
+        }
+
+        // Scale on load and resize
+        interiorBg.addEventListener('load', scaleVideoWithBackground);
+        window.addEventListener('resize', scaleVideoWithBackground);
+        scaleVideoWithBackground();
 
         let zoomProgress = 0; // 0 = selector view, 1 = fully inside
         const zoomSensitivity = 0.0015;
