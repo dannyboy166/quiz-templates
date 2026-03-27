@@ -127,22 +127,41 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 5%;
+            gap: 0%;
             pointer-events: none;
         }
 
         #quokkalot-video {
-            height: 44%;
+            height: 31%;
             width: auto;
             object-fit: cover;
-            margin-top: -5%;
+            margin-top: 16%;
+            margin-right: -3%;
         }
 
         #bango-video {
-            height: 44%;
+            height: 43%;
             width: auto;
             object-fit: cover;
-            margin-top: -5%;
+            margin-top: 8%;
+            margin-right: -4%;
+        }
+
+        #matilda-video {
+            height: 48%;
+            width: auto;
+            object-fit: cover;
+            margin-top: 9.2%;
+            margin-left: -4%;
+            margin-right: -3%;
+        }
+
+        #teacher-video {
+            height: 46%;
+            width: auto;
+            object-fit: cover;
+            margin-top: 10%;
+            margin-left: -3%;
         }
 
 
@@ -429,6 +448,12 @@
             <video id="bango-video" playsinline>
                 <source src="assets/videos/bango-transparent.webm" type="video/webm">
             </video>
+            <video id="matilda-video" playsinline>
+                <source src="assets/videos/matilda-transparent.webm" type="video/webm">
+            </video>
+            <video id="teacher-video" playsinline>
+                <source src="assets/videos/teacher-transparent.webm" type="video/webm">
+            </video>
         </div>
 
         <!-- Three.js sphere - back layer (shows through transparent hole) -->
@@ -459,10 +484,10 @@
         </div>
 
         <!-- Debug Controls for Dice Positioning -->
-        <div class="dice-debug" id="dice-debug" style="display: none;">
+        <div class="dice-debug minimized" id="dice-debug" style="display: none;">
             <div class="debug-header">
                 <strong>Dice Position</strong>
-                <button class="minimize-btn" id="debug-minimize" title="Minimize">−</button>
+                <button class="minimize-btn" id="debug-minimize" title="Minimize">+</button>
             </div>
             <div class="debug-content">
                 <label>Left: <span id="debug-left-val">103</span>px</label>
@@ -632,7 +657,21 @@
         const charactersContainer = document.getElementById('characters-container');
         const quokkalotVideo = document.getElementById('quokkalot-video');
         const bangoVideo = document.getElementById('bango-video');
+        const matildaVideo = document.getElementById('matilda-video');
+        const teacherVideo = document.getElementById('teacher-video');
         let charactersPlaying = false;
+
+        // Sequential video playback: teacher → matilda → bango → quokka
+        teacherVideo.addEventListener('ended', () => {
+            teacherVideo.currentTime = 0; // Show first frame instead of last
+            matildaVideo.play();
+        });
+        matildaVideo.addEventListener('ended', () => {
+            bangoVideo.play();
+        });
+        bangoVideo.addEventListener('ended', () => {
+            quokkalotVideo.play();
+        });
 
         let progress = 0;
         const maxScale = 12;
@@ -654,16 +693,20 @@
             sphereContainer.style.opacity = classroomOpacity;
             charactersContainer.style.opacity = classroomOpacity;
 
-            // Play character videos when fully zoomed in
+            // Play character videos sequentially when fully zoomed in
+            // Order: teacher → matilda → bango → quokka
             if (progress >= 1 && !charactersPlaying) {
-                quokkalotVideo.play();
-                bangoVideo.play();
+                teacherVideo.play();
                 charactersPlaying = true;
             } else if (progress < 0.5 && charactersPlaying) {
                 quokkalotVideo.pause();
                 quokkalotVideo.currentTime = 0;
                 bangoVideo.pause();
                 bangoVideo.currentTime = 0;
+                matildaVideo.pause();
+                matildaVideo.currentTime = 0;
+                teacherVideo.pause();
+                teacherVideo.currentTime = 0;
                 charactersPlaying = false;
             }
 
