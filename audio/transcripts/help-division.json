@@ -1,0 +1,962 @@
+{
+  "language_code": "eng",
+  "segments": [
+    {
+      "text": "Let's figure out what dividing really means. I have twelve strawberries, and I want to share them fairly with my three friends. How many does each friend get? Let's give one to each friend. One, two, three. Let's do it again. One, two, three. And again. One, two, three. And one more time. One, two, three. Now everyone has the same amount. That's fair. Twelve strawberries divided by three friends equals four each. Twelve divided by three equals four. Dividing means sharing equally. Everyone gets the same. ",
+      "start_time": 0.119,
+      "end_time": 38.459,
+      "speaker": {
+        "id": "speaker_0",
+        "name": "Speaker 0"
+      },
+      "words": [
+        {
+          "text": "Let's",
+          "start_time": 0.119,
+          "end_time": 0.3
+        },
+        {
+          "text": " ",
+          "start_time": 0.3,
+          "end_time": 0.359
+        },
+        {
+          "text": "figure",
+          "start_time": 0.359,
+          "end_time": 0.519
+        },
+        {
+          "text": " ",
+          "start_time": 0.519,
+          "end_time": 0.599
+        },
+        {
+          "text": "out",
+          "start_time": 0.599,
+          "end_time": 0.74
+        },
+        {
+          "text": " ",
+          "start_time": 0.74,
+          "end_time": 0.779
+        },
+        {
+          "text": "what",
+          "start_time": 0.779,
+          "end_time": 0.859
+        },
+        {
+          "text": " ",
+          "start_time": 0.859,
+          "end_time": 0.919
+        },
+        {
+          "text": "dividing",
+          "start_time": 0.919,
+          "end_time": 1.36
+        },
+        {
+          "text": " ",
+          "start_time": 1.36,
+          "end_time": 1.459
+        },
+        {
+          "text": "really",
+          "start_time": 1.459,
+          "end_time": 1.719
+        },
+        {
+          "text": " ",
+          "start_time": 1.719,
+          "end_time": 1.779
+        },
+        {
+          "text": "means.",
+          "start_time": 1.779,
+          "end_time": 2.22
+        },
+        {
+          "text": " ",
+          "start_time": 2.22,
+          "end_time": 3.019
+        },
+        {
+          "text": "I",
+          "start_time": 3.019,
+          "end_time": 3.039
+        },
+        {
+          "text": " ",
+          "start_time": 3.039,
+          "end_time": 3.099
+        },
+        {
+          "text": "have",
+          "start_time": 3.099,
+          "end_time": 3.219
+        },
+        {
+          "text": " ",
+          "start_time": 3.219,
+          "end_time": 3.279
+        },
+        {
+          "text": "twelve",
+          "start_time": 3.279,
+          "end_time": 3.599
+        },
+        {
+          "text": " ",
+          "start_time": 3.599,
+          "end_time": 3.659
+        },
+        {
+          "text": "strawberries,",
+          "start_time": 3.659,
+          "end_time": 4.259
+        },
+        {
+          "text": " ",
+          "start_time": 4.259,
+          "end_time": 4.739
+        },
+        {
+          "text": "and",
+          "start_time": 4.739,
+          "end_time": 4.799
+        },
+        {
+          "text": " ",
+          "start_time": 4.799,
+          "end_time": 4.839
+        },
+        {
+          "text": "I",
+          "start_time": 4.839,
+          "end_time": 4.859
+        },
+        {
+          "text": " ",
+          "start_time": 4.859,
+          "end_time": 4.939
+        },
+        {
+          "text": "want",
+          "start_time": 4.94,
+          "end_time": 5.039
+        },
+        {
+          "text": " ",
+          "start_time": 5.039,
+          "end_time": 5.099
+        },
+        {
+          "text": "to",
+          "start_time": 5.099,
+          "end_time": 5.179
+        },
+        {
+          "text": " ",
+          "start_time": 5.179,
+          "end_time": 5.319
+        },
+        {
+          "text": "share",
+          "start_time": 5.319,
+          "end_time": 5.46
+        },
+        {
+          "text": " ",
+          "start_time": 5.46,
+          "end_time": 5.5
+        },
+        {
+          "text": "them",
+          "start_time": 5.5,
+          "end_time": 5.719
+        },
+        {
+          "text": " ",
+          "start_time": 5.719,
+          "end_time": 5.779
+        },
+        {
+          "text": "fairly",
+          "start_time": 5.779,
+          "end_time": 6.079
+        },
+        {
+          "text": " ",
+          "start_time": 6.079,
+          "end_time": 6.159
+        },
+        {
+          "text": "with",
+          "start_time": 6.159,
+          "end_time": 6.259
+        },
+        {
+          "text": " ",
+          "start_time": 6.259,
+          "end_time": 6.319
+        },
+        {
+          "text": "my",
+          "start_time": 6.319,
+          "end_time": 6.46
+        },
+        {
+          "text": " ",
+          "start_time": 6.46,
+          "end_time": 6.519
+        },
+        {
+          "text": "three",
+          "start_time": 6.519,
+          "end_time": 6.679
+        },
+        {
+          "text": " ",
+          "start_time": 6.679,
+          "end_time": 6.799
+        },
+        {
+          "text": "friends.",
+          "start_time": 6.799,
+          "end_time": 7.219
+        },
+        {
+          "text": " ",
+          "start_time": 7.219,
+          "end_time": 7.799
+        },
+        {
+          "text": "How",
+          "start_time": 7.799,
+          "end_time": 7.879
+        },
+        {
+          "text": " ",
+          "start_time": 7.879,
+          "end_time": 7.939
+        },
+        {
+          "text": "many",
+          "start_time": 7.94,
+          "end_time": 8.079
+        },
+        {
+          "text": " ",
+          "start_time": 8.079,
+          "end_time": 8.159
+        },
+        {
+          "text": "does",
+          "start_time": 8.159,
+          "end_time": 8.3
+        },
+        {
+          "text": " ",
+          "start_time": 8.3,
+          "end_time": 8.42
+        },
+        {
+          "text": "each",
+          "start_time": 8.42,
+          "end_time": 8.579
+        },
+        {
+          "text": " ",
+          "start_time": 8.579,
+          "end_time": 8.679
+        },
+        {
+          "text": "friend",
+          "start_time": 8.679,
+          "end_time": 8.92
+        },
+        {
+          "text": " ",
+          "start_time": 8.92,
+          "end_time": 8.979
+        },
+        {
+          "text": "get?",
+          "start_time": 8.979,
+          "end_time": 9.239
+        },
+        {
+          "text": " ",
+          "start_time": 9.239,
+          "end_time": 9.92
+        },
+        {
+          "text": "Let's",
+          "start_time": 9.92,
+          "end_time": 10.099
+        },
+        {
+          "text": " ",
+          "start_time": 10.099,
+          "end_time": 10.159
+        },
+        {
+          "text": "give",
+          "start_time": 10.159,
+          "end_time": 10.3
+        },
+        {
+          "text": " ",
+          "start_time": 10.3,
+          "end_time": 10.38
+        },
+        {
+          "text": "one",
+          "start_time": 10.38,
+          "end_time": 10.48
+        },
+        {
+          "text": " ",
+          "start_time": 10.48,
+          "end_time": 10.539
+        },
+        {
+          "text": "to",
+          "start_time": 10.539,
+          "end_time": 10.619
+        },
+        {
+          "text": " ",
+          "start_time": 10.619,
+          "end_time": 10.699
+        },
+        {
+          "text": "each",
+          "start_time": 10.699,
+          "end_time": 10.859
+        },
+        {
+          "text": " ",
+          "start_time": 10.859,
+          "end_time": 10.96
+        },
+        {
+          "text": "friend.",
+          "start_time": 10.96,
+          "end_time": 11.299
+        },
+        {
+          "text": " ",
+          "start_time": 11.299,
+          "end_time": 11.699
+        },
+        {
+          "text": "One,",
+          "start_time": 11.699,
+          "end_time": 11.92
+        },
+        {
+          "text": " ",
+          "start_time": 11.92,
+          "end_time": 12.259
+        },
+        {
+          "text": "two,",
+          "start_time": 12.259,
+          "end_time": 12.599
+        },
+        {
+          "text": " ",
+          "start_time": 12.599,
+          "end_time": 12.92
+        },
+        {
+          "text": "three.",
+          "start_time": 12.92,
+          "end_time": 13.239
+        },
+        {
+          "text": " ",
+          "start_time": 13.239,
+          "end_time": 13.839
+        },
+        {
+          "text": "Let's",
+          "start_time": 13.84,
+          "end_time": 14.019
+        },
+        {
+          "text": " ",
+          "start_time": 14.019,
+          "end_time": 14.079
+        },
+        {
+          "text": "do",
+          "start_time": 14.079,
+          "end_time": 14.159
+        },
+        {
+          "text": " ",
+          "start_time": 14.159,
+          "end_time": 14.199
+        },
+        {
+          "text": "it",
+          "start_time": 14.199,
+          "end_time": 14.259
+        },
+        {
+          "text": " ",
+          "start_time": 14.259,
+          "end_time": 14.339
+        },
+        {
+          "text": "again.",
+          "start_time": 14.34,
+          "end_time": 14.719
+        },
+        {
+          "text": " ",
+          "start_time": 14.719,
+          "end_time": 15.42
+        },
+        {
+          "text": "One,",
+          "start_time": 15.42,
+          "end_time": 15.659
+        },
+        {
+          "text": " ",
+          "start_time": 15.659,
+          "end_time": 16.059
+        },
+        {
+          "text": "two,",
+          "start_time": 16.059,
+          "end_time": 16.44
+        },
+        {
+          "text": " ",
+          "start_time": 16.44,
+          "end_time": 16.799
+        },
+        {
+          "text": "three.",
+          "start_time": 16.799,
+          "end_time": 17.199
+        },
+        {
+          "text": " ",
+          "start_time": 17.199,
+          "end_time": 17.759
+        },
+        {
+          "text": "And",
+          "start_time": 17.76,
+          "end_time": 17.879
+        },
+        {
+          "text": " ",
+          "start_time": 17.879,
+          "end_time": 18.0
+        },
+        {
+          "text": "again.",
+          "start_time": 18.0,
+          "end_time": 18.359
+        },
+        {
+          "text": " ",
+          "start_time": 18.359,
+          "end_time": 19.099
+        },
+        {
+          "text": "One,",
+          "start_time": 19.1,
+          "end_time": 19.319
+        },
+        {
+          "text": " ",
+          "start_time": 19.319,
+          "end_time": 19.699
+        },
+        {
+          "text": "two,",
+          "start_time": 19.699,
+          "end_time": 20.019
+        },
+        {
+          "text": " ",
+          "start_time": 20.019,
+          "end_time": 20.279
+        },
+        {
+          "text": "three.",
+          "start_time": 20.279,
+          "end_time": 20.579
+        },
+        {
+          "text": " ",
+          "start_time": 20.579,
+          "end_time": 21.159
+        },
+        {
+          "text": "And",
+          "start_time": 21.159,
+          "end_time": 21.279
+        },
+        {
+          "text": " ",
+          "start_time": 21.279,
+          "end_time": 21.359
+        },
+        {
+          "text": "one",
+          "start_time": 21.359,
+          "end_time": 21.479
+        },
+        {
+          "text": " ",
+          "start_time": 21.479,
+          "end_time": 21.559
+        },
+        {
+          "text": "more",
+          "start_time": 21.559,
+          "end_time": 21.699
+        },
+        {
+          "text": " ",
+          "start_time": 21.699,
+          "end_time": 21.779
+        },
+        {
+          "text": "time.",
+          "start_time": 21.779,
+          "end_time": 22.059
+        },
+        {
+          "text": " ",
+          "start_time": 22.059,
+          "end_time": 22.659
+        },
+        {
+          "text": "One,",
+          "start_time": 22.659,
+          "end_time": 22.819
+        },
+        {
+          "text": " ",
+          "start_time": 22.819,
+          "end_time": 23.119
+        },
+        {
+          "text": "two,",
+          "start_time": 23.119,
+          "end_time": 23.359
+        },
+        {
+          "text": " ",
+          "start_time": 23.359,
+          "end_time": 23.699
+        },
+        {
+          "text": "three.",
+          "start_time": 23.699,
+          "end_time": 23.939
+        },
+        {
+          "text": " ",
+          "start_time": 23.939,
+          "end_time": 24.639
+        },
+        {
+          "text": "Now",
+          "start_time": 24.639,
+          "end_time": 24.739
+        },
+        {
+          "text": " ",
+          "start_time": 24.739,
+          "end_time": 24.899
+        },
+        {
+          "text": "everyone",
+          "start_time": 24.899,
+          "end_time": 25.299
+        },
+        {
+          "text": " ",
+          "start_time": 25.299,
+          "end_time": 25.359
+        },
+        {
+          "text": "has",
+          "start_time": 25.359,
+          "end_time": 25.459
+        },
+        {
+          "text": " ",
+          "start_time": 25.459,
+          "end_time": 25.5
+        },
+        {
+          "text": "the",
+          "start_time": 25.5,
+          "end_time": 25.599
+        },
+        {
+          "text": " ",
+          "start_time": 25.599,
+          "end_time": 25.659
+        },
+        {
+          "text": "same",
+          "start_time": 25.659,
+          "end_time": 25.84
+        },
+        {
+          "text": " ",
+          "start_time": 25.84,
+          "end_time": 25.899
+        },
+        {
+          "text": "amount.",
+          "start_time": 25.899,
+          "end_time": 26.179
+        },
+        {
+          "text": " ",
+          "start_time": 26.179,
+          "end_time": 26.619
+        },
+        {
+          "text": "That's",
+          "start_time": 26.619,
+          "end_time": 26.799
+        },
+        {
+          "text": " ",
+          "start_time": 26.799,
+          "end_time": 26.879
+        },
+        {
+          "text": "fair.",
+          "start_time": 26.879,
+          "end_time": 27.079
+        },
+        {
+          "text": " ",
+          "start_time": 27.079,
+          "end_time": 27.619
+        },
+        {
+          "text": "Twelve",
+          "start_time": 27.619,
+          "end_time": 27.819
+        },
+        {
+          "text": " ",
+          "start_time": 27.819,
+          "end_time": 27.879
+        },
+        {
+          "text": "strawberries",
+          "start_time": 27.879,
+          "end_time": 28.34
+        },
+        {
+          "text": " ",
+          "start_time": 28.34,
+          "end_time": 28.799
+        },
+        {
+          "text": "divided",
+          "start_time": 28.799,
+          "end_time": 29.159
+        },
+        {
+          "text": " ",
+          "start_time": 29.159,
+          "end_time": 29.199
+        },
+        {
+          "text": "by",
+          "start_time": 29.199,
+          "end_time": 29.319
+        },
+        {
+          "text": " ",
+          "start_time": 29.319,
+          "end_time": 29.379
+        },
+        {
+          "text": "three",
+          "start_time": 29.379,
+          "end_time": 29.519
+        },
+        {
+          "text": " ",
+          "start_time": 29.519,
+          "end_time": 29.639
+        },
+        {
+          "text": "friends",
+          "start_time": 29.639,
+          "end_time": 29.939
+        },
+        {
+          "text": " ",
+          "start_time": 29.939,
+          "end_time": 30.419
+        },
+        {
+          "text": "equals",
+          "start_time": 30.42,
+          "end_time": 30.719
+        },
+        {
+          "text": " ",
+          "start_time": 30.719,
+          "end_time": 30.779
+        },
+        {
+          "text": "four",
+          "start_time": 30.779,
+          "end_time": 30.979
+        },
+        {
+          "text": " ",
+          "start_time": 30.979,
+          "end_time": 31.059
+        },
+        {
+          "text": "each.",
+          "start_time": 31.059,
+          "end_time": 31.299
+        },
+        {
+          "text": " ",
+          "start_time": 31.299,
+          "end_time": 31.819
+        },
+        {
+          "text": "Twelve",
+          "start_time": 31.819,
+          "end_time": 32.059
+        },
+        {
+          "text": " ",
+          "start_time": 32.059,
+          "end_time": 32.099
+        },
+        {
+          "text": "divided",
+          "start_time": 32.099,
+          "end_time": 32.439
+        },
+        {
+          "text": " ",
+          "start_time": 32.439,
+          "end_time": 32.479
+        },
+        {
+          "text": "by",
+          "start_time": 32.479,
+          "end_time": 32.639
+        },
+        {
+          "text": " ",
+          "start_time": 32.639,
+          "end_time": 32.68
+        },
+        {
+          "text": "three",
+          "start_time": 32.68,
+          "end_time": 33.0
+        },
+        {
+          "text": " ",
+          "start_time": 33.0,
+          "end_time": 33.139
+        },
+        {
+          "text": "equals",
+          "start_time": 33.139,
+          "end_time": 33.399
+        },
+        {
+          "text": " ",
+          "start_time": 33.399,
+          "end_time": 33.459
+        },
+        {
+          "text": "four.",
+          "start_time": 33.459,
+          "end_time": 33.659
+        },
+        {
+          "text": " ",
+          "start_time": 33.659,
+          "end_time": 34.299
+        },
+        {
+          "text": "Dividing",
+          "start_time": 34.299,
+          "end_time": 34.68
+        },
+        {
+          "text": " ",
+          "start_time": 34.68,
+          "end_time": 34.739
+        },
+        {
+          "text": "means",
+          "start_time": 34.739,
+          "end_time": 34.939
+        },
+        {
+          "text": " ",
+          "start_time": 34.939,
+          "end_time": 35.0
+        },
+        {
+          "text": "sharing",
+          "start_time": 35.0,
+          "end_time": 35.319
+        },
+        {
+          "text": " ",
+          "start_time": 35.319,
+          "end_time": 35.399
+        },
+        {
+          "text": "equally.",
+          "start_time": 35.399,
+          "end_time": 36.0
+        },
+        {
+          "text": " ",
+          "start_time": 36.0,
+          "end_time": 36.86
+        },
+        {
+          "text": "Everyone",
+          "start_time": 36.86,
+          "end_time": 37.319
+        },
+        {
+          "text": " ",
+          "start_time": 37.319,
+          "end_time": 37.419
+        },
+        {
+          "text": "gets",
+          "start_time": 37.419,
+          "end_time": 37.719
+        },
+        {
+          "text": " ",
+          "start_time": 37.719,
+          "end_time": 37.779
+        },
+        {
+          "text": "the",
+          "start_time": 37.779,
+          "end_time": 37.919
+        },
+        {
+          "text": " ",
+          "start_time": 37.919,
+          "end_time": 38.0
+        },
+        {
+          "text": "same.",
+          "start_time": 38.0,
+          "end_time": 38.459
+        },
+        {
+          "text": " ",
+          "start_time": 38.459,
+          "end_time": 38.459
+        }
+      ]
+    },
+    {
+      "text": "Now you know the secret of dividing.",
+      "start_time": 39.54,
+      "end_time": 41.939,
+      "speaker": {
+        "id": "speaker_0",
+        "name": "Speaker 0"
+      },
+      "words": [
+        {
+          "text": "Now",
+          "start_time": 39.54,
+          "end_time": 39.68
+        },
+        {
+          "text": " ",
+          "start_time": 39.68,
+          "end_time": 39.84
+        },
+        {
+          "text": "you",
+          "start_time": 39.84,
+          "end_time": 40.019
+        },
+        {
+          "text": " ",
+          "start_time": 40.019,
+          "end_time": 40.059
+        },
+        {
+          "text": "know",
+          "start_time": 40.059,
+          "end_time": 40.259
+        },
+        {
+          "text": " ",
+          "start_time": 40.259,
+          "end_time": 40.319
+        },
+        {
+          "text": "the",
+          "start_time": 40.319,
+          "end_time": 40.479
+        },
+        {
+          "text": " ",
+          "start_time": 40.479,
+          "end_time": 40.559
+        },
+        {
+          "text": "secret",
+          "start_time": 40.559,
+          "end_time": 40.899
+        },
+        {
+          "text": " ",
+          "start_time": 40.899,
+          "end_time": 40.959
+        },
+        {
+          "text": "of",
+          "start_time": 40.959,
+          "end_time": 41.079
+        },
+        {
+          "text": " ",
+          "start_time": 41.079,
+          "end_time": 41.139
+        },
+        {
+          "text": "dividing.",
+          "start_time": 41.139,
+          "end_time": 41.939
+        }
+      ]
+    }
+  ]
+}

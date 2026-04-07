@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Help Lesson - Division</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #FAE38E;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .trigger-btn {
+      background: #9b59b6;
+      color: white;
+      border: none;
+      padding: 20px 40px;
+      border-radius: 16px;
+      font-size: 24px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 15px rgba(155, 89, 182, 0.4);
+    }
+
+    .trigger-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 20px rgba(155, 89, 182, 0.5);
+    }
+
+    /* ============ HELP OVERLAY ============ */
+    .help-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s, visibility 0.3s;
+    }
+
+    .help-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .help-container {
+      width: 90%;
+      max-width: 800px;
+      background: white;
+      border-radius: 24px;
+      padding: 40px;
+      position: relative;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .help-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: none;
+      background: #f0f0f0;
+      font-size: 24px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #666;
+      transition: background 0.2s;
+    }
+
+    .help-close:hover {
+      background: #e0e0e0;
+    }
+
+    .help-title {
+      text-align: center;
+      font-size: 28px;
+      margin-bottom: 30px;
+      color: #333;
+    }
+
+    /* Animation stage */
+    .stage {
+      height: 320px;
+      background: linear-gradient(180deg, #F3E5F5 0%, #E1BEE7 100%);
+      border-radius: 16px;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    /* Text callout */
+    .callout {
+      position: absolute;
+      top: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-size: 18px;
+      font-weight: 600;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      opacity: 0;
+      transition: opacity 0.4s;
+      white-space: nowrap;
+      max-width: 90%;
+      text-align: center;
+    }
+
+    .callout.visible {
+      opacity: 1;
+    }
+
+    /* Intro title */
+    .intro-title {
+      position: absolute;
+      top: 55%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      font-size: 42px;
+      font-weight: 700;
+      color: #333;
+      opacity: 0;
+      transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+      text-align: center;
+    }
+
+    .intro-title.visible {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    .intro-title .emoji {
+      font-size: 50px;
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    /* ============ SHARING PHASE ============ */
+    #sharing-phase {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    #sharing-phase.visible {
+      opacity: 1;
+    }
+
+    /* Strawberry pile at top */
+    .strawberry-pile {
+      position: absolute;
+      top: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 5px;
+      width: 200px;
+    }
+
+    .strawberry {
+      font-size: 28px;
+      opacity: 0;
+      transform: scale(0);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .strawberry.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .strawberry.moving {
+      position: absolute;
+      transition: all 0.4s ease-out;
+    }
+
+    .strawberry.hidden {
+      opacity: 0;
+      transform: scale(0);
+    }
+
+    /* Friend plates */
+    .friends-row {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 30px;
+    }
+
+    .friend-plate {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      opacity: 0;
+      transform: scale(0);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .friend-plate.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .friend-plate.highlight {
+      transform: scale(1.1);
+    }
+
+    .friend-plate.highlight .plate {
+      box-shadow: 0 0 20px rgba(155, 89, 182, 0.5);
+      border-color: #9b59b6;
+    }
+
+    .friend-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: #666;
+      margin-bottom: 8px;
+    }
+
+    .plate {
+      width: 140px;
+      height: 95px;
+      background: white;
+      border-radius: 50%;
+      border: 3px solid #ddd;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      justify-items: center;
+      align-items: center;
+      gap: -5px;
+      padding: 5px 10px;
+      transition: all 0.3s;
+    }
+
+    .plate .strawberry {
+      font-size: 34px;
+      position: relative;
+      margin: -3px;
+    }
+
+    .plate-count {
+      font-size: 20px;
+      font-weight: 700;
+      color: #9b59b6;
+      margin-top: 5px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .plate-count.visible {
+      opacity: 1;
+    }
+
+    /* ============ EQUATION PHASE ============ */
+    .equation-phase {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    .equation-phase.visible {
+      opacity: 1;
+    }
+
+    .equation-row {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .numbers-row .eq-item {
+      font-size: 50px;
+      font-weight: 700;
+      color: #333;
+      transition: all 0.3s;
+    }
+
+    .numbers-row .eq-operator {
+      color: #666;
+    }
+
+    .eq-item.highlight {
+      color: #9b59b6 !important;
+      transform: scale(1.15);
+    }
+
+    /* Hide answer initially */
+    #num-answer,
+    #equals1 {
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    #num-answer.visible,
+    #equals1.visible {
+      opacity: 1;
+    }
+
+    /* ============ INSIGHT PHASE ============ */
+    #insight-phase {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      transition: opacity 0.4s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 25px;
+      padding-top: 40px;
+    }
+
+    #insight-phase.visible {
+      opacity: 1;
+    }
+
+    .insight-text {
+      font-size: 28px;
+      font-weight: 700;
+      color: #333;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.4s;
+    }
+
+    .insight-text.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .insight-text .highlight {
+      color: #9b59b6;
+    }
+
+    /* Progress bar */
+    .progress-bar {
+      height: 16px;
+      background: #ddd;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      cursor: pointer;
+      position: relative;
+      user-select: none;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #9b59b6, #8e44ad);
+      width: 0%;
+      border-radius: 8px;
+      pointer-events: none;
+      position: relative;
+    }
+
+    .progress-thumb {
+      position: absolute;
+      right: -10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 20px;
+      background: white;
+      border: 3px solid #9b59b6;
+      border-radius: 50%;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    /* Controls */
+    .help-controls {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    .help-btn {
+      padding: 12px 30px;
+      border-radius: 25px;
+      border: none;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .help-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .help-btn.primary {
+      background: #4CAF50;
+      color: white;
+    }
+
+    .help-btn.secondary {
+      background: #f0f0f0;
+      color: #333;
+    }
+
+    /* Debug panel */
+    .debug-panel {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+      font-size: 14px;
+      z-index: 1001;
+    }
+
+    .debug-time {
+      font-family: monospace;
+      font-size: 18px;
+      color: #9b59b6;
+    }
+  </style>
+</head>
+<body>
+
+  <button class="trigger-btn" id="start-help">
+    Click to see Division Help
+  </button>
+
+  <!-- Help Overlay -->
+  <div class="help-overlay" id="help-overlay">
+    <div class="help-container">
+      <button class="help-close" id="help-close">&times;</button>
+
+      <h2 class="help-title">What is Division?</h2>
+
+      <div class="stage" id="stage">
+        <!-- Callout text -->
+        <div class="callout" id="callout"></div>
+
+        <!-- Intro title -->
+        <div class="intro-title" id="intro-title">
+          <span class="emoji">🍓 ÷ 👫</span>
+          What is Dividing?
+        </div>
+
+        <!-- SHARING PHASE -->
+        <div id="sharing-phase">
+          <!-- Strawberry pile -->
+          <div class="strawberry-pile" id="pile">
+            <span class="strawberry" id="s1">🍓</span>
+            <span class="strawberry" id="s2">🍓</span>
+            <span class="strawberry" id="s3">🍓</span>
+            <span class="strawberry" id="s4">🍓</span>
+            <span class="strawberry" id="s5">🍓</span>
+            <span class="strawberry" id="s6">🍓</span>
+            <span class="strawberry" id="s7">🍓</span>
+            <span class="strawberry" id="s8">🍓</span>
+            <span class="strawberry" id="s9">🍓</span>
+            <span class="strawberry" id="s10">🍓</span>
+            <span class="strawberry" id="s11">🍓</span>
+            <span class="strawberry" id="s12">🍓</span>
+          </div>
+
+          <!-- Friends with plates -->
+          <div class="friends-row">
+            <div class="friend-plate" id="friend1">
+              <span class="friend-name">Friend 1</span>
+              <div class="plate" id="plate1"></div>
+              <span class="plate-count" id="count1">4</span>
+            </div>
+            <div class="friend-plate" id="friend2">
+              <span class="friend-name">Friend 2</span>
+              <div class="plate" id="plate2"></div>
+              <span class="plate-count" id="count2">4</span>
+            </div>
+            <div class="friend-plate" id="friend3">
+              <span class="friend-name">Friend 3</span>
+              <div class="plate" id="plate3"></div>
+              <span class="plate-count" id="count3">4</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- EQUATION PHASE -->
+        <div id="equation-phase" class="equation-phase">
+          <div class="equation-row numbers-row">
+            <span class="eq-item" id="num1">12</span>
+            <span class="eq-item eq-operator" id="divide1">÷</span>
+            <span class="eq-item" id="num2">3</span>
+            <span class="eq-item eq-operator" id="equals1">=</span>
+            <span class="eq-item" id="num-answer">4</span>
+          </div>
+        </div>
+
+        <!-- INSIGHT PHASE -->
+        <div id="insight-phase">
+          <div class="insight-text" id="insight1">
+            Dividing means <span class="highlight">sharing equally</span>
+          </div>
+          <div class="insight-text" id="insight2">
+            Everyone gets the same!
+          </div>
+        </div>
+      </div>
+
+      <div class="progress-bar" id="progress-bar">
+        <div class="progress-fill" id="progress-fill">
+          <div class="progress-thumb"></div>
+        </div>
+      </div>
+
+      <div class="help-controls">
+        <button class="help-btn secondary" id="replay-btn">Replay</button>
+        <button class="help-btn primary" id="got-it-btn">Got it!</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Debug panel -->
+  <div class="debug-panel">
+    <strong>Debug</strong>
+    Time: <span class="debug-time" id="debug-time">0.0s</span>
+  </div>
+
+  <audio id="help-audio" src="audio/help-division.mp3" preload="auto"></audio>
+
+  <script>
+    // Elements
+    const overlay = document.getElementById('help-overlay');
+    const audio = document.getElementById('help-audio');
+    const progressFill = document.getElementById('progress-fill');
+    const debugTime = document.getElementById('debug-time');
+    const callout = document.getElementById('callout');
+    const introTitle = document.getElementById('intro-title');
+
+    // Sharing phase elements
+    const sharingPhase = document.getElementById('sharing-phase');
+    const strawberries = [];
+    for (let i = 1; i <= 12; i++) {
+      strawberries.push(document.getElementById('s' + i));
+    }
+    const friends = [
+      document.getElementById('friend1'),
+      document.getElementById('friend2'),
+      document.getElementById('friend3')
+    ];
+    const plates = [
+      document.getElementById('plate1'),
+      document.getElementById('plate2'),
+      document.getElementById('plate3')
+    ];
+    const plateCounts = [
+      document.getElementById('count1'),
+      document.getElementById('count2'),
+      document.getElementById('count3')
+    ];
+
+    // Equation phase elements
+    const equationPhase = document.getElementById('equation-phase');
+    const num1 = document.getElementById('num1');
+    const num2 = document.getElementById('num2');
+    const numAnswer = document.getElementById('num-answer');
+    const divide1 = document.getElementById('divide1');
+    const equals1 = document.getElementById('equals1');
+
+    // Insight phase elements
+    const insightPhase = document.getElementById('insight-phase');
+    const insight1 = document.getElementById('insight1');
+    const insight2 = document.getElementById('insight2');
+
+    // Track strawberry distribution
+    let plateContents = [[], [], []];
+    let nextStrawberry = 0;
+
+    // ============ TIMELINE ============
+    const TIMELINE = [
+      { time: 0.0,   action: () => showIntroTitle() },
+      { time: 0.1,   action: () => setCallout("Let's figure out what dividing really means!") },
+
+      // Show strawberries
+      { time: 3.0,   action: () => { hideIntroTitle(); showSharingPhase(); setCallout("I have twelve strawberries."); showAllStrawberries(); } },
+      { time: 4.7,   action: () => { setCallout("And I want to share them fairly with my three friends."); showAllFriends(); } },
+      { time: 7.8,   action: () => setCallout("How many does each friend get?") },
+
+      // First round of sharing
+      { time: 9.9,   action: () => setCallout("Let's give one to each friend.") },
+      { time: 11.7,  action: () => { highlightFriend(0); giveStrawberry(0); } },
+      { time: 12.2,  action: () => { highlightFriend(1); giveStrawberry(1); } },
+      { time: 12.9,  action: () => { highlightFriend(2); giveStrawberry(2); clearFriendHighlights(); } },
+
+      // Second round
+      { time: 13.8,  action: () => setCallout("Let's do it again.") },
+      { time: 15.4,  action: () => { highlightFriend(0); giveStrawberry(0); } },
+      { time: 16.0,  action: () => { highlightFriend(1); giveStrawberry(1); } },
+      { time: 16.8,  action: () => { highlightFriend(2); giveStrawberry(2); clearFriendHighlights(); } },
+
+      // Third round
+      { time: 17.8,  action: () => setCallout("And again!") },
+      { time: 19.1,  action: () => { highlightFriend(0); giveStrawberry(0); } },
+      { time: 19.7,  action: () => { highlightFriend(1); giveStrawberry(1); } },
+      { time: 20.3,  action: () => { highlightFriend(2); giveStrawberry(2); clearFriendHighlights(); } },
+
+      // Fourth round
+      { time: 21.2,  action: () => setCallout("And one more time.") },
+      { time: 22.7,  action: () => { highlightFriend(0); giveStrawberry(0); } },
+      { time: 23.1,  action: () => { highlightFriend(1); giveStrawberry(1); } },
+      { time: 23.7,  action: () => { highlightFriend(2); giveStrawberry(2); clearFriendHighlights(); } },
+
+      // Result
+      { time: 24.6,  action: () => { setCallout("Now everyone has the same amount."); showAllCounts(); } },
+      { time: 26.6,  action: () => setCallout("That's fair!") },
+
+      // Equation
+      { time: 27.6,  action: () => { hideSharingPhase(); showEquationPhase(); setCallout("Twelve strawberries divided by three friends..."); highlightNum1(); } },
+      { time: 28.8,  action: () => { highlightDivide(); } },
+      { time: 29.4,  action: () => { highlightNum2(); } },
+      { time: 30.4,  action: () => { showAnswer(); setCallout("equals four each!"); } },
+
+      // Reinforce
+      { time: 31.8,  action: () => { setCallout("Twelve divided by three equals four."); highlightAll(); } },
+
+      // Insight
+      { time: 34.3,  action: () => { hideEquationPhase(); showInsightPhase(); setCallout("Dividing means sharing equally."); showInsight1(); } },
+      { time: 36.9,  action: () => { setCallout("Everyone gets the same!"); showInsight2(); } },
+
+      // Conclusion
+      { time: 39.5,  action: () => setCallout("Now you know the secret of dividing! 🎉") },
+    ];
+
+    let timelineIndex = 0;
+    let animationFrame;
+
+    // ============ ANIMATION FUNCTIONS ============
+    function showIntroTitle() {
+      introTitle.classList.add('visible');
+    }
+
+    function hideIntroTitle() {
+      introTitle.classList.remove('visible');
+    }
+
+    function setCallout(text) {
+      callout.textContent = text;
+      callout.classList.add('visible');
+    }
+
+    // Sharing phase
+    function showSharingPhase() {
+      sharingPhase.classList.add('visible');
+    }
+
+    function hideSharingPhase() {
+      sharingPhase.style.opacity = '0';
+    }
+
+    function showAllStrawberries() {
+      strawberries.forEach((s, i) => {
+        setTimeout(() => s.classList.add('visible'), i * 50);
+      });
+    }
+
+    function showAllFriends() {
+      friends.forEach((f, i) => {
+        setTimeout(() => f.classList.add('visible'), i * 150);
+      });
+    }
+
+    function highlightFriend(index) {
+      clearFriendHighlights();
+      friends[index].classList.add('highlight');
+    }
+
+    function clearFriendHighlights() {
+      friends.forEach(f => f.classList.remove('highlight'));
+    }
+
+    function giveStrawberry(friendIndex) {
+      if (nextStrawberry >= 12) return;
+
+      const strawberry = strawberries[nextStrawberry];
+      strawberry.classList.add('hidden');
+
+      // Add strawberry emoji to plate
+      const newBerry = document.createElement('span');
+      newBerry.className = 'strawberry visible';
+      newBerry.textContent = '🍓';
+      plates[friendIndex].appendChild(newBerry);
+
+      plateContents[friendIndex].push(nextStrawberry);
+      nextStrawberry++;
+    }
+
+    function showAllCounts() {
+      plateCounts.forEach(c => c.classList.add('visible'));
+    }
+
+    // Equation phase
+    function showEquationPhase() {
+      equationPhase.classList.add('visible');
+    }
+
+    function hideEquationPhase() {
+      equationPhase.style.opacity = '0';
+    }
+
+    function highlightNum1() {
+      clearEquationHighlights();
+      num1.classList.add('highlight');
+    }
+
+    function highlightDivide() {
+      clearEquationHighlights();
+      divide1.classList.add('highlight');
+    }
+
+    function highlightNum2() {
+      clearEquationHighlights();
+      num2.classList.add('highlight');
+    }
+
+    function showAnswer() {
+      equals1.classList.add('visible');
+      numAnswer.classList.add('visible');
+      clearEquationHighlights();
+      numAnswer.classList.add('highlight');
+    }
+
+    function highlightAll() {
+      num1.classList.add('highlight');
+      divide1.classList.add('highlight');
+      num2.classList.add('highlight');
+      numAnswer.classList.add('highlight');
+    }
+
+    function clearEquationHighlights() {
+      [num1, num2, divide1, numAnswer].forEach(e => e.classList.remove('highlight'));
+    }
+
+    // Insight phase
+    function showInsightPhase() {
+      insightPhase.classList.add('visible');
+    }
+
+    function showInsight1() {
+      insight1.classList.add('visible');
+    }
+
+    function showInsight2() {
+      insight2.classList.add('visible');
+    }
+
+    // ============ PLAYBACK CONTROL ============
+    function resetAnimation() {
+      timelineIndex = 0;
+      nextStrawberry = 0;
+      plateContents = [[], [], []];
+
+      callout.classList.remove('visible');
+      introTitle.classList.remove('visible');
+
+      // Reset sharing phase
+      sharingPhase.classList.remove('visible');
+      sharingPhase.style.opacity = '';
+      strawberries.forEach(s => {
+        s.classList.remove('visible', 'hidden', 'moving');
+      });
+      friends.forEach(f => {
+        f.classList.remove('visible', 'highlight');
+      });
+      plates.forEach(p => {
+        p.innerHTML = '';
+      });
+      plateCounts.forEach(c => c.classList.remove('visible'));
+
+      // Reset equation phase
+      equationPhase.classList.remove('visible');
+      equationPhase.style.opacity = '';
+      clearEquationHighlights();
+      equals1.classList.remove('visible');
+      numAnswer.classList.remove('visible');
+
+      // Reset insight phase
+      insightPhase.classList.remove('visible');
+      insight1.classList.remove('visible');
+      insight2.classList.remove('visible');
+    }
+
+    function updateAnimation() {
+      const currentTime = audio.currentTime;
+      debugTime.textContent = currentTime.toFixed(1) + 's';
+
+      if (audio.duration) {
+        const progress = (currentTime / audio.duration) * 100;
+        progressFill.style.width = progress + '%';
+      }
+
+      while (timelineIndex < TIMELINE.length && currentTime >= TIMELINE[timelineIndex].time) {
+        TIMELINE[timelineIndex].action();
+        timelineIndex++;
+      }
+
+      if (!audio.paused) {
+        animationFrame = requestAnimationFrame(updateAnimation);
+      }
+    }
+
+    function startLesson() {
+      resetAnimation();
+      audio.currentTime = 0;
+      audio.play();
+      updateAnimation();
+    }
+
+    function stopLesson() {
+      audio.pause();
+      audio.currentTime = 0;
+      cancelAnimationFrame(animationFrame);
+      resetAnimation();
+    }
+
+    // ============ EVENT LISTENERS ============
+    document.getElementById('start-help').addEventListener('click', () => {
+      overlay.classList.add('active');
+      setTimeout(startLesson, 300);
+    });
+
+    document.getElementById('help-close').addEventListener('click', () => {
+      stopLesson();
+      overlay.classList.remove('active');
+    });
+
+    document.getElementById('got-it-btn').addEventListener('click', () => {
+      stopLesson();
+      overlay.classList.remove('active');
+    });
+
+    document.getElementById('replay-btn').addEventListener('click', () => {
+      startLesson();
+    });
+
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) {
+        stopLesson();
+        overlay.classList.remove('active');
+      }
+    });
+
+    // Simple progress bar click
+    const progressBar = document.getElementById('progress-bar');
+    progressBar.addEventListener('click', (e) => {
+      const rect = progressBar.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const percent = clickX / rect.width;
+      const seekTime = percent * (audio.duration || 42);
+
+      resetAnimation();
+      for (let i = 0; i < TIMELINE.length && TIMELINE[i].time <= seekTime; i++) {
+        TIMELINE[i].action();
+        timelineIndex = i + 1;
+      }
+
+      progressFill.style.width = (percent * 100) + '%';
+      debugTime.textContent = seekTime.toFixed(1) + 's';
+    });
+  </script>
+</body>
+</html>

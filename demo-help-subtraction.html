@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Help Lesson - Subtraction</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #FAE38E;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .trigger-btn {
+      background: #e74c3c;
+      color: white;
+      border: none;
+      padding: 20px 40px;
+      border-radius: 16px;
+      font-size: 24px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+    }
+
+    .trigger-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 20px rgba(231, 76, 60, 0.5);
+    }
+
+    /* ============ HELP OVERLAY ============ */
+    .help-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s, visibility 0.3s;
+    }
+
+    .help-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .help-container {
+      width: 90%;
+      max-width: 800px;
+      background: white;
+      border-radius: 24px;
+      padding: 40px;
+      position: relative;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .help-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: none;
+      background: #f0f0f0;
+      font-size: 24px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #666;
+      transition: background 0.2s;
+    }
+
+    .help-close:hover {
+      background: #e0e0e0;
+    }
+
+    .help-title {
+      text-align: center;
+      font-size: 28px;
+      margin-bottom: 30px;
+      color: #333;
+    }
+
+    /* Animation stage */
+    .stage {
+      height: 320px;
+      background: linear-gradient(180deg, #FFF3E0 0%, #FFE0B2 100%);
+      border-radius: 16px;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    /* Text callout */
+    .callout {
+      position: absolute;
+      top: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-size: 18px;
+      font-weight: 600;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      opacity: 0;
+      transition: opacity 0.4s;
+      white-space: nowrap;
+      max-width: 90%;
+      text-align: center;
+    }
+
+    .callout.visible {
+      opacity: 1;
+    }
+
+    /* Intro title */
+    .intro-title {
+      position: absolute;
+      top: 55%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      font-size: 42px;
+      font-weight: 700;
+      color: #333;
+      opacity: 0;
+      transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+      text-align: center;
+    }
+
+    .intro-title.visible {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    .intro-title .emoji {
+      font-size: 50px;
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    /* ============ COOKIES PHASE ============ */
+    #cookies-phase {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    #cookies-phase.visible {
+      opacity: 1;
+    }
+
+    .cookie {
+      position: absolute;
+      font-size: 45px;
+      opacity: 0;
+      transform: scale(0);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .cookie.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .cookie.eaten {
+      opacity: 0;
+      transform: scale(0) translateY(-50px);
+    }
+
+    .cookie.counting {
+      animation: pulse 0.4s ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.3); }
+    }
+
+    .count-label {
+      position: absolute;
+      font-size: 24px;
+      font-weight: 700;
+      color: #e74c3c;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s;
+    }
+
+    .count-label.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ============ EQUATION PHASE ============ */
+    .equation-phase {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    .equation-phase.visible {
+      opacity: 1;
+    }
+
+    .equation-row {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .numbers-row .eq-item {
+      font-size: 50px;
+      font-weight: 700;
+      color: #333;
+      transition: all 0.3s;
+    }
+
+    .numbers-row .eq-operator {
+      color: #666;
+    }
+
+    .cookies-row .cookie-group {
+      display: flex;
+      gap: 3px;
+      padding: 8px 12px;
+      border-radius: 12px;
+      border: 3px solid transparent;
+      transition: all 0.3s;
+    }
+
+    .cookies-row .eq-operator {
+      font-size: 36px;
+      font-weight: 700;
+      color: #666;
+      transition: all 0.3s;
+    }
+
+    .eq-cookie {
+      font-size: 32px;
+    }
+
+    /* Highlighting */
+    .eq-item.highlight {
+      color: #e74c3c !important;
+      transform: scale(1.15);
+    }
+
+    .cookie-group.highlight {
+      border-color: #e74c3c;
+      background: rgba(231, 76, 60, 0.15);
+      box-shadow: 0 0 20px rgba(231, 76, 60, 0.3);
+    }
+
+    /* Hide answer initially */
+    #num-answer,
+    #equals1,
+    #cookies-answer,
+    #equals2 {
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    #num-answer.visible,
+    #equals1.visible,
+    #cookies-answer.visible,
+    #equals2.visible {
+      opacity: 1;
+    }
+
+    /* ============ COMPARISON PHASE ============ */
+    #comparison-phase {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      transition: opacity 0.4s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding-top: 40px;
+    }
+
+    #comparison-phase.visible {
+      opacity: 1;
+    }
+
+    .person-row {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      opacity: 0;
+      transform: translateX(-20px);
+      transition: all 0.4s;
+    }
+
+    .person-row.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .person-name {
+      font-size: 24px;
+      font-weight: 700;
+      width: 80px;
+      text-align: right;
+    }
+
+    .stickers-container {
+      display: flex;
+      gap: 8px;
+      padding: 10px 15px;
+      background: rgba(255,255,255,0.7);
+      border-radius: 12px;
+      border: 3px solid transparent;
+      transition: all 0.3s;
+    }
+
+    .stickers-container.highlight {
+      border-color: #e74c3c;
+      background: rgba(231, 76, 60, 0.15);
+    }
+
+    .sticker {
+      font-size: 36px;
+      opacity: 0;
+      transform: scale(0);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .sticker.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .sticker.difference {
+      animation: glow 1s ease-in-out infinite;
+    }
+
+    @keyframes glow {
+      0%, 100% { filter: drop-shadow(0 0 5px #e74c3c); }
+      50% { filter: drop-shadow(0 0 15px #e74c3c); }
+    }
+
+    .difference-label {
+      position: absolute;
+      right: 60px;
+      font-size: 28px;
+      font-weight: 700;
+      color: #e74c3c;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    .difference-label.visible {
+      opacity: 1;
+    }
+
+    /* Progress bar */
+    .progress-bar {
+      height: 16px;
+      background: #ddd;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      cursor: pointer;
+      position: relative;
+      user-select: none;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #e74c3c, #c0392b);
+      width: 0%;
+      border-radius: 8px;
+      pointer-events: none;
+      position: relative;
+    }
+
+    .progress-thumb {
+      position: absolute;
+      right: -10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 20px;
+      background: white;
+      border: 3px solid #e74c3c;
+      border-radius: 50%;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    /* Controls */
+    .help-controls {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    .help-btn {
+      padding: 12px 30px;
+      border-radius: 25px;
+      border: none;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .help-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .help-btn.primary {
+      background: #4CAF50;
+      color: white;
+    }
+
+    .help-btn.secondary {
+      background: #f0f0f0;
+      color: #333;
+    }
+
+    /* Debug panel */
+    .debug-panel {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+      font-size: 14px;
+      z-index: 1001;
+    }
+
+    .debug-time {
+      font-family: monospace;
+      font-size: 18px;
+      color: #e74c3c;
+    }
+  </style>
+</head>
+<body>
+
+  <button class="trigger-btn" id="start-help">
+    Click to see Subtraction Help
+  </button>
+
+  <!-- Help Overlay -->
+  <div class="help-overlay" id="help-overlay">
+    <div class="help-container">
+      <button class="help-close" id="help-close">&times;</button>
+
+      <h2 class="help-title">What is Subtraction?</h2>
+
+      <div class="stage" id="stage">
+        <!-- Callout text -->
+        <div class="callout" id="callout"></div>
+
+        <!-- Intro title -->
+        <div class="intro-title" id="intro-title">
+          <span class="emoji">🍪 − 🍪</span>
+          What is Subtracting?
+        </div>
+
+        <!-- COOKIES PHASE: Take away concept -->
+        <div id="cookies-phase">
+          <div class="cookie" id="cookie1" style="left: 80px; top: 120px;">🍪</div>
+          <div class="cookie" id="cookie2" style="left: 150px; top: 120px;">🍪</div>
+          <div class="cookie" id="cookie3" style="left: 220px; top: 120px;">🍪</div>
+          <div class="cookie" id="cookie4" style="left: 290px; top: 120px;">🍪</div>
+          <div class="cookie" id="cookie5" style="left: 360px; top: 120px;">🍪</div>
+          <div class="cookie" id="cookie6" style="left: 430px; top: 120px;">🍪</div>
+          <div class="cookie" id="cookie7" style="left: 500px; top: 120px;">🍪</div>
+          <!-- Count labels appear under remaining cookies -->
+          <div class="count-label" id="count1" style="left: 95px; top: 180px;">1</div>
+          <div class="count-label" id="count2" style="left: 165px; top: 180px;">2</div>
+          <div class="count-label" id="count3" style="left: 235px; top: 180px;">3</div>
+          <div class="count-label" id="count4" style="left: 305px; top: 180px;">4</div>
+        </div>
+
+        <!-- EQUATION PHASE -->
+        <div id="equation-phase" class="equation-phase">
+          <div class="equation-row numbers-row">
+            <span class="eq-item" id="num1">7</span>
+            <span class="eq-item eq-operator" id="minus1">−</span>
+            <span class="eq-item" id="num2">3</span>
+            <span class="eq-item eq-operator" id="equals1">=</span>
+            <span class="eq-item" id="num-answer">4</span>
+          </div>
+          <div class="equation-row cookies-row">
+            <div class="cookie-group" id="cookies-group1">
+              <span class="eq-cookie">🍪</span>
+              <span class="eq-cookie">🍪</span>
+              <span class="eq-cookie">🍪</span>
+              <span class="eq-cookie">🍪</span>
+              <span class="eq-cookie">🍪</span>
+              <span class="eq-cookie">🍪</span>
+              <span class="eq-cookie">🍪</span>
+            </div>
+            <span class="eq-operator" id="minus2">−</span>
+            <div class="cookie-group" id="cookies-group2">
+              <span class="eq-cookie">🍪</span>
+              <span class="eq-cookie">🍪</span>
+              <span class="eq-cookie">🍪</span>
+            </div>
+            <span class="eq-operator" id="equals2">=</span>
+            <div class="cookie-group" id="cookies-answer">
+              <span class="eq-cookie">🍪</span>
+              <span class="eq-cookie">🍪</span>
+              <span class="eq-cookie">🍪</span>
+              <span class="eq-cookie">🍪</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- COMPARISON PHASE: Find the difference -->
+        <div id="comparison-phase">
+          <div class="person-row" id="sam-row">
+            <span class="person-name">Sam:</span>
+            <div class="stickers-container" id="sam-stickers">
+              <span class="sticker" id="sam1">⭐</span>
+              <span class="sticker" id="sam2">⭐</span>
+              <span class="sticker" id="sam3">⭐</span>
+              <span class="sticker" id="sam4">⭐</span>
+              <span class="sticker" id="sam5">⭐</span>
+            </div>
+            <span class="difference-label" id="diff-label">+2 more!</span>
+          </div>
+          <div class="person-row" id="mia-row">
+            <span class="person-name">Mia:</span>
+            <div class="stickers-container" id="mia-stickers">
+              <span class="sticker" id="mia1">⭐</span>
+              <span class="sticker" id="mia2">⭐</span>
+              <span class="sticker" id="mia3">⭐</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="progress-bar" id="progress-bar">
+        <div class="progress-fill" id="progress-fill">
+          <div class="progress-thumb"></div>
+        </div>
+      </div>
+
+      <div class="help-controls">
+        <button class="help-btn secondary" id="replay-btn">Replay</button>
+        <button class="help-btn primary" id="got-it-btn">Got it!</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Debug panel -->
+  <div class="debug-panel">
+    <strong>Debug</strong>
+    Time: <span class="debug-time" id="debug-time">0.0s</span>
+  </div>
+
+  <audio id="help-audio" src="audio/help-subtraction.mp3" preload="auto"></audio>
+
+  <script>
+    // Elements
+    const overlay = document.getElementById('help-overlay');
+    const audio = document.getElementById('help-audio');
+    const progressFill = document.getElementById('progress-fill');
+    const debugTime = document.getElementById('debug-time');
+    const callout = document.getElementById('callout');
+    const introTitle = document.getElementById('intro-title');
+
+    // Cookies phase elements
+    const cookiesPhase = document.getElementById('cookies-phase');
+    const cookies = [
+      document.getElementById('cookie1'),
+      document.getElementById('cookie2'),
+      document.getElementById('cookie3'),
+      document.getElementById('cookie4'),
+      document.getElementById('cookie5'),
+      document.getElementById('cookie6'),
+      document.getElementById('cookie7')
+    ];
+    const countLabels = [
+      document.getElementById('count1'),
+      document.getElementById('count2'),
+      document.getElementById('count3'),
+      document.getElementById('count4')
+    ];
+
+    // Equation phase elements
+    const equationPhase = document.getElementById('equation-phase');
+    const num1 = document.getElementById('num1');
+    const num2 = document.getElementById('num2');
+    const numAnswer = document.getElementById('num-answer');
+    const minus1 = document.getElementById('minus1');
+    const minus2 = document.getElementById('minus2');
+    const equals1 = document.getElementById('equals1');
+    const equals2 = document.getElementById('equals2');
+    const cookiesGroup1 = document.getElementById('cookies-group1');
+    const cookiesGroup2 = document.getElementById('cookies-group2');
+    const cookiesAnswer = document.getElementById('cookies-answer');
+
+    // Comparison phase elements
+    const comparisonPhase = document.getElementById('comparison-phase');
+    const samRow = document.getElementById('sam-row');
+    const miaRow = document.getElementById('mia-row');
+    const samStickers = document.getElementById('sam-stickers');
+    const miaStickers = document.getElementById('mia-stickers');
+    const diffLabel = document.getElementById('diff-label');
+    const samStickerEls = [
+      document.getElementById('sam1'),
+      document.getElementById('sam2'),
+      document.getElementById('sam3'),
+      document.getElementById('sam4'),
+      document.getElementById('sam5')
+    ];
+    const miaStickerEls = [
+      document.getElementById('mia1'),
+      document.getElementById('mia2'),
+      document.getElementById('mia3')
+    ];
+
+    // ============ TIMELINE ============
+    const TIMELINE = [
+      { time: 0.0,   action: () => showIntroTitle() },
+      { time: 0.1,   action: () => setCallout("Let's figure out what subtracting really means!") },
+
+      // Take away concept
+      { time: 2.9,   action: () => { hideIntroTitle(); showCookiesPhase(); setCallout("I have seven cookies. Yum!"); showAllCookies(); } },
+      { time: 5.8,   action: () => setCallout("But I eat three of them...") },
+      { time: 6.2,   action: () => eatCookies() },
+      { time: 7.5,   action: () => setCallout("How many are left?") },
+      { time: 9.1,   action: () => setCallout("Let's count...") },
+      { time: 10.4,  action: () => countCookie(0) },
+      { time: 11.1,  action: () => countCookie(1) },
+      { time: 12.0,  action: () => countCookie(2) },
+      { time: 12.9,  action: () => countCookie(3) },
+      { time: 14.2,  action: () => setCallout("I have four left!") },
+      { time: 16.0,  action: () => setCallout("That's subtraction.") },
+      { time: 17.5,  action: () => { hideCookiesPhase(); showEquationPhase(); setCallout("We started with seven, took away three, and four are left."); } },
+
+      // Equation explanation
+      { time: 21.9,  action: () => { highlightMinus(); setCallout("This little line is called minus."); } },
+      { time: 24.1,  action: () => setCallout("Minus means 'take away'.") },
+      { time: 26.3,  action: () => { highlightNum1("Seven..."); } },
+      { time: 27.2,  action: () => { highlightMinus(); setCallout("takeaway..."); } },
+      { time: 28.3,  action: () => { highlightNum2("three..."); } },
+      { time: 29.2,  action: () => { showAnswer(); } },
+
+      // Second meaning - comparison
+      { time: 30.9,  action: () => { hideEquationPhase(); setCallout("But here's something cool."); } },
+      { time: 32.6,  action: () => setCallout("Subtraction isn't just taking away.") },
+      { time: 35.4,  action: () => { showComparisonPhase(); showSamRow(); setCallout("Sam has five stickers."); } },
+      { time: 36.0,  action: () => showSamStickers() },
+      { time: 37.2,  action: () => { showMiaRow(); setCallout("Mia has three."); } },
+      { time: 37.8,  action: () => showMiaStickers() },
+      { time: 39.1,  action: () => setCallout("How many MORE does Sam have?") },
+      { time: 41.4,  action: () => { highlightDifference(); setCallout("We're finding the DIFFERENCE."); } },
+      { time: 43.4,  action: () => { showDiffLabel(); setCallout("Sam has two more than Mia."); } },
+      { time: 45.5,  action: () => setCallout("Same subtraction, different question!") },
+
+      // Summary
+      { time: 48.5,  action: () => setCallout("So subtraction can mean 'take away'... OR 'how many more'.") },
+      { time: 53.3,  action: () => setCallout("Both use minus!") },
+      { time: 55.2,  action: () => setCallout("Now you know the secret! 🎉") },
+    ];
+
+    let timelineIndex = 0;
+    let animationFrame;
+
+    // ============ ANIMATION FUNCTIONS ============
+    function showIntroTitle() {
+      introTitle.classList.add('visible');
+    }
+
+    function hideIntroTitle() {
+      introTitle.classList.remove('visible');
+    }
+
+    function setCallout(text) {
+      callout.textContent = text;
+      callout.classList.add('visible');
+    }
+
+    // Cookies phase
+    function showCookiesPhase() {
+      cookiesPhase.classList.add('visible');
+    }
+
+    function hideCookiesPhase() {
+      cookiesPhase.style.opacity = '0';
+    }
+
+    function showAllCookies() {
+      cookies.forEach((cookie, i) => {
+        setTimeout(() => cookie.classList.add('visible'), i * 80);
+      });
+    }
+
+    function eatCookies() {
+      // Eat cookies 5, 6, 7 (indices 4, 5, 6)
+      cookies[4].classList.add('eaten');
+      setTimeout(() => cookies[5].classList.add('eaten'), 200);
+      setTimeout(() => cookies[6].classList.add('eaten'), 400);
+    }
+
+    function countCookie(index) {
+      cookies[index].classList.add('counting');
+      countLabels[index].classList.add('visible');
+    }
+
+    // Equation phase
+    function showEquationPhase() {
+      equationPhase.classList.add('visible');
+    }
+
+    function hideEquationPhase() {
+      equationPhase.style.opacity = '0';
+    }
+
+    function highlightMinus() {
+      clearHighlights();
+      minus1.classList.add('highlight');
+      minus2.classList.add('highlight');
+    }
+
+    function highlightNum1(text) {
+      clearHighlights();
+      num1.classList.add('highlight');
+      cookiesGroup1.classList.add('highlight');
+      if (text) setCallout(text);
+    }
+
+    function highlightNum2(text) {
+      clearHighlights();
+      num2.classList.add('highlight');
+      cookiesGroup2.classList.add('highlight');
+      if (text) setCallout(text);
+    }
+
+    function showAnswer() {
+      equals1.classList.add('visible');
+      equals2.classList.add('visible');
+      numAnswer.classList.add('visible');
+      cookiesAnswer.classList.add('visible');
+      clearHighlights();
+      numAnswer.classList.add('highlight');
+      cookiesAnswer.classList.add('highlight');
+      setCallout("equals four.");
+    }
+
+    function clearHighlights() {
+      [num1, num2, minus1, minus2, numAnswer].forEach(e => e.classList.remove('highlight'));
+      [cookiesGroup1, cookiesGroup2, cookiesAnswer].forEach(e => e.classList.remove('highlight'));
+      samStickers.classList.remove('highlight');
+      miaStickers.classList.remove('highlight');
+    }
+
+    // Comparison phase
+    function showComparisonPhase() {
+      comparisonPhase.classList.add('visible');
+    }
+
+    function showSamRow() {
+      samRow.classList.add('visible');
+    }
+
+    function showMiaRow() {
+      miaRow.classList.add('visible');
+    }
+
+    function showSamStickers() {
+      samStickerEls.forEach((s, i) => {
+        setTimeout(() => s.classList.add('visible'), i * 100);
+      });
+    }
+
+    function showMiaStickers() {
+      miaStickerEls.forEach((s, i) => {
+        setTimeout(() => s.classList.add('visible'), i * 100);
+      });
+    }
+
+    function highlightDifference() {
+      samStickers.classList.add('highlight');
+      // Highlight the extra 2 stickers Sam has
+      samStickerEls[3].classList.add('difference');
+      samStickerEls[4].classList.add('difference');
+    }
+
+    function showDiffLabel() {
+      diffLabel.classList.add('visible');
+    }
+
+    // ============ PLAYBACK CONTROL ============
+    function resetAnimation() {
+      timelineIndex = 0;
+      callout.classList.remove('visible');
+      introTitle.classList.remove('visible');
+
+      // Reset cookies phase
+      cookiesPhase.classList.remove('visible');
+      cookiesPhase.style.opacity = '';
+      cookies.forEach(c => {
+        c.classList.remove('visible', 'eaten', 'counting');
+      });
+      countLabels.forEach(l => l.classList.remove('visible'));
+
+      // Reset equation phase
+      equationPhase.classList.remove('visible');
+      equationPhase.style.opacity = '';
+      clearHighlights();
+      equals1.classList.remove('visible');
+      equals2.classList.remove('visible');
+      numAnswer.classList.remove('visible');
+      cookiesAnswer.classList.remove('visible');
+
+      // Reset comparison phase
+      comparisonPhase.classList.remove('visible');
+      samRow.classList.remove('visible');
+      miaRow.classList.remove('visible');
+      samStickerEls.forEach(s => s.classList.remove('visible', 'difference'));
+      miaStickerEls.forEach(s => s.classList.remove('visible'));
+      diffLabel.classList.remove('visible');
+    }
+
+    function updateAnimation() {
+      const currentTime = audio.currentTime;
+      debugTime.textContent = currentTime.toFixed(1) + 's';
+
+      if (audio.duration) {
+        const progress = (currentTime / audio.duration) * 100;
+        progressFill.style.width = progress + '%';
+      }
+
+      while (timelineIndex < TIMELINE.length && currentTime >= TIMELINE[timelineIndex].time) {
+        TIMELINE[timelineIndex].action();
+        timelineIndex++;
+      }
+
+      if (!audio.paused) {
+        animationFrame = requestAnimationFrame(updateAnimation);
+      }
+    }
+
+    function startLesson() {
+      resetAnimation();
+      audio.currentTime = 0;
+      audio.play();
+      updateAnimation();
+    }
+
+    function stopLesson() {
+      audio.pause();
+      audio.currentTime = 0;
+      cancelAnimationFrame(animationFrame);
+      resetAnimation();
+    }
+
+    // ============ EVENT LISTENERS ============
+    document.getElementById('start-help').addEventListener('click', () => {
+      overlay.classList.add('active');
+      setTimeout(startLesson, 300);
+    });
+
+    document.getElementById('help-close').addEventListener('click', () => {
+      stopLesson();
+      overlay.classList.remove('active');
+    });
+
+    document.getElementById('got-it-btn').addEventListener('click', () => {
+      stopLesson();
+      overlay.classList.remove('active');
+    });
+
+    document.getElementById('replay-btn').addEventListener('click', () => {
+      startLesson();
+    });
+
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) {
+        stopLesson();
+        overlay.classList.remove('active');
+      }
+    });
+
+    // Simple progress bar click (no complex dragging)
+    const progressBar = document.getElementById('progress-bar');
+    progressBar.addEventListener('click', (e) => {
+      const rect = progressBar.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const percent = clickX / rect.width;
+      const seekTime = percent * (audio.duration || 56);
+
+      resetAnimation();
+      for (let i = 0; i < TIMELINE.length && TIMELINE[i].time <= seekTime; i++) {
+        TIMELINE[i].action();
+        timelineIndex = i + 1;
+      }
+
+      progressFill.style.width = (percent * 100) + '%';
+      debugTime.textContent = seekTime.toFixed(1) + 's';
+    });
+  </script>
+</body>
+</html>
