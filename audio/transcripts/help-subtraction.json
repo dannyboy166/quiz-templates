@@ -1,0 +1,1151 @@
+{
+  "language_code": "eng",
+  "segments": [
+    {
+      "text": "Let's figure out what subtracting really means. I have seven cookies. Yum! But I eat three of them. How many are left? Let's count. One, two, three, four. I have four left. That's subtraction. We started with seven, took away three, and four are left. This little line is called minus. Minus means take away. Seven takeaway three equals four. But here's something cool. Subtraction isn't just taking away. Sam has five stickers. Mia has three. How many more does Sam have? We're finding the difference. Sam has two more than Mia. Same subtraction, different question. So subtraction can mean take away or how many more. Both use minus. Now you know the secret",
+      "start_time": 0.119,
+      "end_time": 56.479,
+      "speaker": {
+        "id": "speaker_0",
+        "name": "Speaker 0"
+      },
+      "words": [
+        {
+          "text": "Let's",
+          "start_time": 0.119,
+          "end_time": 0.259
+        },
+        {
+          "text": " ",
+          "start_time": 0.259,
+          "end_time": 0.339
+        },
+        {
+          "text": "figure",
+          "start_time": 0.34,
+          "end_time": 0.5
+        },
+        {
+          "text": " ",
+          "start_time": 0.5,
+          "end_time": 0.56
+        },
+        {
+          "text": "out",
+          "start_time": 0.56,
+          "end_time": 0.639
+        },
+        {
+          "text": " ",
+          "start_time": 0.639,
+          "end_time": 0.68
+        },
+        {
+          "text": "what",
+          "start_time": 0.68,
+          "end_time": 0.759
+        },
+        {
+          "text": " ",
+          "start_time": 0.759,
+          "end_time": 0.819
+        },
+        {
+          "text": "subtracting",
+          "start_time": 0.819,
+          "end_time": 1.399
+        },
+        {
+          "text": " ",
+          "start_time": 1.399,
+          "end_time": 1.459
+        },
+        {
+          "text": "really",
+          "start_time": 1.459,
+          "end_time": 1.679
+        },
+        {
+          "text": " ",
+          "start_time": 1.679,
+          "end_time": 1.739
+        },
+        {
+          "text": "means.",
+          "start_time": 1.74,
+          "end_time": 2.119
+        },
+        {
+          "text": " ",
+          "start_time": 2.119,
+          "end_time": 2.899
+        },
+        {
+          "text": "I",
+          "start_time": 2.899,
+          "end_time": 2.919
+        },
+        {
+          "text": " ",
+          "start_time": 2.919,
+          "end_time": 2.999
+        },
+        {
+          "text": "have",
+          "start_time": 3.0,
+          "end_time": 3.139
+        },
+        {
+          "text": " ",
+          "start_time": 3.139,
+          "end_time": 3.219
+        },
+        {
+          "text": "seven",
+          "start_time": 3.22,
+          "end_time": 3.48
+        },
+        {
+          "text": " ",
+          "start_time": 3.48,
+          "end_time": 3.599
+        },
+        {
+          "text": "cookies.",
+          "start_time": 3.599,
+          "end_time": 4.079
+        },
+        {
+          "text": " ",
+          "start_time": 4.079,
+          "end_time": 4.679
+        },
+        {
+          "text": "Yum!",
+          "start_time": 4.679,
+          "end_time": 4.96
+        },
+        {
+          "text": " ",
+          "start_time": 4.96,
+          "end_time": 5.839
+        },
+        {
+          "text": "But",
+          "start_time": 5.839,
+          "end_time": 5.9
+        },
+        {
+          "text": " ",
+          "start_time": 5.9,
+          "end_time": 5.98
+        },
+        {
+          "text": "I",
+          "start_time": 5.98,
+          "end_time": 6.0
+        },
+        {
+          "text": " ",
+          "start_time": 6.0,
+          "end_time": 6.059
+        },
+        {
+          "text": "eat",
+          "start_time": 6.059,
+          "end_time": 6.199
+        },
+        {
+          "text": " ",
+          "start_time": 6.199,
+          "end_time": 6.259
+        },
+        {
+          "text": "three",
+          "start_time": 6.259,
+          "end_time": 6.42
+        },
+        {
+          "text": " ",
+          "start_time": 6.42,
+          "end_time": 6.46
+        },
+        {
+          "text": "of",
+          "start_time": 6.46,
+          "end_time": 6.519
+        },
+        {
+          "text": " ",
+          "start_time": 6.519,
+          "end_time": 6.579
+        },
+        {
+          "text": "them.",
+          "start_time": 6.579,
+          "end_time": 6.739
+        },
+        {
+          "text": " ",
+          "start_time": 6.739,
+          "end_time": 7.479
+        },
+        {
+          "text": "How",
+          "start_time": 7.48,
+          "end_time": 7.579
+        },
+        {
+          "text": " ",
+          "start_time": 7.579,
+          "end_time": 7.619
+        },
+        {
+          "text": "many",
+          "start_time": 7.619,
+          "end_time": 7.759
+        },
+        {
+          "text": " ",
+          "start_time": 7.759,
+          "end_time": 7.779
+        },
+        {
+          "text": "are",
+          "start_time": 7.779,
+          "end_time": 7.859
+        },
+        {
+          "text": " ",
+          "start_time": 7.859,
+          "end_time": 7.919
+        },
+        {
+          "text": "left?",
+          "start_time": 7.919,
+          "end_time": 8.239
+        },
+        {
+          "text": " ",
+          "start_time": 8.239,
+          "end_time": 9.079
+        },
+        {
+          "text": "Let's",
+          "start_time": 9.079,
+          "end_time": 9.26
+        },
+        {
+          "text": " ",
+          "start_time": 9.26,
+          "end_time": 9.319
+        },
+        {
+          "text": "count.",
+          "start_time": 9.319,
+          "end_time": 9.619
+        },
+        {
+          "text": " ",
+          "start_time": 9.619,
+          "end_time": 10.379
+        },
+        {
+          "text": "One,",
+          "start_time": 10.38,
+          "end_time": 10.579
+        },
+        {
+          "text": " ",
+          "start_time": 10.579,
+          "end_time": 11.099
+        },
+        {
+          "text": "two,",
+          "start_time": 11.099,
+          "end_time": 11.359
+        },
+        {
+          "text": " ",
+          "start_time": 11.359,
+          "end_time": 11.979
+        },
+        {
+          "text": "three,",
+          "start_time": 11.979,
+          "end_time": 12.3
+        },
+        {
+          "text": " ",
+          "start_time": 12.3,
+          "end_time": 12.939
+        },
+        {
+          "text": "four.",
+          "start_time": 12.939,
+          "end_time": 13.279
+        },
+        {
+          "text": " ",
+          "start_time": 13.279,
+          "end_time": 14.219
+        },
+        {
+          "text": "I",
+          "start_time": 14.219,
+          "end_time": 14.259
+        },
+        {
+          "text": " ",
+          "start_time": 14.259,
+          "end_time": 14.319
+        },
+        {
+          "text": "have",
+          "start_time": 14.319,
+          "end_time": 14.46
+        },
+        {
+          "text": " ",
+          "start_time": 14.46,
+          "end_time": 14.579
+        },
+        {
+          "text": "four",
+          "start_time": 14.579,
+          "end_time": 14.759
+        },
+        {
+          "text": " ",
+          "start_time": 14.759,
+          "end_time": 14.879
+        },
+        {
+          "text": "left.",
+          "start_time": 14.88,
+          "end_time": 15.239
+        },
+        {
+          "text": " ",
+          "start_time": 15.239,
+          "end_time": 15.959
+        },
+        {
+          "text": "That's",
+          "start_time": 15.96,
+          "end_time": 16.159
+        },
+        {
+          "text": " ",
+          "start_time": 16.159,
+          "end_time": 16.219
+        },
+        {
+          "text": "subtraction.",
+          "start_time": 16.219,
+          "end_time": 16.84
+        },
+        {
+          "text": " ",
+          "start_time": 16.84,
+          "end_time": 17.5
+        },
+        {
+          "text": "We",
+          "start_time": 17.5,
+          "end_time": 17.619
+        },
+        {
+          "text": " ",
+          "start_time": 17.619,
+          "end_time": 17.659
+        },
+        {
+          "text": "started",
+          "start_time": 17.659,
+          "end_time": 17.92
+        },
+        {
+          "text": " ",
+          "start_time": 17.92,
+          "end_time": 17.979
+        },
+        {
+          "text": "with",
+          "start_time": 17.979,
+          "end_time": 18.079
+        },
+        {
+          "text": " ",
+          "start_time": 18.079,
+          "end_time": 18.199
+        },
+        {
+          "text": "seven,",
+          "start_time": 18.199,
+          "end_time": 18.5
+        },
+        {
+          "text": " ",
+          "start_time": 18.5,
+          "end_time": 18.979
+        },
+        {
+          "text": "took",
+          "start_time": 18.979,
+          "end_time": 19.1
+        },
+        {
+          "text": " ",
+          "start_time": 19.1,
+          "end_time": 19.18
+        },
+        {
+          "text": "away",
+          "start_time": 19.18,
+          "end_time": 19.319
+        },
+        {
+          "text": " ",
+          "start_time": 19.319,
+          "end_time": 19.439
+        },
+        {
+          "text": "three,",
+          "start_time": 19.439,
+          "end_time": 19.739
+        },
+        {
+          "text": " ",
+          "start_time": 19.739,
+          "end_time": 20.279
+        },
+        {
+          "text": "and",
+          "start_time": 20.279,
+          "end_time": 20.359
+        },
+        {
+          "text": " ",
+          "start_time": 20.359,
+          "end_time": 20.519
+        },
+        {
+          "text": "four",
+          "start_time": 20.52,
+          "end_time": 20.68
+        },
+        {
+          "text": " ",
+          "start_time": 20.68,
+          "end_time": 20.739
+        },
+        {
+          "text": "are",
+          "start_time": 20.739,
+          "end_time": 20.819
+        },
+        {
+          "text": " ",
+          "start_time": 20.819,
+          "end_time": 20.879
+        },
+        {
+          "text": "left.",
+          "start_time": 20.879,
+          "end_time": 21.219
+        },
+        {
+          "text": " ",
+          "start_time": 21.219,
+          "end_time": 21.859
+        },
+        {
+          "text": "This",
+          "start_time": 21.859,
+          "end_time": 21.979
+        },
+        {
+          "text": " ",
+          "start_time": 21.979,
+          "end_time": 22.039
+        },
+        {
+          "text": "little",
+          "start_time": 22.039,
+          "end_time": 22.219
+        },
+        {
+          "text": " ",
+          "start_time": 22.219,
+          "end_time": 22.299
+        },
+        {
+          "text": "line",
+          "start_time": 22.299,
+          "end_time": 22.519
+        },
+        {
+          "text": " ",
+          "start_time": 22.519,
+          "end_time": 22.559
+        },
+        {
+          "text": "is",
+          "start_time": 22.559,
+          "end_time": 22.639
+        },
+        {
+          "text": " ",
+          "start_time": 22.639,
+          "end_time": 22.719
+        },
+        {
+          "text": "called",
+          "start_time": 22.719,
+          "end_time": 22.899
+        },
+        {
+          "text": " ",
+          "start_time": 22.899,
+          "end_time": 23.039
+        },
+        {
+          "text": "minus.",
+          "start_time": 23.039,
+          "end_time": 23.5
+        },
+        {
+          "text": " ",
+          "start_time": 23.5,
+          "end_time": 24.059
+        },
+        {
+          "text": "Minus",
+          "start_time": 24.059,
+          "end_time": 24.359
+        },
+        {
+          "text": " ",
+          "start_time": 24.359,
+          "end_time": 24.419
+        },
+        {
+          "text": "means",
+          "start_time": 24.42,
+          "end_time": 24.68
+        },
+        {
+          "text": " ",
+          "start_time": 24.68,
+          "end_time": 24.959
+        },
+        {
+          "text": "take",
+          "start_time": 24.959,
+          "end_time": 25.159
+        },
+        {
+          "text": " ",
+          "start_time": 25.159,
+          "end_time": 25.239
+        },
+        {
+          "text": "away.",
+          "start_time": 25.239,
+          "end_time": 25.539
+        },
+        {
+          "text": " ",
+          "start_time": 25.539,
+          "end_time": 26.279
+        },
+        {
+          "text": "Seven",
+          "start_time": 26.279,
+          "end_time": 27.059
+        },
+        {
+          "text": " ",
+          "start_time": 27.059,
+          "end_time": 27.18
+        },
+        {
+          "text": "takeaway",
+          "start_time": 27.18,
+          "end_time": 28.219
+        },
+        {
+          "text": " ",
+          "start_time": 28.219,
+          "end_time": 28.34
+        },
+        {
+          "text": "three",
+          "start_time": 28.34,
+          "end_time": 29.079
+        },
+        {
+          "text": " ",
+          "start_time": 29.079,
+          "end_time": 29.199
+        },
+        {
+          "text": "equals",
+          "start_time": 29.199,
+          "end_time": 29.699
+        },
+        {
+          "text": " ",
+          "start_time": 29.699,
+          "end_time": 29.779
+        },
+        {
+          "text": "four.",
+          "start_time": 29.779,
+          "end_time": 30.039
+        },
+        {
+          "text": " ",
+          "start_time": 30.039,
+          "end_time": 30.939
+        },
+        {
+          "text": "But",
+          "start_time": 30.939,
+          "end_time": 31.019
+        },
+        {
+          "text": " ",
+          "start_time": 31.019,
+          "end_time": 31.079
+        },
+        {
+          "text": "here's",
+          "start_time": 31.079,
+          "end_time": 31.279
+        },
+        {
+          "text": " ",
+          "start_time": 31.279,
+          "end_time": 31.319
+        },
+        {
+          "text": "something",
+          "start_time": 31.319,
+          "end_time": 31.599
+        },
+        {
+          "text": " ",
+          "start_time": 31.599,
+          "end_time": 31.679
+        },
+        {
+          "text": "cool.",
+          "start_time": 31.679,
+          "end_time": 31.979
+        },
+        {
+          "text": " ",
+          "start_time": 31.979,
+          "end_time": 32.619
+        },
+        {
+          "text": "Subtraction",
+          "start_time": 32.619,
+          "end_time": 33.199
+        },
+        {
+          "text": " ",
+          "start_time": 33.199,
+          "end_time": 33.259
+        },
+        {
+          "text": "isn't",
+          "start_time": 33.259,
+          "end_time": 33.52
+        },
+        {
+          "text": " ",
+          "start_time": 33.52,
+          "end_time": 33.619
+        },
+        {
+          "text": "just",
+          "start_time": 33.619,
+          "end_time": 33.86
+        },
+        {
+          "text": " ",
+          "start_time": 33.86,
+          "end_time": 34.04
+        },
+        {
+          "text": "taking",
+          "start_time": 34.04,
+          "end_time": 34.299
+        },
+        {
+          "text": " ",
+          "start_time": 34.299,
+          "end_time": 34.419
+        },
+        {
+          "text": "away.",
+          "start_time": 34.419,
+          "end_time": 34.7
+        },
+        {
+          "text": " ",
+          "start_time": 34.7,
+          "end_time": 35.439
+        },
+        {
+          "text": "Sam",
+          "start_time": 35.439,
+          "end_time": 35.68
+        },
+        {
+          "text": " ",
+          "start_time": 35.68,
+          "end_time": 35.739
+        },
+        {
+          "text": "has",
+          "start_time": 35.739,
+          "end_time": 35.899
+        },
+        {
+          "text": " ",
+          "start_time": 35.899,
+          "end_time": 35.959
+        },
+        {
+          "text": "five",
+          "start_time": 35.959,
+          "end_time": 36.219
+        },
+        {
+          "text": " ",
+          "start_time": 36.219,
+          "end_time": 36.279
+        },
+        {
+          "text": "stickers.",
+          "start_time": 36.279,
+          "end_time": 36.7
+        },
+        {
+          "text": " ",
+          "start_time": 36.7,
+          "end_time": 37.239
+        },
+        {
+          "text": "Mia",
+          "start_time": 37.239,
+          "end_time": 37.639
+        },
+        {
+          "text": " ",
+          "start_time": 37.639,
+          "end_time": 37.7
+        },
+        {
+          "text": "has",
+          "start_time": 37.7,
+          "end_time": 37.84
+        },
+        {
+          "text": " ",
+          "start_time": 37.84,
+          "end_time": 37.939
+        },
+        {
+          "text": "three.",
+          "start_time": 37.939,
+          "end_time": 38.259
+        },
+        {
+          "text": " ",
+          "start_time": 38.259,
+          "end_time": 39.099
+        },
+        {
+          "text": "How",
+          "start_time": 39.099,
+          "end_time": 39.2
+        },
+        {
+          "text": " ",
+          "start_time": 39.2,
+          "end_time": 39.259
+        },
+        {
+          "text": "many",
+          "start_time": 39.259,
+          "end_time": 39.459
+        },
+        {
+          "text": " ",
+          "start_time": 39.459,
+          "end_time": 39.52
+        },
+        {
+          "text": "more",
+          "start_time": 39.52,
+          "end_time": 39.7
+        },
+        {
+          "text": " ",
+          "start_time": 39.7,
+          "end_time": 39.759
+        },
+        {
+          "text": "does",
+          "start_time": 39.759,
+          "end_time": 39.879
+        },
+        {
+          "text": " ",
+          "start_time": 39.879,
+          "end_time": 39.959
+        },
+        {
+          "text": "Sam",
+          "start_time": 39.959,
+          "end_time": 40.18
+        },
+        {
+          "text": " ",
+          "start_time": 40.18,
+          "end_time": 40.319
+        },
+        {
+          "text": "have?",
+          "start_time": 40.319,
+          "end_time": 40.599
+        },
+        {
+          "text": " ",
+          "start_time": 40.599,
+          "end_time": 41.36
+        },
+        {
+          "text": "We're",
+          "start_time": 41.36,
+          "end_time": 41.5
+        },
+        {
+          "text": " ",
+          "start_time": 41.5,
+          "end_time": 41.54
+        },
+        {
+          "text": "finding",
+          "start_time": 41.54,
+          "end_time": 41.879
+        },
+        {
+          "text": " ",
+          "start_time": 41.879,
+          "end_time": 41.919
+        },
+        {
+          "text": "the",
+          "start_time": 41.919,
+          "end_time": 41.979
+        },
+        {
+          "text": " ",
+          "start_time": 41.979,
+          "end_time": 42.119
+        },
+        {
+          "text": "difference.",
+          "start_time": 42.119,
+          "end_time": 42.7
+        },
+        {
+          "text": " ",
+          "start_time": 42.7,
+          "end_time": 43.359
+        },
+        {
+          "text": "Sam",
+          "start_time": 43.36,
+          "end_time": 43.54
+        },
+        {
+          "text": " ",
+          "start_time": 43.54,
+          "end_time": 43.619
+        },
+        {
+          "text": "has",
+          "start_time": 43.619,
+          "end_time": 43.779
+        },
+        {
+          "text": " ",
+          "start_time": 43.779,
+          "end_time": 43.86
+        },
+        {
+          "text": "two",
+          "start_time": 43.86,
+          "end_time": 44.04
+        },
+        {
+          "text": " ",
+          "start_time": 44.04,
+          "end_time": 44.099
+        },
+        {
+          "text": "more",
+          "start_time": 44.099,
+          "end_time": 44.239
+        },
+        {
+          "text": " ",
+          "start_time": 44.239,
+          "end_time": 44.299
+        },
+        {
+          "text": "than",
+          "start_time": 44.299,
+          "end_time": 44.439
+        },
+        {
+          "text": " ",
+          "start_time": 44.439,
+          "end_time": 44.5
+        },
+        {
+          "text": "Mia.",
+          "start_time": 44.5,
+          "end_time": 44.859
+        },
+        {
+          "text": " ",
+          "start_time": 44.859,
+          "end_time": 45.52
+        },
+        {
+          "text": "Same",
+          "start_time": 45.52,
+          "end_time": 45.719
+        },
+        {
+          "text": " ",
+          "start_time": 45.719,
+          "end_time": 45.799
+        },
+        {
+          "text": "subtraction,",
+          "start_time": 45.799,
+          "end_time": 46.479
+        },
+        {
+          "text": " ",
+          "start_time": 46.479,
+          "end_time": 46.939
+        },
+        {
+          "text": "different",
+          "start_time": 46.939,
+          "end_time": 47.259
+        },
+        {
+          "text": " ",
+          "start_time": 47.259,
+          "end_time": 47.34
+        },
+        {
+          "text": "question.",
+          "start_time": 47.34,
+          "end_time": 48.119
+        },
+        {
+          "text": " ",
+          "start_time": 48.119,
+          "end_time": 48.52
+        },
+        {
+          "text": "So",
+          "start_time": 48.52,
+          "end_time": 48.599
+        },
+        {
+          "text": " ",
+          "start_time": 48.599,
+          "end_time": 48.68
+        },
+        {
+          "text": "subtraction",
+          "start_time": 48.68,
+          "end_time": 49.319
+        },
+        {
+          "text": " ",
+          "start_time": 49.319,
+          "end_time": 49.36
+        },
+        {
+          "text": "can",
+          "start_time": 49.36,
+          "end_time": 49.52
+        },
+        {
+          "text": " ",
+          "start_time": 49.52,
+          "end_time": 49.559
+        },
+        {
+          "text": "mean",
+          "start_time": 49.559,
+          "end_time": 49.799
+        },
+        {
+          "text": " ",
+          "start_time": 49.799,
+          "end_time": 50.219
+        },
+        {
+          "text": "take",
+          "start_time": 50.219,
+          "end_time": 50.419
+        },
+        {
+          "text": " ",
+          "start_time": 50.419,
+          "end_time": 50.519
+        },
+        {
+          "text": "away",
+          "start_time": 50.52,
+          "end_time": 50.879
+        },
+        {
+          "text": " ",
+          "start_time": 50.879,
+          "end_time": 51.619
+        },
+        {
+          "text": "or",
+          "start_time": 51.619,
+          "end_time": 51.739
+        },
+        {
+          "text": " ",
+          "start_time": 51.739,
+          "end_time": 51.899
+        },
+        {
+          "text": "how",
+          "start_time": 51.899,
+          "end_time": 52.039
+        },
+        {
+          "text": " ",
+          "start_time": 52.039,
+          "end_time": 52.079
+        },
+        {
+          "text": "many",
+          "start_time": 52.079,
+          "end_time": 52.299
+        },
+        {
+          "text": " ",
+          "start_time": 52.299,
+          "end_time": 52.36
+        },
+        {
+          "text": "more.",
+          "start_time": 52.36,
+          "end_time": 52.619
+        },
+        {
+          "text": " ",
+          "start_time": 52.619,
+          "end_time": 53.319
+        },
+        {
+          "text": "Both",
+          "start_time": 53.319,
+          "end_time": 53.579
+        },
+        {
+          "text": " ",
+          "start_time": 53.579,
+          "end_time": 53.739
+        },
+        {
+          "text": "use",
+          "start_time": 53.739,
+          "end_time": 53.879
+        },
+        {
+          "text": " ",
+          "start_time": 53.879,
+          "end_time": 53.979
+        },
+        {
+          "text": "minus.",
+          "start_time": 53.979,
+          "end_time": 54.539
+        },
+        {
+          "text": " ",
+          "start_time": 54.539,
+          "end_time": 55.199
+        },
+        {
+          "text": "Now",
+          "start_time": 55.199,
+          "end_time": 55.36
+        },
+        {
+          "text": " ",
+          "start_time": 55.36,
+          "end_time": 55.439
+        },
+        {
+          "text": "you",
+          "start_time": 55.439,
+          "end_time": 55.54
+        },
+        {
+          "text": " ",
+          "start_time": 55.54,
+          "end_time": 55.619
+        },
+        {
+          "text": "know",
+          "start_time": 55.619,
+          "end_time": 55.739
+        },
+        {
+          "text": " ",
+          "start_time": 55.739,
+          "end_time": 55.799
+        },
+        {
+          "text": "the",
+          "start_time": 55.799,
+          "end_time": 55.959
+        },
+        {
+          "text": " ",
+          "start_time": 55.959,
+          "end_time": 56.0
+        },
+        {
+          "text": "secret",
+          "start_time": 56.0,
+          "end_time": 56.479
+        }
+      ]
+    }
+  ]
+}

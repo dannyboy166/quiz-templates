@@ -1,0 +1,1153 @@
+{
+  "language_code": null,
+  "segments": [
+    {
+      "text": "Hey, let's learn what adding really means. Addition is just putting things together. ",
+      "start_time": 0.099,
+      "end_time": 6.159,
+      "speaker": {
+        "id": "speaker_0",
+        "name": "Speaker 0"
+      },
+      "words": [
+        {
+          "text": "Hey,",
+          "start_time": 0.099,
+          "end_time": 0.359
+        },
+        {
+          "text": " ",
+          "start_time": 0.359,
+          "end_time": 1.059
+        },
+        {
+          "text": "let's",
+          "start_time": 1.059,
+          "end_time": 1.24
+        },
+        {
+          "text": " ",
+          "start_time": 1.24,
+          "end_time": 1.299
+        },
+        {
+          "text": "learn",
+          "start_time": 1.299,
+          "end_time": 1.439
+        },
+        {
+          "text": " ",
+          "start_time": 1.439,
+          "end_time": 1.479
+        },
+        {
+          "text": "what",
+          "start_time": 1.48,
+          "end_time": 1.559
+        },
+        {
+          "text": " ",
+          "start_time": 1.559,
+          "end_time": 1.659
+        },
+        {
+          "text": "adding",
+          "start_time": 1.659,
+          "end_time": 1.899
+        },
+        {
+          "text": " ",
+          "start_time": 1.899,
+          "end_time": 1.959
+        },
+        {
+          "text": "really",
+          "start_time": 1.959,
+          "end_time": 2.18
+        },
+        {
+          "text": " ",
+          "start_time": 2.18,
+          "end_time": 2.24
+        },
+        {
+          "text": "means.",
+          "start_time": 2.24,
+          "end_time": 2.619
+        },
+        {
+          "text": " ",
+          "start_time": 2.619,
+          "end_time": 3.419
+        },
+        {
+          "text": "Addition",
+          "start_time": 3.419,
+          "end_time": 4.0
+        },
+        {
+          "text": " ",
+          "start_time": 4.0,
+          "end_time": 4.059
+        },
+        {
+          "text": "is",
+          "start_time": 4.059,
+          "end_time": 4.199
+        },
+        {
+          "text": " ",
+          "start_time": 4.199,
+          "end_time": 4.259
+        },
+        {
+          "text": "just",
+          "start_time": 4.259,
+          "end_time": 4.5
+        },
+        {
+          "text": " ",
+          "start_time": 4.5,
+          "end_time": 5.299
+        },
+        {
+          "text": "putting",
+          "start_time": 5.299,
+          "end_time": 5.519
+        },
+        {
+          "text": " ",
+          "start_time": 5.519,
+          "end_time": 5.559
+        },
+        {
+          "text": "things",
+          "start_time": 5.559,
+          "end_time": 5.759
+        },
+        {
+          "text": " ",
+          "start_time": 5.759,
+          "end_time": 5.819
+        },
+        {
+          "text": "together.",
+          "start_time": 5.819,
+          "end_time": 6.159
+        },
+        {
+          "text": " ",
+          "start_time": 6.159,
+          "end_time": 6.159
+        }
+      ]
+    },
+    {
+      "text": "Look, I have three apples here and two apples here. When I push them together, I have five apples altogether. That's adding. We write it like this, three plus two. ",
+      "start_time": 7.219,
+      "end_time": 20.179,
+      "speaker": {
+        "id": "speaker_0",
+        "name": "Speaker 0"
+      },
+      "words": [
+        {
+          "text": "Look,",
+          "start_time": 7.219,
+          "end_time": 7.339
+        },
+        {
+          "text": " ",
+          "start_time": 7.339,
+          "end_time": 7.519
+        },
+        {
+          "text": "I",
+          "start_time": 7.519,
+          "end_time": 7.559
+        },
+        {
+          "text": " ",
+          "start_time": 7.559,
+          "end_time": 7.619
+        },
+        {
+          "text": "have",
+          "start_time": 7.619,
+          "end_time": 7.759
+        },
+        {
+          "text": " ",
+          "start_time": 7.759,
+          "end_time": 7.819
+        },
+        {
+          "text": "three",
+          "start_time": 7.819,
+          "end_time": 7.98
+        },
+        {
+          "text": " ",
+          "start_time": 7.98,
+          "end_time": 8.099
+        },
+        {
+          "text": "apples",
+          "start_time": 8.099,
+          "end_time": 8.38
+        },
+        {
+          "text": " ",
+          "start_time": 8.38,
+          "end_time": 8.439
+        },
+        {
+          "text": "here",
+          "start_time": 8.439,
+          "end_time": 8.619
+        },
+        {
+          "text": " ",
+          "start_time": 8.619,
+          "end_time": 9.239
+        },
+        {
+          "text": "and",
+          "start_time": 9.239,
+          "end_time": 9.439
+        },
+        {
+          "text": " ",
+          "start_time": 9.439,
+          "end_time": 9.519
+        },
+        {
+          "text": "two",
+          "start_time": 9.519,
+          "end_time": 9.639
+        },
+        {
+          "text": " ",
+          "start_time": 9.639,
+          "end_time": 9.739
+        },
+        {
+          "text": "apples",
+          "start_time": 9.739,
+          "end_time": 10.0
+        },
+        {
+          "text": " ",
+          "start_time": 10.0,
+          "end_time": 10.059
+        },
+        {
+          "text": "here.",
+          "start_time": 10.059,
+          "end_time": 10.239
+        },
+        {
+          "text": " ",
+          "start_time": 10.239,
+          "end_time": 11.019
+        },
+        {
+          "text": "When",
+          "start_time": 11.019,
+          "end_time": 11.099
+        },
+        {
+          "text": " ",
+          "start_time": 11.099,
+          "end_time": 11.179
+        },
+        {
+          "text": "I",
+          "start_time": 11.179,
+          "end_time": 11.239
+        },
+        {
+          "text": " ",
+          "start_time": 11.239,
+          "end_time": 11.3
+        },
+        {
+          "text": "push",
+          "start_time": 11.3,
+          "end_time": 11.439
+        },
+        {
+          "text": " ",
+          "start_time": 11.439,
+          "end_time": 11.479
+        },
+        {
+          "text": "them",
+          "start_time": 11.479,
+          "end_time": 11.599
+        },
+        {
+          "text": " ",
+          "start_time": 11.599,
+          "end_time": 11.639
+        },
+        {
+          "text": "together,",
+          "start_time": 11.639,
+          "end_time": 11.979
+        },
+        {
+          "text": " ",
+          "start_time": 11.979,
+          "end_time": 12.479
+        },
+        {
+          "text": "I",
+          "start_time": 12.479,
+          "end_time": 12.5
+        },
+        {
+          "text": " ",
+          "start_time": 12.5,
+          "end_time": 12.539
+        },
+        {
+          "text": "have",
+          "start_time": 12.539,
+          "end_time": 12.659
+        },
+        {
+          "text": " ",
+          "start_time": 12.659,
+          "end_time": 12.779
+        },
+        {
+          "text": "five",
+          "start_time": 12.779,
+          "end_time": 13.0
+        },
+        {
+          "text": " ",
+          "start_time": 13.0,
+          "end_time": 13.059
+        },
+        {
+          "text": "apples",
+          "start_time": 13.059,
+          "end_time": 13.359
+        },
+        {
+          "text": " ",
+          "start_time": 13.359,
+          "end_time": 13.46
+        },
+        {
+          "text": "altogether.",
+          "start_time": 13.46,
+          "end_time": 13.979
+        },
+        {
+          "text": " ",
+          "start_time": 13.979,
+          "end_time": 14.899
+        },
+        {
+          "text": "That's",
+          "start_time": 14.899,
+          "end_time": 15.079
+        },
+        {
+          "text": " ",
+          "start_time": 15.079,
+          "end_time": 15.139
+        },
+        {
+          "text": "adding.",
+          "start_time": 15.139,
+          "end_time": 15.419
+        },
+        {
+          "text": " ",
+          "start_time": 15.419,
+          "end_time": 16.26
+        },
+        {
+          "text": "We",
+          "start_time": 16.26,
+          "end_time": 16.34
+        },
+        {
+          "text": " ",
+          "start_time": 16.34,
+          "end_time": 16.399
+        },
+        {
+          "text": "write",
+          "start_time": 16.399,
+          "end_time": 16.52
+        },
+        {
+          "text": " ",
+          "start_time": 16.52,
+          "end_time": 16.559
+        },
+        {
+          "text": "it",
+          "start_time": 16.559,
+          "end_time": 16.619
+        },
+        {
+          "text": " ",
+          "start_time": 16.619,
+          "end_time": 16.679
+        },
+        {
+          "text": "like",
+          "start_time": 16.68,
+          "end_time": 16.819
+        },
+        {
+          "text": " ",
+          "start_time": 16.819,
+          "end_time": 16.899
+        },
+        {
+          "text": "this,",
+          "start_time": 16.899,
+          "end_time": 17.139
+        },
+        {
+          "text": " ",
+          "start_time": 17.139,
+          "end_time": 17.859
+        },
+        {
+          "text": "three",
+          "start_time": 17.859,
+          "end_time": 18.119
+        },
+        {
+          "text": " ",
+          "start_time": 18.119,
+          "end_time": 18.919
+        },
+        {
+          "text": "plus",
+          "start_time": 18.92,
+          "end_time": 19.219
+        },
+        {
+          "text": " ",
+          "start_time": 19.219,
+          "end_time": 19.939
+        },
+        {
+          "text": "two.",
+          "start_time": 19.939,
+          "end_time": 20.179
+        },
+        {
+          "text": " ",
+          "start_time": 20.179,
+          "end_time": 20.179
+        }
+      ]
+    },
+    {
+      "text": "The three is my first group. The two is what I'm adding. The plus sign means put them together, and we get five. Here's a cool secret. It doesn't matter which order, three plus two or two plus three, you get the same answer because you're still putting the same things together. So remember, adding is just combining. Put the groups together, count how many altogether. You've got this.",
+      "start_time": 21.239,
+      "end_time": 49.639,
+      "speaker": {
+        "id": "speaker_0",
+        "name": "Speaker 0"
+      },
+      "words": [
+        {
+          "text": "The",
+          "start_time": 21.239,
+          "end_time": 21.299
+        },
+        {
+          "text": " ",
+          "start_time": 21.299,
+          "end_time": 21.399
+        },
+        {
+          "text": "three",
+          "start_time": 21.399,
+          "end_time": 21.6
+        },
+        {
+          "text": " ",
+          "start_time": 21.6,
+          "end_time": 21.659
+        },
+        {
+          "text": "is",
+          "start_time": 21.659,
+          "end_time": 21.739
+        },
+        {
+          "text": " ",
+          "start_time": 21.739,
+          "end_time": 21.799
+        },
+        {
+          "text": "my",
+          "start_time": 21.799,
+          "end_time": 21.939
+        },
+        {
+          "text": " ",
+          "start_time": 21.939,
+          "end_time": 21.999
+        },
+        {
+          "text": "first",
+          "start_time": 22.0,
+          "end_time": 22.219
+        },
+        {
+          "text": " ",
+          "start_time": 22.219,
+          "end_time": 22.319
+        },
+        {
+          "text": "group.",
+          "start_time": 22.319,
+          "end_time": 22.579
+        },
+        {
+          "text": " ",
+          "start_time": 22.579,
+          "end_time": 23.34
+        },
+        {
+          "text": "The",
+          "start_time": 23.34,
+          "end_time": 23.399
+        },
+        {
+          "text": " ",
+          "start_time": 23.399,
+          "end_time": 23.519
+        },
+        {
+          "text": "two",
+          "start_time": 23.519,
+          "end_time": 23.739
+        },
+        {
+          "text": " ",
+          "start_time": 23.739,
+          "end_time": 23.799
+        },
+        {
+          "text": "is",
+          "start_time": 23.799,
+          "end_time": 23.879
+        },
+        {
+          "text": " ",
+          "start_time": 23.879,
+          "end_time": 23.939
+        },
+        {
+          "text": "what",
+          "start_time": 23.939,
+          "end_time": 24.019
+        },
+        {
+          "text": " ",
+          "start_time": 24.019,
+          "end_time": 24.099
+        },
+        {
+          "text": "I'm",
+          "start_time": 24.1,
+          "end_time": 24.199
+        },
+        {
+          "text": " ",
+          "start_time": 24.199,
+          "end_time": 24.259
+        },
+        {
+          "text": "adding.",
+          "start_time": 24.26,
+          "end_time": 24.539
+        },
+        {
+          "text": " ",
+          "start_time": 24.539,
+          "end_time": 25.279
+        },
+        {
+          "text": "The",
+          "start_time": 25.279,
+          "end_time": 25.379
+        },
+        {
+          "text": " ",
+          "start_time": 25.379,
+          "end_time": 25.459
+        },
+        {
+          "text": "plus",
+          "start_time": 25.459,
+          "end_time": 25.679
+        },
+        {
+          "text": " ",
+          "start_time": 25.679,
+          "end_time": 25.779
+        },
+        {
+          "text": "sign",
+          "start_time": 25.779,
+          "end_time": 26.219
+        },
+        {
+          "text": " ",
+          "start_time": 26.219,
+          "end_time": 26.299
+        },
+        {
+          "text": "means",
+          "start_time": 26.299,
+          "end_time": 26.579
+        },
+        {
+          "text": " ",
+          "start_time": 26.579,
+          "end_time": 26.899
+        },
+        {
+          "text": "put",
+          "start_time": 26.899,
+          "end_time": 27.019
+        },
+        {
+          "text": " ",
+          "start_time": 27.019,
+          "end_time": 27.079
+        },
+        {
+          "text": "them",
+          "start_time": 27.079,
+          "end_time": 27.219
+        },
+        {
+          "text": " ",
+          "start_time": 27.219,
+          "end_time": 27.26
+        },
+        {
+          "text": "together,",
+          "start_time": 27.26,
+          "end_time": 27.659
+        },
+        {
+          "text": " ",
+          "start_time": 27.659,
+          "end_time": 28.439
+        },
+        {
+          "text": "and",
+          "start_time": 28.439,
+          "end_time": 28.559
+        },
+        {
+          "text": " ",
+          "start_time": 28.559,
+          "end_time": 28.599
+        },
+        {
+          "text": "we",
+          "start_time": 28.599,
+          "end_time": 28.699
+        },
+        {
+          "text": " ",
+          "start_time": 28.699,
+          "end_time": 28.779
+        },
+        {
+          "text": "get",
+          "start_time": 28.779,
+          "end_time": 28.979
+        },
+        {
+          "text": " ",
+          "start_time": 28.979,
+          "end_time": 29.979
+        },
+        {
+          "text": "five.",
+          "start_time": 29.979,
+          "end_time": 30.42
+        },
+        {
+          "text": " ",
+          "start_time": 30.42,
+          "end_time": 31.299
+        },
+        {
+          "text": "Here's",
+          "start_time": 31.299,
+          "end_time": 31.459
+        },
+        {
+          "text": " ",
+          "start_time": 31.459,
+          "end_time": 31.479
+        },
+        {
+          "text": "a",
+          "start_time": 31.479,
+          "end_time": 31.519
+        },
+        {
+          "text": " ",
+          "start_time": 31.519,
+          "end_time": 31.599
+        },
+        {
+          "text": "cool",
+          "start_time": 31.599,
+          "end_time": 31.779
+        },
+        {
+          "text": " ",
+          "start_time": 31.779,
+          "end_time": 31.839
+        },
+        {
+          "text": "secret.",
+          "start_time": 31.84,
+          "end_time": 32.279
+        },
+        {
+          "text": " ",
+          "start_time": 32.279,
+          "end_time": 33.02
+        },
+        {
+          "text": "It",
+          "start_time": 33.02,
+          "end_time": 33.079
+        },
+        {
+          "text": " ",
+          "start_time": 33.079,
+          "end_time": 33.119
+        },
+        {
+          "text": "doesn't",
+          "start_time": 33.119,
+          "end_time": 33.38
+        },
+        {
+          "text": " ",
+          "start_time": 33.38,
+          "end_time": 33.419
+        },
+        {
+          "text": "matter",
+          "start_time": 33.419,
+          "end_time": 33.639
+        },
+        {
+          "text": " ",
+          "start_time": 33.639,
+          "end_time": 33.68
+        },
+        {
+          "text": "which",
+          "start_time": 33.68,
+          "end_time": 33.84
+        },
+        {
+          "text": " ",
+          "start_time": 33.84,
+          "end_time": 33.919
+        },
+        {
+          "text": "order,",
+          "start_time": 33.919,
+          "end_time": 34.159
+        },
+        {
+          "text": " ",
+          "start_time": 34.159,
+          "end_time": 34.88
+        },
+        {
+          "text": "three",
+          "start_time": 34.88,
+          "end_time": 35.079
+        },
+        {
+          "text": " ",
+          "start_time": 35.079,
+          "end_time": 35.119
+        },
+        {
+          "text": "plus",
+          "start_time": 35.119,
+          "end_time": 35.34
+        },
+        {
+          "text": " ",
+          "start_time": 35.34,
+          "end_time": 35.399
+        },
+        {
+          "text": "two",
+          "start_time": 35.399,
+          "end_time": 35.599
+        },
+        {
+          "text": " ",
+          "start_time": 35.599,
+          "end_time": 35.819
+        },
+        {
+          "text": "or",
+          "start_time": 35.819,
+          "end_time": 35.959
+        },
+        {
+          "text": " ",
+          "start_time": 35.959,
+          "end_time": 36.0
+        },
+        {
+          "text": "two",
+          "start_time": 36.0,
+          "end_time": 36.159
+        },
+        {
+          "text": " ",
+          "start_time": 36.159,
+          "end_time": 36.2
+        },
+        {
+          "text": "plus",
+          "start_time": 36.2,
+          "end_time": 36.439
+        },
+        {
+          "text": " ",
+          "start_time": 36.439,
+          "end_time": 36.479
+        },
+        {
+          "text": "three,",
+          "start_time": 36.479,
+          "end_time": 36.779
+        },
+        {
+          "text": " ",
+          "start_time": 36.779,
+          "end_time": 37.36
+        },
+        {
+          "text": "you",
+          "start_time": 37.36,
+          "end_time": 37.439
+        },
+        {
+          "text": " ",
+          "start_time": 37.439,
+          "end_time": 37.5
+        },
+        {
+          "text": "get",
+          "start_time": 37.5,
+          "end_time": 37.599
+        },
+        {
+          "text": " ",
+          "start_time": 37.599,
+          "end_time": 37.659
+        },
+        {
+          "text": "the",
+          "start_time": 37.659,
+          "end_time": 37.739
+        },
+        {
+          "text": " ",
+          "start_time": 37.739,
+          "end_time": 37.799
+        },
+        {
+          "text": "same",
+          "start_time": 37.799,
+          "end_time": 38.0
+        },
+        {
+          "text": " ",
+          "start_time": 38.0,
+          "end_time": 38.099
+        },
+        {
+          "text": "answer",
+          "start_time": 38.099,
+          "end_time": 38.459
+        },
+        {
+          "text": " ",
+          "start_time": 38.459,
+          "end_time": 39.04
+        },
+        {
+          "text": "because",
+          "start_time": 39.04,
+          "end_time": 39.259
+        },
+        {
+          "text": " ",
+          "start_time": 39.259,
+          "end_time": 39.319
+        },
+        {
+          "text": "you're",
+          "start_time": 39.319,
+          "end_time": 39.459
+        },
+        {
+          "text": " ",
+          "start_time": 39.459,
+          "end_time": 39.52
+        },
+        {
+          "text": "still",
+          "start_time": 39.52,
+          "end_time": 39.759
+        },
+        {
+          "text": " ",
+          "start_time": 39.759,
+          "end_time": 39.819
+        },
+        {
+          "text": "putting",
+          "start_time": 39.819,
+          "end_time": 40.04
+        },
+        {
+          "text": " ",
+          "start_time": 40.04,
+          "end_time": 40.099
+        },
+        {
+          "text": "the",
+          "start_time": 40.099,
+          "end_time": 40.18
+        },
+        {
+          "text": " ",
+          "start_time": 40.18,
+          "end_time": 40.239
+        },
+        {
+          "text": "same",
+          "start_time": 40.239,
+          "end_time": 40.479
+        },
+        {
+          "text": " ",
+          "start_time": 40.479,
+          "end_time": 40.52
+        },
+        {
+          "text": "things",
+          "start_time": 40.52,
+          "end_time": 40.759
+        },
+        {
+          "text": " ",
+          "start_time": 40.759,
+          "end_time": 40.819
+        },
+        {
+          "text": "together.",
+          "start_time": 40.819,
+          "end_time": 41.219
+        },
+        {
+          "text": " ",
+          "start_time": 41.219,
+          "end_time": 41.899
+        },
+        {
+          "text": "So",
+          "start_time": 41.899,
+          "end_time": 42.02
+        },
+        {
+          "text": " ",
+          "start_time": 42.02,
+          "end_time": 42.079
+        },
+        {
+          "text": "remember,",
+          "start_time": 42.079,
+          "end_time": 42.5
+        },
+        {
+          "text": " ",
+          "start_time": 42.5,
+          "end_time": 43.019
+        },
+        {
+          "text": "adding",
+          "start_time": 43.02,
+          "end_time": 43.599
+        },
+        {
+          "text": " ",
+          "start_time": 43.599,
+          "end_time": 43.659
+        },
+        {
+          "text": "is",
+          "start_time": 43.659,
+          "end_time": 43.779
+        },
+        {
+          "text": " ",
+          "start_time": 43.779,
+          "end_time": 43.879
+        },
+        {
+          "text": "just",
+          "start_time": 43.879,
+          "end_time": 44.02
+        },
+        {
+          "text": " ",
+          "start_time": 44.02,
+          "end_time": 44.079
+        },
+        {
+          "text": "combining.",
+          "start_time": 44.079,
+          "end_time": 44.659
+        },
+        {
+          "text": " ",
+          "start_time": 44.659,
+          "end_time": 45.279
+        },
+        {
+          "text": "Put",
+          "start_time": 45.279,
+          "end_time": 45.399
+        },
+        {
+          "text": " ",
+          "start_time": 45.399,
+          "end_time": 45.459
+        },
+        {
+          "text": "the",
+          "start_time": 45.459,
+          "end_time": 45.559
+        },
+        {
+          "text": " ",
+          "start_time": 45.559,
+          "end_time": 45.599
+        },
+        {
+          "text": "groups",
+          "start_time": 45.599,
+          "end_time": 45.86
+        },
+        {
+          "text": " ",
+          "start_time": 45.86,
+          "end_time": 45.919
+        },
+        {
+          "text": "together,",
+          "start_time": 45.919,
+          "end_time": 46.259
+        },
+        {
+          "text": " ",
+          "start_time": 46.259,
+          "end_time": 46.679
+        },
+        {
+          "text": "count",
+          "start_time": 46.68,
+          "end_time": 46.939
+        },
+        {
+          "text": " ",
+          "start_time": 46.939,
+          "end_time": 47.0
+        },
+        {
+          "text": "how",
+          "start_time": 47.0,
+          "end_time": 47.159
+        },
+        {
+          "text": " ",
+          "start_time": 47.159,
+          "end_time": 47.2
+        },
+        {
+          "text": "many",
+          "start_time": 47.2,
+          "end_time": 47.479
+        },
+        {
+          "text": " ",
+          "start_time": 47.479,
+          "end_time": 47.539
+        },
+        {
+          "text": "altogether.",
+          "start_time": 47.539,
+          "end_time": 48.18
+        },
+        {
+          "text": " ",
+          "start_time": 48.18,
+          "end_time": 48.759
+        },
+        {
+          "text": "You've",
+          "start_time": 48.759,
+          "end_time": 49.0
+        },
+        {
+          "text": " ",
+          "start_time": 49.0,
+          "end_time": 49.039
+        },
+        {
+          "text": "got",
+          "start_time": 49.039,
+          "end_time": 49.259
+        },
+        {
+          "text": " ",
+          "start_time": 49.259,
+          "end_time": 49.319
+        },
+        {
+          "text": "this.",
+          "start_time": 49.319,
+          "end_time": 49.639
+        }
+      ]
+    }
+  ]
+}
