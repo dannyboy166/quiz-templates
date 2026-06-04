@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Picture Equations - Quiz Template</title>
+  <link rel="stylesheet" href="../css/base.css">
+  <script src="../js/color-cycle.js"></script>
+  <style>
+    body {
+      background: var(--bg-yellow);
+    }
+
+    .equations-container {
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+    }
+
+    .equation-row {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .picture-box {
+      background: white;
+      border: 3px solid #4FC3F7;
+      border-radius: 20px;
+      padding: 15px 25px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      align-items: center;
+      min-width: 200px;
+      max-width: 350px;
+    }
+
+    .picture-item {
+      font-size: 36px;
+      position: relative;
+      transition: all 0.2s;
+    }
+
+    .picture-item.crossed-out {
+      opacity: 0.5;
+    }
+
+    .picture-item.crossed-out::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: -5px;
+      right: -5px;
+      height: 6px;
+      background: #E53935;
+      transform: rotate(-30deg);
+      border-radius: 3px;
+    }
+
+    .equation-inputs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .equation-box {
+      width: 60px;
+      height: 60px;
+      border: 3px solid #4CAF50;
+      border-radius: 10px;
+      font-size: 32px;
+      font-weight: 700;
+      text-align: center;
+      font-family: inherit;
+      background: white;
+    }
+
+    .equation-box:focus {
+      outline: none;
+      border-color: #2196F3;
+      box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.3);
+    }
+
+    .equation-box.correct {
+      background: #C8E6C9;
+      border-color: #4CAF50;
+    }
+
+    .equation-box.incorrect {
+      background: #FFCDD2;
+      border-color: #F44336;
+    }
+
+    .equation-box.given {
+      background: #F5F5F5;
+      border-style: solid;
+      color: #333;
+    }
+
+    .equation-symbol {
+      font-size: 36px;
+      font-weight: 700;
+      font-family: inherit;
+      color: #333;
+    }
+
+    /* Operation selector */
+    .operation-selector {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .op-btn {
+      padding: 10px 24px;
+      font-size: 20px;
+      font-weight: 700;
+      background: white;
+      border: 3px solid #2196F3;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .op-btn:hover {
+      background: #E3F2FD;
+    }
+
+    .op-btn.active {
+      background: #2196F3;
+      color: white;
+    }
+
+    /* Feedback */
+    .feedback {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .feedback.show {
+      display: flex;
+    }
+
+    .feedback-badge {
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .feedback-badge.correct {
+      background: #C8E6C9;
+      border: 2px solid #66BB6A;
+      color: #2E7D32;
+    }
+
+    .feedback-badge.incorrect {
+      background: #FFCDD2;
+      border: 2px solid #E57373;
+      color: #C62828;
+    }
+
+    .btn-try-again {
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      background: #FF9800;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .btn-try-again:hover {
+      background: #F57C00;
+    }
+
+    .btn-next {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #4CAF50;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+
+    .btn-next:hover {
+      background: #43A047;
+    }
+
+    .score-display {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 16px;
+      color: #666;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.show { display: flex; }
+
+    .modal-content {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 500px;
+      width: 90%;
+      text-align: center;
+      position: relative;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      width: 30px;
+      height: 30px;
+      border: none;
+      background: #eee;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    .modal-content h2 { margin-bottom: 20px; }
+
+    .modal-instruction {
+      background: #FFF9E6;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .modal-instruction p { margin-bottom: 10px; }
+
+    .modal-btn {
+      padding: 12px 30px;
+      font-size: 16px;
+      font-weight: 600;
+      background: #333;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    /* Addition with two picture boxes */
+    .addition-pictures {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .addition-pictures .picture-box {
+      min-width: 120px;
+      max-width: 180px;
+    }
+
+    .addition-symbol {
+      font-size: 40px;
+      font-weight: 700;
+      color: #333;
+    }
+
+    .btn-check-answer {
+      margin-top: 30px;
+    }
+
+    /* Progress Bar with Compass */
+    .progress-container {
+      position: relative;
+      width: calc(100% - 40px);
+      height: 24px;
+      margin: 20px auto;
+    }
+
+    .progress-track {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 16px;
+      background: #3a3a3a;
+      border-radius: 8px;
+      transform: translateY(-50%);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #5E58F9 0%, #EFA1D5 100%);
+      border-radius: 8px;
+      transition: width 0.5s ease-out;
+    }
+
+    .compass-container {
+      position: absolute;
+      top: 50%;
+      left: 0%;
+      transform: translate(-50%, -50%);
+      transition: left 0.5s ease-out;
+      z-index: 10;
+    }
+
+    .compass {
+      width: 44px;
+      height: 44px;
+      background: white;
+      border: 2px solid #333;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .compass-dot {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: #333;
+      border-radius: 50%;
+    }
+
+    .compass-dot.top { top: 3px; left: 50%; transform: translateX(-50%); }
+    .compass-dot.bottom { bottom: 3px; left: 50%; transform: translateX(-50%); }
+    .compass-dot.left { left: 3px; top: 50%; transform: translateY(-50%); }
+    .compass-dot.right { right: 3px; top: 50%; transform: translateY(-50%); }
+
+    .compass-diamond {
+      z-index: 5;
+      position: relative;
+    }
+
+    .compass-diamond svg {
+      width: 28px;
+      height: 8px;
+      display: block;
+    }
+
+    /* Remove white container */
+    .content-card {
+      background: transparent;
+      box-shadow: none;
+    }
+
+    /* Mobile responsive */
+    @media (max-width: 600px) {
+      .picture-box {
+        min-width: 150px;
+        max-width: 280px;
+        padding: 12px 18px;
+      }
+      .picture-item {
+        font-size: 28px;
+      }
+      .equation-box {
+        width: 50px;
+        height: 50px;
+        font-size: 26px;
+      }
+      .equation-symbol {
+        font-size: 28px;
+      }
+      .equation-inputs {
+        gap: 6px;
+      }
+      .equations-container {
+        gap: 20px;
+      }
+      .help-item {
+        padding: 12px 16px;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .picture-box {
+        min-width: 120px;
+        max-width: 240px;
+        padding: 10px 14px;
+      }
+      .picture-item {
+        font-size: 24px;
+      }
+      .equation-box {
+        width: 44px;
+        height: 44px;
+        font-size: 22px;
+      }
+      .equation-symbol {
+        font-size: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+    <!-- Header -->
+    <header class="quiz-header">
+      <button class="btn-back" onclick="window.location.href='index.html'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Back
+      </button>
+
+      <div class="user-profile">
+        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User" class="user-avatar">
+      </div>
+
+      <button class="btn-help" id="header-help">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        Help
+      </button>
+    </header>
+
+    <!-- Progress Bar -->
+    <div class="progress-container">
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <div class="compass-container" id="compass-container">
+        <div class="compass">
+          <div class="compass-dot top"></div>
+          <div class="compass-dot bottom"></div>
+          <div class="compass-dot left"></div>
+          <div class="compass-dot right"></div>
+          <div class="compass-diamond">
+            <svg viewBox="0 0 28 8">
+              <polygon points="0,4 10,0 14,4 10,8" fill="#EFA1D5" stroke="#333" stroke-width="0.5"/>
+              <polygon points="28,4 18,0 14,4 18,8" fill="#5E58F9" stroke="#333" stroke-width="0.5"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Operation Selector -->
+    <div class="operation-selector">
+      <button class="op-btn active" data-op="subtraction">➖ Subtraction</button>
+      <button class="op-btn" data-op="addition">➕ Addition</button>
+      <button class="op-btn" data-op="mixed">🔀 Mixed</button>
+    </div>
+
+    <!-- Question Meta -->
+    <div class="question-meta">
+      <span class="badge badge-math">Maths</span>
+      <span class="question-progress">Question <span id="current-q">1</span> of <span id="total-q">6</span></span>
+    </div>
+
+    <!-- Question Title -->
+    <div class="question-title">
+      <h1 id="question-text">Complete the number sentence.</h1>
+    </div>
+
+    <!-- Help Bar -->
+    <div class="help-bar">
+      <div class="help-item" id="btn-read-aloud">
+        <span style="font-weight: 530; font-size: 15px;">Read Aloud</span>
+        <span class="help-item-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg></span>
+      </div>
+      <span class="help-item-line"></span>
+      <div class="help-item" id="btn-get-help">
+        <span style="font-weight: 530; font-size: 15px;">Get Help</span>
+        <span class="help-item-icon">?</span>
+      </div>
+      <span class="help-item-line"></span>
+      <div class="help-item" id="btn-get-hint">
+        <span style="font-weight: 530; font-size: 15px;">Get Hint</span>
+        <span class="help-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 6h12v2H6V6zm0 3h12v2H6V9zm0 3h8v2H6v-2z"/></svg></span>
+      </div>
+    </div>
+
+    <!-- Content Card -->
+    <div class="content-card">
+      <div class="content-card-inner">
+        <div class="equations-container" id="equations-container">
+          <!-- Equations will be inserted here -->
+        </div>
+
+        <button class="btn-check-answer" id="btn-check">Check Answer</button>
+
+        <div class="feedback" id="feedback">
+          <div class="feedback-badge" id="feedback-badge">
+            <span id="feedback-icon">✓</span>
+            <span id="feedback-text">Correct!</span>
+          </div>
+          <button class="btn-try-again" id="btn-try-again">Try Again</button>
+          <button class="btn-next" id="btn-next">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="score-display" id="score-display"></div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Help Modal -->
+  <div class="modal-overlay" id="help-modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal('help-modal')">×</button>
+      <h2>How to Play</h2>
+      <div class="modal-instruction">
+        <p><strong>Fill in the missing number to complete this number sentence.</strong></p>
+        <p>🖼️ Look at the pictures – some have a red line through them – this means they have been taken away.</p>
+        <p>➖ <strong>Subtraction</strong> means to start with a number and take some away to see what is left.</p>
+        <p>➕ <strong>Addition</strong> means adding more. Putting groups together to find the total.</p>
+        <p>✏️ Type a number in the empty box to make this number sentence correct.</p>
+      </div>
+      <button class="modal-btn" onclick="closeModal('help-modal')">Got it!</button>
+    </div>
+  </div>
+
+  <!-- Hint Modal -->
+  <div class="modal-overlay" id="hint-modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal('hint-modal')">×</button>
+      <h2>💡 Hint</h2>
+      <div class="modal-instruction">
+        <p id="hint-text">Count the pictures carefully! The crossed-out ones are being taken away.</p>
+      </div>
+      <button class="modal-btn" onclick="closeModal('hint-modal')">Thanks!</button>
+    </div>
+  </div>
+
+  <script>
+    // ==========================================
+    // Audio Player (Vonnie Voice)
+    // ==========================================
+    let currentAudio = null;
+    function playAudio(src, onEnd) {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      currentAudio = new Audio(src);
+      if (onEnd) currentAudio.onended = onEnd;
+      currentAudio.play();
+      return currentAudio;
+    }
+
+    // ==========================================
+    // Compass Rotation
+    // ==========================================
+    let compassRotation = 0;
+    let spinSpeed = 120;
+    const slowSpeed = 120;
+    const fastSpeed = 720;
+    let lastTime = performance.now();
+    let slowDownTimer = null;
+
+    function spinCompass(currentTime) {
+      const delta = (currentTime - lastTime) / 1000;
+      lastTime = currentTime;
+      compassRotation += spinSpeed * delta;
+      compassRotation %= 360;
+      const compassDiamond = document.querySelector('.compass-diamond');
+      if (compassDiamond) {
+        compassDiamond.style.transform = `rotate(${compassRotation}deg)`;
+      }
+      requestAnimationFrame(spinCompass);
+    }
+    requestAnimationFrame(spinCompass);
+
+    function updateCompass(percentage, animate = false) {
+      const compassContainer = document.getElementById('compass-container');
+      const progressFill = document.getElementById('progress-fill');
+
+      if (animate) {
+        if (slowDownTimer) clearTimeout(slowDownTimer);
+        spinSpeed = fastSpeed;
+        slowDownTimer = setTimeout(() => {
+          spinSpeed = slowSpeed;
+        }, 500);
+      }
+
+      progressFill.style.width = percentage + '%';
+      compassContainer.style.left = percentage + '%';
+    }
+
+    // Emojis for pictures
+    const pictureTypes = ['🍎', '🍐', '🐟', '🏀', '⭐', '🌸', '🦋', '🐸', '🍪', '🧁', '🍓', '🍌', '🚗', '✏️', '📚'];
+
+    // Question sets by operation type
+    const questionSets = {
+      subtraction: generateSubtractionQuestions(),
+      addition: generateAdditionQuestions(),
+      mixed: generateMixedQuestions()
+    };
+
+    function generateSubtractionQuestions() {
+      const questions = [];
+      const emojis = ['🍐', '🐟', '🏀', '🍎', '⭐', '🦋'];
+
+      for (let i = 0; i < 6; i++) {
+        const total = Math.floor(Math.random() * 8) + 5; // 5-12
+        const subtract = Math.floor(Math.random() * (total - 2)) + 1; // 1 to total-2
+        const result = total - subtract;
+
+        // Decide which boxes are given vs blank
+        const patterns = [
+          { given: ['total'], blanks: ['subtract', 'result'] },
+          { given: ['subtract'], blanks: ['total', 'result'] },
+          { given: ['result'], blanks: ['total', 'subtract'] },
+          { given: ['total', 'subtract'], blanks: ['result'] },
+          { given: ['total', 'result'], blanks: ['subtract'] },
+        ];
+        const pattern = patterns[Math.floor(Math.random() * patterns.length)];
+
+        questions.push({
+          type: 'subtraction',
+          emoji: emojis[i % emojis.length],
+          total,
+          subtract,
+          result,
+          given: pattern.given,
+          blanks: pattern.blanks
+        });
+      }
+      return questions;
+    }
+
+    function generateAdditionQuestions() {
+      const questions = [];
+      const emojis = ['🍪', '🧁', '🍓', '🌸', '📚', '🚗'];
+
+      for (let i = 0; i < 6; i++) {
+        const num1 = Math.floor(Math.random() * 6) + 2; // 2-7
+        const num2 = Math.floor(Math.random() * 6) + 2; // 2-7
+        const result = num1 + num2;
+
+        const patterns = [
+          { given: ['num1', 'num2'], blanks: ['result'] },
+          { given: ['num1', 'result'], blanks: ['num2'] },
+          { given: ['num2', 'result'], blanks: ['num1'] },
+          { given: ['result'], blanks: ['num1', 'num2'] },
+        ];
+        const pattern = patterns[Math.floor(Math.random() * patterns.length)];
+
+        questions.push({
+          type: 'addition',
+          emoji: emojis[i % emojis.length],
+          num1,
+          num2,
+          result,
+          given: pattern.given,
+          blanks: pattern.blanks
+        });
+      }
+      return questions;
+    }
+
+    function generateMixedQuestions() {
+      const sub = generateSubtractionQuestions().slice(0, 3);
+      const add = generateAdditionQuestions().slice(0, 3);
+      return [...sub, ...add].sort(() => Math.random() - 0.5);
+    }
+
+    let currentOperation = 'subtraction';
+    let currentQuestionIndex = 0;
+    let correctCount = 0;
+
+    function init() {
+      loadQuestion();
+      setupEventListeners();
+    }
+
+    function loadQuestion() {
+      const questions = questionSets[currentOperation];
+      const q = questions[currentQuestionIndex];
+
+      document.getElementById('current-q').textContent = currentQuestionIndex + 1;
+      document.getElementById('total-q').textContent = questions.length;
+
+      // Update compass progress
+      const percentage = (currentQuestionIndex / questions.length) * 100;
+      updateCompass(percentage, currentQuestionIndex > 0);
+
+      // Title is now static
+      document.getElementById('question-text').textContent = 'Complete the number sentence.';
+
+      renderEquation(q);
+
+      // Reset UI
+      document.getElementById('btn-check').style.display = 'block';
+      document.getElementById('feedback').classList.remove('show');
+      updateScore();
+    }
+
+    function renderEquation(q) {
+      const container = document.getElementById('equations-container');
+
+      if (q.type === 'subtraction') {
+        container.innerHTML = `
+          <div class="equation-row">
+            <div class="picture-box">
+              ${renderPictures(q.emoji, q.total, q.subtract)}
+            </div>
+            <div class="equation-inputs">
+              ${renderBox('total', q.total, q.given.includes('total'))}
+              <span class="equation-symbol">−</span>
+              ${renderBox('subtract', q.subtract, q.given.includes('subtract'))}
+              <span class="equation-symbol">=</span>
+              ${renderBox('result', q.result, q.given.includes('result'))}
+            </div>
+          </div>
+        `;
+      } else {
+        container.innerHTML = `
+          <div class="equation-row">
+            <div class="addition-pictures">
+              <div class="picture-box">
+                ${renderPicturesSimple(q.emoji, q.num1)}
+              </div>
+              <span class="addition-symbol">+</span>
+              <div class="picture-box">
+                ${renderPicturesSimple(q.emoji, q.num2)}
+              </div>
+            </div>
+            <div class="equation-inputs">
+              ${renderBox('num1', q.num1, q.given.includes('num1'))}
+              <span class="equation-symbol">+</span>
+              ${renderBox('num2', q.num2, q.given.includes('num2'))}
+              <span class="equation-symbol">=</span>
+              ${renderBox('result', q.result, q.given.includes('result'))}
+            </div>
+          </div>
+        `;
+      }
+
+      // Setup input events - just allow number typing
+      document.querySelectorAll('.equation-box:not(.given)').forEach(input => {
+        input.addEventListener('input', (e) => {
+          // Only allow numbers, max 2 digits
+          e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 2);
+        });
+      });
+    }
+
+    function renderPictures(emoji, total, crossedOut) {
+      let html = '';
+      for (let i = 0; i < total; i++) {
+        const crossed = i < crossedOut ? 'crossed-out' : '';
+        html += `<span class="picture-item ${crossed}">${emoji}</span>`;
+      }
+      return html;
+    }
+
+    function renderPicturesSimple(emoji, count) {
+      let html = '';
+      for (let i = 0; i < count; i++) {
+        html += `<span class="picture-item">${emoji}</span>`;
+      }
+      return html;
+    }
+
+    function renderBox(name, value, isGiven) {
+      if (isGiven) {
+        return `<input type="text" class="equation-box given" value="${value}" readonly data-name="${name}" data-answer="${value}">`;
+      }
+      return `<input type="text" class="equation-box" placeholder="?" data-name="${name}" data-answer="${value}" inputmode="numeric">`;
+    }
+
+    function checkAnswer() {
+      const q = questionSets[currentOperation][currentQuestionIndex];
+      const allBoxes = document.querySelectorAll('.equation-box');
+      const inputs = document.querySelectorAll('.equation-box:not(.given)');
+
+      // Get all values from the equation
+      let values = {};
+      allBoxes.forEach(box => {
+        values[box.dataset.name] = parseInt(box.value) || 0;
+      });
+
+      // Check if answers match the picture exactly
+      let pictureCorrect = true;
+      inputs.forEach(input => {
+        const userAnswer = parseInt(input.value);
+        const correctAnswer = parseInt(input.dataset.answer);
+        if (userAnswer !== correctAnswer) {
+          pictureCorrect = false;
+        }
+      });
+
+      // Check if the math is correct (even if not matching the picture)
+      let mathCorrect = false;
+      if (q.type === 'subtraction') {
+        // Check: total - subtract = result
+        mathCorrect = (values.total - values.subtract === values.result);
+      } else {
+        // Check: num1 + num2 = result
+        mathCorrect = (values.num1 + values.num2 === values.result);
+      }
+
+      // Determine final result
+      const isCorrect = pictureCorrect || mathCorrect;
+
+      // Mark boxes
+      inputs.forEach(input => {
+        const userAnswer = parseInt(input.value);
+        const correctAnswer = parseInt(input.dataset.answer);
+
+        if (pictureCorrect || (mathCorrect && userAnswer === correctAnswer)) {
+          input.classList.add('correct');
+          input.classList.remove('incorrect');
+        } else if (mathCorrect) {
+          // Math is right but doesn't match picture - show as correct (greenish)
+          input.classList.add('correct');
+          input.classList.remove('incorrect');
+        } else {
+          input.classList.add('incorrect');
+          input.classList.remove('correct');
+        }
+        input.readOnly = true;
+      });
+
+      // Show feedback
+      const feedback = document.getElementById('feedback');
+      const badge = document.getElementById('feedback-badge');
+      const icon = document.getElementById('feedback-icon');
+      const text = document.getElementById('feedback-text');
+      const tryAgain = document.getElementById('btn-try-again');
+      const next = document.getElementById('btn-next');
+
+      if (pictureCorrect) {
+        // Perfect - matches the picture exactly
+        correctCount++;
+        badge.className = 'feedback-badge correct';
+        icon.textContent = '✓';
+        text.textContent = 'Correct!';
+        tryAgain.style.display = 'none';
+        next.style.display = 'flex';
+        playAudio('../audio/picture-equations/feedback-correct.mp3');
+      } else if (mathCorrect) {
+        // Math is correct but doesn't match the picture
+        correctCount++;
+        badge.className = 'feedback-badge correct';
+        icon.textContent = '✓';
+        if (q.type === 'subtraction') {
+          text.textContent = `Correct math! The picture shows ${q.total} − ${q.subtract} = ${q.result}`;
+        } else {
+          text.textContent = `Correct math! The picture shows ${q.num1} + ${q.num2} = ${q.result}`;
+        }
+        tryAgain.style.display = 'none';
+        next.style.display = 'flex';
+        playAudio('../audio/picture-equations/feedback-correct.mp3');
+      } else {
+        // Wrong answer
+        badge.className = 'feedback-badge incorrect';
+        icon.textContent = '✗';
+        text.textContent = 'Not quite right';
+        tryAgain.style.display = 'inline-block';
+        next.style.display = 'flex';
+        playAudio('../audio/picture-equations/feedback-incorrect.mp3');
+
+        // Show correct answers
+        inputs.forEach(input => {
+          if (input.classList.contains('incorrect')) {
+            input.value = input.dataset.answer;
+          }
+        });
+      }
+
+      document.getElementById('btn-check').style.display = 'none';
+      feedback.classList.add('show');
+      updateScore();
+    }
+
+    function tryAgain() {
+      loadQuestion();
+    }
+
+    function nextQuestion() {
+      cycleColor();
+      const questions = questionSets[currentOperation];
+      if (currentQuestionIndex < questions.length - 1) {
+        currentQuestionIndex++;
+        loadQuestion();
+      } else {
+        // Complete - update compass to 100%
+        updateCompass(100, true);
+        playAudio('../audio/picture-equations/feedback-complete.mp3', () => {
+          alert(`Well done!\n\nYou got ${correctCount} out of ${questions.length} correct!`);
+          // Reset for new round
+          currentQuestionIndex = 0;
+          correctCount = 0;
+          questionSets[currentOperation] = currentOperation === 'subtraction'
+            ? generateSubtractionQuestions()
+            : currentOperation === 'addition'
+              ? generateAdditionQuestions()
+              : generateMixedQuestions();
+          loadQuestion();
+        });
+      }
+    }
+
+    function switchOperation(op) {
+      currentOperation = op;
+      currentQuestionIndex = 0;
+      correctCount = 0;
+
+      // Reset compass
+      updateCompass(0, false);
+
+      // Update buttons
+      document.querySelectorAll('.op-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.op === op);
+      });
+
+      // Generate fresh questions
+      questionSets[op] = op === 'subtraction'
+        ? generateSubtractionQuestions()
+        : op === 'addition'
+          ? generateAdditionQuestions()
+          : generateMixedQuestions();
+
+      loadQuestion();
+    }
+
+    function updateScore() {
+      const total = currentQuestionIndex + (document.getElementById('feedback').classList.contains('show') ? 1 : 0);
+      if (total > 0) {
+        document.getElementById('score-display').textContent = `Score: ${correctCount}/${total}`;
+      } else {
+        document.getElementById('score-display').textContent = '';
+      }
+    }
+
+    function readAloud() {
+      playAudio('../audio/picture-equations/question.mp3');
+    }
+
+    function openModal(id) { document.getElementById(id).classList.add('show'); }
+    function closeModal(id) {
+      // Stop any playing audio when closing modals
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      document.getElementById(id).classList.remove('show');
+    }
+
+    function setupEventListeners() {
+      document.getElementById('btn-check').addEventListener('click', checkAnswer);
+      document.getElementById('btn-try-again').addEventListener('click', tryAgain);
+      document.getElementById('btn-next').addEventListener('click', nextQuestion);
+      document.getElementById('btn-read-aloud').addEventListener('click', readAloud);
+      document.getElementById('btn-get-help').addEventListener('click', () => {
+        openModal('help-modal');
+        playAudio('../audio/picture-equations/help.mp3');
+      });
+      document.getElementById('header-help').addEventListener('click', () => {
+        openModal('help-modal');
+        playAudio('../audio/picture-equations/help.mp3');
+      });
+      document.getElementById('btn-get-hint').addEventListener('click', () => {
+        // Update hint text based on current operation/question
+        const q = questionSets[currentOperation][currentQuestionIndex];
+        let hintText = '';
+
+        if (q.type === 'subtraction') {
+          hintText = 'Count the pictures carefully! The crossed-out ones are being taken away.';
+        } else {
+          hintText = 'Count the pictures in each group, then add them together!';
+        }
+
+        document.getElementById('hint-text').textContent = hintText;
+        openModal('hint-modal');
+        playAudio('../audio/picture-equations/hint.mp3');
+      });
+
+      // Operation switcher
+      document.querySelectorAll('.op-btn').forEach(btn => {
+        btn.addEventListener('click', () => switchOperation(btn.dataset.op));
+      });
+
+      // Modal close on overlay click
+      document.querySelectorAll('.modal-overlay').forEach(modal => {
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) closeModal(modal.id);
+        });
+      });
+    }
+
+    initColorCycle();
+    init();
+  </script>
+</body>
+</html>

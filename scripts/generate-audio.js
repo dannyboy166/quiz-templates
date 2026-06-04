@@ -426,6 +426,30 @@ const wordSortAudio = [
   { file: 'audio/word-sort/help.mp3', text: 'Read each word from the list. Drag it to the correct category. Look at the spelling pattern to help you decide!' },
 ];
 
+// ==========================================
+// HELP - PARTITIONING NUMBERS
+// ==========================================
+const helpPartitioningAudio = [
+  { file: 'audio/help-partitioning/scene-0-intro.mp3',
+    text: "Hello! Today we're going to partition numbers. To partition means to split a number into smaller parts — and the handiest way is into tens and ones. Once you can do that, you can answer lots of different questions, so let's work through them together." },
+  { file: 'audio/help-partitioning/scene-1-tens-and-ones.mp3',
+    text: "Let's start with the number 34. The digit on the left, the 3, tells us how many tens there are — 3 tens. The digit on the right, the 4, tells us how many ones — 4 ones. We can build 34 by filling three ten-frames to make three tens, then adding four single counters for the ones. So 34 is 3 tens and 4 ones." },
+  { file: 'audio/help-partitioning/scene-2-how-many.mp3',
+    text: "Sometimes a question just asks how many tens, or how many ones, are in a number. Look at 34 again. The tens digit is 3, so there are 3 tens — and 3 tens is the same as 30. The ones digit is 4, so there are 4 ones. So in 34 there are 3 tens and 4 ones." },
+  { file: 'audio/help-partitioning/scene-3-true-or-false.mp3',
+    text: "Some questions give you a statement and ask if it's true or false. For example: 34 is the same as 3 tens and 4 ones. To check, we count the tens — yes, 3 tens — and the ones — yes, 4 ones. The statement matches, so the answer is true. If either the tens or the ones didn't match, it would be false." },
+  { file: 'audio/help-partitioning/scene-4-another-way.mp3',
+    text: "Here's something clever. A number can be partitioned in more than one way. We know 34 is 3 tens and 4 ones. But watch — we can open up one ten and turn it into ten ones. Now we have 2 tens and 14 ones. It looks different, but it's still 34. We could even open all the tens to make 34 ones. So when a question asks for another way to show a number, remember you can trade a ten for ten ones, and the number stays the same." },
+  { file: 'audio/help-partitioning/scene-5-picture.mp3',
+    text: "Often you'll see a picture made of blocks. The tall blocks are tens and the small blocks are ones. To name the number, count the tens first, then the ones. Here we have 3 tens and 4 ones, so the picture shows 34. And if you ever spot a really big block, that's a hundred — count those first, then the tens, then the ones." },
+  { file: 'audio/help-partitioning/scene-6-tally.mp3',
+    text: "A tally is a quick way to keep count. The marks are grouped into bundles of five — four straight lines with one line crossed through them. To read a tally, count the bundles in fives, then count on the extra marks. Here we have two bundles — that's ten — and two extra marks, so the tally shows 12." },
+  { file: 'audio/help-partitioning/scene-7-biggest-smallest.mp3',
+    text: "Last one. Sometimes you're given some digits and asked to make the biggest or the smallest number. The trick is place value. To make the biggest number, put the biggest digit first. To make the smallest, put the smallest digit first. With the digits 4, 1 and 6, the biggest number is six hundred and forty-one, and the smallest is one hundred and forty-six." },
+  { file: 'audio/help-partitioning/scene-8-outro.mp3',
+    text: "Now it's your turn! Tap to try some questions and partition numbers yourself." },
+];
+
 // All templates
 const allTemplates = {
   'word-match': wordMatchAudio,
@@ -445,12 +469,64 @@ const allTemplates = {
   'spelling': spellingAudio,
   'spelling-rules': spellingRulesAudio,
   'word-sort': wordSortAudio,
+  'help-partitioning': helpPartitioningAudio,
 };
+
+async function generateAudioWithTimestamps(text, outputPath) {
+  console.log(`Generating (with timestamps): ${outputPath}`);
+
+  try {
+    const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}/with-timestamps`, {
+      method: 'POST',
+      headers: {
+        'xi-api-key': API_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        text: text,
+        model_id: 'eleven_multilingual_v2',
+        output_format: 'mp3_44100_128'
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`API Error: ${response.status} - ${error}`);
+    }
+
+    const data = await response.json();
+
+    // Save audio (base64 encoded)
+    const audioBuffer = Buffer.from(data.audio_base64, 'base64');
+    const dir = path.dirname(outputPath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    fs.writeFileSync(outputPath, audioBuffer);
+    console.log(`  ✓ Audio saved: ${outputPath}`);
+
+    // Save alignment/timestamps
+    const transcriptPath = outputPath.replace('.mp3', '.json');
+    const transcriptDir = path.join(path.dirname(outputPath), 'transcripts');
+    if (!fs.existsSync(transcriptDir)) {
+      fs.mkdirSync(transcriptDir, { recursive: true });
+    }
+    const transcriptFile = path.join(transcriptDir, path.basename(transcriptPath));
+    fs.writeFileSync(transcriptFile, JSON.stringify(data.alignment, null, 2));
+    console.log(`  ✓ Timestamps saved: ${transcriptFile}`);
+
+    await new Promise(r => setTimeout(r, 500));
+
+  } catch (error) {
+    console.error(`  ✗ Failed: ${outputPath} - ${error.message}`);
+  }
+}
 
 async function main() {
   // Get template and optional filter from command line args
-  const template = process.argv[2];
-  const filter = process.argv[3]; // Optional: filter to specific files (e.g., "question", "help")
+  const args = process.argv.slice(2).filter(a => !a.startsWith('--'));
+  const template = args[0];
+  const filter = args[1]; // Optional: filter to specific files (e.g., "question", "help")
 
   let audioToGenerate;
   let templateName;
@@ -497,8 +573,15 @@ async function main() {
   console.log('='.repeat(50));
   console.log('');
 
+  // Use --timestamps flag for word-level timing data
+  const useTimestamps = process.argv.includes('--timestamps');
+
   for (const item of audioToGenerate) {
-    await generateAudio(item.text, item.file);
+    if (useTimestamps) {
+      await generateAudioWithTimestamps(item.text, item.file);
+    } else {
+      await generateAudio(item.text, item.file);
+    }
   }
 
   console.log('');

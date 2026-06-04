@@ -1,0 +1,1547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spelling Rules - Quiz Template</title>
+  <link rel="stylesheet" href="../css/base.css">
+  <script src="../js/color-cycle.js"></script>
+  <style>
+    body {
+      background: var(--bg-pink);
+    }
+
+    .rule-selector {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 16px;
+      max-height: 120px;
+      overflow-y: auto;
+      padding: 8px;
+      background: rgba(255,255,255,0.3);
+      border-radius: 12px;
+    }
+
+    .rule-btn {
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      background: white;
+      border: 2px solid #E91E63;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .rule-btn:hover {
+      background: #FCE4EC;
+      transform: scale(1.05);
+    }
+
+    .rule-btn.active {
+      background: #E91E63;
+      color: white;
+    }
+
+    .word-display {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 20px;
+    }
+
+    .letter-box {
+      width: 50px;
+      height: 60px;
+      background: white;
+      border: 3px solid #333;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      font-weight: 700;
+      font-family: inherit;
+      text-transform: lowercase;
+    }
+
+    .letter-box.small {
+      width: 40px;
+      height: 50px;
+      font-size: 28px;
+    }
+
+    .letter-box.blank {
+      background: #FFF9C4;
+      border-style: dashed;
+      border-color: #FF9800;
+    }
+
+    /* Dynamic width based on number of letters */
+    .letter-box.blank.letters-1 { width: 50px; }
+    .letter-box.blank.letters-2 { width: 80px; }
+    .letter-box.blank.letters-3 { width: 110px; }
+    .letter-box.blank.letters-4 { width: 140px; }
+    .letter-box.blank.letters-5 { width: 170px; }
+    .letter-box.blank.letters-6 { width: 200px; }
+    .letter-box.blank.letters-7 { width: 230px; }
+
+    .letter-box.blank.small.letters-1 { width: 40px; }
+    .letter-box.blank.small.letters-2 { width: 70px; }
+    .letter-box.blank.small.letters-3 { width: 100px; }
+    .letter-box.blank.small.letters-4 { width: 130px; }
+    .letter-box.blank.small.letters-5 { width: 160px; }
+    .letter-box.blank.small.letters-6 { width: 190px; }
+    .letter-box.blank.small.letters-7 { width: 220px; }
+
+    .letter-box.blank.filled {
+      background: #E1BEE7;
+      border-style: solid;
+      border-color: #9C27B0;
+    }
+
+    .letter-box.blank.correct {
+      background: #C8E6C9;
+      border-color: #4CAF50;
+    }
+
+    .letter-box.blank.incorrect {
+      background: #FFCDD2;
+      border-color: #F44336;
+    }
+
+    .options-container {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .option-btn {
+      min-width: 100px;
+      padding: 16px 32px;
+      font-size: 28px;
+      font-weight: 700;
+      font-family: inherit;
+      background: white;
+      border: 4px solid #333;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: lowercase;
+    }
+
+    .option-btn:hover {
+      transform: scale(1.05);
+      background: #F3E5F5;
+    }
+
+    .option-btn.selected {
+      background: #E1BEE7;
+      border-color: #9C27B0;
+    }
+
+    .option-btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    .rule-hint {
+      background: #FFF9E6;
+      border: 2px solid #FFE082;
+      border-radius: 12px;
+      padding: 14px 20px;
+      margin-bottom: 20px;
+      text-align: center;
+      font-size: 16px;
+    }
+
+    .rule-hint strong {
+      color: #E91E63;
+    }
+
+    .word-info {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .word-meaning {
+      font-size: 15px;
+      color: #666;
+      font-style: italic;
+      margin-bottom: 8px;
+    }
+
+    .word-context {
+      font-size: 22px;
+      font-weight: 600;
+      color: #333;
+      background: #fff;
+      padding: 12px 24px;
+      border-radius: 12px;
+      border: 3px solid #9C27B0;
+      display: inline-block;
+      margin-top: 10px;
+    }
+
+    .aus-flag {
+      display: inline-block;
+      margin-left: 8px;
+      font-size: 16px;
+    }
+
+    /* Feedback */
+    .feedback {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .feedback.show {
+      display: flex;
+    }
+
+    .feedback-badge {
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .feedback-badge.correct {
+      background: #C8E6C9;
+      border: 2px solid #66BB6A;
+      color: #2E7D32;
+    }
+
+    .feedback-badge.incorrect {
+      background: #FFCDD2;
+      border: 2px solid #E57373;
+      color: #C62828;
+    }
+
+    .btn-try-again {
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      background: #FF9800;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .btn-try-again:hover {
+      background: #F57C00;
+    }
+
+    .btn-next {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #4CAF50;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+
+    .btn-next:hover {
+      background: #43A047;
+    }
+
+    .progress-dots {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 15px;
+      flex-wrap: wrap;
+      max-width: 300px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .progress-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #ddd;
+    }
+
+    .progress-dot.correct { background: #4CAF50; }
+    .progress-dot.incorrect { background: #F44336; }
+    .progress-dot.current { background: #9C27B0; transform: scale(1.3); }
+
+    /* Remove white container, 2-column layout */
+    .content-card {
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .content-card-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      align-items: center;
+    }
+
+    .left-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .right-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .word-display {
+      margin-bottom: 0;
+    }
+
+    .word-info {
+      margin-bottom: 0;
+    }
+
+    .options-container {
+      margin-bottom: 0;
+    }
+
+    .progress-dots {
+      margin-top: 10px;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.show { display: flex; }
+
+    .modal-content {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 500px;
+      width: 90%;
+      text-align: center;
+      position: relative;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      width: 30px;
+      height: 30px;
+      border: none;
+      background: #eee;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    .modal-content h2 { margin-bottom: 20px; }
+
+    .modal-instruction {
+      background: #FFF9E6;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .modal-instruction p { margin-bottom: 10px; }
+    .modal-instruction ul { margin-left: 20px; }
+    .modal-instruction li { margin-bottom: 6px; }
+
+    .modal-btn {
+      padding: 12px 30px;
+      font-size: 16px;
+      font-weight: 600;
+      background: #333;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    /* Progress Bar with Compass */
+    .progress-container {
+      position: relative;
+      width: calc(100% - 40px);
+      height: 24px;
+      margin: 20px auto;
+    }
+
+    .progress-track {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 16px;
+      background: #3a3a3a;
+      border-radius: 8px;
+      transform: translateY(-50%);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #5E58F9 0%, #EFA1D5 100%);
+      border-radius: 8px;
+      transition: width 0.5s ease-out;
+    }
+
+    .compass-container {
+      position: absolute;
+      top: 50%;
+      left: 0%;
+      transform: translate(-50%, -50%);
+      transition: left 0.5s ease-out;
+      z-index: 10;
+    }
+
+    .compass {
+      width: 44px;
+      height: 44px;
+      background: white;
+      border: 2px solid #333;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .compass-dot {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: #333;
+      border-radius: 50%;
+    }
+
+    .compass-dot.top { top: 3px; left: 50%; transform: translateX(-50%); }
+    .compass-dot.bottom { bottom: 3px; left: 50%; transform: translateX(-50%); }
+    .compass-dot.left { left: 3px; top: 50%; transform: translateY(-50%); }
+    .compass-dot.right { right: 3px; top: 50%; transform: translateY(-50%); }
+
+    .compass-diamond {
+      z-index: 5;
+      position: relative;
+    }
+
+    .compass-diamond svg {
+      width: 28px;
+      height: 8px;
+      display: block;
+    }
+
+    /* Mobile responsive */
+    @media (max-width: 600px) {
+      .content-card-inner {
+        grid-template-columns: 1fr;
+        gap: 25px;
+      }
+      .left-column {
+        padding-bottom: 20px;
+        border-bottom: 2px dashed rgba(0,0,0,0.15);
+      }
+      .rule-selector {
+        max-height: none;
+        overflow-y: visible;
+        gap: 8px;
+      }
+      .rule-btn {
+        padding: 10px 14px;
+        font-size: 13px;
+      }
+      .letter-box {
+        width: 40px;
+        height: 50px;
+        font-size: 28px;
+      }
+      .letter-box.blank.letters-1 { width: 40px; }
+      .letter-box.blank.letters-2 { width: 65px; }
+      .letter-box.blank.letters-3 { width: 90px; }
+      .letter-box.blank.letters-4 { width: 115px; }
+      .letter-box.blank.letters-5 { width: 140px; }
+      .letter-box.blank.letters-6 { width: 165px; }
+      .letter-box.blank.letters-7 { width: 190px; }
+      .option-btn {
+        min-width: 80px;
+        padding: 12px 20px;
+        font-size: 22px;
+      }
+      .options-container {
+        gap: 10px;
+      }
+      .rule-hint {
+        font-size: 14px;
+        padding: 12px 16px;
+      }
+      .help-item {
+        padding: 12px 16px;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .letter-box {
+        width: 32px;
+        height: 42px;
+        font-size: 22px;
+      }
+      .letter-box.blank.letters-1 { width: 32px; }
+      .letter-box.blank.letters-2 { width: 55px; }
+      .letter-box.blank.letters-3 { width: 78px; }
+      .letter-box.blank.letters-4 { width: 100px; }
+      .letter-box.blank.letters-5 { width: 122px; }
+      .letter-box.blank.letters-6 { width: 144px; }
+      .letter-box.blank.letters-7 { width: 166px; }
+      .option-btn {
+        min-width: 60px;
+        padding: 10px 16px;
+        font-size: 18px;
+      }
+    }
+
+    .score-display {
+      text-align: center;
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+    <!-- Header -->
+    <header class="quiz-header">
+      <button class="btn-back" onclick="window.location.href='index.html'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Back
+      </button>
+
+      <div class="user-profile">
+        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User" class="user-avatar">
+      </div>
+
+      <button class="btn-help" id="header-help">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        Help
+      </button>
+    </header>
+
+    <!-- Progress Bar -->
+    <div class="progress-container">
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <div class="compass-container" id="compass-container">
+        <div class="compass">
+          <div class="compass-dot top"></div>
+          <div class="compass-dot bottom"></div>
+          <div class="compass-dot left"></div>
+          <div class="compass-dot right"></div>
+          <div class="compass-diamond">
+            <svg viewBox="0 0 28 8">
+              <polygon points="0,4 10,0 14,4 10,8" fill="#EFA1D5" stroke="#333" stroke-width="0.5"/>
+              <polygon points="28,4 18,0 14,4 18,8" fill="#5E58F9" stroke="#333" stroke-width="0.5"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="score-display" id="score-display"></div>
+
+    <!-- Rule Selector -->
+    <div class="rule-selector" id="rule-selector">
+      <!-- Shuffle All -->
+      <button class="rule-btn active" data-rule="shuffle">🔀 Shuffle Rules</button>
+      <!-- Australian Spelling -->
+      <button class="rule-btn" data-rule="aus-our">-our 🇦🇺</button>
+      <button class="rule-btn" data-rule="aus-ise">-ise 🇦🇺</button>
+      <button class="rule-btn" data-rule="aus-re">-re 🇦🇺</button>
+      <!-- Classic Rules -->
+      <button class="rule-btn" data-rule="ie-ei">i before e</button>
+      <button class="rule-btn" data-rule="magic-e">Magic E</button>
+      <button class="rule-btn" data-rule="silent">Silent Letters</button>
+      <button class="rule-btn" data-rule="soft-c">Soft c & g</button>
+      <!-- Consonant Rules -->
+      <button class="rule-btn" data-rule="ck-k">ck vs k</button>
+      <button class="rule-btn" data-rule="tch">-tch</button>
+      <button class="rule-btn" data-rule="dge">-dge</button>
+      <button class="rule-btn" data-rule="floss">FLOSS</button>
+      <button class="rule-btn" data-rule="double">Doubling</button>
+      <!-- Suffix Rules -->
+      <button class="rule-btn" data-rule="drop-e">Drop the E</button>
+      <button class="rule-btn" data-rule="change-y">Change Y to I</button>
+      <button class="rule-btn" data-rule="ful">-ful</button>
+      <!-- Plurals -->
+      <button class="rule-btn" data-rule="plural-es">Plurals -es</button>
+      <button class="rule-btn" data-rule="plural-ies">Plurals -ies</button>
+      <!-- Sound Patterns -->
+      <button class="rule-btn" data-rule="ph-f">ph = f</button>
+      <button class="rule-btn" data-rule="qu">Q + U</button>
+      <button class="rule-btn" data-rule="tion-sion">-tion/-sion</button>
+      <!-- Homophones -->
+      <button class="rule-btn" data-rule="homophones">Homophones</button>
+    </div>
+
+    <!-- Question Meta -->
+    <div class="question-meta">
+      <span class="badge badge-english">English</span>
+      <span class="question-progress">Question <span id="current-q">1</span> of <span id="total-q">6</span></span>
+    </div>
+
+    <!-- Question Title -->
+    <div class="question-title">
+      <h1 id="question-text">Choose the correct letters to complete the word.</h1>
+    </div>
+
+    <!-- Help Bar -->
+    <div class="help-bar">
+      <div class="help-item" id="btn-read-aloud">
+        <span style="font-weight: 530; font-size: 15px;">Read Aloud</span>
+        <span class="help-item-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg></span>
+      </div>
+      <span class="help-item-line"></span>
+      <div class="help-item" id="btn-get-help">
+        <span style="font-weight: 530; font-size: 15px;">Get Help</span>
+        <span class="help-item-icon">?</span>
+      </div>
+      <span class="help-item-line"></span>
+      <div class="help-item" id="btn-get-hint">
+        <span style="font-weight: 530; font-size: 15px;">Get Hint</span>
+        <span class="help-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 6h12v2H6V6zm0 3h12v2H6V9zm0 3h8v2H6v-2z"/></svg></span>
+      </div>
+    </div>
+
+    <!-- Rule Hint -->
+    <div class="rule-hint" id="rule-hint">
+      <strong>Remember:</strong> "i before e, except after c"
+    </div>
+
+    <!-- Content Card -->
+    <div class="content-card">
+      <div class="content-card-inner">
+        <!-- Left Column: Word -->
+        <div class="left-column">
+          <div class="word-display" id="word-display"></div>
+          <div class="word-info">
+            <div class="word-meaning" id="word-meaning">to think something is true</div>
+            <div class="word-context" id="word-context">"I believe you!"</div>
+          </div>
+        </div>
+
+        <!-- Right Column: Options & Check -->
+        <div class="right-column">
+          <div class="options-container" id="options-container"></div>
+          <button class="btn-check-answer" id="btn-check">Check Answer</button>
+
+          <div class="feedback" id="feedback">
+            <div class="feedback-badge" id="feedback-badge">
+              <span id="feedback-icon">✓</span>
+              <span id="feedback-text">Correct!</span>
+            </div>
+            <button class="btn-try-again" id="btn-try-again">Try Again</button>
+            <button class="btn-next" id="btn-next">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="progress-dots" id="progress-dots"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Help Modal -->
+  <div class="modal-overlay" id="help-modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal('help-modal')">×</button>
+      <h2>Spelling Rules</h2>
+      <div class="modal-instruction" id="help-content">
+        <!-- Dynamic content -->
+      </div>
+      <button class="modal-btn" onclick="closeModal('help-modal')">Got it!</button>
+    </div>
+  </div>
+
+  <!-- Hint Modal -->
+  <div class="modal-overlay" id="hint-modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal('hint-modal')">×</button>
+      <h2>💡 Hint</h2>
+      <div class="modal-instruction">
+        <p id="hint-text">Look carefully at the word...</p>
+      </div>
+      <button class="modal-btn" onclick="closeModal('hint-modal')">Thanks!</button>
+    </div>
+  </div>
+
+  <script>
+    // ==========================================
+    // Audio Player (Vonnie Voice)
+    // ==========================================
+    let currentAudio = null;
+    function playAudio(src, onEnd) {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      currentAudio = new Audio(src);
+      if (onEnd) currentAudio.onended = onEnd;
+      currentAudio.play();
+      return currentAudio;
+    }
+
+    // ==========================================
+    // Compass Rotation
+    // ==========================================
+    let compassRotation = 0;
+    let spinSpeed = 120;
+    const slowSpeed = 120;
+    const fastSpeed = 720;
+    let lastTime = performance.now();
+    let slowDownTimer = null;
+
+    function spinCompass(currentTime) {
+      const delta = (currentTime - lastTime) / 1000;
+      lastTime = currentTime;
+      compassRotation += spinSpeed * delta;
+      compassRotation %= 360;
+      const compassDiamond = document.querySelector('.compass-diamond');
+      if (compassDiamond) {
+        compassDiamond.style.transform = `rotate(${compassRotation}deg)`;
+      }
+      requestAnimationFrame(spinCompass);
+    }
+    requestAnimationFrame(spinCompass);
+
+    function updateCompass(percentage, animate = false) {
+      const compassContainer = document.getElementById('compass-container');
+      const progressFill = document.getElementById('progress-fill');
+
+      if (animate) {
+        if (slowDownTimer) clearTimeout(slowDownTimer);
+        spinSpeed = fastSpeed;
+        slowDownTimer = setTimeout(() => {
+          spinSpeed = slowSpeed;
+        }, 500);
+      }
+
+      progressFill.style.width = percentage + '%';
+      compassContainer.style.left = percentage + '%';
+    }
+
+    // All spelling rules data
+    const allRules = {
+      "ie-ei": {
+        name: "i before e, except after c",
+        hint: "Use 'ie' most of the time, but 'ei' after the letter 'c'",
+        helpContent: `
+          <p>👀 Look at the word with missing letters.</p>
+          <p>🤔 Think about the rule: <strong>"I before e, except after c"</strong></p>
+          <p>🔍 Look at the letter <strong>before</strong> the blank - is it a <strong>c</strong>?</p>
+          <p>✏️ Choose the correct letter pattern: <strong>ie</strong> or <strong>ei</strong></p>
+          <hr style="margin: 12px 0; border: none; border-top: 1px solid #ddd;">
+          <p><strong>Examples:</strong></p>
+          <ul>
+            <li><strong>ie</strong> - use in most words: believe, friend, thief</li>
+            <li><strong>ei</strong> - use after 'c': receive, ceiling, deceive</li>
+          </ul>
+          <p>⚠️ Exceptions: weird, their, neither, either</p>
+        `,
+        questions: [
+          { word: "believe", blank: [3,4], options: ["ie","ei"], correct: "ie", meaning: "to think something is true", context: '"I believe you!"' },
+          { word: "receive", blank: [3,4], options: ["ie","ei"], correct: "ei", meaning: "to get something", context: '"Did you receive my letter?"' },
+          { word: "friend", blank: [2,3], options: ["ie","ei"], correct: "ie", meaning: "someone you like", context: '"She is my best friend."' },
+          { word: "ceiling", blank: [1,2], options: ["ie","ei"], correct: "ei", meaning: "top of a room", context: '"Look at the ceiling!"' },
+          { word: "achieve", blank: [3,4], options: ["ie","ei"], correct: "ie", meaning: "to succeed", context: '"You can achieve anything!"' },
+          { word: "deceive", blank: [3,4], options: ["ie","ei"], correct: "ei", meaning: "to trick someone", context: '"Don\'t deceive me."' }
+        ]
+      },
+      "aus-our": {
+        name: "Australian -our spelling",
+        hint: "In Australia, we use -our not -or! 🇦🇺",
+        helpContent: `
+          <p>🇦🇺 <strong>Australian Spelling:</strong> We use <strong>-our</strong> not -or</p>
+          <ul>
+            <li>colour (not color)</li>
+            <li>favour (not favor)</li>
+            <li>neighbour (not neighbor)</li>
+            <li>honour (not honor)</li>
+            <li>harbour (not harbor)</li>
+          </ul>
+          <p>This is British/Australian English!</p>
+        `,
+        questions: [
+          { word: "colour", blank: [3,4,5], options: ["our","or"], correct: "our", meaning: "red, blue, green...", context: '"What colour is the sky?"' },
+          { word: "favour", blank: [3,4,5], options: ["our","or"], correct: "our", meaning: "a kind act", context: '"Can you do me a favour?"' },
+          { word: "neighbour", blank: [6,7,8], options: ["our","or"], correct: "our", meaning: "person next door", context: '"Our neighbour has a dog."' },
+          { word: "honour", blank: [3,4,5], options: ["our","or"], correct: "our", meaning: "respect", context: '"It\'s an honour to meet you."' },
+          { word: "behaviour", blank: [6,7,8], options: ["our","or"], correct: "our", meaning: "how you act", context: '"Good behaviour in class!"' },
+          { word: "harbour", blank: [4,5,6], options: ["our","or"], correct: "our", meaning: "where boats park", context: '"Sydney Harbour is beautiful."' }
+        ]
+      },
+      "aus-ise": {
+        name: "Australian -ise spelling",
+        hint: "In Australia, we use -ise not -ize! 🇦🇺",
+        helpContent: `
+          <p>🇦🇺 <strong>Australian Spelling:</strong> We use <strong>-ise</strong> not -ize</p>
+          <ul>
+            <li>organise (not organize)</li>
+            <li>recognise (not recognize)</li>
+            <li>realise (not realize)</li>
+            <li>apologise (not apologize)</li>
+          </ul>
+          <p>This is British/Australian English!</p>
+        `,
+        questions: [
+          { word: "organise", blank: [5,6,7], options: ["ise","ize"], correct: "ise", meaning: "to arrange things", context: '"Let\'s organise the party!"' },
+          { word: "recognise", blank: [6,7,8], options: ["ise","ize"], correct: "ise", meaning: "to know who someone is", context: '"I recognise that face!"' },
+          { word: "realise", blank: [4,5,6], options: ["ise","ize"], correct: "ise", meaning: "to understand", context: '"I didn\'t realise the time."' },
+          { word: "apologise", blank: [6,7,8], options: ["ise","ize"], correct: "ise", meaning: "to say sorry", context: '"I apologise for being late."' },
+          { word: "surprise", blank: [5,6,7], options: ["ise","ize"], correct: "ise", meaning: "something unexpected", context: '"What a lovely surprise!"' },
+          { word: "exercise", blank: [5,6,7], options: ["ise","ize"], correct: "ise", meaning: "physical activity", context: '"Let\'s do some exercise."' }
+        ]
+      },
+      "aus-re": {
+        name: "Australian -re spelling",
+        hint: "In Australia, we use -re not -er! 🇦🇺",
+        helpContent: `
+          <p>🇦🇺 <strong>Australian Spelling:</strong> We use <strong>-re</strong> not -er</p>
+          <ul>
+            <li>centre (not center)</li>
+            <li>metre (not meter)</li>
+            <li>theatre (not theater)</li>
+            <li>litre (not liter)</li>
+          </ul>
+          <p>This is British/Australian English!</p>
+        `,
+        questions: [
+          { word: "centre", blank: [4,5], options: ["re","er"], correct: "re", meaning: "the middle", context: '"Meet me in the town centre."' },
+          { word: "metre", blank: [3,4], options: ["re","er"], correct: "re", meaning: "100 centimetres", context: '"The pool is 50 metres long."' },
+          { word: "theatre", blank: [5,6], options: ["re","er"], correct: "re", meaning: "where you watch plays", context: '"Let\'s go to the theatre."' },
+          { word: "litre", blank: [3,4], options: ["re","er"], correct: "re", meaning: "1000 millilitres", context: '"Buy a litre of milk."' },
+          { word: "fibre", blank: [3,4], options: ["re","er"], correct: "re", meaning: "thread-like material", context: '"Eat food with fibre."' },
+          { word: "sombre", blank: [4,5], options: ["re","er"], correct: "re", meaning: "dark and serious", context: '"A sombre mood."' }
+        ]
+      },
+      "silent": {
+        name: "Silent Letters",
+        hint: "Some letters are written but not spoken!",
+        helpContent: `
+          <p>🤫 <strong>Silent Letters:</strong> Written but not said!</p>
+          <ul>
+            <li><strong>kn</strong> - knight, knee, know, knife</li>
+            <li><strong>wr</strong> - write, wrong, wrap, wrist</li>
+            <li><strong>gn</strong> - gnome, sign, design</li>
+            <li><strong>mb</strong> - lamb, climb, thumb, comb</li>
+            <li><strong>wh</strong> - what, when, where (w is silent)</li>
+          </ul>
+        `,
+        questions: [
+          { word: "knight", blank: [0,1], options: ["kn","n"], correct: "kn", meaning: "medieval warrior", context: '"The brave knight!"' },
+          { word: "write", blank: [0,1], options: ["wr","r"], correct: "wr", meaning: "to put words on paper", context: '"Please write your name."' },
+          { word: "gnome", blank: [0,1], options: ["gn","n"], correct: "gn", meaning: "small garden figure", context: '"A garden gnome."' },
+          { word: "thumb", blank: [4], options: ["mb","m"], correct: "mb", meaning: "short finger", context: '"Thumbs up!"', blankSize: 2 },
+          { word: "know", blank: [0,1], options: ["kn","n"], correct: "kn", meaning: "to understand", context: '"I know the answer!"' },
+          { word: "wrong", blank: [0,1], options: ["wr","r"], correct: "wr", meaning: "not right", context: '"That\'s the wrong answer."' }
+        ]
+      },
+      "soft-c": {
+        name: "Soft c and g",
+        hint: "c and g sound soft before e, i, or y",
+        helpContent: `
+          <p>🔤 <strong>Soft c and g:</strong> Before e, i, or y</p>
+          <ul>
+            <li><strong>Soft c</strong> = /s/ sound: city, ceiling, cycle</li>
+            <li><strong>Hard c</strong> = /k/ sound: cat, cup, car</li>
+            <li><strong>Soft g</strong> = /j/ sound: giant, giraffe, gym</li>
+            <li><strong>Hard g</strong> = /g/ sound: go, game, good</li>
+          </ul>
+          <p>The next letter matters!</p>
+        `,
+        questions: [
+          { word: "city", blank: [0], options: ["c","k"], correct: "c", meaning: "a big town", context: '"Sydney is a big city."', blankSize: 1 },
+          { word: "giant", blank: [0], options: ["g","j"], correct: "g", meaning: "very big person", context: '"The friendly giant."', blankSize: 1 },
+          { word: "circle", blank: [0], options: ["c","k"], correct: "c", meaning: "round shape", context: '"Draw a circle."', blankSize: 1 },
+          { word: "giraffe", blank: [0], options: ["g","j"], correct: "g", meaning: "tall animal", context: '"The giraffe is tall!"', blankSize: 1 },
+          { word: "cycle", blank: [0], options: ["c","k"], correct: "c", meaning: "to ride a bike", context: '"I cycle to school."', blankSize: 1 },
+          { word: "gym", blank: [0], options: ["g","j"], correct: "g", meaning: "place for exercise", context: '"Let\'s go to the gym."', blankSize: 1 }
+        ]
+      },
+      "double": {
+        name: "Double Letters",
+        hint: "Double the consonant after a short vowel!",
+        helpContent: `
+          <p>✌️ <strong>Double Letters:</strong></p>
+          <ul>
+            <li>After a <strong>short vowel</strong>, double the consonant</li>
+            <li>running (run + n + ing)</li>
+            <li>hopping (hop + p + ing)</li>
+            <li>sitting (sit + t + ing)</li>
+            <li>swimming (swim + m + ing)</li>
+          </ul>
+          <p>Short vowels: a, e, i, o, u (cat, bed, sit, hot, cup)</p>
+        `,
+        questions: [
+          { word: "running", blank: [2,3], options: ["nn","n"], correct: "nn", meaning: "moving fast", context: '"I love running!"' },
+          { word: "hopping", blank: [2,3], options: ["pp","p"], correct: "pp", meaning: "jumping on one foot", context: '"The rabbit is hopping."' },
+          { word: "sitting", blank: [2,3], options: ["tt","t"], correct: "tt", meaning: "on a chair", context: '"I am sitting down."' },
+          { word: "swimming", blank: [3,4], options: ["mm","m"], correct: "mm", meaning: "in the water", context: '"Let\'s go swimming!"' },
+          { word: "stopped", blank: [3,4], options: ["pp","p"], correct: "pp", meaning: "not moving", context: '"The car stopped."' },
+          { word: "getting", blank: [2,3], options: ["tt","t"], correct: "tt", meaning: "receiving", context: '"I\'m getting better!"' }
+        ]
+      },
+      "ck-k": {
+        name: "ck vs k",
+        hint: "Use 'ck' after a short vowel, 'k' after a long vowel",
+        helpContent: `
+          <p>🔤 <strong>ck vs k:</strong></p>
+          <ul>
+            <li><strong>ck</strong> after a <strong>short vowel</strong>: back, stick, clock</li>
+            <li><strong>k</strong> after a <strong>long vowel</strong>: bake, bike, poke</li>
+            <li><strong>k</strong> after a consonant: milk, bank, sink</li>
+          </ul>
+          <p>Short vowels sound quick: a, e, i, o, u</p>
+        `,
+        questions: [
+          { word: "back", blank: [2,3], options: ["ck","k"], correct: "ck", meaning: "behind", context: '"Go to the back!"' },
+          { word: "bake", blank: [2], options: ["k","ck"], correct: "k", meaning: "cook in oven", context: '"Let\'s bake a cake."', blankSize: 1 },
+          { word: "stick", blank: [3,4], options: ["ck","k"], correct: "ck", meaning: "thin piece of wood", context: '"Pick up the stick."' },
+          { word: "bike", blank: [2], options: ["k","ck"], correct: "k", meaning: "two wheels", context: '"Ride your bike."', blankSize: 1 },
+          { word: "clock", blank: [3,4], options: ["ck","k"], correct: "ck", meaning: "tells time", context: '"Look at the clock."' },
+          { word: "poke", blank: [2], options: ["k","ck"], correct: "k", meaning: "to push with finger", context: '"Don\'t poke me!"', blankSize: 1 }
+        ]
+      },
+      "magic-e": {
+        name: "Magic E (Silent E)",
+        hint: "Magic E makes the vowel say its name!",
+        helpContent: `
+          <p>✨ <strong>Magic E Rule:</strong></p>
+          <ul>
+            <li>When a word ends in silent <strong>e</strong>, the vowel before it says its name (long sound)</li>
+            <li>hat → hat<strong>e</strong> (short a → long a)</li>
+            <li>bit → bit<strong>e</strong> (short i → long i)</li>
+            <li>hop → hop<strong>e</strong> (short o → long o)</li>
+          </ul>
+          <p>The E is silent but it changes the vowel sound!</p>
+        `,
+        questions: [
+          { word: "hate", blank: [3], options: ["e",""], correct: "e", meaning: "to really dislike", context: '"I hate spinach!"' },
+          { word: "bite", blank: [3], options: ["e",""], correct: "e", meaning: "to use teeth", context: '"Don\'t bite!"' },
+          { word: "hope", blank: [3], options: ["e",""], correct: "e", meaning: "to wish for", context: '"I hope it\'s sunny."' },
+          { word: "cute", blank: [3], options: ["e",""], correct: "e", meaning: "adorable", context: '"What a cute puppy!"' },
+          { word: "make", blank: [3], options: ["e",""], correct: "e", meaning: "to create", context: '"Let\'s make a cake."' },
+          { word: "time", blank: [3], options: ["e",""], correct: "e", meaning: "hours and minutes", context: '"What time is it?"' }
+        ]
+      },
+      "tch": {
+        name: "-tch after short vowels",
+        hint: "Use -tch after a short vowel for the /ch/ sound",
+        helpContent: `
+          <p>🔤 <strong>-tch Rule:</strong></p>
+          <ul>
+            <li>After a <strong>short vowel</strong>, use <strong>-tch</strong>: catch, fetch, witch</li>
+            <li>After other sounds, use <strong>-ch</strong>: much, rich, lunch</li>
+          </ul>
+          <p>Exceptions: much, such, rich, which (memorise these!)</p>
+        `,
+        questions: [
+          { word: "catch", blank: [2,3,4], options: ["tch","ch"], correct: "tch", meaning: "to grab", context: '"Catch the ball!"' },
+          { word: "watch", blank: [2,3,4], options: ["tch","ch"], correct: "tch", meaning: "to look at", context: '"Watch this!"' },
+          { word: "witch", blank: [2,3,4], options: ["tch","ch"], correct: "tch", meaning: "magical woman", context: '"The witch flew away."' },
+          { word: "fetch", blank: [2,3,4], options: ["tch","ch"], correct: "tch", meaning: "to go get", context: '"Fetch the ball!"' },
+          { word: "match", blank: [2,3,4], options: ["tch","ch"], correct: "tch", meaning: "to be the same", context: '"These socks match."' },
+          { word: "patch", blank: [2,3,4], options: ["tch","ch"], correct: "tch", meaning: "a piece of fabric", context: '"Sew on a patch."' }
+        ]
+      },
+      "dge": {
+        name: "-dge after short vowels",
+        hint: "Use -dge after a short vowel for the /j/ sound",
+        helpContent: `
+          <p>🔤 <strong>-dge Rule:</strong></p>
+          <ul>
+            <li>After a <strong>short vowel</strong>, use <strong>-dge</strong>: badge, bridge, fudge</li>
+            <li>After other sounds, use <strong>-ge</strong>: huge, page, cage</li>
+          </ul>
+          <p>The d is silent but shows the vowel is short!</p>
+        `,
+        questions: [
+          { word: "badge", blank: [2,3,4], options: ["dge","ge"], correct: "dge", meaning: "a pin or emblem", context: '"Earn your badge!"' },
+          { word: "bridge", blank: [3,4,5], options: ["dge","ge"], correct: "dge", meaning: "over a river", context: '"Cross the bridge."' },
+          { word: "fudge", blank: [2,3,4], options: ["dge","ge"], correct: "dge", meaning: "chocolate treat", context: '"Yummy fudge!"' },
+          { word: "judge", blank: [2,3,4], options: ["dge","ge"], correct: "dge", meaning: "decides in court", context: '"The judge spoke."' },
+          { word: "ridge", blank: [2,3,4], options: ["dge","ge"], correct: "dge", meaning: "top of a hill", context: '"Walk along the ridge."' },
+          { word: "wedge", blank: [2,3,4], options: ["dge","ge"], correct: "dge", meaning: "triangle shape", context: '"A wedge of cheese."' }
+        ]
+      },
+      "floss": {
+        name: "FLOSS Rule (ff, ll, ss, zz)",
+        hint: "Double f, l, s, z after a short vowel in one-syllable words",
+        helpContent: `
+          <p>🦷 <strong>FLOSS Rule:</strong></p>
+          <ul>
+            <li>In one-syllable words with a <strong>short vowel</strong></li>
+            <li>Double the <strong>f, l, s,</strong> or <strong>z</strong> at the end</li>
+            <li>Examples: stu<strong>ff</strong>, be<strong>ll</strong>, mi<strong>ss</strong>, bu<strong>zz</strong></li>
+          </ul>
+          <p>FLOSS = F, L, O, S, S (the letters that double!)</p>
+        `,
+        questions: [
+          { word: "stuff", blank: [3,4], options: ["ff","f"], correct: "ff", meaning: "things", context: '"Pack your stuff."' },
+          { word: "bell", blank: [2,3], options: ["ll","l"], correct: "ll", meaning: "rings", context: '"Ring the bell!"' },
+          { word: "miss", blank: [2,3], options: ["ss","s"], correct: "ss", meaning: "to fail to hit", context: '"Don\'t miss!"' },
+          { word: "buzz", blank: [2,3], options: ["zz","z"], correct: "zz", meaning: "bee sound", context: '"Bees buzz."' },
+          { word: "spell", blank: [3,4], options: ["ll","l"], correct: "ll", meaning: "write letters", context: '"Spell the word."' },
+          { word: "grass", blank: [3,4], options: ["ss","s"], correct: "ss", meaning: "green plants", context: '"Mow the grass."' }
+        ]
+      },
+      "drop-e": {
+        name: "Drop the E",
+        hint: "Drop silent E before adding -ing or -ed",
+        helpContent: `
+          <p>✂️ <strong>Drop the E Rule:</strong></p>
+          <ul>
+            <li>When adding a suffix starting with a vowel (-ing, -ed, -er)</li>
+            <li><strong>Drop</strong> the silent e at the end</li>
+            <li>make → mak<strong>ing</strong> (not makeing)</li>
+            <li>hope → hop<strong>ed</strong> (not hopeed)</li>
+          </ul>
+        `,
+        questions: [
+          { word: "making", blank: [3,4,5,6], options: ["king","eing"], correct: "king", meaning: "creating", context: '"I am making a cake."' },
+          { word: "hoping", blank: [3,4,5,6], options: ["ping","eing"], correct: "ping", meaning: "wishing", context: '"I am hoping for sun."' },
+          { word: "baking", blank: [3,4,5,6], options: ["king","eing"], correct: "king", meaning: "cooking in oven", context: '"Mum is baking."' },
+          { word: "giving", blank: [3,4,5,6], options: ["ving","eing"], correct: "ving", meaning: "handing over", context: '"I am giving a gift."' },
+          { word: "coming", blank: [3,4,5,6], options: ["ming","eing"], correct: "ming", meaning: "arriving", context: '"Dad is coming home."' },
+          { word: "taking", blank: [3,4,5,6], options: ["king","eing"], correct: "king", meaning: "grabbing", context: '"Taking the bus."' }
+        ]
+      },
+      "change-y": {
+        name: "Change Y to I",
+        hint: "Change y to i before adding -ed, -es, or -er",
+        helpContent: `
+          <p>🔄 <strong>Change Y to I Rule:</strong></p>
+          <ul>
+            <li>When a word ends in <strong>consonant + y</strong></li>
+            <li>Change the y to <strong>i</strong> before adding suffixes</li>
+            <li>happy → happ<strong>ier</strong>, happ<strong>iest</strong></li>
+            <li>carry → carr<strong>ied</strong></li>
+            <li>baby → bab<strong>ies</strong></li>
+          </ul>
+          <p>But keep y before -ing: carrying, crying</p>
+        `,
+        questions: [
+          { word: "happier", blank: [4,5,6], options: ["ier","yer"], correct: "ier", meaning: "more happy", context: '"I feel happier now."' },
+          { word: "carried", blank: [4,5,6], options: ["ied","yed"], correct: "ied", meaning: "past of carry", context: '"She carried the bag."' },
+          { word: "cried", blank: [2,3,4], options: ["ied","yed"], correct: "ied", meaning: "past of cry", context: '"The baby cried."' },
+          { word: "tried", blank: [2,3,4], options: ["ied","yed"], correct: "ied", meaning: "past of try", context: '"I tried my best."' },
+          { word: "easier", blank: [3,4,5], options: ["ier","yer"], correct: "ier", meaning: "more easy", context: '"This is easier."' },
+          { word: "funnier", blank: [4,5,6], options: ["ier","yer"], correct: "ier", meaning: "more funny", context: '"That joke is funnier!"' }
+        ]
+      },
+      "ful": {
+        name: "-ful has one L",
+        hint: "The suffix -ful only has ONE L!",
+        helpContent: `
+          <p>1️⃣ <strong>-ful Rule:</strong></p>
+          <ul>
+            <li>The suffix <strong>-ful</strong> only has <strong>one L</strong></li>
+            <li>Even though "full" has two L's!</li>
+            <li>beauti<strong>ful</strong> (not beautifull)</li>
+            <li>care<strong>ful</strong> (not carefull)</li>
+            <li>wonder<strong>ful</strong> (not wonderfull)</li>
+          </ul>
+        `,
+        questions: [
+          { word: "beautiful", blank: [6,7,8], options: ["ful","full"], correct: "ful", meaning: "very pretty", context: '"What a beautiful day!"' },
+          { word: "careful", blank: [4,5,6], options: ["ful","full"], correct: "ful", meaning: "with care", context: '"Be careful!"' },
+          { word: "wonderful", blank: [6,7,8], options: ["ful","full"], correct: "ful", meaning: "amazing", context: '"That\'s wonderful!"' },
+          { word: "helpful", blank: [4,5,6], options: ["ful","full"], correct: "ful", meaning: "gives help", context: '"You are so helpful."' },
+          { word: "thankful", blank: [5,6,7], options: ["ful","full"], correct: "ful", meaning: "grateful", context: '"I am thankful."' },
+          { word: "powerful", blank: [5,6,7], options: ["ful","full"], correct: "ful", meaning: "very strong", context: '"A powerful storm."' }
+        ]
+      },
+      "plural-es": {
+        name: "Plurals: add -es",
+        hint: "Add -es to words ending in s, x, z, ch, sh",
+        helpContent: `
+          <p>📦 <strong>Add -es Rule:</strong></p>
+          <ul>
+            <li>Add <strong>-es</strong> (not just -s) to words ending in:</li>
+            <li><strong>s</strong>: bus → bus<strong>es</strong></li>
+            <li><strong>x</strong>: box → box<strong>es</strong></li>
+            <li><strong>z</strong>: quiz → quiz<strong>zes</strong></li>
+            <li><strong>ch</strong>: watch → watch<strong>es</strong></li>
+            <li><strong>sh</strong>: brush → brush<strong>es</strong></li>
+          </ul>
+        `,
+        questions: [
+          { word: "boxes", blank: [3,4], options: ["es","s"], correct: "es", meaning: "more than one box", context: '"Stack the boxes."' },
+          { word: "buses", blank: [3,4], options: ["es","s"], correct: "es", meaning: "more than one bus", context: '"The buses are late."' },
+          { word: "watches", blank: [5,6], options: ["es","s"], correct: "es", meaning: "more than one watch", context: '"I collect watches."' },
+          { word: "brushes", blank: [5,6], options: ["es","s"], correct: "es", meaning: "more than one brush", context: '"Get the brushes."' },
+          { word: "foxes", blank: [3,4], options: ["es","s"], correct: "es", meaning: "more than one fox", context: '"Two foxes ran by."' },
+          { word: "classes", blank: [5,6], options: ["es","s"], correct: "es", meaning: "more than one class", context: '"I have three classes."' }
+        ]
+      },
+      "plural-ies": {
+        name: "Plurals: change y to -ies",
+        hint: "Change y to i and add -es for consonant + y words",
+        helpContent: `
+          <p>👶 <strong>Change Y to IES Rule:</strong></p>
+          <ul>
+            <li>Words ending in <strong>consonant + y</strong>:</li>
+            <li>Change y to i, then add -es</li>
+            <li>baby → bab<strong>ies</strong></li>
+            <li>city → cit<strong>ies</strong></li>
+            <li>fly → fl<strong>ies</strong></li>
+          </ul>
+          <p>But vowel + y just adds s: toys, keys, boys</p>
+        `,
+        questions: [
+          { word: "babies", blank: [3,4,5], options: ["ies","ys"], correct: "ies", meaning: "more than one baby", context: '"The babies are cute."' },
+          { word: "cities", blank: [3,4,5], options: ["ies","ys"], correct: "ies", meaning: "more than one city", context: '"Big cities are busy."' },
+          { word: "flies", blank: [2,3,4], options: ["ies","ys"], correct: "ies", meaning: "more than one fly", context: '"Flies buzz around."' },
+          { word: "stories", blank: [4,5,6], options: ["ies","ys"], correct: "ies", meaning: "more than one story", context: '"Read me stories!"' },
+          { word: "parties", blank: [4,5,6], options: ["ies","ys"], correct: "ies", meaning: "more than one party", context: '"Birthday parties are fun."' },
+          { word: "families", blank: [5,6,7], options: ["ies","ys"], correct: "ies", meaning: "more than one family", context: '"Many families came."' }
+        ]
+      },
+      "ph-f": {
+        name: "ph makes the /f/ sound",
+        hint: "The letters ph together make an /f/ sound",
+        helpContent: `
+          <p>📞 <strong>PH = F Rule:</strong></p>
+          <ul>
+            <li>The letters <strong>ph</strong> make the /f/ sound</li>
+            <li><strong>ph</strong>one sounds like "fone"</li>
+            <li>ele<strong>ph</strong>ant sounds like "elefant"</li>
+            <li>al<strong>ph</strong>abet sounds like "alfabet"</li>
+          </ul>
+          <p>This comes from Greek words!</p>
+        `,
+        questions: [
+          { word: "phone", blank: [0,1], options: ["ph","f"], correct: "ph", meaning: "to call someone", context: '"Answer the phone!"' },
+          { word: "elephant", blank: [3,4], options: ["ph","f"], correct: "ph", meaning: "big grey animal", context: '"The elephant trumpets."' },
+          { word: "photo", blank: [0,1], options: ["ph","f"], correct: "ph", meaning: "a picture", context: '"Take a photo!"' },
+          { word: "alphabet", blank: [2,3], options: ["ph","f"], correct: "ph", meaning: "A to Z", context: '"Learn the alphabet."' },
+          { word: "dolphin", blank: [3,4], options: ["ph","f"], correct: "ph", meaning: "smart sea animal", context: '"The dolphin jumped!"' },
+          { word: "graph", blank: [3,4], options: ["ph","f"], correct: "ph", meaning: "a chart", context: '"Draw a graph."' }
+        ]
+      },
+      "qu": {
+        name: "Q is always followed by U",
+        hint: "In English, Q is always followed by U!",
+        helpContent: `
+          <p>👑 <strong>Q + U Rule:</strong></p>
+          <ul>
+            <li>The letter <strong>Q</strong> is <strong>always</strong> followed by <strong>U</strong></li>
+            <li><strong>qu</strong>een, <strong>qu</strong>iet, <strong>qu</strong>ick</li>
+            <li>They make a /kw/ sound together</li>
+            <li>Never write just "q" alone in English!</li>
+          </ul>
+        `,
+        questions: [
+          { word: "queen", blank: [0,1], options: ["qu","q"], correct: "qu", meaning: "female ruler", context: '"The Queen waved."' },
+          { word: "quiet", blank: [0,1], options: ["qu","q"], correct: "qu", meaning: "not loud", context: '"Please be quiet."' },
+          { word: "quick", blank: [0,1], options: ["qu","q"], correct: "qu", meaning: "fast", context: '"Be quick!"' },
+          { word: "question", blank: [0,1], options: ["qu","q"], correct: "qu", meaning: "asking something", context: '"I have a question."' },
+          { word: "square", blank: [1,2], options: ["qu","q"], correct: "qu", meaning: "four equal sides", context: '"Draw a square."' },
+          { word: "quilt", blank: [0,1], options: ["qu","q"], correct: "qu", meaning: "warm blanket", context: '"Snuggle in the quilt."' }
+        ]
+      },
+      "tion-sion": {
+        name: "-tion and -sion endings",
+        hint: "-tion is more common, -sion after certain letters",
+        helpContent: `
+          <p>📝 <strong>-tion vs -sion:</strong></p>
+          <ul>
+            <li><strong>-tion</strong> is more common: station, nation, action</li>
+            <li><strong>-sion</strong> after l, n, r, s: television, extension</li>
+            <li>Both make a /shun/ sound</li>
+            <li>-sion can also sound like /zhun/: vision, decision</li>
+          </ul>
+        `,
+        questions: [
+          { word: "station", blank: [3,4,5,6], options: ["tion","sion"], correct: "tion", meaning: "train stop", context: '"Meet at the station."' },
+          { word: "television", blank: [6,7,8,9], options: ["sion","tion"], correct: "sion", meaning: "TV", context: '"Watch television."' },
+          { word: "action", blank: [2,3,4,5], options: ["tion","sion"], correct: "tion", meaning: "doing something", context: '"Lights, camera, action!"' },
+          { word: "decision", blank: [4,5,6,7], options: ["sion","tion"], correct: "sion", meaning: "a choice", context: '"Make a decision."' },
+          { word: "question", blank: [4,5,6,7], options: ["tion","sion"], correct: "tion", meaning: "asking", context: '"Good question!"' },
+          { word: "vision", blank: [2,3,4,5], options: ["sion","tion"], correct: "sion", meaning: "sight", context: '"Perfect vision."' }
+        ]
+      },
+      "homophones": {
+        name: "Homophones",
+        hint: "Words that sound the same but have different meanings and spellings",
+        helpContent: `
+          <p>👂 <strong>Homophones:</strong></p>
+          <ul>
+            <li>Words that <strong>sound the same</strong> but are spelled differently</li>
+            <li><strong>their</strong> = belonging to them</li>
+            <li><strong>there</strong> = a place</li>
+            <li><strong>they're</strong> = they are</li>
+            <li><strong>your</strong> = belonging to you</li>
+            <li><strong>you're</strong> = you are</li>
+          </ul>
+        `,
+        questions: [
+          { word: "their", blank: [0,1,2,3,4], options: ["their","there","they're"], correct: "their", meaning: "belonging to them", context: '"It\'s ___ house." (belongs to them)' },
+          { word: "there", blank: [0,1,2,3,4], options: ["their","there","they're"], correct: "there", meaning: "a place", context: '"Look over ___." (a place)' },
+          { word: "your", blank: [0,1,2,3], options: ["your","you're"], correct: "your", meaning: "belonging to you", context: '"Is this ___ book?" (belongs to you)' },
+          { word: "you're", blank: [0,1,2,3,4,5], options: ["your","you're"], correct: "you're", meaning: "you are", context: '"___ amazing!" (you are)' },
+          { word: "to", blank: [0,1], options: ["to","too","two"], correct: "to", meaning: "direction", context: '"Go ___ school." (direction)' },
+          { word: "two", blank: [0,1,2], options: ["to","too","two"], correct: "two", meaning: "the number 2", context: '"I have ___ cats." (number)' }
+        ]
+      }
+    };
+
+    let currentRule = "shuffle";
+    let currentQuestion = 0;
+    let selectedOption = null;
+    let results = [];
+    let shuffledQuestions = []; // For shuffle mode
+
+    function init() {
+      loadRule(currentRule);
+      setupEventListeners();
+    }
+
+    function generateShuffledQuestions(count = 10) {
+      // Collect all questions from all rules with their rule info
+      const allQuestions = [];
+      Object.keys(allRules).forEach(ruleId => {
+        const rule = allRules[ruleId];
+        rule.questions.forEach(q => {
+          allQuestions.push({
+            ...q,
+            ruleId: ruleId,
+            ruleName: rule.name,
+            ruleHint: rule.hint
+          });
+        });
+      });
+
+      // Shuffle and take first 'count' questions
+      const shuffled = allQuestions.sort(() => Math.random() - 0.5);
+      return shuffled.slice(0, count);
+    }
+
+    function loadRule(ruleId) {
+      currentRule = ruleId;
+      currentQuestion = 0;
+      results = [];
+      selectedOption = null;
+
+      // Reset compass
+      updateCompass(0, false);
+
+      // Update buttons
+      document.querySelectorAll('.rule-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.rule === ruleId);
+      });
+
+      if (ruleId === 'shuffle') {
+        // Shuffle mode - mix questions from all rules
+        shuffledQuestions = generateShuffledQuestions(10);
+        document.getElementById('rule-hint').innerHTML = `<strong>Shuffle Mode:</strong> Questions from all spelling rules!`;
+        document.getElementById('help-content').innerHTML = `
+          <p>🔀 <strong>Shuffle Mode</strong></p>
+          <p>You'll get questions from different spelling rules mixed together!</p>
+          <p>Each question will show you which rule applies.</p>
+          <p>Great for practicing everything you've learned!</p>
+        `;
+      } else {
+        const rule = allRules[ruleId];
+        document.getElementById('rule-hint').innerHTML = `<strong>Rule:</strong> ${rule.hint}`;
+        document.getElementById('help-content').innerHTML = rule.helpContent;
+      }
+
+      // Render progress dots
+      renderProgressDots();
+
+      // Load first question
+      loadQuestion(0);
+    }
+
+    function renderProgressDots() {
+      const questions = currentRule === 'shuffle' ? shuffledQuestions : allRules[currentRule].questions;
+      const container = document.getElementById('progress-dots');
+      container.innerHTML = questions.map((_, i) =>
+        `<div class="progress-dot ${i === 0 ? 'current' : ''}" data-index="${i}"></div>`
+      ).join('');
+    }
+
+    function loadQuestion(index) {
+      const questions = currentRule === 'shuffle' ? shuffledQuestions : allRules[currentRule].questions;
+      const q = questions[index];
+      selectedOption = null;
+
+      document.getElementById('current-q').textContent = index + 1;
+      document.getElementById('total-q').textContent = questions.length;
+
+      // Update compass progress
+      const percentage = (index / questions.length) * 100;
+      updateCompass(percentage, index > 0);
+
+      // Update progress dots
+      document.querySelectorAll('.progress-dot').forEach((dot, i) => {
+        dot.classList.remove('current');
+        if (i === index) dot.classList.add('current');
+        if (results[i] === true) dot.classList.add('correct');
+        if (results[i] === false) dot.classList.add('incorrect');
+      });
+
+      // Render word
+      renderWord(q);
+
+      // Render options
+      renderOptions(q.options);
+
+      // Update info
+      document.getElementById('word-meaning').textContent = q.meaning;
+      document.getElementById('word-context').textContent = q.context;
+
+      // Update hint based on mode
+      if (currentRule === 'shuffle') {
+        document.getElementById('hint-text').textContent = q.ruleHint;
+        document.getElementById('rule-hint').innerHTML = `<strong>${q.ruleName}:</strong> ${q.ruleHint}`;
+      } else {
+        document.getElementById('hint-text').textContent = allRules[currentRule].hint;
+      }
+
+      // Reset UI
+      document.getElementById('btn-check').style.display = 'block';
+      document.getElementById('feedback').classList.remove('show');
+
+      document.querySelectorAll('.option-btn').forEach(btn => {
+        btn.disabled = false;
+        btn.classList.remove('selected');
+      });
+
+      updateScore();
+    }
+
+    function renderWord(q) {
+      const container = document.getElementById('word-display');
+      const letters = q.word.split('');
+      const blankSet = new Set(q.blank);
+      const useSmall = letters.length > 7;
+      const blankCount = q.blank.length; // Number of missing letters
+
+      let inBlank = false;
+      let html = '';
+
+      letters.forEach((letter, i) => {
+        if (blankSet.has(i)) {
+          if (!inBlank) {
+            // Start of blank group - add letters-X class for width
+            html += `<div class="letter-box blank letters-${blankCount} ${useSmall ? 'small' : ''}" data-start="${i}">`;
+            for (let j = 0; j < blankCount; j++) html += '_';
+            html += '</div>';
+            inBlank = true;
+          }
+        } else {
+          inBlank = false;
+          html += `<div class="letter-box ${useSmall ? 'small' : ''}">${letter}</div>`;
+        }
+      });
+
+      container.innerHTML = html;
+    }
+
+    function renderOptions(options) {
+      const container = document.getElementById('options-container');
+      container.innerHTML = options.map(opt =>
+        `<button class="option-btn" data-option="${opt}">${opt}</button>`
+      ).join('');
+
+      container.querySelectorAll('.option-btn').forEach(btn => {
+        btn.addEventListener('click', () => selectOption(btn));
+      });
+    }
+
+    function selectOption(btn) {
+      if (btn.disabled) return;
+
+      document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedOption = btn.dataset.option;
+
+      // Fill blank
+      const blankBox = document.querySelector('.letter-box.blank');
+      if (blankBox) {
+        blankBox.textContent = selectedOption;
+        blankBox.classList.add('filled');
+      }
+    }
+
+    function checkAnswer() {
+      if (!selectedOption) {
+        alert('Please choose an option first!');
+        return;
+      }
+
+      const questions = currentRule === 'shuffle' ? shuffledQuestions : allRules[currentRule].questions;
+      const q = questions[currentQuestion];
+      const isCorrect = selectedOption === q.correct;
+      results[currentQuestion] = isCorrect;
+
+      // Update blank styling
+      const blankBox = document.querySelector('.letter-box.blank');
+      if (blankBox) {
+        blankBox.classList.remove('filled');
+        blankBox.classList.add(isCorrect ? 'correct' : 'incorrect');
+        if (!isCorrect) blankBox.textContent = q.correct;
+      }
+
+      document.querySelectorAll('.option-btn').forEach(btn => btn.disabled = true);
+
+      // Show feedback
+      const feedback = document.getElementById('feedback');
+      const badge = document.getElementById('feedback-badge');
+      const icon = document.getElementById('feedback-icon');
+      const text = document.getElementById('feedback-text');
+      const tryAgain = document.getElementById('btn-try-again');
+      const next = document.getElementById('btn-next');
+
+      badge.className = 'feedback-badge ' + (isCorrect ? 'correct' : 'incorrect');
+      icon.textContent = isCorrect ? '✓' : '✗';
+      text.textContent = isCorrect ? 'Correct!' : `It's "${q.correct}"`;
+
+      tryAgain.style.display = isCorrect ? 'none' : 'inline-block';
+      next.style.display = 'flex';
+
+      document.getElementById('btn-check').style.display = 'none';
+      feedback.classList.add('show');
+
+      // Update dot
+      const dot = document.querySelector(`.progress-dot[data-index="${currentQuestion}"]`);
+      dot.classList.add(isCorrect ? 'correct' : 'incorrect');
+
+      updateScore();
+
+      // Play audio feedback
+      playAudio(isCorrect ? '../audio/spelling-rules/feedback-correct.mp3' : '../audio/spelling-rules/feedback-incorrect.mp3');
+    }
+
+    function updateScore() {
+      const correct = results.filter(r => r === true).length;
+      const total = results.length;
+      document.getElementById('score-display').textContent = total > 0 ? `Score: ${correct}/${total}` : '';
+    }
+
+    function tryAgain() {
+      loadQuestion(currentQuestion);
+    }
+
+    function nextQuestion() {
+      cycleColor();
+      const questions = currentRule === 'shuffle' ? shuffledQuestions : allRules[currentRule].questions;
+      if (currentQuestion < questions.length - 1) {
+        currentQuestion++;
+        loadQuestion(currentQuestion);
+      } else {
+        // Complete - update compass to 100%
+        updateCompass(100, true);
+        const correct = results.filter(r => r === true).length;
+        const modeName = currentRule === 'shuffle' ? 'Shuffle Mode' : allRules[currentRule].name;
+        playAudio('../audio/spelling-rules/feedback-complete.mp3', () => {
+          alert(`Finished "${modeName}"!\n\nYou got ${correct} out of ${questions.length} correct!`);
+        });
+      }
+    }
+
+    function readAloud() {
+      playAudio('../audio/spelling-rules/question.mp3');
+    }
+
+    function openModal(id) { document.getElementById(id).classList.add('show'); }
+    function closeModal(id) {
+      // Stop any playing audio when closing modals
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      document.getElementById(id).classList.remove('show');
+    }
+
+    function setupEventListeners() {
+      // Rule selector
+      document.querySelectorAll('.rule-btn').forEach(btn => {
+        btn.addEventListener('click', () => loadRule(btn.dataset.rule));
+      });
+
+      document.getElementById('btn-check').addEventListener('click', checkAnswer);
+      document.getElementById('btn-try-again').addEventListener('click', tryAgain);
+      document.getElementById('btn-next').addEventListener('click', nextQuestion);
+      document.getElementById('btn-read-aloud').addEventListener('click', readAloud);
+      document.getElementById('btn-get-help').addEventListener('click', () => {
+        openModal('help-modal');
+        playAudio('../audio/spelling-rules/help.mp3');
+      });
+      document.getElementById('header-help').addEventListener('click', () => {
+        openModal('help-modal');
+        playAudio('../audio/spelling-rules/help.mp3');
+      });
+      document.getElementById('btn-get-hint').addEventListener('click', () => {
+        openModal('hint-modal');
+        playAudio('../audio/spelling-rules/hint.mp3');
+      });
+
+      document.querySelectorAll('.modal-overlay').forEach(modal => {
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) closeModal(modal.id);
+        });
+      });
+    }
+
+    initColorCycle();
+    init();
+  </script>
+</body>
+</html>

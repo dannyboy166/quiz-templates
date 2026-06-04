@@ -28,3 +28,19 @@ Thumbs.db
 !butterfly.MP4
 !Firefly-Video.MP4
 !sphere-video.mp4
+
+# Python virtual environment
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Data files (large, contains curriculum content and images)
+data/
+!data/gethelp/
+
+# Azure credentials (handled by az login, but just in case)
+.azure/
+
+# Claude memory (project-specific, not for sharing)
+.claude/

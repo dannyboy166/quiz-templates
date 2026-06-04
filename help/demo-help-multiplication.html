@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Help Lesson - Multiplication</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #FAE38E;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .back-btn {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: white;
+      color: #333;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 25px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+      transition: transform 0.2s, box-shadow 0.2s;
+      z-index: 100;
+    }
+
+    .back-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    .trigger-btn {
+      background: #27ae60;
+      color: white;
+      border: none;
+      padding: 20px 40px;
+      border-radius: 16px;
+      font-size: 24px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
+    }
+
+    .trigger-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 20px rgba(39, 174, 96, 0.5);
+    }
+
+    /* ============ HELP OVERLAY ============ */
+    .help-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s, visibility 0.3s;
+    }
+
+    .help-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .help-container {
+      width: 90%;
+      max-width: 800px;
+      background: white;
+      border-radius: 24px;
+      padding: 40px;
+      position: relative;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .help-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: none;
+      background: #f0f0f0;
+      font-size: 24px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #666;
+      transition: background 0.2s;
+    }
+
+    .help-close:hover {
+      background: #e0e0e0;
+    }
+
+    .help-title {
+      text-align: center;
+      font-size: 28px;
+      margin-bottom: 30px;
+      color: #333;
+    }
+
+    /* Animation stage */
+    .stage {
+      height: 320px;
+      background: linear-gradient(180deg, #E8F5E9 0%, #C8E6C9 100%);
+      border-radius: 16px;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    /* Text callout */
+    .callout {
+      position: absolute;
+      top: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-size: 18px;
+      font-weight: 600;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      opacity: 0;
+      transition: opacity 0.4s;
+      white-space: nowrap;
+      max-width: 90%;
+      text-align: center;
+    }
+
+    .callout.visible {
+      opacity: 1;
+    }
+
+    /* Intro title */
+    .intro-title {
+      position: absolute;
+      top: 55%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      font-size: 42px;
+      font-weight: 700;
+      color: #333;
+      opacity: 0;
+      transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+      text-align: center;
+    }
+
+    .intro-title.visible {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    .intro-title .emoji {
+      font-size: 50px;
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    /* ============ BASKETS PHASE ============ */
+    #baskets-phase {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      transition: opacity 0.4s;
+      padding-top: 60px;
+    }
+
+    #baskets-phase.visible {
+      opacity: 1;
+    }
+
+    .baskets-row {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      padding: 0 20px;
+    }
+
+    .basket-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      opacity: 0;
+      transform: scale(0);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .basket-container.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .basket-container.highlight {
+      transform: scale(1.1);
+    }
+
+    .basket-container.highlight .basket-label {
+      color: #27ae60;
+      font-weight: 700;
+    }
+
+    .basket-container.highlight .basket-icon {
+      filter: drop-shadow(0 0 10px rgba(39, 174, 96, 0.5));
+    }
+
+    .basket-label {
+      font-size: 18px;
+      font-weight: 600;
+      color: #666;
+      margin-bottom: 8px;
+      transition: all 0.3s;
+    }
+
+    .apples-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+
+    .apple {
+      font-size: 32px;
+      opacity: 0;
+      transform: scale(0);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .apple.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .basket-icon {
+      font-size: 50px;
+      transition: all 0.3s;
+    }
+
+    .basket-count {
+      font-size: 24px;
+      font-weight: 700;
+      color: #27ae60;
+      margin-top: 5px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .basket-count.visible {
+      opacity: 1;
+    }
+
+    /* ============ EQUATION PHASE ============ */
+    .equation-phase {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    .equation-phase.visible {
+      opacity: 1;
+    }
+
+    .equation-row {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .numbers-row .eq-item {
+      font-size: 50px;
+      font-weight: 700;
+      color: #333;
+      transition: all 0.3s;
+    }
+
+    .numbers-row .eq-operator {
+      color: #666;
+    }
+
+    .eq-item.highlight {
+      color: #27ae60 !important;
+      transform: scale(1.15);
+    }
+
+    .groups-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .apple-group {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2px;
+      padding: 8px;
+      border-radius: 12px;
+      border: 3px solid transparent;
+      transition: all 0.3s;
+    }
+
+    .apple-group.highlight {
+      border-color: #27ae60;
+      background: rgba(39, 174, 96, 0.15);
+      box-shadow: 0 0 20px rgba(39, 174, 96, 0.3);
+    }
+
+    .apple-group .apple {
+      font-size: 24px;
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .groups-row .eq-operator {
+      font-size: 28px;
+      font-weight: 700;
+      color: #666;
+    }
+
+    /* Hide answer initially */
+    #num-answer,
+    #equals1 {
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    #num-answer.visible,
+    #equals1.visible {
+      opacity: 1;
+    }
+
+    /* ============ INSIGHT PHASE ============ */
+    #insight-phase {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      transition: opacity 0.4s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding-top: 40px;
+    }
+
+    #insight-phase.visible {
+      opacity: 1;
+    }
+
+    .insight-text {
+      font-size: 28px;
+      font-weight: 700;
+      color: #333;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.4s;
+    }
+
+    .insight-text.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .insight-text .highlight {
+      color: #27ae60;
+    }
+
+    .think-bubble {
+      background: white;
+      padding: 20px 30px;
+      border-radius: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      font-size: 22px;
+      font-weight: 600;
+      color: #333;
+      opacity: 0;
+      transform: scale(0.8);
+      transition: all 0.4s;
+    }
+
+    .think-bubble.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    /* Progress bar */
+    .progress-bar {
+      height: 16px;
+      background: #ddd;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      cursor: pointer;
+      position: relative;
+      user-select: none;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #27ae60, #2ecc71);
+      width: 0%;
+      border-radius: 8px;
+      pointer-events: none;
+      position: relative;
+    }
+
+    .progress-thumb {
+      position: absolute;
+      right: -10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 20px;
+      background: white;
+      border: 3px solid #27ae60;
+      border-radius: 50%;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    /* Controls */
+    .help-controls {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    .help-btn {
+      padding: 12px 30px;
+      border-radius: 25px;
+      border: none;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .help-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .help-btn.primary {
+      background: #4CAF50;
+      color: white;
+    }
+
+    .help-btn.secondary {
+      background: #f0f0f0;
+      color: #333;
+    }
+
+    /* Debug panel */
+    .debug-panel {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+      font-size: 14px;
+      z-index: 1001;
+    }
+
+    .debug-time {
+      font-family: monospace;
+      font-size: 18px;
+      color: #27ae60;
+    }
+  </style>
+</head>
+<body>
+
+  <a href="index.html" class="back-btn">← Back to Lessons</a>
+
+  <button class="trigger-btn" id="start-help">
+    Click to see Multiplication Help
+  </button>
+
+  <!-- Help Overlay -->
+  <div class="help-overlay" id="help-overlay">
+    <div class="help-container">
+      <button class="help-close" id="help-close">&times;</button>
+
+      <h2 class="help-title">What is Multiplication?</h2>
+
+      <div class="stage" id="stage">
+        <!-- Callout text -->
+        <div class="callout" id="callout"></div>
+
+        <!-- Intro title -->
+        <div class="intro-title" id="intro-title">
+          <span class="emoji">🧺 × 🍎</span>
+          What is Multiplying?
+        </div>
+
+        <!-- BASKETS PHASE: Groups concept -->
+        <div id="baskets-phase">
+          <div class="baskets-row">
+            <div class="basket-container" id="basket1">
+              <span class="basket-label">Basket 1</span>
+              <div class="apples-grid">
+                <span class="apple" id="a1-1">🍎</span>
+                <span class="apple" id="a1-2">🍎</span>
+                <span class="apple" id="a1-3">🍎</span>
+                <span class="apple" id="a1-4">🍎</span>
+              </div>
+              <span class="basket-icon">🧺</span>
+              <span class="basket-count" id="count1">4</span>
+            </div>
+            <div class="basket-container" id="basket2">
+              <span class="basket-label">Basket 2</span>
+              <div class="apples-grid">
+                <span class="apple" id="a2-1">🍎</span>
+                <span class="apple" id="a2-2">🍎</span>
+                <span class="apple" id="a2-3">🍎</span>
+                <span class="apple" id="a2-4">🍎</span>
+              </div>
+              <span class="basket-icon">🧺</span>
+              <span class="basket-count" id="count2">4</span>
+            </div>
+            <div class="basket-container" id="basket3">
+              <span class="basket-label">Basket 3</span>
+              <div class="apples-grid">
+                <span class="apple" id="a3-1">🍎</span>
+                <span class="apple" id="a3-2">🍎</span>
+                <span class="apple" id="a3-3">🍎</span>
+                <span class="apple" id="a3-4">🍎</span>
+              </div>
+              <span class="basket-icon">🧺</span>
+              <span class="basket-count" id="count3">4</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- EQUATION PHASE -->
+        <div id="equation-phase" class="equation-phase">
+          <div class="equation-row numbers-row">
+            <span class="eq-item" id="num1">3</span>
+            <span class="eq-item eq-operator" id="times1">×</span>
+            <span class="eq-item" id="num2">4</span>
+            <span class="eq-item eq-operator" id="equals1">=</span>
+            <span class="eq-item" id="num-answer">12</span>
+          </div>
+          <div class="equation-row groups-row">
+            <div class="apple-group" id="group1">
+              <span class="apple">🍎</span>
+              <span class="apple">🍎</span>
+              <span class="apple">🍎</span>
+              <span class="apple">🍎</span>
+            </div>
+            <span class="eq-operator">×</span>
+            <div class="apple-group" id="group2">
+              <span class="apple">🍎</span>
+              <span class="apple">🍎</span>
+              <span class="apple">🍎</span>
+              <span class="apple">🍎</span>
+            </div>
+            <span class="eq-operator">×</span>
+            <div class="apple-group" id="group3">
+              <span class="apple">🍎</span>
+              <span class="apple">🍎</span>
+              <span class="apple">🍎</span>
+              <span class="apple">🍎</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- INSIGHT PHASE -->
+        <div id="insight-phase">
+          <div class="insight-text" id="insight1">
+            The times sign means <span class="highlight">"groups of"</span>
+          </div>
+          <div class="insight-text" id="insight2">
+            3 <span class="highlight">groups of</span> 4
+          </div>
+          <div class="think-bubble" id="think-bubble">
+            "How many groups? How many in each group?"
+          </div>
+        </div>
+      </div>
+
+      <div class="progress-bar" id="progress-bar">
+        <div class="progress-fill" id="progress-fill">
+          <div class="progress-thumb"></div>
+        </div>
+      </div>
+
+      <div class="help-controls">
+        <button class="help-btn secondary" id="replay-btn">Replay</button>
+        <button class="help-btn primary" id="got-it-btn">Got it!</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Debug panel -->
+  <div class="debug-panel">
+    <strong>Debug</strong>
+    Time: <span class="debug-time" id="debug-time">0.0s</span>
+  </div>
+
+  <audio id="help-audio" src="../audio/help-multiplication.mp3" preload="auto"></audio>
+
+  <script>
+    // Elements
+    const overlay = document.getElementById('help-overlay');
+    const audio = document.getElementById('help-audio');
+    const progressFill = document.getElementById('progress-fill');
+    const debugTime = document.getElementById('debug-time');
+    const callout = document.getElementById('callout');
+    const introTitle = document.getElementById('intro-title');
+
+    // Baskets phase elements
+    const basketsPhase = document.getElementById('baskets-phase');
+    const baskets = [
+      document.getElementById('basket1'),
+      document.getElementById('basket2'),
+      document.getElementById('basket3')
+    ];
+    const basketCounts = [
+      document.getElementById('count1'),
+      document.getElementById('count2'),
+      document.getElementById('count3')
+    ];
+    const apples = [
+      [document.getElementById('a1-1'), document.getElementById('a1-2'), document.getElementById('a1-3'), document.getElementById('a1-4')],
+      [document.getElementById('a2-1'), document.getElementById('a2-2'), document.getElementById('a2-3'), document.getElementById('a2-4')],
+      [document.getElementById('a3-1'), document.getElementById('a3-2'), document.getElementById('a3-3'), document.getElementById('a3-4')]
+    ];
+
+    // Equation phase elements
+    const equationPhase = document.getElementById('equation-phase');
+    const num1 = document.getElementById('num1');
+    const num2 = document.getElementById('num2');
+    const numAnswer = document.getElementById('num-answer');
+    const times1 = document.getElementById('times1');
+    const equals1 = document.getElementById('equals1');
+    const groups = [
+      document.getElementById('group1'),
+      document.getElementById('group2'),
+      document.getElementById('group3')
+    ];
+
+    // Insight phase elements
+    const insightPhase = document.getElementById('insight-phase');
+    const insight1 = document.getElementById('insight1');
+    const insight2 = document.getElementById('insight2');
+    const thinkBubble = document.getElementById('think-bubble');
+
+    // ============ TIMELINE ============
+    const TIMELINE = [
+      { time: 0.0,   action: () => showIntroTitle() },
+      { time: 0.1,   action: () => setCallout("Let's figure out what multiplying really means!") },
+
+      // Show baskets
+      { time: 3.4,   action: () => { hideIntroTitle(); showBasketsPhase(); setCallout("Imagine you have three baskets."); showAllBaskets(); } },
+      { time: 5.9,   action: () => { setCallout("And each basket has four apples inside."); showAllApples(); } },
+
+      // Count each basket
+      { time: 9.2,   action: () => { highlightBasket(0); setCallout("Basket one has four."); showCount(0); } },
+      { time: 11.2,  action: () => { highlightBasket(1); setCallout("Basket two has four."); showCount(1); } },
+      { time: 13.4,  action: () => { highlightBasket(2); setCallout("And basket three has four."); showCount(2); } },
+
+      // Transition to multiplication
+      { time: 16.0,  action: () => { clearBasketHighlights(); setCallout("Instead of counting every single apple..."); } },
+      { time: 18.9,  action: () => { setCallout("We can use multiplication!"); } },
+
+      // Show equation
+      { time: 21.2,  action: () => { hideBasketsPhase(); showEquationPhase(); setCallout("Three baskets..."); highlightNum1(); } },
+      { time: 22.6,  action: () => { highlightTimes(); setCallout("times..."); } },
+      { time: 23.0,  action: () => { highlightNum2(); setCallout("four apples in each..."); } },
+      { time: 24.8,  action: () => { showAnswer(); setCallout("equals twelve apples altogether!"); } },
+
+      // Reinforce equation
+      { time: 27.4,  action: () => { setCallout("Three times four equals twelve."); highlightAll(); } },
+
+      // Insight: "groups of"
+      { time: 30.2,  action: () => { hideEquationPhase(); showInsightPhase(); setCallout("The times sign means 'groups of'."); showInsight1(); } },
+      { time: 33.0,  action: () => { setCallout("Three groups of four!"); showInsight2(); } },
+
+      // Think prompt
+      { time: 35.1,  action: () => { setCallout("So when you see a times sign, think..."); } },
+      { time: 37.7,  action: () => { showThinkBubble(); setCallout("'How many groups? How many in each group?'"); } },
+
+      // Conclusion
+      { time: 41.2,  action: () => setCallout("Now you know the secret of multiplying! 🎉") },
+    ];
+
+    let timelineIndex = 0;
+    let animationFrame;
+
+    // ============ ANIMATION FUNCTIONS ============
+    function showIntroTitle() {
+      introTitle.classList.add('visible');
+    }
+
+    function hideIntroTitle() {
+      introTitle.classList.remove('visible');
+    }
+
+    function setCallout(text) {
+      callout.textContent = text;
+      callout.classList.add('visible');
+    }
+
+    // Baskets phase
+    function showBasketsPhase() {
+      basketsPhase.classList.add('visible');
+    }
+
+    function hideBasketsPhase() {
+      basketsPhase.style.opacity = '0';
+    }
+
+    function showAllBaskets() {
+      baskets.forEach((basket, i) => {
+        setTimeout(() => basket.classList.add('visible'), i * 150);
+      });
+    }
+
+    function showAllApples() {
+      apples.forEach((basketApples, basketIndex) => {
+        basketApples.forEach((apple, appleIndex) => {
+          setTimeout(() => apple.classList.add('visible'), basketIndex * 200 + appleIndex * 80);
+        });
+      });
+    }
+
+    function highlightBasket(index) {
+      clearBasketHighlights();
+      baskets[index].classList.add('highlight');
+    }
+
+    function clearBasketHighlights() {
+      baskets.forEach(b => b.classList.remove('highlight'));
+    }
+
+    function showCount(index) {
+      basketCounts[index].classList.add('visible');
+    }
+
+    // Equation phase
+    function showEquationPhase() {
+      equationPhase.classList.add('visible');
+    }
+
+    function hideEquationPhase() {
+      equationPhase.style.opacity = '0';
+    }
+
+    function highlightNum1() {
+      clearEquationHighlights();
+      num1.classList.add('highlight');
+    }
+
+    function highlightTimes() {
+      clearEquationHighlights();
+      times1.classList.add('highlight');
+    }
+
+    function highlightNum2() {
+      clearEquationHighlights();
+      num2.classList.add('highlight');
+    }
+
+    function showAnswer() {
+      equals1.classList.add('visible');
+      numAnswer.classList.add('visible');
+      clearEquationHighlights();
+      numAnswer.classList.add('highlight');
+    }
+
+    function highlightAll() {
+      num1.classList.add('highlight');
+      times1.classList.add('highlight');
+      num2.classList.add('highlight');
+      numAnswer.classList.add('highlight');
+      groups.forEach(g => g.classList.add('highlight'));
+    }
+
+    function clearEquationHighlights() {
+      [num1, num2, times1, numAnswer].forEach(e => e.classList.remove('highlight'));
+      groups.forEach(g => g.classList.remove('highlight'));
+    }
+
+    // Insight phase
+    function showInsightPhase() {
+      insightPhase.classList.add('visible');
+    }
+
+    function showInsight1() {
+      insight1.classList.add('visible');
+    }
+
+    function showInsight2() {
+      insight2.classList.add('visible');
+    }
+
+    function showThinkBubble() {
+      thinkBubble.classList.add('visible');
+    }
+
+    // ============ PLAYBACK CONTROL ============
+    function resetAnimation() {
+      timelineIndex = 0;
+      callout.classList.remove('visible');
+      introTitle.classList.remove('visible');
+
+      // Reset baskets phase
+      basketsPhase.classList.remove('visible');
+      basketsPhase.style.opacity = '';
+      baskets.forEach(b => {
+        b.classList.remove('visible', 'highlight');
+      });
+      basketCounts.forEach(c => c.classList.remove('visible'));
+      apples.forEach(basketApples => {
+        basketApples.forEach(a => a.classList.remove('visible'));
+      });
+
+      // Reset equation phase
+      equationPhase.classList.remove('visible');
+      equationPhase.style.opacity = '';
+      clearEquationHighlights();
+      equals1.classList.remove('visible');
+      numAnswer.classList.remove('visible');
+
+      // Reset insight phase
+      insightPhase.classList.remove('visible');
+      insight1.classList.remove('visible');
+      insight2.classList.remove('visible');
+      thinkBubble.classList.remove('visible');
+    }
+
+    function updateAnimation() {
+      const currentTime = audio.currentTime;
+      debugTime.textContent = currentTime.toFixed(1) + 's';
+
+      if (audio.duration) {
+        const progress = (currentTime / audio.duration) * 100;
+        progressFill.style.width = progress + '%';
+      }
+
+      while (timelineIndex < TIMELINE.length && currentTime >= TIMELINE[timelineIndex].time) {
+        TIMELINE[timelineIndex].action();
+        timelineIndex++;
+      }
+
+      if (!audio.paused) {
+        animationFrame = requestAnimationFrame(updateAnimation);
+      }
+    }
+
+    function startLesson() {
+      resetAnimation();
+      audio.currentTime = 0;
+      audio.play();
+      updateAnimation();
+    }
+
+    function stopLesson() {
+      audio.pause();
+      audio.currentTime = 0;
+      cancelAnimationFrame(animationFrame);
+      resetAnimation();
+    }
+
+    // ============ EVENT LISTENERS ============
+    document.getElementById('start-help').addEventListener('click', () => {
+      overlay.classList.add('active');
+      setTimeout(startLesson, 300);
+    });
+
+    document.getElementById('help-close').addEventListener('click', () => {
+      stopLesson();
+      overlay.classList.remove('active');
+    });
+
+    document.getElementById('got-it-btn').addEventListener('click', () => {
+      stopLesson();
+      overlay.classList.remove('active');
+    });
+
+    document.getElementById('replay-btn').addEventListener('click', () => {
+      startLesson();
+    });
+
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) {
+        stopLesson();
+        overlay.classList.remove('active');
+      }
+    });
+
+    // Simple progress bar click
+    const progressBar = document.getElementById('progress-bar');
+    progressBar.addEventListener('click', (e) => {
+      const rect = progressBar.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const percent = clickX / rect.width;
+      const seekTime = percent * (audio.duration || 44);
+
+      resetAnimation();
+      for (let i = 0; i < TIMELINE.length && TIMELINE[i].time <= seekTime; i++) {
+        TIMELINE[i].action();
+        timelineIndex = i + 1;
+      }
+
+      progressFill.style.width = (percent * 100) + '%';
+      debugTime.textContent = seekTime.toFixed(1) + 's';
+    });
+  </script>
+</body>
+</html>

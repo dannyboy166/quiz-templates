@@ -20,10 +20,23 @@ This project contains R&D Tax Incentive documentation for claiming under Divisio
 
 **Note:** Update these files when adding new features that involve technical uncertainty or experimental development (not routine coding).
 
+## Conceptual Math Templates
+
+A new category of templates focused on teaching **understanding** rather than procedures. See [CONCEPTUAL-MATH.md](CONCEPTUAL-MATH.md) for the educational philosophy.
+
+| Demo | Concept | What Students Discover |
+|------|---------|------------------------|
+| Why BODMAS? | Order of Operations | Why multiplication comes before addition - it's about groups, not arbitrary rules |
+| Balance Equation | Intro to Algebra | Equations are about balance - finding what makes both sides equal |
+
+*More planned: What IS a Fraction?, Why Does Multiplication Work?*
+
 ## What's Here
 
 | Demo | Description |
 |------|-------------|
+| Why BODMAS? | Discover why order of operations exists through visual examples |
+| Balance Equation | Discover algebra through interactive balance scales |
 | Balloon Pop | Pop balloons with correct answers |
 | Base 10 Blocks | Place value with hundreds, tens, ones |
 | Clock | Rotate hands to set time |

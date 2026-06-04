@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blue Screen Removal Debug</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        h1 {
+            color: white;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .video-container {
+            display: flex;
+            gap: 40px;
+            align-items: flex-start;
+        }
+        .video-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .video-box h2 {
+            color: white;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        video {
+            max-height: 90vh;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background: white;
+            color: #333;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: scale(1.05);
+        }
+        .bg-switcher {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .bg-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 3px solid white;
+            cursor: pointer;
+        }
+        .bg-btn.active {
+            border-color: yellow;
+        }
+    </style>
+</head>
+<body>
+    <h1>Blue Screen Removal Debug</h1>
+    <div class="video-container">
+        <div class="video-box">
+            <h2>Original (with blue screen)</h2>
+            <video id="original" controls muted>
+                <source src="assets/videos/debug-bluescreen.mp4" type="video/mp4">
+            </video>
+        </div>
+        <div class="video-box">
+            <h2>Processed (transparent)</h2>
+            <video id="processed" controls muted loop autoplay>
+                <source src="assets/videos/debug-bluescreen-transparent.webm" type="video/webm">
+            </video>
+        </div>
+    </div>
+    <div class="controls">
+        <button onclick="playBoth()">Play Both</button>
+        <button onclick="pauseBoth()">Pause Both</button>
+        <button onclick="restartBoth()">Restart Both</button>
+    </div>
+    <div class="bg-switcher">
+        <button class="bg-btn active" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);" onclick="changeBg('linear-gradient(135deg, #667eea 0%, #764ba2 100%)', this)"></button>
+        <button class="bg-btn" style="background: #00ff00;" onclick="changeBg('#00ff00', this)"></button>
+        <button class="bg-btn" style="background: #ff6b6b;" onclick="changeBg('#ff6b6b', this)"></button>
+        <button class="bg-btn" style="background: #333;" onclick="changeBg('#333', this)"></button>
+        <button class="bg-btn" style="background: white;" onclick="changeBg('white', this)"></button>
+        <button class="bg-btn" style="background: url(assets/images/classroom-transparent.png) center/cover;" onclick="changeBg('url(assets/images/classroom-transparent.png) center/cover', this)"></button>
+    </div>
+    <script>
+        const original = document.getElementById('original');
+        const processed = document.getElementById('processed');
+
+        function playBoth() {
+            original.play();
+            processed.play();
+        }
+
+        function pauseBoth() {
+            original.pause();
+            processed.pause();
+        }
+
+        function restartBoth() {
+            original.currentTime = 0;
+            processed.currentTime = 0;
+            original.play();
+            processed.play();
+        }
+
+        function changeBg(bg, btn) {
+            document.body.style.background = bg;
+            document.querySelectorAll('.bg-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+    </script>
+</body>
+</html>

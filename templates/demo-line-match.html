@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Line Match - Quiz Template</title>
+  <link rel="stylesheet" href="../css/base.css">
+  <script src="../js/color-cycle.js"></script>
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+  <style>
+    body {
+      background: var(--bg-pink);
+    }
+
+    .quiz-container {
+      background: var(--bg-pink);
+    }
+
+    /* Main layout */
+    .match-layout {
+      display: flex;
+      gap: 20px;
+      padding: 20px;
+    }
+
+    /* Left panel - tools and colors */
+    .tools-panel {
+      width: 200px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .color-palette {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .color-btn {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: 3px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .color-btn:hover {
+      transform: scale(1.1);
+    }
+
+    .color-btn.active {
+      border-color: #333;
+      box-shadow: 0 0 0 3px white, 0 0 0 5px #333;
+    }
+
+    .color-red { background: #EF5350; }
+    .color-green { background: #66BB6A; }
+    .color-blue { background: #42A5F5; }
+    .color-purple { background: #AB47BC; }
+    .color-orange { background: #FFA726; }
+    .color-pink { background: #EC407A; }
+
+    .tool-buttons {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .tool-btn {
+      width: 40px;
+      height: 40px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      background: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      transition: all 0.2s;
+    }
+
+    .tool-btn:hover {
+      background: #f5f5f5;
+    }
+
+    .tool-btn.active {
+      border-color: #333;
+      background: #e0e0e0;
+    }
+
+    /* Match area */
+    .match-area {
+      flex: 1;
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      position: relative;
+      min-height: 500px;
+    }
+
+    /* SVG for lines */
+    .lines-svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .match-line {
+      stroke-width: 4;
+      stroke-linecap: round;
+      fill: none;
+    }
+
+    .match-line.correct {
+      stroke: #4CAF50 !important;
+    }
+
+    .match-line.incorrect {
+      stroke: #F44336 !important;
+    }
+
+    /* Items layout */
+    .items-container {
+      display: flex;
+      justify-content: space-between;
+      height: 100%;
+      position: relative;
+      z-index: 2;
+    }
+
+    .left-items, .right-items {
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+      justify-content: space-around;
+      padding: 20px 0;
+    }
+
+    .match-item {
+      padding: 15px 20px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 80px;
+      min-height: 80px;
+      position: relative;
+    }
+
+    .match-item:hover {
+      transform: scale(1.05);
+    }
+
+    .match-item.selected {
+      box-shadow: 0 0 0 4px #333;
+    }
+
+    .match-item.connected {
+      opacity: 0.7;
+    }
+
+    .match-item.correct {
+      box-shadow: 0 0 0 4px #4CAF50;
+    }
+
+    .match-item.incorrect {
+      box-shadow: 0 0 0 4px #F44336;
+    }
+
+    /* Shape items */
+    .shape-item {
+      width: 100px;
+      height: 100px;
+    }
+
+    .shape-item svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Label items */
+    .label-item {
+      background: #8BC34A;
+      color: white;
+      font-size: 20px;
+      font-weight: bold;
+      padding: 12px 24px;
+      border-radius: 25px;
+    }
+
+    /* Connection dot */
+    .connection-dot {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      background: #333;
+      border-radius: 50%;
+      border: 3px solid white;
+    }
+
+    .left-items .connection-dot {
+      right: -8px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .right-items .connection-dot {
+      left: -8px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    /* Check button */
+    .btn-check-answer {
+      margin-top: 20px;
+    }
+
+    /* Feedback */
+    .feedback {
+      margin-top: 15px;
+    }
+
+    /* Try again button */
+    .btn-try-again {
+      background: #FF9800;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 25px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-try-again:hover {
+      background: #F57C00;
+      transform: scale(1.05);
+    }
+
+    /* Clear button */
+    .btn-clear {
+      background: #FF5722;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .btn-clear:hover {
+      background: #E64A19;
+    }
+
+    /* Modal styles */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      max-width: 400px;
+      margin: 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal h2 {
+      margin: 0 0 15px 0;
+      font-size: 22px;
+    }
+
+    .modal p {
+      margin: 0 0 10px 0;
+      line-height: 1.6;
+    }
+
+    .modal-close {
+      margin-top: 20px;
+      padding: 10px 24px;
+      background: #333;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* Help bar clickable */
+    .help-item {
+      cursor: pointer;
+      padding: 8px 12px;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+
+    .help-item:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    /* Responsive */
+    @media (max-width: 700px) {
+      .match-layout {
+        flex-direction: column;
+      }
+
+      .tools-panel {
+        width: 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .match-area {
+        min-height: 400px;
+      }
+
+      .shape-item {
+        width: 70px;
+        height: 70px;
+      }
+
+      .label-item {
+        font-size: 16px;
+        padding: 10px 16px;
+      }
+    }
+
+    /* Progress Bar with Compass */
+    .progress-container {
+      position: relative;
+      width: calc(100% - 40px);
+      height: 24px;
+      margin: 20px auto;
+    }
+
+    .progress-track {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 16px;
+      background: #3a3a3a;
+      border-radius: 8px;
+      transform: translateY(-50%);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #5E58F9 0%, #EFA1D5 100%);
+      border-radius: 8px;
+      transition: width 0.5s ease-out;
+    }
+
+    .compass-container {
+      position: absolute;
+      top: 50%;
+      left: 0%;
+      transform: translate(-50%, -50%);
+      transition: left 0.5s ease-out;
+      z-index: 10;
+    }
+
+    .compass {
+      width: 44px;
+      height: 44px;
+      background: white;
+      border: 2px solid #333;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .compass-dot {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: #333;
+      border-radius: 50%;
+    }
+
+    .compass-dot.top { top: 3px; left: 50%; transform: translateX(-50%); }
+    .compass-dot.bottom { bottom: 3px; left: 50%; transform: translateX(-50%); }
+    .compass-dot.left { left: 3px; top: 50%; transform: translateY(-50%); }
+    .compass-dot.right { right: 3px; top: 50%; transform: translateY(-50%); }
+
+    .compass-diamond {
+      z-index: 5;
+      position: relative;
+    }
+
+    .compass-diamond svg {
+      width: 28px;
+      height: 8px;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+    <!-- Header -->
+    <header class="quiz-header">
+      <button class="btn-back" onclick="window.location='index.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Back to Home
+      </button>
+
+      <div class="user-profile">
+        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=student" alt="Student Avatar" class="user-avatar">
+      </div>
+
+      <button class="btn-help" id="header-help">
+        <lottie-player
+          id="help-lottie"
+          background="transparent"
+          speed="1"
+          style="width: 28px; height: 28px;"
+          loop
+          autoplay
+        ></lottie-player>
+        Help
+      </button>
+    </header>
+
+    <!-- Progress Bar -->
+    <div class="progress-container">
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <div class="compass-container" id="compass-container">
+        <div class="compass">
+          <div class="compass-dot top"></div>
+          <div class="compass-dot bottom"></div>
+          <div class="compass-dot left"></div>
+          <div class="compass-dot right"></div>
+          <div class="compass-diamond">
+            <svg viewBox="0 0 28 8">
+              <polygon points="0,4 10,0 14,4 10,8" fill="#EFA1D5" stroke="#333" stroke-width="0.5"/>
+              <polygon points="28,4 18,0 14,4 18,8" fill="#5E58F9" stroke="#333" stroke-width="0.5"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Question Meta -->
+    <div class="question-meta">
+      <span class="badge">MATH</span>
+      <span class="question-progress">Question <span id="current-q">1</span> of <span id="total-q">3</span></span>
+    </div>
+
+    <!-- Question Title -->
+    <div class="question-title">
+      <h1 id="question-text">Match the following: draw a line to the corresponding shape or side</h1>
+    </div>
+
+    <!-- Help Bar -->
+    <div class="help-bar">
+      <div class="help-item" id="btn-read-aloud">
+        <span style="font-weight: 530; font-size: 15px;">Read Aloud</span>
+        <span class="help-item-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg></span>
+      </div>
+      <span class="help-item-line"></span>
+      <div class="help-item" id="btn-get-help">
+        <span style="font-weight: 530; font-size: 15px;">Get Help</span>
+        <span class="help-item-icon">?</span>
+      </div>
+      <span class="help-item-line"></span>
+      <div class="help-item" id="btn-get-hint">
+        <span style="font-weight: 530; font-size: 15px;">Get Hint</span>
+        <span class="help-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 6h12v2H6V6zm0 3h12v2H6V9zm0 3h8v2H6v-2z"/></svg></span>
+      </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div class="modal-overlay" id="help-modal">
+      <div class="modal">
+        <div style="font-size: 40px; text-align: center; margin-bottom: 10px;">✏️</div>
+        <h2 style="text-align: center;">Line Matching!</h2>
+        <div style="background: #FFF9E6; padding: 15px; border-radius: 12px; margin: 15px 0;">
+          <p style="margin: 8px 0;"><strong>🎨 Pick</strong> a colour you like</p>
+          <p style="margin: 8px 0;"><strong>👆 Tap</strong> an item on the left</p>
+          <p style="margin: 8px 0;"><strong>👆 Tap</strong> its match on the right</p>
+          <p style="margin: 8px 0;"><strong>✨ A line</strong> will connect them!</p>
+        </div>
+        <p style="text-align: center; font-size: 15px;">Match all the pairs to win!</p>
+        <button class="modal-close" id="close-help">Let's go! ⭐</button>
+      </div>
+    </div>
+
+    <!-- Hint Modal -->
+    <div class="modal-overlay" id="hint-modal">
+      <div class="modal">
+        <div style="font-size: 40px; text-align: center; margin-bottom: 10px;">💡</div>
+        <h2 style="text-align: center;" id="hint-title">Here's a hint!</h2>
+        <p style="text-align: center; font-size: 18px; margin: 20px 0;" id="hint-text">Count the sides of each shape carefully!</p>
+        <button class="modal-close" id="close-hint">Thanks! 👍</button>
+      </div>
+    </div>
+
+    <!-- Main Layout -->
+    <div class="match-layout">
+      <!-- Tools Panel -->
+      <div class="tools-panel">
+        <div class="color-palette">
+          <button class="color-btn color-red active" data-color="#EF5350"></button>
+          <button class="color-btn color-green" data-color="#66BB6A"></button>
+          <button class="color-btn color-blue" data-color="#42A5F5"></button>
+          <button class="color-btn color-purple" data-color="#AB47BC"></button>
+        </div>
+
+        <div class="tool-buttons">
+          <button class="tool-btn" id="btn-undo" title="Undo last line">↩️</button>
+          <button class="tool-btn" id="btn-clear-all" title="Clear all lines">🗑️</button>
+        </div>
+
+        <button class="btn-check-answer" id="btn-check">Check Answer</button>
+      </div>
+
+      <!-- Match Area -->
+      <div class="match-area" id="match-area">
+        <svg class="lines-svg" id="lines-svg"></svg>
+
+        <div class="items-container">
+          <!-- Left Items (Shapes) -->
+          <div class="left-items" id="left-items">
+            <!-- Generated by JS -->
+          </div>
+
+          <!-- Right Items (Labels) -->
+          <div class="right-items" id="right-items">
+            <!-- Generated by JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feedback -->
+    <div class="feedback" id="feedback" style="display: none;">
+      <span class="feedback-badge" id="feedback-badge"></span>
+      <button class="btn-try-again" id="btn-try-again" style="display: none;">Try Again 🔄</button>
+      <button class="btn-next" id="btn-next" style="display: none;" title="Next Question">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // ==========================================
+    // Audio Player (Vonnie Voice)
+    // ==========================================
+    let currentAudio = null;
+    function playAudio(src, onEnd) {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      currentAudio = new Audio(src);
+      if (onEnd) currentAudio.onended = onEnd;
+      currentAudio.play();
+      return currentAudio;
+    }
+
+    // ==========================================
+    // Compass Rotation
+    // ==========================================
+    let compassRotation = 0;
+    let spinSpeed = 120;
+    const slowSpeed = 120;
+    const fastSpeed = 720;
+    let lastTime = performance.now();
+    let slowDownTimer = null;
+
+    function spinCompass(currentTime) {
+      const delta = (currentTime - lastTime) / 1000;
+      lastTime = currentTime;
+      compassRotation += spinSpeed * delta;
+      compassRotation %= 360;
+      const compassDiamond = document.querySelector('.compass-diamond');
+      if (compassDiamond) {
+        compassDiamond.style.transform = `rotate(${compassRotation}deg)`;
+      }
+      requestAnimationFrame(spinCompass);
+    }
+    requestAnimationFrame(spinCompass);
+
+    function updateCompass(percentage, animate = false) {
+      const compassContainer = document.getElementById('compass-container');
+      const progressFill = document.getElementById('progress-fill');
+
+      if (animate) {
+        if (slowDownTimer) clearTimeout(slowDownTimer);
+        spinSpeed = fastSpeed;
+        slowDownTimer = setTimeout(() => {
+          spinSpeed = slowSpeed;
+        }, 500);
+      }
+
+      progressFill.style.width = percentage + '%';
+      compassContainer.style.left = percentage + '%';
+    }
+
+    // Question data
+    const questions = [
+      {
+        prompt: 'Match the following: draw a line to the corresponding shape or side',
+        hint: 'Count the sides of each shape carefully!',
+        leftItems: [
+          { id: 'triangle', type: 'shape', shape: 'triangle', color: '#CDDC39', pattern: 'stars', match: '3' },
+          { id: 'square', type: 'shape', shape: 'square', color: '#FF7043', pattern: 'squares', match: '4' },
+          { id: 'oval', type: 'shape', shape: 'oval', color: 'rainbow', pattern: 'none', match: '1' },
+          { id: 'rectangle', type: 'shape', shape: 'rectangle', color: '#EC407A', pattern: 'stripes', match: '4' }
+        ],
+        rightItems: [
+          { id: '1', type: 'label', text: '1 side' },
+          { id: '2', type: 'label', text: '2 sides' },
+          { id: '3', type: 'label', text: '3 sides' },
+          { id: '4', type: 'label', text: '4 sides' }
+        ]
+      },
+      {
+        prompt: 'Match each animal to its sound',
+        hint: 'Think about what sound each animal makes!',
+        leftItems: [
+          { id: 'dog', type: 'emoji', emoji: '🐕', match: 'woof' },
+          { id: 'cat', type: 'emoji', emoji: '🐱', match: 'meow' },
+          { id: 'cow', type: 'emoji', emoji: '🐄', match: 'moo' },
+          { id: 'duck', type: 'emoji', emoji: '🦆', match: 'quack' }
+        ],
+        rightItems: [
+          { id: 'woof', type: 'label', text: 'Woof!' },
+          { id: 'meow', type: 'label', text: 'Meow!' },
+          { id: 'moo', type: 'label', text: 'Moo!' },
+          { id: 'quack', type: 'label', text: 'Quack!' }
+        ]
+      },
+      {
+        prompt: 'Match the number to the correct word',
+        hint: 'Sound out each number word!',
+        leftItems: [
+          { id: 'n1', type: 'number', text: '1', match: 'one' },
+          { id: 'n2', type: 'number', text: '2', match: 'two' },
+          { id: 'n3', type: 'number', text: '3', match: 'three' },
+          { id: 'n4', type: 'number', text: '4', match: 'four' },
+          { id: 'n5', type: 'number', text: '5', match: 'five' }
+        ],
+        rightItems: [
+          { id: 'one', type: 'label', text: 'One' },
+          { id: 'two', type: 'label', text: 'Two' },
+          { id: 'three', type: 'label', text: 'Three' },
+          { id: 'four', type: 'label', text: 'Four' },
+          { id: 'five', type: 'label', text: 'Five' }
+        ]
+      }
+    ];
+
+    // Game state
+    let currentQuestion = 0;
+    let selectedColor = '#EF5350';
+    let selectedItem = null;
+    let connections = []; // [{leftId, rightId, color}]
+
+    // DOM elements
+    const leftItemsEl = document.getElementById('left-items');
+    const rightItemsEl = document.getElementById('right-items');
+    const linesSvg = document.getElementById('lines-svg');
+    const matchArea = document.getElementById('match-area');
+    const questionText = document.getElementById('question-text');
+    const hintText = document.getElementById('hint-text');
+    const feedback = document.getElementById('feedback');
+    const feedbackBadge = document.getElementById('feedback-badge');
+    const btnCheck = document.getElementById('btn-check');
+    const btnNext = document.getElementById('btn-next');
+    const btnTryAgain = document.getElementById('btn-try-again');
+
+    // Shape SVG generators
+    function createShapeSVG(item) {
+      const { shape, color, pattern } = item;
+      let svg = '';
+
+      const patternDef = pattern === 'stars' ? `
+        <pattern id="stars-${item.id}" patternUnits="userSpaceOnUse" width="20" height="20">
+          <rect width="20" height="20" fill="${color}"/>
+          <text x="10" y="14" text-anchor="middle" font-size="10" fill="${adjustColor(color, -30)}">★</text>
+        </pattern>
+      ` : pattern === 'squares' ? `
+        <pattern id="squares-${item.id}" patternUnits="userSpaceOnUse" width="15" height="15">
+          <rect width="15" height="15" fill="${color}"/>
+          <rect x="2" y="2" width="11" height="11" fill="${adjustColor(color, -20)}" rx="2"/>
+        </pattern>
+      ` : pattern === 'stripes' ? `
+        <pattern id="stripes-${item.id}" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
+          <rect width="4" height="8" fill="${color}"/>
+          <rect x="4" width="4" height="8" fill="${adjustColor(color, 20)}"/>
+        </pattern>
+      ` : '';
+
+      const fill = pattern !== 'none' ? `url(#${pattern}-${item.id})` :
+                   color === 'rainbow' ? 'url(#rainbow)' : color;
+
+      switch(shape) {
+        case 'triangle':
+          svg = `<svg viewBox="0 0 100 100">
+            <defs>${patternDef}</defs>
+            <polygon points="50,10 90,90 10,90" fill="${fill}" stroke="#333" stroke-width="2"/>
+          </svg>`;
+          break;
+        case 'square':
+          svg = `<svg viewBox="0 0 100 100">
+            <defs>${patternDef}</defs>
+            <rect x="15" y="15" width="70" height="70" fill="${fill}" stroke="#333" stroke-width="2" rx="5"/>
+          </svg>`;
+          break;
+        case 'rectangle':
+          svg = `<svg viewBox="0 0 120 80">
+            <defs>${patternDef}</defs>
+            <rect x="5" y="5" width="110" height="70" fill="${fill}" stroke="#333" stroke-width="2" rx="5"/>
+          </svg>`;
+          break;
+        case 'oval':
+          svg = `<svg viewBox="0 0 100 100">
+            <defs>
+              <linearGradient id="rainbow" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#FF6B6B"/>
+                <stop offset="25%" style="stop-color:#FFE66D"/>
+                <stop offset="50%" style="stop-color:#4ECDC4"/>
+                <stop offset="75%" style="stop-color:#45B7D1"/>
+                <stop offset="100%" style="stop-color:#96E6A1"/>
+              </linearGradient>
+            </defs>
+            <ellipse cx="50" cy="50" rx="40" ry="45" fill="${fill}" stroke="#333" stroke-width="2"/>
+          </svg>`;
+          break;
+        case 'semicircle':
+          svg = `<svg viewBox="0 0 100 60">
+            <path d="M 10 55 A 40 40 0 0 1 90 55" fill="${fill}" stroke="#333" stroke-width="2"/>
+          </svg>`;
+          break;
+      }
+      return svg;
+    }
+
+    function adjustColor(hex, amount) {
+      const num = parseInt(hex.replace('#', ''), 16);
+      const r = Math.min(255, Math.max(0, (num >> 16) + amount));
+      const g = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + amount));
+      const b = Math.min(255, Math.max(0, (num & 0x0000FF) + amount));
+      return `#${(1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1)}`;
+    }
+
+    // Load question
+    function loadQuestion() {
+      const q = questions[currentQuestion];
+      questionText.textContent = q.prompt;
+      hintText.textContent = q.hint;
+      document.getElementById('current-q').textContent = currentQuestion + 1;
+      document.getElementById('total-q').textContent = questions.length;
+
+      // Update compass progress
+      const percentage = (currentQuestion / questions.length) * 100;
+      updateCompass(percentage, currentQuestion > 0);
+
+      // Clear state
+      connections = [];
+      selectedItem = null;
+      linesSvg.innerHTML = '';
+      feedback.style.display = 'none';
+      btnCheck.style.display = 'block';
+
+      // Shuffle right items
+      const shuffledRight = [...q.rightItems].sort(() => Math.random() - 0.5);
+
+      // Generate left items
+      leftItemsEl.innerHTML = '';
+      q.leftItems.forEach(item => {
+        const el = document.createElement('div');
+        el.className = 'match-item';
+        el.dataset.id = item.id;
+        el.dataset.side = 'left';
+        el.dataset.match = item.match;
+
+        if (item.type === 'shape') {
+          el.classList.add('shape-item');
+          el.innerHTML = createShapeSVG(item);
+        } else if (item.type === 'emoji') {
+          el.innerHTML = `<span style="font-size: 60px;">${item.emoji}</span>`;
+        } else if (item.type === 'number') {
+          el.innerHTML = `<span style="font-size: 48px; font-weight: bold; color: #333;">${item.text}</span>`;
+        }
+
+        el.innerHTML += '<div class="connection-dot"></div>';
+        el.addEventListener('click', () => handleItemClick(el, 'left'));
+
+        // Drag to connect
+        el.addEventListener('mousedown', (e) => startDrag(e, el, 'left'));
+        el.addEventListener('touchstart', (e) => startDrag(e, el, 'left'), { passive: false });
+
+        leftItemsEl.appendChild(el);
+      });
+
+      // Generate right items
+      rightItemsEl.innerHTML = '';
+      shuffledRight.forEach(item => {
+        const el = document.createElement('div');
+        el.className = 'match-item label-item';
+        el.dataset.id = item.id;
+        el.dataset.side = 'right';
+        el.textContent = item.text;
+        el.innerHTML += '<div class="connection-dot"></div>';
+        el.addEventListener('click', () => handleItemClick(el, 'right'));
+        rightItemsEl.appendChild(el);
+      });
+    }
+
+    // Drag to draw line
+    let isDragging = false;
+    let dragStartEl = null;
+    let tempLine = null;
+
+    function startDrag(e, el, side) {
+      if (feedback.style.display !== 'none') return;
+      if (side !== 'left') return; // Only drag from left items
+
+      e.preventDefault();
+      isDragging = true;
+      dragStartEl = el;
+      el.classList.add('selected');
+
+      // Create temporary line
+      tempLine = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      tempLine.setAttribute('stroke', selectedColor);
+      tempLine.setAttribute('stroke-width', '4');
+      tempLine.setAttribute('stroke-linecap', 'round');
+      tempLine.setAttribute('fill', 'none');
+      tempLine.setAttribute('stroke-dasharray', '8,8');
+      linesSvg.appendChild(tempLine);
+
+      updateDragLine(e);
+
+      document.addEventListener('mousemove', updateDragLine);
+      document.addEventListener('mouseup', endDrag);
+      document.addEventListener('touchmove', updateDragLine, { passive: false });
+      document.addEventListener('touchend', endDrag);
+    }
+
+    function updateDragLine(e) {
+      if (!isDragging || !tempLine || !dragStartEl) return;
+
+      e.preventDefault();
+
+      const touch = e.touches ? e.touches[0] : e;
+      const areaRect = matchArea.getBoundingClientRect();
+      const startRect = dragStartEl.getBoundingClientRect();
+
+      const x1 = startRect.right - areaRect.left;
+      const y1 = startRect.top + startRect.height / 2 - areaRect.top;
+      const x2 = touch.clientX - areaRect.left;
+      const y2 = touch.clientY - areaRect.top;
+
+      const midX = (x1 + x2) / 2;
+      const d = `M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`;
+      tempLine.setAttribute('d', d);
+
+      // Highlight right items on hover
+      document.querySelectorAll('.right-items .match-item').forEach(item => {
+        const rect = item.getBoundingClientRect();
+        if (touch.clientX >= rect.left && touch.clientX <= rect.right &&
+            touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+          item.classList.add('selected');
+        } else {
+          item.classList.remove('selected');
+        }
+      });
+    }
+
+    function endDrag(e) {
+      if (!isDragging) return;
+
+      const touch = e.changedTouches ? e.changedTouches[0] : e;
+
+      // Find if we're over a right item
+      const rightItems = document.querySelectorAll('.right-items .match-item');
+      let targetEl = null;
+
+      rightItems.forEach(item => {
+        const rect = item.getBoundingClientRect();
+        if (touch.clientX >= rect.left && touch.clientX <= rect.right &&
+            touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+          targetEl = item;
+        }
+        item.classList.remove('selected');
+      });
+
+      // Create connection if dropped on right item
+      if (targetEl && dragStartEl) {
+        const leftId = dragStartEl.dataset.id;
+        const rightId = targetEl.dataset.id;
+
+        // Remove existing connection for this left item
+        const existingLeft = connections.find(c => c.leftId === leftId);
+        if (existingLeft) {
+          connections = connections.filter(c => c !== existingLeft);
+        }
+
+        connections.push({ leftId, rightId, color: selectedColor });
+        redrawLines();
+        updateItemStates();
+      }
+
+      // Cleanup
+      if (tempLine) {
+        tempLine.remove();
+        tempLine = null;
+      }
+      if (dragStartEl) {
+        dragStartEl.classList.remove('selected');
+        dragStartEl = null;
+      }
+      isDragging = false;
+
+      document.removeEventListener('mousemove', updateDragLine);
+      document.removeEventListener('mouseup', endDrag);
+      document.removeEventListener('touchmove', updateDragLine);
+      document.removeEventListener('touchend', endDrag);
+    }
+
+    // Handle item click
+    function handleItemClick(el, side) {
+      // If already checked, do nothing
+      if (feedback.style.display !== 'none') return;
+
+      const id = el.dataset.id;
+
+      // Check if this LEFT item is already connected (left items can only connect once)
+      // RIGHT items can have multiple connections (e.g., square AND rectangle → 4 sides)
+      if (side === 'left') {
+        const existingConnection = connections.find(c => c.leftId === id);
+        if (existingConnection) {
+          // Remove the connection for this left item
+          connections = connections.filter(c => c !== existingConnection);
+          redrawLines();
+          updateItemStates();
+          return;
+        }
+      }
+
+      if (!selectedItem) {
+        // First selection
+        selectedItem = { id, side, el };
+        el.classList.add('selected');
+      } else if (selectedItem.side === side) {
+        // Same side - switch selection
+        selectedItem.el.classList.remove('selected');
+        selectedItem = { id, side, el };
+        el.classList.add('selected');
+      } else {
+        // Different side - create connection
+        const leftId = side === 'left' ? id : selectedItem.id;
+        const rightId = side === 'right' ? id : selectedItem.id;
+
+        // Check if this left item already has a connection
+        const existingLeft = connections.find(c => c.leftId === leftId);
+        if (existingLeft) {
+          connections = connections.filter(c => c !== existingLeft);
+        }
+
+        connections.push({ leftId, rightId, color: selectedColor });
+
+        selectedItem.el.classList.remove('selected');
+        selectedItem = null;
+
+        redrawLines();
+        updateItemStates();
+      }
+    }
+
+    // Update item visual states
+    function updateItemStates() {
+      document.querySelectorAll('.match-item').forEach(el => {
+        const id = el.dataset.id;
+        const side = el.dataset.side;
+        const isConnected = connections.some(c =>
+          (side === 'left' && c.leftId === id) ||
+          (side === 'right' && c.rightId === id)
+        );
+        el.classList.toggle('connected', isConnected);
+      });
+    }
+
+    // Redraw all lines
+    function redrawLines() {
+      linesSvg.innerHTML = '';
+
+      connections.forEach(conn => {
+        const leftEl = document.querySelector(`.match-item[data-id="${conn.leftId}"][data-side="left"]`);
+        const rightEl = document.querySelector(`.match-item[data-id="${conn.rightId}"][data-side="right"]`);
+
+        if (leftEl && rightEl) {
+          drawLine(leftEl, rightEl, conn.color, conn.correct);
+        }
+      });
+    }
+
+    // Draw a line between two elements
+    function drawLine(el1, el2, color, correct) {
+      const rect1 = el1.getBoundingClientRect();
+      const rect2 = el2.getBoundingClientRect();
+      const areaRect = matchArea.getBoundingClientRect();
+
+      const x1 = rect1.right - areaRect.left;
+      const y1 = rect1.top + rect1.height / 2 - areaRect.top;
+      const x2 = rect2.left - areaRect.left;
+      const y2 = rect2.top + rect2.height / 2 - areaRect.top;
+
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+
+      // Create curved line
+      const midX = (x1 + x2) / 2;
+      const d = `M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`;
+
+      line.setAttribute('d', d);
+      line.setAttribute('stroke', color);
+      line.classList.add('match-line');
+
+      if (correct === true) line.classList.add('correct');
+      if (correct === false) line.classList.add('incorrect');
+
+      linesSvg.appendChild(line);
+    }
+
+    // Color selection
+    document.querySelectorAll('.color-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedColor = btn.dataset.color;
+      });
+    });
+
+    // Undo last line
+    document.getElementById('btn-undo').addEventListener('click', () => {
+      if (connections.length > 0) {
+        connections.pop();
+        redrawLines();
+        updateItemStates();
+      }
+    });
+
+    // Clear all lines
+    document.getElementById('btn-clear-all').addEventListener('click', () => {
+      connections = [];
+      redrawLines();
+      updateItemStates();
+      document.querySelectorAll('.match-item').forEach(el => {
+        el.classList.remove('selected', 'correct', 'incorrect');
+      });
+    });
+
+    // Check answer
+    btnCheck.addEventListener('click', () => {
+      const q = questions[currentQuestion];
+      let correctCount = 0;
+
+      // Check each connection
+      connections.forEach(conn => {
+        const leftItem = q.leftItems.find(i => i.id === conn.leftId);
+        const isCorrect = leftItem && leftItem.match === conn.rightId;
+        conn.correct = isCorrect;
+        if (isCorrect) correctCount++;
+
+        // Mark items
+        const leftEl = document.querySelector(`.match-item[data-id="${conn.leftId}"][data-side="left"]`);
+        const rightEl = document.querySelector(`.match-item[data-id="${conn.rightId}"][data-side="right"]`);
+        if (leftEl) leftEl.classList.add(isCorrect ? 'correct' : 'incorrect');
+        if (rightEl) rightEl.classList.add(isCorrect ? 'correct' : 'incorrect');
+      });
+
+      redrawLines();
+
+      // Show feedback
+      feedback.style.display = 'flex';
+      feedbackBadge.classList.remove('correct', 'incorrect');
+
+      const allCorrect = correctCount === q.leftItems.length && connections.length === q.leftItems.length;
+
+      if (allCorrect) {
+        feedbackBadge.classList.add('correct');
+        feedbackBadge.innerHTML = '🎉 Perfect! All matches correct!';
+        btnCheck.style.display = 'none';
+        btnTryAgain.style.display = 'none';
+        btnNext.style.display = 'flex';
+        playAudio('../audio/line-match/feedback-correct.mp3');
+      } else {
+        feedbackBadge.classList.add('incorrect');
+        feedbackBadge.innerHTML = `💪 ${correctCount}/${q.leftItems.length} correct - try again!`;
+        btnTryAgain.style.display = 'inline-block';
+        playAudio('../audio/line-match/feedback-incorrect.mp3');
+      }
+    });
+
+    // Try again
+    btnTryAgain.addEventListener('click', () => {
+      connections = [];
+      selectedItem = null;
+      linesSvg.innerHTML = '';
+      feedback.style.display = 'none';
+      btnTryAgain.style.display = 'none';
+      btnCheck.style.display = 'block';
+      document.querySelectorAll('.match-item').forEach(el => {
+        el.classList.remove('selected', 'connected', 'correct', 'incorrect');
+      });
+    });
+
+    // Next question
+    btnNext.addEventListener('click', () => {
+      cycleColor();
+      currentQuestion++;
+      if (currentQuestion < questions.length) {
+        loadQuestion();
+        btnNext.style.display = 'none';
+      } else {
+        // Quiz complete
+        playAudio('../audio/line-match/feedback-complete.mp3');
+        matchArea.innerHTML = `
+          <div style="text-align: center; padding: 60px 20px;">
+            <div style="font-size: 80px; margin-bottom: 20px;">🎉</div>
+            <h2 style="font-size: 32px; margin-bottom: 15px;">Quiz Complete!</h2>
+            <p style="font-size: 18px; color: #666; margin-bottom: 30px;">Great job matching!</p>
+            <button onclick="window.location='index.html'" style="padding: 15px 40px; background: black; color: white; border: none; border-radius: 25px; font-size: 18px; cursor: pointer;">Back to Home</button>
+          </div>
+        `;
+        btnCheck.style.display = 'none';
+        feedback.style.display = 'none';
+        updateCompass(100, true);
+      }
+    });
+
+    // Redraw lines on resize
+    window.addEventListener('resize', () => {
+      redrawLines();
+    });
+
+    // Read Aloud
+    function readQuestion() {
+      playAudio('../audio/line-match/question.mp3');
+    }
+
+    document.getElementById('btn-read-aloud').addEventListener('click', readQuestion);
+
+    // Help Modal
+    const helpModal = document.getElementById('help-modal');
+    document.getElementById('btn-get-help').addEventListener('click', () => {
+      helpModal.classList.add('active');
+      playAudio('../audio/line-match/help.mp3');
+    });
+    document.getElementById('header-help').addEventListener('click', () => {
+      helpModal.classList.add('active');
+      playAudio('../audio/line-match/help.mp3');
+    });
+    document.getElementById('close-help').addEventListener('click', () => {
+      // Stop any playing audio when closing help
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      helpModal.classList.remove('active');
+    });
+    helpModal.addEventListener('click', (e) => {
+      if (e.target === helpModal) {
+        // Stop any playing audio when closing via overlay
+        if (currentAudio) {
+          currentAudio.pause();
+          currentAudio.currentTime = 0;
+        }
+        helpModal.classList.remove('active');
+      }
+    });
+
+    // Hint Modal
+    const hintModal = document.getElementById('hint-modal');
+    document.getElementById('btn-get-hint').addEventListener('click', () => {
+      hintModal.classList.add('active');
+      playAudio('../audio/line-match/hint.mp3');
+    });
+    document.getElementById('close-hint').addEventListener('click', () => {
+      // Stop any playing audio when closing hint
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+      hintModal.classList.remove('active');
+    });
+    hintModal.addEventListener('click', (e) => {
+      if (e.target === hintModal) {
+        // Stop any playing audio when closing via overlay
+        if (currentAudio) {
+          currentAudio.pause();
+          currentAudio.currentTime = 0;
+        }
+        hintModal.classList.remove('active');
+      }
+    });
+
+    // Load Lottie
+    const helpLottie = document.getElementById('help-lottie');
+    const lottieData = {"v":"5.4.4","fr":60,"ip":0,"op":132,"w":100,"h":100,"nm":"Question 2","assets":[],"layers":[{"ind":1,"ty":4,"nm":"? Outlines","sr":1,"ks":{"o":{"a":0,"k":100},"r":{"a":0,"k":0},"p":{"a":0,"k":[50.713,49.149,0]},"a":{"a":0,"k":[-0.214,-10.242,0]},"s":{"a":1,"k":[{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":61,"s":[200,200,100],"e":[210,210,100]},{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":71,"s":[210,210,100],"e":[200,200,100]},{"t":80}]}},"ao":0,"shapes":[{"ty":"gr","it":[{"ind":0,"ty":"sh","ks":{"a":0,"k":{"i":[[0,0],[0,0],[0,0],[0,3.203],[4.23,0],[0.242,-3.897],[0,0],[-1.601,0],[0,-1.541],[1.692,0],[0,0]],"o":[[0,0],[0,0],[3.565,-0.483],[0,-3.988],[-4.592,0],[0,0],[0.121,-1.45],[1.601,0],[0,1.662],[0,0],[0,0]],"v":[[-2.556,-6.617],[1.16,-6.617],[1.311,-8.369],[7.142,-14.17],[-0.199,-20.816],[-7.571,-14.351],[-2.828,-14.351],[-0.048,-16.738],[2.61,-14.17],[-0.381,-11.541],[-2.858,-11.541]],"c":true}},"nm":"?"},{"ind":1,"ty":"sh","ks":{"a":0,"k":{"i":[[-1.42,0],[0,1.45],[1.45,0],[0,-1.45]],"o":[[1.45,0],[0,-1.45],[-1.42,0],[0,1.45]],"v":[[-0.834,0.332],[1.825,-2.206],[-0.834,-4.743],[-3.462,-2.206]],"c":true}},"nm":"?"},{"ty":"mm","mm":1,"nm":"Merge Paths 1"},{"ty":"fl","c":{"a":0,"k":[1,1,1,1]},"o":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":61,"s":[0],"e":[100]},{"t":71}]},"r":1,"nm":"Fill 1"},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[100,100]},"r":{"a":0,"k":0},"o":{"a":0,"k":100},"sk":{"a":0,"k":0},"sa":{"a":0,"k":0},"nm":"Transform"}],"nm":"?"},{"ty":"tm","s":{"a":0,"k":0},"e":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":37,"s":[0],"e":[100]},{"t":61}]},"o":{"a":0,"k":0},"m":1,"nm":"Trim Paths 1"},{"ty":"st","c":{"a":0,"k":[1,1,1,1]},"o":{"a":0,"k":100},"w":{"a":0,"k":1},"lc":1,"lj":1,"ml":4,"nm":"Stroke 1"}],"ip":0,"op":132,"st":0},{"ind":3,"ty":3,"nm":"▽ Group 6","sr":1,"ks":{"o":{"a":0,"k":100},"r":{"a":0,"k":0},"p":{"a":0,"k":[50,50,0]},"a":{"a":0,"k":[42,42,0]},"s":{"a":0,"k":[100,100,100]}},"ao":0,"ip":0,"op":132,"st":0},{"ind":4,"ty":4,"nm":"Rectangle 6 Copy","parent":3,"sr":1,"ks":{"o":{"a":0,"k":100},"r":{"a":0,"k":0},"p":{"a":0,"k":[42,42,0]},"a":{"a":0,"k":[0,0,0]},"s":{"a":1,"k":[{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":21,"s":[100,100,100],"e":[110,110,100]},{"i":{"x":[0.833,0.833,0.833],"y":[0.833,0.833,0.833]},"o":{"x":[0.167,0.167,0.167],"y":[0.167,0.167,0.167]},"t":29,"s":[110,110,100],"e":[100,100,100]},{"t":36}]}},"ao":0,"shapes":[{"ty":"gr","it":[{"ty":"rc","d":1,"s":{"a":0,"k":[42,42]},"p":{"a":0,"k":[0,0]},"r":{"a":0,"k":21},"nm":"Rectangle Path 1"},{"ty":"tm","s":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":0,"s":[0],"e":[100]},{"t":22}]},"e":{"a":0,"k":0},"o":{"a":0,"k":-90},"m":1,"nm":"Trim Paths 1"},{"ty":"st","c":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":13,"s":[0.74,0.729,0.709,1],"e":[0.961,0.694,0.196,1]},{"t":22}]},"o":{"a":0,"k":100},"w":{"a":0,"k":2},"lc":2,"lj":1,"ml":4,"nm":"Stroke 1"},{"ty":"fl","c":{"a":0,"k":[0.953,0.691,0.256,1]},"o":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":21,"s":[1],"e":[100]},{"t":26}]},"r":1,"nm":"Fill 1"},{"ty":"tr","p":{"a":0,"k":[0,0]},"a":{"a":0,"k":[0,0]},"s":{"a":0,"k":[200,200]},"r":{"a":0,"k":0},"o":{"a":0,"k":100},"sk":{"a":0,"k":0},"sa":{"a":0,"k":0},"nm":"Transform"}],"nm":"Rectangle 6 Copy"}],"ip":0,"op":132,"st":0}],"markers":[]};
+    helpLottie.load(lottieData);
+
+    // Start
+    initColorCycle();
+    loadQuestion();
+  </script>
+</body>
+</html>
