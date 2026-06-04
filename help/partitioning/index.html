@@ -534,7 +534,7 @@
       transition: all 0.4s;
     }
 
-    .p-ten-block.fading { opacity: 0.3; transform: scaleY(0); }
+    /* .p-ten-block.fading not used — top row stays intact as the "before" */
 
     .p-one-block {
       width: 18px; height: 18px;
@@ -1013,7 +1013,7 @@
               <div class="p-ten-block" id="std-t2"></div>
               <div class="p-ten-block" id="std-t3"></div>
             </div>
-            <div class="partition-label">3 tens</div>
+            <div class="partition-label" id="std-tens-label">3 tens</div>
             <div class="partition-blocks" id="std-ones-wrap">
               <div class="p-one-block visible" style="opacity:1;transform:scale(1)"></div>
               <div class="p-one-block visible" style="opacity:1;transform:scale(1)"></div>
@@ -1284,7 +1284,7 @@
         { time: 4.9,  action: () => { setCallout("We know 34 is 3 tens and 4 ones."); show('standard-row'); } },
         { time: 8.8,  action: () => setCallout("But watch —") },
         { time: 9.9,  action: () => { setCallout("we can open up one ten and turn it into ten ones.");
-          show('trade-arrow'); fadeBlock('std-t3'); } },
+          show('trade-arrow'); } },
         { time: 13.5, action: () => { setCallout("Now we have 2 tens and 14 ones."); show('nonstandard-row'); showNsOnes(); } },
         { time: 16.8, action: () => setCallout("It looks different, but it's still 34.") },
         { time: 19.5, action: () => setCallout("We could even open all the tens to make 34 ones.") },
@@ -1433,7 +1433,6 @@
         document.getElementById('d-ones').classList.remove('highlight');
       }
       if (idx === 4) {
-        document.getElementById('std-t3').classList.remove('fading');
         nsOnesWrap.querySelectorAll('.p-one-block').forEach(b => b.classList.remove('visible'));
       }
       if (idx === 5) {
