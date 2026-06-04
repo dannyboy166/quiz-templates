@@ -450,6 +450,32 @@ const helpPartitioningAudio = [
     text: "Now it's your turn! Tap to try some questions and partition numbers yourself." },
 ];
 
+// ==========================================
+// HELP - ADDITION
+// ==========================================
+const helpAdditionScenesAudio = [
+  { file: 'audio/help-addition-scenes/scene-0-intro.mp3',
+    text: "Hello! Today we're going to learn about addition. Adding means putting things together to find how many altogether. Let's look at all the different ways you might see addition questions." },
+  { file: 'audio/help-addition-scenes/scene-1-groups.mp3',
+    text: "Let's start with the simplest kind. I have 3 apples here, and 2 apples here. When I push them together, I get 5 altogether. We write that as 3 plus 2 equals 5. So when a question says complete the sum or solve this addition, just put the groups together and count." },
+  { file: 'audio/help-addition-scenes/scene-2-which-sum.mp3',
+    text: "Sometimes you're given a target number and asked which sum makes it. For example: which sum equals 7? Is it 3 plus 4, or 2 plus 6? Let's check. 3 plus 4 is 7 — yes! And 2 plus 6 is 8 — no. So 3 plus 4 is the answer. Here's a handy trick: you can swap the numbers around and the answer stays the same. 3 plus 4 equals 4 plus 3. Both make 7." },
+  { file: 'audio/help-addition-scenes/scene-3-pairs-ten.mp3',
+    text: "Pairs that make 10 are really important — they come up a lot! Here are the pairs: 1 and 9, 2 and 8, 3 and 7, 4 and 6, 5 and 5. See? Each pair adds to 10. So if a question asks select the pair that adds to 10 and you see 3 and 7, you know that's a match." },
+  { file: 'audio/help-addition-scenes/scene-4-doubles.mp3',
+    text: "Doubles are easy to spot — both numbers are the same! Double 6 means 6 plus 6, which is 12. Double 8 is 8 plus 8, which is 16. And here's a useful trick: near doubles. If you know double 6 is 12, then 6 plus 7 is just one more — 13!" },
+  { file: 'audio/help-addition-scenes/scene-5-word-problems.mp3',
+    text: "Word problems tell a little story. The trick is finding the numbers and the word that tells you to add. Listen for words like altogether, in total, how many more, or gets more. Here's one: Ben has 7 toy cars. He gets 5 more. How many altogether? Find the numbers — 7 and 5. The word altogether tells us to add. 7 plus 5 equals 12." },
+  { file: 'audio/help-addition-scenes/scene-6-missing-number.mp3',
+    text: "Missing number questions have a gap you need to fill. Something like: 8 plus what equals 13? Think of it as: what do I need to add to 8 to get to 13? You can count on from 8 — nine, ten, eleven, twelve, thirteen — that's 5 jumps. So the missing number is 5. You can also think backwards: 13 take away 8 is 5." },
+  { file: 'audio/help-addition-scenes/scene-7-bigger-numbers.mp3',
+    text: "When the numbers get bigger, use what you know about tens and ones. Let's try 29 plus 10. We're just adding one ten, so the tens digit goes up by one — 29 becomes 39. Easy! What about 28 plus 30? That's adding 3 tens. The tens digit goes from 2 to 5 — 28 becomes 58. For trickier ones like 36 plus 25, add the tens first: 30 plus 20 is 50. Then add the ones: 6 plus 5 is 11. Put them together: 50 plus 11 is 61." },
+  { file: 'audio/help-addition-scenes/scene-8-true-false.mp3',
+    text: "True or false questions give you a finished sum and ask if it's right. For example: 46 plus 31 equals 78. Is that true or false? Let's check. Add the tens: 40 plus 30 is 70. Add the ones: 6 plus 1 is 7. 70 plus 7 is 77, not 78. So the answer is false! Always work it out yourself to check." },
+  { file: 'audio/help-addition-scenes/scene-9-outro.mp3',
+    text: "Now it's your turn! Try some addition questions yourself." },
+];
+
 // All templates
 const allTemplates = {
   'word-match': wordMatchAudio,
@@ -470,6 +496,7 @@ const allTemplates = {
   'spelling-rules': spellingRulesAudio,
   'word-sort': wordSortAudio,
   'help-partitioning': helpPartitioningAudio,
+  'help-addition-scenes': helpAdditionScenesAudio,
 };
 
 async function generateAudioWithTimestamps(text, outputPath) {
