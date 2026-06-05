@@ -344,18 +344,18 @@
 
     /* ============ SCENE 7: PLACE VALUE ============ */
     .pv-addition {
-      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
       opacity: 0; transition: opacity 0.4s;
     }
     .pv-addition.visible { opacity: 1; }
     .pv-row {
-      font-size: 24px; font-weight: 700; color: #333;
+      font-size: 18px; font-weight: 700; color: #333;
       opacity: 0; transition: opacity 0.3s;
     }
     .pv-row.visible { opacity: 1; }
     .pv-row .tens-part { color: #667eea; }
     .pv-row .ones-part { color: #F5A623; }
-    .pv-row .result { color: #4CAF50; font-size: 28px; }
+    .pv-row .result { color: #4CAF50; font-size: 20px; }
     .pv-row .arrow { color: #999; }
     .pv-line {
       width: 200px; height: 3px; background: #333;
@@ -639,12 +639,12 @@
             <div class="pv-row" id="pv-r1a"><span class="arrow">&rarr;</span> tens: 2 &rarr; <span class="tens-part">3</span></div>
             <div class="pv-row" id="pv-r1b"><span class="result">= 39</span></div>
           </div>
-          <div class="pv-addition" id="pv-add2" style="margin-top:10px;">
+          <div class="pv-addition" id="pv-add2" style="margin-top:4px;">
             <div class="pv-row" id="pv-r2">28 + 30</div>
             <div class="pv-row" id="pv-r2a"><span class="arrow">&rarr;</span> tens: 2 &rarr; <span class="tens-part">5</span></div>
             <div class="pv-row" id="pv-r2b"><span class="result">= 58</span></div>
           </div>
-          <div class="pv-addition" id="pv-add3" style="margin-top:10px;">
+          <div class="pv-addition" id="pv-add3" style="margin-top:4px;">
             <div class="pv-row" id="pv-r3">36 + 25</div>
             <div class="pv-row" id="pv-r3a"><span class="tens-part">30 + 20 = 50</span></div>
             <div class="pv-row" id="pv-r3b"><span class="ones-part">6 + 5 = 11</span></div>
