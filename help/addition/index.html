@@ -318,15 +318,16 @@
 
     .number-line {
       display: flex; align-items: flex-end; gap: 0;
-      margin-bottom: 15px; opacity: 0; transition: opacity 0.4s;
+      margin-bottom: 15px; margin-top: 10px; opacity: 0; transition: opacity 0.4s;
     }
     .number-line.visible { opacity: 1; }
+    .number-line > div { position: relative; }
     .nl-num {
-      width: 40px; text-align: center; font-size: 16px; font-weight: 600;
-      color: #333; padding-bottom: 4px;
+      width: 50px; text-align: center; font-size: 22px; font-weight: 700;
+      color: #333; margin-bottom: -6px;
     }
     .nl-tick {
-      width: 40px; height: 20px; border-bottom: 3px solid #333;
+      width: 50px; height: 20px; border-bottom: 3px solid #333;
       position: relative;
     }
     .nl-tick::before {
@@ -334,9 +335,10 @@
       transform: translateX(-50%); width: 3px; height: 10px; background: #333;
     }
     .nl-hop {
-      position: absolute; top: -25px; left: 50%; width: 40px; height: 20px;
-      border: 2px solid #667eea; border-bottom: none; border-radius: 20px 20px 0 0;
-      transform: translateX(-50%); opacity: 0; transition: opacity 0.3s;
+      position: absolute; top: -20px; left: 50%; width: 50px; height: 24px;
+      border: 2.5px solid #667eea; border-bottom: none; border-radius: 24px 24px 0 0;
+      opacity: 0; transition: opacity 0.3s;
+      z-index: 2;
     }
     .nl-hop.visible { opacity: 1; }
 
@@ -616,11 +618,11 @@
             8 + <span class="gap-box" id="gap-box">?</span> = 13
           </div>
           <div class="number-line" id="num-line">
-            <div><div class="nl-num">8</div><div class="nl-tick"><div class="nl-hop" id="hop-1"></div></div></div>
-            <div><div class="nl-num">9</div><div class="nl-tick"><div class="nl-hop" id="hop-2"></div></div></div>
-            <div><div class="nl-num">10</div><div class="nl-tick"><div class="nl-hop" id="hop-3"></div></div></div>
-            <div><div class="nl-num">11</div><div class="nl-tick"><div class="nl-hop" id="hop-4"></div></div></div>
-            <div><div class="nl-num">12</div><div class="nl-tick"><div class="nl-hop" id="hop-5"></div></div></div>
+            <div><div class="nl-hop" id="hop-1"></div><div class="nl-num">8</div><div class="nl-tick"></div></div>
+            <div><div class="nl-hop" id="hop-2"></div><div class="nl-num">9</div><div class="nl-tick"></div></div>
+            <div><div class="nl-hop" id="hop-3"></div><div class="nl-num">10</div><div class="nl-tick"></div></div>
+            <div><div class="nl-hop" id="hop-4"></div><div class="nl-num">11</div><div class="nl-tick"></div></div>
+            <div><div class="nl-hop" id="hop-5"></div><div class="nl-num">12</div><div class="nl-tick"></div></div>
             <div><div class="nl-num">13</div><div class="nl-tick"></div></div>
           </div>
           <div class="info-cards" id="s6-cards">
