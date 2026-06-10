@@ -86,7 +86,7 @@ const base10BlocksAudio = [
   { file: 'audio/base10-blocks/help.mp3', text: 'Count the blocks to find the total. Blue flats are hundreds, red rods are tens, and orange cubes are ones. Add them all together!' },
 ];
 
-async function generateAudio(text, outputPath) {
+async function generateAudio(text, outputPath, speed = 0.9) {
   console.log(`Generating: ${outputPath}`);
 
   try {
@@ -99,7 +99,12 @@ async function generateAudio(text, outputPath) {
       body: JSON.stringify({
         text: text,
         model_id: 'eleven_multilingual_v2',
-        output_format: 'mp3_44100_128'
+        output_format: 'mp3_44100_128',
+        voice_settings: {
+          stability: 0.5,
+          similarity_boost: 0.75,
+          speed: speed
+        }
       })
     });
 
@@ -431,23 +436,23 @@ const wordSortAudio = [
 // ==========================================
 const helpPartitioningAudio = [
   { file: 'audio/help-partitioning/scene-0-intro.mp3',
-    text: "Hello! Today we're going to partition numbers. To partition means to split a number into smaller parts — and the handiest way is into tens and ones. Once you can do that, you can answer lots of different questions, so let's work through them together." },
+    text: "Hello! Today we're going to partition numbers. To partition means to break a number into smaller parts — And one useful way is to break the number into tens and ones. Once you can do that, you can answer lots of different questions, so let's work through them together." },
   { file: 'audio/help-partitioning/scene-1-tens-and-ones.mp3',
-    text: "Let's start with the number 34. The digit on the left, the 3, tells us how many tens there are — 3 tens. The digit on the right, the 4, tells us how many ones — 4 ones. We can build 34 by filling three ten-frames to make three tens, then adding four single counters for the ones. So 34 is 3 tens and 4 ones." },
+    text: "Let's start with the number 34. The three is in the tens place, so it tells us there are 3 tens. The four is in the ones place, so it tells us there are 4 ones. We can build 34 by filling three ten-frames to make three tens, then adding four single counters for the ones. So 34 is 3 tens and 4 ones." },
   { file: 'audio/help-partitioning/scene-2-how-many.mp3',
     text: "Sometimes a question just asks how many tens, or how many ones, are in a number. Look at 34 again. The tens digit is 3, so there are 3 tens — and 3 tens is the same as 30. The ones digit is 4, so there are 4 ones. So in 34 there are 3 tens and 4 ones." },
   { file: 'audio/help-partitioning/scene-3-true-or-false.mp3',
-    text: "Some questions give you a statement and ask if it's true or false. For example: 34 is the same as 3 tens and 4 ones. To check, we count the tens — yes, 3 tens — and the ones — yes, 4 ones. The statement matches, so the answer is true. If either the tens or the ones didn't match, it would be false." },
+    text: "Some questions give you a statement and ask if it's true or false. For example: 34 is the same as 3 tens and 4 ones. To check, we count the tens — yes, 3 tens — and the ones — yes, 4 ones. Everything matches, so the answer is true. If either the tens or the ones didn't match, it would be false." },
   { file: 'audio/help-partitioning/scene-4-another-way.mp3',
-    text: "Here's something clever. A number can be partitioned in more than one way. We know 34 is 3 tens and 4 ones. But watch — we can open up one ten and turn it into ten ones. Now we have 2 tens and 14 ones. It looks different, but it's still 34. We could even open all the tens to make 34 ones. So when a question asks for another way to show a number, remember you can trade a ten for ten ones, and the number stays the same." },
+    text: "Here's something clever. A number can be partitioned in more than one way. We know 34 is 3 tens and 4 ones. But watch — we can break up one ten and turn it into ten ones. Now we have 2 tens and 14 ones. It looks different, but it's still 34. We could even break apart all the tens to make 34 ones. So when a question asks for another way to show a number, remember that one ten is the same as ten ones, you can trade them and the number stays the same." },
   { file: 'audio/help-partitioning/scene-5-picture.mp3',
-    text: "Often you'll see a picture made of blocks. The tall blocks are tens and the small blocks are ones. To name the number, count the tens first, then the ones. Here we have 3 tens and 4 ones, so the picture shows 34. And if you ever spot a really big block, that's a hundred — count those first, then the tens, then the ones." },
+    text: "Often you'll see a picture made of blocks. The long blocks are tens and the small blocks are ones. To name the number, count the tens first, then the ones. Here we have 3 tens and 4 ones, so the picture shows 34. And if you ever spot a large flat block, that's one hundred — count those first, then the tens, then the ones." },
   { file: 'audio/help-partitioning/scene-6-tally.mp3',
-    text: "A tally is a quick way to keep count. The marks are grouped into bundles of five — four straight lines with one line crossed through them. To read a tally, count the bundles in fives, then count on the extra marks. Here we have two bundles — that's ten — and two extra marks, so the tally shows 12." },
+    text: "A tally is a quick way to keep count. The marks are grouped into bundles of five — four straight lines with one line crossed through them. To read a tally, count the bundles by fives first, then count on the extra marks. Here we have two bundles — that's ten — and two extra marks, so the tally shows 12." },
   { file: 'audio/help-partitioning/scene-7-biggest-smallest.mp3',
-    text: "Last one. Sometimes you're given some digits and asked to make the biggest or the smallest number. The trick is place value. To make the biggest number, put the biggest digit first. To make the smallest, put the smallest digit first. With the digits 4, 1 and 6, the biggest number is six hundred and forty-one, and the smallest is one hundred and forty-six." },
+    text: "Last one. Sometimes you're given some digits and asked to make the biggest or the smallest number. The important thing to remember is place value. To make the biggest number, put the biggest digit first. To make the smallest, put the smallest digit first. With the digits 4, 1 and 6, the biggest number is six hundred and forty-one, and the smallest is one hundred and forty-six." },
   { file: 'audio/help-partitioning/scene-8-outro.mp3',
-    text: "Now it's your turn! Tap to try some questions and partition numbers yourself." },
+    text: "Now it's your turn! Now try partitioning some numbers yourself." },
 ];
 
 // ==========================================
@@ -455,25 +460,25 @@ const helpPartitioningAudio = [
 // ==========================================
 const helpAdditionScenesAudio = [
   { file: 'audio/help-addition-scenes/scene-0-intro.mp3',
-    text: "Hello! Today we're going to learn about addition. Adding means putting things together to find how many altogether. Let's look at all the different ways you might see addition questions." },
+    text: "Hello! Today we're going to learn about addition. Adding means putting things together to find how many altogether. Let's look at some different ways addition questions might be asked." },
   { file: 'audio/help-addition-scenes/scene-1-groups.mp3',
-    text: "Let's start with the simplest kind. I have 3 apples here, and 2 apples here. When I push them together, I get 5 altogether. We write that as 3 plus 2 equals 5. So when a question says complete the sum or solve this addition, just put the groups together and count." },
+    text: "Let's start with the simplest kind. I have 3 apples here, and 2 apples here. When I push them together, I get 5 altogether. We write that as 3 plus 2 equals 5. So when a question says complete the sum or solve this addition problem, just put the groups together and count how many altogether." },
   { file: 'audio/help-addition-scenes/scene-2-which-sum.mp3',
-    text: "Sometimes you're given a target number and asked which sum makes it. For example: which sum equals 7? Is it 3 plus 4, or 2 plus 6? Let's check. 3 plus 4 is 7 — yes! And 2 plus 6 is 8 — no. So 3 plus 4 is the answer. Here's a handy trick: you can swap the numbers around and the answer stays the same. 3 plus 4 equals 4 plus 3. Both make 7." },
+    text: "Sometimes you're given a target number and asked which sum makes it. For example: which sum equals 7? Is it 3 plus 4, or 2 plus 6? Let's check. 3 plus 4 is 7 — yes! And 2 plus 6 is 8 — no. So 3 plus 4 is the answer. Here's something interesting: you can swap the numbers around and the answer stays the same. 3 plus 4 equals 4 plus 3. Both make 7." },
   { file: 'audio/help-addition-scenes/scene-3-pairs-ten.mp3',
-    text: "Pairs that make 10 are really important — they come up a lot! Here are the pairs: 1 and 9, 2 and 8, 3 and 7, 4 and 6, 5 and 5. See? Each pair adds to 10. So if a question asks select the pair that adds to 10 and you see 3 and 7, you know that's a match." },
+    text: "Pairs that make 10 are really important because they help us solve bigger addition questions. Here are the pairs: 0 and 10, 1 and 9, 2 and 8, 3 and 7, 4 and 6, 5 and 5. Each pair adds to 10. So if a question asks you to select the pair that adds to 10 and you see 3 and 7, you know that's a match." },
   { file: 'audio/help-addition-scenes/scene-4-doubles.mp3',
-    text: "Doubles are easy to spot — both numbers are the same! Double 6 means 6 plus 6, which is 12. Double 8 is 8 plus 8, which is 16. And here's a useful trick: near doubles. If you know double 6 is 12, then 6 plus 7 is just one more — 13!" },
+    text: "Doubles are easy to spot — both numbers are the same! Double 6 means 6 plus 6, which is 12. Double 8 is 8 plus 8, which is 16. And here's a useful strategy - near doubles. If you know double 6 is 12, then 6 plus 7 is just one more — 13!" },
   { file: 'audio/help-addition-scenes/scene-5-word-problems.mp3',
-    text: "Word problems tell a little story. The trick is finding the numbers and the word that tells you to add. Listen for words like altogether, in total, how many more, or gets more. Here's one: Ben has 7 toy cars. He gets 5 more. How many altogether? Find the numbers — 7 and 5. The word altogether tells us to add. 7 plus 5 equals 12." },
+    text: "Word problems tell a little story. The trick is finding the numbers and the word that tells you to add. Listen for words like altogether, in total, add, joins, or gets more. Here's one: Ben has 7 toy cars. He gets 5 more. How many altogether? Find the numbers — 7 and 5. The word altogether tells us to add. 7 plus 5 equals 12." },
   { file: 'audio/help-addition-scenes/scene-6-missing-number.mp3',
-    text: "Missing number questions have a gap you need to fill. Something like: 8 plus what equals 13? Think of it as: what do I need to add to 8 to get to 13? You can count on from 8 — nine, ten, eleven, twelve, thirteen — that's 5 jumps. So the missing number is 5. You can also think backwards: 13 take away 8 is 5." },
-  { file: 'audio/help-addition-scenes/scene-7-bigger-numbers.mp3',
-    text: "When the numbers get bigger, use what you know about tens and ones. Let's try 29 plus 10. We're just adding one ten, so the tens digit goes up by one — 29 becomes 39. Easy! What about 28 plus 30? That's adding 3 tens. The tens digit goes from 2 to 5 — 28 becomes 58. For trickier ones like 36 plus 25, add the tens first: 30 plus 20 is 50. Then add the ones: 6 plus 5 is 11. Put them together: 50 plus 11 is 61." },
-  { file: 'audio/help-addition-scenes/scene-8-true-false.mp3',
+    text: "Missing number questions have a gap you need to fill. Something like: 8 plus what equals 13? Think of it as: what do I need to add to 8 to get to 13? You can count on from 8 — nine, ten, eleven, twelve, thirteen — that's 5 jumps or we might also say 5 counts. So the missing number is 5. You can also think backwards: 13 take away 8 is 5." },
+  { file: 'audio/help-addition-scenes/scene-7-bigger-numbers.mp3', speed: 0.8,
+    text: "When the numbers get bigger, use what you know about tens and ones. Let's try 29 plus 10. We're just adding one ten, so the tens digit goes up by one — 29 becomes 39. Easy! What about 28 plus 30? That's adding 3 tens. The tens digit goes from 2 to 5 — 28 becomes 58. For trickier ones like 36 plus 25 we can break up the numbers to make it easier to solve, add the tens first: 30 plus 20 is 50. Then add the ones: 6 plus 5 is 11. 50 plus 11 is 61 because 50 and 10 make 60, then one more makes 61." },
+  { file: 'audio/help-addition-scenes/scene-8-true-false.mp3', speed: 0.8,
     text: "True or false questions give you a finished sum and ask if it's right. For example: 46 plus 31 equals 78. Is that true or false? Let's check. Add the tens: 40 plus 30 is 70. Add the ones: 6 plus 1 is 7. 70 plus 7 is 77, not 78. So the answer is false! Always work it out yourself to check." },
   { file: 'audio/help-addition-scenes/scene-9-outro.mp3',
-    text: "Now it's your turn! Try some addition questions yourself." },
+    text: "Now it's your turn! Try solving some addition questions yourself." },
 ];
 
 // All templates
@@ -499,7 +504,7 @@ const allTemplates = {
   'help-addition-scenes': helpAdditionScenesAudio,
 };
 
-async function generateAudioWithTimestamps(text, outputPath) {
+async function generateAudioWithTimestamps(text, outputPath, speed = 0.9) {
   console.log(`Generating (with timestamps): ${outputPath}`);
 
   try {
@@ -512,7 +517,12 @@ async function generateAudioWithTimestamps(text, outputPath) {
       body: JSON.stringify({
         text: text,
         model_id: 'eleven_multilingual_v2',
-        output_format: 'mp3_44100_128'
+        output_format: 'mp3_44100_128',
+        voice_settings: {
+          stability: 0.5,
+          similarity_boost: 0.75,
+          speed: speed
+        }
       })
     });
 
@@ -604,10 +614,11 @@ async function main() {
   const useTimestamps = process.argv.includes('--timestamps');
 
   for (const item of audioToGenerate) {
+    const speed = item.speed || 0.9;
     if (useTimestamps) {
-      await generateAudioWithTimestamps(item.text, item.file);
+      await generateAudioWithTimestamps(item.text, item.file, speed);
     } else {
-      await generateAudio(item.text, item.file);
+      await generateAudio(item.text, item.file, speed);
     }
   }
 

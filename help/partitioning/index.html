@@ -545,7 +545,13 @@
 
     .p-ten-block {
       width: 20px; height: 80px;
-      background: #E53935;
+      background: repeating-linear-gradient(
+        to bottom,
+        #E53935 0px,
+        #E53935 6px,
+        #B71C1C 6px,
+        #B71C1C 8px
+      );
       border: 2px solid #B71C1C;
       border-radius: 4px;
       transition: all 0.4s;
@@ -602,7 +608,13 @@
 
     .mab-ten {
       width: 22px; height: 110px;
-      background: linear-gradient(135deg, #E53935, #C62828);
+      background: repeating-linear-gradient(
+        to bottom,
+        #E53935 0px,
+        #E53935 9px,
+        #B71C1C 9px,
+        #B71C1C 11px
+      );
       border: 2px solid #B71C1C;
       border-radius: 4px;
       opacity: 0;
@@ -1251,8 +1263,8 @@
       0: [ // INTRO (18.4s)
         { time: 0.0,  action: () => { show('intro-title'); showTeacher(); } },
         { time: 0.1,  action: () => setCallout("Hello! Today we're going to partition numbers.") },
-        { time: 4.5,  action: () => { setCallout("To partition means to split a number into smaller parts —"); show('part-whole'); } },
-        { time: 8.6,  action: () => { setCallout("and the handiest way is into tens and ones."); show('pw-part1'); show('pw-part2'); } },
+        { time: 4.5,  action: () => { setCallout("To partition means to break a number into smaller parts —"); show('part-whole'); } },
+        { time: 8.6,  action: () => { setCallout("And one useful way is to break the number into tens and ones."); show('pw-part1'); show('pw-part2'); } },
         { time: 12.4, action: () => { setCallout("Once you can do that, you can answer lots of different questions,"); show('card-break'); } },
         { time: 16.3, action: () => { setCallout("so let's work through them together."); show('card-tens-ones'); } },
       ],
@@ -1260,9 +1272,9 @@
       1: [ // TENS AND ONES (25.0s)
         { time: 0.0,  action: () => show('s1-title') },
         { time: 0.1,  action: () => { setCallout("Let's start with the number 34."); show('num-34'); } },
-        { time: 2.7,  action: () => { setCallout("The digit on the left, the 3, tells us how many tens — 3 tens.");
+        { time: 2.7,  action: () => { setCallout("The three is in the tens place, so it tells us there are 3 tens.");
           document.getElementById('d-tens').classList.add('highlight'); } },
-        { time: 8.6,  action: () => { setCallout("The digit on the right, the 4, tells us how many ones — 4 ones.");
+        { time: 8.6,  action: () => { setCallout("The four is in the ones place, so it tells us there are 4 ones.");
           document.getElementById('d-tens').classList.remove('highlight');
           document.getElementById('d-ones').classList.add('highlight'); } },
         { time: 13.7, action: () => { setCallout("We can build 34 by filling three ten-frames to make three tens,");
@@ -1290,7 +1302,7 @@
         { time: 11.3, action: () => { setCallout("yes, 3 tens —"); show('check-tens'); } },
         { time: 13.4, action: () => setCallout("and the ones —") },
         { time: 15.7, action: () => { setCallout("yes, 4 ones."); show('check-ones'); } },
-        { time: 17.4, action: () => { setCallout("The statement matches, so the answer is true."); show('verdict'); } },
+        { time: 17.4, action: () => { setCallout("Everything matches, so the answer is true."); show('verdict'); } },
         { time: 20.3, action: () => setCallout("If either the tens or the ones didn't match, it would be false.") },
       ],
 
@@ -1300,25 +1312,24 @@
         { time: 1.7,  action: () => setCallout("A number can be partitioned in more than one way.") },
         { time: 4.9,  action: () => { setCallout("We know 34 is 3 tens and 4 ones."); show('standard-row'); } },
         { time: 8.8,  action: () => setCallout("But watch —") },
-        { time: 9.9,  action: () => { setCallout("we can open up one ten and turn it into ten ones.");
+        { time: 9.9,  action: () => { setCallout("we can break up one ten and turn it into ten ones.");
           show('trade-arrow'); } },
         { time: 13.5, action: () => { setCallout("Now we have 2 tens and 14 ones."); show('nonstandard-row'); showNsOnes(); } },
         { time: 16.8, action: () => setCallout("It looks different, but it's still 34.") },
-        { time: 19.5, action: () => setCallout("We could even open all the tens to make 34 ones.") },
+        { time: 19.5, action: () => setCallout("We could even break apart all the tens to make 34 ones.") },
         { time: 23.2, action: () => { setCallout("So when a question asks for another way to show a number,"); show('card-trade'); } },
-        { time: 26.6, action: () => { setCallout("remember you can trade a ten for ten ones, and the number stays the same."); show('card-still'); } },
+        { time: 26.6, action: () => { setCallout("remember that one ten is the same as ten ones, you can trade them and the number stays the same."); show('card-still'); } },
       ],
 
       5: [ // PICTURE (24.8s)
         { time: 0.0,  action: () => show('s5-title') },
         { time: 0.1,  action: () => setCallout("Often you'll see a picture made of blocks.") },
-        { time: 2.6,  action: () => { setCallout("The tall blocks are tens and the small blocks are ones."); show('mab-area'); showMABTens(); } },
+        { time: 2.6,  action: () => { setCallout("The long blocks are tens and the small blocks are ones."); show('mab-area'); showMABTens(); } },
         { time: 7.1,  action: () => { setCallout("To name the number, count the tens first, then the ones.");
           show('card-count-tens'); showMABOnes(); } },
         { time: 11.5, action: () => { setCallout("Here we have 3 tens and 4 ones, so the picture shows 34.");
           show('label-tens'); show('label-ones'); show('card-count-ones'); } },
-        { time: 14.7, action: () => { setCallout("so the picture shows 34."); show('mab-result'); } },
-        { time: 17.3, action: () => setCallout("And if you ever spot a really big block, that's a hundred —") },
+        { time: 14.7, action: () => { setCallout("And if you ever spot a large flat block, that's one hundred —"); show('mab-result'); } },
         { time: 21.2, action: () => setCallout("count those first, then the tens, then the ones.") },
       ],
 
@@ -1327,7 +1338,7 @@
         { time: 0.1,  action: () => setCallout("A tally is a quick way to keep count.") },
         { time: 2.8,  action: () => { setCallout("The marks are grouped into bundles of five —"); showTallyBundle('tally-b1'); } },
         { time: 5.6,  action: () => { setCallout("four straight lines with one line crossed through them."); showTallyBundle('tally-b2'); } },
-        { time: 9.1,  action: () => setCallout("To read a tally, count the bundles in fives,") },
+        { time: 9.1,  action: () => setCallout("To read a tally, count the bundles by fives first,") },
         { time: 12.3, action: () => { setCallout("then count on the extra marks."); showTallyExtras(); } },
         { time: 14.9, action: () => { setCallout("Here we have two bundles — that's ten —");
           show('tc-5a'); show('tc-plus1'); show('tc-5b'); show('card-bundle5'); } },
@@ -1340,7 +1351,7 @@
         { time: 0.1,  action: () => setCallout("Last one.") },
         { time: 1.7,  action: () => { setCallout("Sometimes you're given some digits and asked to make the biggest or the smallest number.");
           showTiles(); } },
-        { time: 7.4,  action: () => setCallout("The trick is place value.") },
+        { time: 7.4,  action: () => setCallout("The important thing to remember is place value.") },
         { time: 9.9,  action: () => setCallout("To make the biggest number, put the biggest digit first.") },
         { time: 11.5, action: () => { moveTiles([6, 4, 1]); } },
         { time: 13.7, action: () => { setCallout("To make the smallest, put the smallest digit first."); show('arr-biggest'); } },
@@ -1350,7 +1361,7 @@
 
       8: [ // OUTRO (5.5s)
         { time: 0.0,  action: () => { show('outro-title'); showTeacher(); setCallout("Now it's your turn!"); } },
-        { time: 1.8,  action: () => { setCallout("Tap to try some questions and partition numbers yourself."); show('try-btn'); } },
+        { time: 1.8,  action: () => { setCallout("Now try partitioning some numbers yourself."); show('try-btn'); } },
       ],
     };
 

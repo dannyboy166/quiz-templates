@@ -757,7 +757,7 @@
         { time: 0.0,  action: () => { show('intro-title'); showTeacher(); } },
         { time: 0.1,  action: () => setCallout("Hello! Today we're going to learn about addition.") },
         { time: 4.4,  action: () => { setCallout("Adding means putting things together to find how many altogether."); show('intro-left'); show('intro-right'); show('intro-plus'); } },
-        { time: 9.5,  action: () => { setCallout("Let's look at all the different ways you might see addition questions."); show('card-together'); show('card-total'); } },
+        { time: 9.5,  action: () => { setCallout("Let's look at some different ways addition questions might be asked."); show('card-together'); show('card-total'); } },
       ],
 
       1: [ // GROUPS (21.3s)
@@ -776,8 +776,8 @@
         { time: 12.5, action: () => { document.getElementById('eq-2').classList.remove('highlight');
           document.getElementById('eq-5').classList.add('highlight'); } },
         { time: 13.9, action: () => { document.getElementById('eq-5').classList.remove('highlight');
-          setCallout("So when a question says complete the sum or solve this addition,"); } },
-        { time: 18.5, action: () => { setCallout("just put the groups together and count."); show('card-put'); show('card-count'); } },
+          setCallout("So when a question says complete the sum or solve this addition problem,"); } },
+        { time: 18.5, action: () => { setCallout("just put the groups together and count how many altogether"); show('card-put'); show('card-count'); } },
       ],
 
       2: [ // WHICH SUM (30.2s)
@@ -796,22 +796,21 @@
           document.getElementById('sc-b-res').textContent = '8 \u2717';
           show('sc-b-res'); } },
         { time: 16.9, action: () => setCallout("So 3 plus 4 is the answer.") },
-        { time: 19.3, action: () => { setCallout("Here's a handy trick: you can swap the numbers around and the answer stays the same."); show('card-check'); } },
+        { time: 19.3, action: () => { setCallout("Here's something interesting: you can swap the numbers around and the answer stays the same."); show('card-check'); } },
         { time: 24.8, action: () => { setCallout("3 plus 4 equals 4 plus 3. Both make 7."); show('swap-demo'); show('card-order'); } },
       ],
 
       3: [ // PAIRS OF 10 (23.7s)
         { time: 0.0,  action: () => show('s3-title') },
-        { time: 0.1,  action: () => setCallout("Pairs that make 10 are really important —") },
-        { time: 2.6,  action: () => setCallout("they come up a lot!") },
-        { time: 4.3,  action: () => { setCallout("Here are the pairs: 1 and 9,"); show('tf-10');
+        { time: 0.1,  action: () => setCallout("Pairs that make 10 are really important because they help us solve bigger addition questions.") },
+        { time: 4.3,  action: () => { setCallout("Here are the pairs: 0 and 10, 1 and 9,"); show('tf-10');
           fillTenPair(1, 'blue', 'orange'); show('pair-19'); } },
         { time: 7.2,  action: () => { setCallout("2 and 8,"); fillTenPair(2, 'blue', 'orange'); show('pair-28'); } },
         { time: 8.7,  action: () => { setCallout("3 and 7,"); fillTenPair(3, 'blue', 'orange'); show('pair-37'); } },
         { time: 10.2, action: () => { setCallout("4 and 6,"); fillTenPair(4, 'blue', 'orange'); show('pair-46'); } },
         { time: 11.7, action: () => { setCallout("5 and 5."); fillTenPair(5, 'blue', 'orange'); show('pair-55'); } },
         { time: 14.7, action: () => setCallout("Each pair adds to 10.") },
-        { time: 16.8, action: () => { setCallout("So if a question asks select the pair that adds to 10 and you see 3 and 7,"); show('card-learn'); } },
+        { time: 16.8, action: () => { setCallout("So if a question asks you to select the pair that adds to 10 and you see 3 and 7,"); show('card-learn'); } },
         { time: 22.2, action: () => { setCallout("you know that's a match."); show('card-always'); } },
       ],
 
@@ -825,7 +824,7 @@
         { time: 6.5,  action: () => { setCallout("which is 12."); show('d-equals'); show('d-answer'); show('d-eq1'); } },
         { time: 8.3,  action: () => { setCallout("Double 8 is 8 plus 8,"); show('d-eq2'); } },
         { time: 10.5, action: () => setCallout("which is 16.") },
-        { time: 12.2, action: () => { setCallout("And here's a useful trick: near doubles."); show('card-same'); } },
+        { time: 12.2, action: () => { setCallout("And here's a useful strategy - near doubles."); show('card-same'); } },
         { time: 15.5, action: () => setCallout("If you know double 6 is 12,") },
         { time: 17.7, action: () => { setCallout("then 6 plus 7 is just one more — 13!"); show('d-near'); show('card-near'); } },
       ],
@@ -834,7 +833,7 @@
         { time: 0.0,  action: () => show('s5-title') },
         { time: 0.1,  action: () => setCallout("Word problems tell a little story.") },
         { time: 2.3,  action: () => setCallout("The trick is finding the numbers and the word that tells you to add.") },
-        { time: 6.3,  action: () => setCallout("Listen for words like altogether, in total, how many more, or gets more.") },
+        { time: 6.3,  action: () => setCallout("Listen for words like altogether, in total, add, joins, or gets more.") },
         { time: 12.3, action: () => { setCallout("Here's one: Ben has 7 toy cars. He gets 5 more. How many altogether?"); show('story'); } },
         { time: 19.4, action: () => { setCallout("Find the numbers — 7 and 5."); show('card-find'); } },
         { time: 22.2, action: () => { setCallout("The word altogether tells us to add."); show('card-words'); } },
@@ -853,7 +852,7 @@
         { time: 14.4, action: () => { setCallout("eleven,"); show('hop-3'); } },
         { time: 15.1, action: () => { setCallout("twelve,"); show('hop-4'); } },
         { time: 15.7, action: () => { setCallout("thirteen —"); show('hop-5'); } },
-        { time: 16.8, action: () => setCallout("that's 5 jumps.") },
+        { time: 16.8, action: () => setCallout("that's 5 jumps or we might also say 5 counts.") },
         { time: 18.6, action: () => { setCallout("So the missing number is 5.");
           const gb = document.getElementById('gap-box');
           gb.classList.remove('pulse'); gb.classList.add('filled'); gb.textContent = '5';
@@ -874,10 +873,10 @@
         { time: 15.3, action: () => { setCallout("That's adding 3 tens."); } },
         { time: 17.1, action: () => { setCallout("The tens digit goes from 2 to 5 —"); show('pv-r2a'); } },
         { time: 19.6, action: () => { setCallout("28 becomes 58."); show('pv-r2b'); } },
-        { time: 22.1, action: () => { setCallout("For trickier ones like 36 plus 25,"); show('pv-add3'); show('pv-r3'); } },
+        { time: 22.1, action: () => { setCallout("For trickier ones like 36 plus 25 we can break up the numbers to make it easier to solve,"); show('pv-add3'); show('pv-r3'); } },
         { time: 25.5, action: () => { setCallout("add the tens first: 30 plus 20 is 50."); show('pv-r3a'); show('card-tens-first'); } },
         { time: 30.2, action: () => { setCallout("Then add the ones: 6 plus 5 is 11."); show('pv-r3b'); show('card-then-ones'); } },
-        { time: 34.9, action: () => { setCallout("Put them together: 50 plus 11 is 61."); show('pv-r3c'); } },
+        { time: 34.9, action: () => { setCallout("50 plus 11 is 61 because 50 and 10 make 60, then one more makes 61."); show('pv-r3c'); } },
       ],
 
       8: [ // TRUE/FALSE (23.7s)
@@ -896,7 +895,7 @@
 
       9: [ // OUTRO (3.8s)
         { time: 0.0,  action: () => { show('outro-title'); showTeacher(); setCallout("Now it's your turn!"); } },
-        { time: 1.5,  action: () => { setCallout("Try some addition questions yourself."); show('try-btn'); } },
+        { time: 1.5,  action: () => { setCallout("Try solving some addition questions yourself."); show('try-btn'); } },
       ],
     };
 
