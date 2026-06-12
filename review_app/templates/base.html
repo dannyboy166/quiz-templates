@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}QuestionReview{% endblock %}</title>
+    <link rel="stylesheet" href="/assets/css/base.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='review.css') }}">
+    <style>
+        @font-face { font-family: 'Apfel Grotezk'; src: url('/assets/fonts/ApfelGrotezk-Regular.woff2') format('woff2'); font-weight: 400; }
+        @font-face { font-family: 'Apfel Grotezk'; src: url('/assets/fonts/ApfelGrotezk-Mittel.woff2') format('woff2'); font-weight: 500; }
+        @font-face { font-family: 'Apfel Grotezk'; src: url('/assets/fonts/ApfelGrotezk-Fett.woff2') format('woff2'); font-weight: 700; }
+    </style>
+</head>
+<body>
+    <nav class="review-nav">
+        <div class="nav-brand">QuestionReview</div>
+        <div class="nav-links">
+            <a href="/" class="nav-link">Dashboard</a>
+            <a href="/questions" class="nav-link">Questions</a>
+            <a href="/images" class="nav-link">Images</a>
+        </div>
+        <div class="nav-status" id="bulk-indicator" style="display:none;">
+            <span class="spinner"></span>
+            <span id="bulk-indicator-text">Generating...</span>
+        </div>
+        <div class="nav-status" id="image-bulk-indicator" style="display:none;">
+            <span class="spinner"></span>
+            <span id="image-bulk-indicator-text">Generating images...</span>
+        </div>
+    </nav>
+    <main class="review-main">
+        {% block content %}{% endblock %}
+    </main>
+    <script src="{{ url_for('static', filename='review.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

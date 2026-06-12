@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — QuestionReview{% endblock %}
+{% block content %}
+<div class="dashboard">
+    <h1>Voice Over Review</h1>
+
+    <div class="overall-stats">
+        <div class="stat-bar">
+            <div class="stat-numbers">
+                <span class="stat-big">{{ stats.total_approved }}</span> / {{ stats.total }} approved
+                <span class="stat-sep">|</span>
+                <span>{{ stats.total_audio }} have audio</span>
+                {% if stats.total_flagged %}
+                <span class="stat-sep">|</span>
+                <span class="stat-flagged">{{ stats.total_flagged }} flagged</span>
+                {% endif %}
+            </div>
+            <div class="progress-bar-outer">
+                <div class="progress-bar-inner" style="width: {{ (stats.total_approved / stats.total * 100) if stats.total else 0 }}%"></div>
+            </div>
+        </div>
+    </div>
+
+    <h2>By Subject</h2>
+    <div class="subject-grid">
+        {% for subject, s in stats.by_subject|dictsort %}
+        <a href="/questions?subject={{ subject|urlencode }}" class="subject-card">
+            <div class="subject-name">{{ subject }}</div>
+            <div class="subject-progress">
+                <span class="subject-count">{{ s.approved }} / {{ s.total }}</span>
+                <span class="subject-audio">{{ s.has_audio }} audio</span>
+                {% if s.flagged %}
+                <span class="subject-flagged">{{ s.flagged }} flagged</span>
+                {% endif %}
+            </div>
+            <div class="progress-bar-outer small">
+                <div class="progress-bar-inner" style="width: {{ (s.approved / s.total * 100) if s.total else 0 }}%"></div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+
+    {% if flagged %}
+    <h2>Flagged for Dan</h2>
+    <div class="flagged-list">
+        {% for f in flagged %}
+        <a href="/questions/{{ f.item_id }}" class="flagged-item">
+            <span class="flagged-id">{{ f.item_id }}</span>
+            <span class="flagged-subject">{{ f.subject }}</span>
+            <span class="flagged-text">{{ f.question_text }}</span>
+            {% if f.note %}
+            <span class="flagged-note">{{ f.note }}</span>
+            {% endif %}
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

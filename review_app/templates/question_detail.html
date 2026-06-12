@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+{% block title %}{{ q.item_id }} — QuestionReview{% endblock %}
+{% block content %}
+<div class="question-detail">
+    <div class="detail-nav">
+        {% if prev_id %}
+        <a href="/questions/{{ prev_id }}" class="btn btn-secondary">&laquo; Previous</a>
+        {% else %}
+        <span class="btn btn-secondary disabled">&laquo; Previous</span>
+        {% endif %}
+        <a href="/questions" class="btn btn-secondary">Back to List</a>
+        {% if next_id %}
+        <a href="/questions/{{ next_id }}" class="btn btn-secondary">Next &raquo;</a>
+        {% else %}
+        <span class="btn btn-secondary disabled">Next &raquo;</span>
+        {% endif %}
+    </div>
+
+    <div class="detail-header">
+        <h1>{{ q.item_id }}</h1>
+        <span class="status-badge status-{{ state.status }}">{{ state.status|capitalize }}</span>
+    </div>
+
+    <!-- Question Info -->
+    <div class="detail-card">
+        <div class="detail-meta">
+            <span class="meta-badge">{{ q.subject }}</span>
+            {% if q.category %}<span class="meta-badge secondary">{{ q.category }}</span>{% endif %}
+            {% if q.topic %}<span class="meta-badge secondary">{{ q.topic }}</span>{% endif %}
+            {% if q.grade %}<span class="meta-badge secondary">Year {{ q.grade }}</span>{% endif %}
+            <span class="type-badge type-{{ q.question_type|lower|replace(' ', '') }}">{{ template_name }}</span>
+        </div>
+
+        <div class="question-text">{{ q.question_text }}</div>
+
+        {% if q.option1 or q.option2 or q.option3 or q.option4 %}
+        <div class="options-list">
+            {% for i in range(1, 5) %}
+            {% set opt = q['option' ~ i] %}
+            {% if opt %}
+            <div class="option-item {{ 'correct' if q.answer == i|string else '' }}">
+                <span class="option-num">{{ i }}</span>
+                <span class="option-text">{{ opt }}</span>
+                {% if q.answer == i|string %}
+                <span class="correct-mark">&#10003;</span>
+                {% endif %}
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if q.answer %}
+        <div class="answer-display">
+            <strong>Answer:</strong> {{ q.answer }}
+        </div>
+        {% endif %}
+
+        {% if q.hint1 or q.hint2 or q.hint3 %}
+        <details class="hints-section">
+            <summary>Hints ({{ [q.hint1, q.hint2, q.hint3]|select|list|length }})</summary>
+            {% if q.hint1 %}<div class="hint"><strong>Hint 1:</strong> {{ q.hint1 }}</div>{% endif %}
+            {% if q.hint2 %}<div class="hint"><strong>Hint 2:</strong> {{ q.hint2 }}</div>{% endif %}
+            {% if q.hint3 %}<div class="hint"><strong>Hint 3:</strong> {{ q.hint3 }}</div>{% endif %}
+        </details>
+        {% endif %}
+    </div>
+
+    <!-- Voice Over Section -->
+    <div class="detail-card voiceover-card">
+        <h2>Voice Over</h2>
+
+        <div class="audio-section">
+            {% if audio_exists %}
+            <audio id="audio-player" controls preload="auto">
+                <source id="audio-source" src="/audio/{{ q.item_id }}-question.mp3?t={{ state.generated_at or '' }}" type="audio/mpeg">
+            </audio>
+            {% else %}
+            <div class="no-audio" id="no-audio-msg">No audio generated yet</div>
+            <audio id="audio-player" controls preload="auto" style="display:none;">
+                <source id="audio-source" src="" type="audio/mpeg">
+            </audio>
+            {% endif %}
+        </div>
+
+        <div class="speed-control">
+            <label>Speed: <span id="speed-value">{{ state.speed_override or 0.85 }}</span></label>
+            <input type="range" id="speed-slider" min="0.5" max="1.2" step="0.05"
+                   value="{{ state.speed_override or 0.85 }}"
+                   oninput="document.getElementById('speed-value').textContent = this.value">
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn btn-primary" id="generate-btn" onclick="generateAudio()">
+                {{ 'Regenerate' if audio_exists else 'Generate' }}
+            </button>
+            <button class="btn btn-success" onclick="approveQuestion()" {{ 'disabled' if not audio_exists }}>
+                Approve
+            </button>
+            <button class="btn btn-warning" onclick="showFlagModal()">
+                Flag for Dan
+            </button>
+        </div>
+
+        <div class="generating-spinner" id="generating" style="display:none;">
+            <span class="spinner"></span> Generating audio...
+        </div>
+
+        <!-- SSML Section -->
+        <details class="ssml-section">
+            <summary>
+                Speech Text (SSML)
+                {% if state.speech_override %}
+                <span class="override-badge">Custom</span>
+                {% endif %}
+            </summary>
+            <div class="ssml-editor">
+                <textarea id="ssml-text" rows="6">{{ ssml }}</textarea>
+                <div class="ssml-actions">
+                    <button class="btn btn-small" onclick="insertPause()">Insert Pause</button>
+                    <button class="btn btn-small" onclick="resetSsml()">Reset to Auto</button>
+                    <button class="btn btn-small btn-primary" onclick="saveSpeechText()">Save Speech Text</button>
+                </div>
+            </div>
+        </details>
+
+        {% if state.flag_note %}
+        <div class="flag-note-display">
+            <strong>Flag note:</strong> {{ state.flag_note }}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Flag Modal -->
+    <div class="modal-overlay" id="flag-modal" style="display:none;" onclick="if(event.target===this)hideFlagModal()">
+        <div class="modal-content">
+            <h3>Flag for Dan</h3>
+            <textarea id="flag-note" rows="3" placeholder="What's the issue? (e.g., typo in question text, wrong answer...)"></textarea>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="hideFlagModal()">Cancel</button>
+                <button class="btn btn-warning" onclick="submitFlag()">Flag</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+    const ITEM_ID = '{{ q.item_id }}';
+
+    async function generateAudio() {
+        const btn = document.getElementById('generate-btn');
+        const spinner = document.getElementById('generating');
+        btn.disabled = true;
+        spinner.style.display = 'flex';
+
+        // Save speed override first
+        const speed = parseFloat(document.getElementById('speed-slider').value);
+        await fetch(`/api/update-speech/${ITEM_ID}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({speed: speed})
+        });
+
+        try {
+            const res = await fetch(`/api/generate/${ITEM_ID}`, {method: 'POST'});
+            const data = await res.json();
+            if (data.ok) {
+                // Update audio player
+                const player = document.getElementById('audio-player');
+                const source = document.getElementById('audio-source');
+                source.src = `/audio/${ITEM_ID}-question.mp3?t=${Date.now()}`;
+                player.style.display = '';
+                player.load();
+                const noAudio = document.getElementById('no-audio-msg');
+                if (noAudio) noAudio.style.display = 'none';
+                btn.textContent = 'Regenerate';
+                document.querySelector('.btn-success').disabled = false;
+            } else {
+                alert('Error: ' + (data.error || 'Unknown error'));
+            }
+        } catch (e) {
+            alert('Error: ' + e.message);
+        }
+
+        btn.disabled = false;
+        spinner.style.display = 'none';
+    }
+
+    async function approveQuestion() {
+        const res = await fetch(`/api/approve/${ITEM_ID}`, {method: 'POST'});
+        const data = await res.json();
+        if (data.ok) {
+            document.querySelector('.status-badge').className = 'status-badge status-approved';
+            document.querySelector('.status-badge').textContent = 'Approved';
+        }
+    }
+
+    function showFlagModal() { document.getElementById('flag-modal').style.display = 'flex'; }
+    function hideFlagModal() { document.getElementById('flag-modal').style.display = 'none'; }
+
+    async function submitFlag() {
+        const note = document.getElementById('flag-note').value;
+        const res = await fetch(`/api/flag/${ITEM_ID}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({note: note})
+        });
+        const data = await res.json();
+        if (data.ok) {
+            document.querySelector('.status-badge').className = 'status-badge status-flagged';
+            document.querySelector('.status-badge').textContent = 'Flagged';
+            hideFlagModal();
+        }
+    }
+
+    function insertPause() {
+        const ta = document.getElementById('ssml-text');
+        const pos = ta.selectionStart;
+        const text = ta.value;
+        const pause = '<break time="0.5s" />';
+        ta.value = text.slice(0, pos) + pause + text.slice(pos);
+        ta.selectionStart = ta.selectionEnd = pos + pause.length;
+        ta.focus();
+    }
+
+    async function resetSsml() {
+        const res = await fetch(`/api/preview-ssml/${ITEM_ID}`);
+        const data = await res.json();
+        document.getElementById('ssml-text').value = data.ssml;
+        await fetch(`/api/update-speech/${ITEM_ID}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ssml: null})
+        });
+    }
+
+    async function saveSpeechText() {
+        const ssml = document.getElementById('ssml-text').value;
+        const speed = parseFloat(document.getElementById('speed-slider').value);
+        const res = await fetch(`/api/update-speech/${ITEM_ID}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ssml: ssml, speed: speed})
+        });
+        const data = await res.json();
+        if (data.ok) {
+            const badge = document.querySelector('.override-badge');
+            if (!badge) {
+                const summary = document.querySelector('.ssml-section summary');
+                summary.innerHTML += ' <span class="override-badge">Custom</span>';
+            }
+        }
+    }
+</script>
+{% endblock %}

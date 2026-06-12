@@ -44,3 +44,6 @@ data/
 
 # Claude memory (project-specific, not for sharing)
 .claude/
+
+# Test generated images
+test_generated_image*.png

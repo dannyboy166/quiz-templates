@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+{% block title %}Images — QuestionReview{% endblock %}
+{% block content %}
+<div class="image-list-page question-list-page">
+    <div class="list-header">
+        <h1>Image Generation</h1>
+        <div class="list-actions">
+            <button class="btn btn-primary" id="bulk-gen-btn" onclick="bulkGenerateImages()" disabled>
+                Generate Selected
+            </button>
+            <label class="select-all-label">
+                <input type="checkbox" id="select-all" onchange="toggleSelectAll(this.checked)">
+                Select visible
+            </label>
+        </div>
+    </div>
+
+    <div class="filter-bar">
+        <select id="filter-subject" onchange="applyFilters()">
+            <option value="">All Subjects</option>
+            {% for s in subjects %}
+            <option value="{{ s }}">{{ s }}</option>
+            {% endfor %}
+        </select>
+        <select id="filter-topic" onchange="applyFilters()">
+            <option value="">All Topics</option>
+        </select>
+        <select id="filter-sheet" onchange="applyFilters()">
+            <option value="">All Sheets</option>
+        </select>
+        <select id="filter-status" onchange="applyFilters()">
+            <option value="">All</option>
+            <option value="no_image">Needs Image (not in Airtable)</option>
+            <option value="in_airtable">Done (in Airtable)</option>
+            <option value="generated">AI Generated</option>
+            <option value="img_required">Image Required</option>
+        </select>
+        <input type="text" id="filter-search" placeholder="Search question text or description..."
+               oninput="applyFilters()">
+        <span class="filter-count" id="filter-count"></span>
+    </div>
+
+    <div class="question-table-wrap">
+        <table class="question-table">
+            <thead>
+                <tr>
+                    <th class="col-check"><input type="checkbox" id="header-check" onchange="toggleSelectAll(this.checked)"></th>
+                    <th class="col-id">ItemID</th>
+                    <th class="col-text">Question</th>
+                    <th class="col-subject">Category</th>
+                    <th class="col-subject">Topic</th>
+                    <th class="col-img-status">Airtable</th>
+                    <th class="col-img-status">Req</th>
+                </tr>
+            </thead>
+            <tbody id="question-tbody"></tbody>
+        </table>
+    </div>
+
+    <div class="pagination" id="pagination"></div>
+
+    <div class="bulk-progress" id="bulk-progress" style="display:none;">
+        <div class="progress-bar-outer">
+            <div class="progress-bar-inner" id="bulk-progress-bar" style="width:0%"></div>
+        </div>
+        <span id="bulk-progress-text">0 / 0</span>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<link rel="stylesheet" href="{{ url_for('static', filename='images.css') }}">
+<script src="{{ url_for('static', filename='images.js') }}"></script>
+<script>
+    const ALL_QUESTIONS = {{ questions_json|safe }};
+    const TOPICS_BY_SUBJECT = {{ topics_by_subject|safe }};
+    const PER_PAGE = 50;
+    let filtered = ALL_QUESTIONS;
+    let currentPage = 1;
+    let selected = new Set();
+
+    // Build sheet dropdown from data
+    const sheetsSet = [...new Set(ALL_QUESTIONS.map(q => q.sheet).filter(Boolean))];
+    const sheetSelect = document.getElementById('filter-sheet');
+    sheetsSet.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s; opt.textContent = s;
+        sheetSelect.appendChild(opt);
+    });
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('subject')) document.getElementById('filter-subject').value = params.get('subject');
+    if (params.get('sheet')) document.getElementById('filter-sheet').value = params.get('sheet');
+    if (params.has('status')) document.getElementById('filter-status').value = params.get('status');
+
+    applyFilters();
+
+    function applyFilters() {
+        const subject = document.getElementById('filter-subject').value;
+        const topic = document.getElementById('filter-topic').value;
+        const sheet = document.getElementById('filter-sheet').value;
+        const status = document.getElementById('filter-status').value;
+        const search = document.getElementById('filter-search').value.toLowerCase();
+
+        // Update topic dropdown
+        const topicSelect = document.getElementById('filter-topic');
+        const currentTopic = topicSelect.value;
+        topicSelect.innerHTML = '<option value="">All Topics</option>';
+        if (subject && TOPICS_BY_SUBJECT[subject]) {
+            TOPICS_BY_SUBJECT[subject].forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t; opt.textContent = t;
+                if (t === currentTopic) opt.selected = true;
+                topicSelect.appendChild(opt);
+            });
+        }
+
+        filtered = ALL_QUESTIONS.filter(q => {
+            if (subject && q.subject !== subject) return false;
+            if (topic && q.topic !== topic) return false;
+            if (sheet && q.sheet !== sheet) return false;
+            if (status === 'no_image' && q.has_at_image) return false;
+            else if (status === 'in_airtable' && !q.has_at_image) return false;
+            else if (status === 'generated' && !q.has_gen_image) return false;
+            else if (status === 'img_required' && q.img_req !== 'Y') return false;
+            if (search && !q.text.toLowerCase().includes(search)
+                && !q.id.includes(search)
+                && !(q.desc || '').toLowerCase().includes(search)) return false;
+            return true;
+        });
+
+        // Always maintain spreadsheet order
+        filtered.sort((a, b) => a.idx - b.idx);
+
+        currentPage = 1;
+        renderTable();
+        document.getElementById('filter-count').textContent = filtered.length + ' questions';
+    }
+
+    function renderTable() {
+        const start = (currentPage - 1) * PER_PAGE;
+        const page = filtered.slice(start, start + PER_PAGE);
+        const tbody = document.getElementById('question-tbody');
+
+        tbody.innerHTML = page.map(q => `
+            <tr class="question-row ${q.has_at_image ? 'approved' : ''}" onclick="window.location='/images/${q.id}'">
+                <td class="col-check" onclick="event.stopPropagation()">
+                    <input type="checkbox" ${selected.has(q.id) ? 'checked' : ''}
+                           onchange="toggleSelect('${q.id}', this.checked)">
+                </td>
+                <td class="col-id">${q.id}</td>
+                <td class="col-text">${escapeHtml(q.text)}</td>
+                <td class="col-subject">${q.category || q.subject}</td>
+                <td class="col-subject" style="font-size:0.75rem;">${q.topic || ''}</td>
+                <td class="col-img-status">
+                    ${q.has_at_image ? '<span class="status-icon approved" title="In Airtable">&#10003;</span>'
+                      : q.has_gen_image ? '<span class="img-status-dot generated" title="AI Generated"></span>'
+                      : '<span class="status-icon pending" title="No image">&mdash;</span>'}
+                </td>
+                <td class="col-img-status">
+                    ${q.img_req === 'Y' ? '<span style="color:var(--warning);font-weight:700;">Y</span>' : ''}
+                </td>
+            </tr>
+        `).join('');
+
+        renderPagination();
+        updateBulkButton();
+    }
+
+    function renderPagination() {
+        const totalPages = Math.ceil(filtered.length / PER_PAGE);
+        if (totalPages <= 1) { document.getElementById('pagination').innerHTML = ''; return; }
+        let html = '';
+        if (currentPage > 1) html += `<button onclick="goPage(${currentPage-1})">&laquo; Prev</button>`;
+        html += `<span class="page-info">Page ${currentPage} of ${totalPages}</span>`;
+        if (currentPage < totalPages) html += `<button onclick="goPage(${currentPage+1})">Next &raquo;</button>`;
+        document.getElementById('pagination').innerHTML = html;
+    }
+
+    function goPage(n) { currentPage = n; renderTable(); window.scrollTo(0, 0); }
+    function toggleSelect(id, checked) { if (checked) selected.add(id); else selected.delete(id); updateBulkButton(); }
+    function toggleSelectAll(checked) {
+        const start = (currentPage - 1) * PER_PAGE;
+        filtered.slice(start, start + PER_PAGE).forEach(q => { if (checked) selected.add(q.id); else selected.delete(q.id); });
+        renderTable();
+    }
+    function updateBulkButton() {
+        const btn = document.getElementById('bulk-gen-btn');
+        btn.disabled = selected.size === 0;
+        btn.textContent = selected.size ? `Generate Selected (${selected.size})` : 'Generate Selected';
+    }
+    function escapeHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+</script>
+{% endblock %}

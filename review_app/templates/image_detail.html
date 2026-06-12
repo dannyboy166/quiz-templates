@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+{% block title %}{{ q.item_id }} — Image Generation{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='images.css') }}">
+<div class="image-detail question-detail">
+    <div class="detail-nav">
+        {% if prev_id %}
+        <a href="/images/{{ prev_id }}" class="btn btn-secondary">&laquo; Previous</a>
+        {% else %}
+        <span class="btn btn-secondary disabled">&laquo; Previous</span>
+        {% endif %}
+        <a href="/images" class="btn btn-secondary">Back to List</a>
+        {% if next_id %}
+        <a href="/images/{{ next_id }}" class="btn btn-secondary">Next &raquo;</a>
+        {% else %}
+        <span class="btn btn-secondary disabled">Next &raquo;</span>
+        {% endif %}
+    </div>
+
+    <div class="detail-header">
+        <h1>{{ q.item_id }}</h1>
+        {% if at_data %}
+        <span class="status-badge status-approved">In Airtable</span>
+        {% else %}
+        <span class="status-badge status-pending">No Image Yet</span>
+        {% endif %}
+        {% if q.image_required == 'Y' %}
+        <span class="status-badge" style="background:#fef3c7; color:#92400e;">Image Required</span>
+        {% endif %}
+    </div>
+
+    <!-- Question Info -->
+    <div class="detail-card">
+        <div class="detail-meta">
+            <span class="meta-badge">{{ q.subject }}</span>
+            {% if q.category %}<span class="meta-badge secondary">{{ q.category }}</span>{% endif %}
+            {% if q.topic %}<span class="meta-badge secondary">{{ q.topic }}</span>{% endif %}
+            {% if q.grade %}<span class="meta-badge secondary">Year {{ q.grade }}</span>{% endif %}
+            <span class="type-badge type-{{ q.question_type|lower|replace(' ', '') }}">{{ q.question_type }}</span>
+        </div>
+
+        <div class="question-text">{{ q.question_text }}</div>
+
+        {% if q.option1 or q.option2 or q.option3 or q.option4 %}
+        <div class="options-list">
+            {% for i in range(1, 5) %}
+            {% set opt = q['option' ~ i] %}
+            {% if opt %}
+            <div class="option-item {{ 'correct' if q.answer == i|string else '' }}">
+                <span class="option-num">{{ i }}</span>
+                <span class="option-text">{{ opt }}</span>
+                {% if q.answer == i|string %}
+                <span class="correct-mark">&#10003;</span>
+                {% endif %}
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if q.image_description %}
+        <div class="answer-display">
+            <strong>Image Description (spreadsheet):</strong> {{ q.image_description }}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Airtable Status -->
+    {% if at_data %}
+    <div class="detail-card" style="background: var(--approved-bg); border-color: var(--success);">
+        <h2 style="color: var(--success);">Image Status — In Airtable</h2>
+        <p style="margin-bottom: 0.5rem;">
+            <strong>Table:</strong> {{ at_data.table }}
+            {% if at_data.description %} &mdash; <em>{{ at_data.description }}</em>{% endif %}
+        </p>
+        <p style="margin-bottom: 0.5rem;">
+            <strong>Type:</strong> {{ at_data.graphic_type|join(', ') if at_data.graphic_type else 'Unknown' }}
+        </p>
+
+        {% if at_data.question_image %}
+        <p>Question image: <strong>{{ at_data.question_image.filename }}</strong> ({{ at_data.question_image.type }})</p>
+        {% endif %}
+
+        {% if at_data.answer_images %}
+        <p style="margin-top: 0.5rem;"><strong>Answer images:</strong></p>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.25rem;">
+            {% for i in range(1, 5) %}
+            {% set ans_img = at_data.answer_images.get(i|string) %}
+            {% set opt = q['option' ~ i] %}
+            {% if opt %}
+            <span class="meta-badge {{ 'secondary' if not ans_img else '' }}" style="{{ 'background: var(--success); color: white;' if ans_img else '' }}">
+                {{ i }}. {{ opt[:20] }} {{ '— Done' if ans_img else '— Missing' }}
+            </span>
+            {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if not at_data.question_image and not at_data.answer_images %}
+        <p style="color: var(--warning);">Record exists in Airtable but no images uploaded yet.</p>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="detail-card" style="background: #fff3cd; border-color: var(--warning);">
+        <h2 style="color: var(--warning);">Image Status — Not in Airtable</h2>
+        <p>This question does not have any images in Airtable yet.</p>
+    </div>
+    {% endif %}
+
+    <!-- Generate New Image Section -->
+    <div class="detail-card">
+        <h2>
+            {% if at_data and at_data.question_image %}
+            Generate Replacement Image
+            {% else %}
+            Generate Question Image
+            {% endif %}
+        </h2>
+
+        <div class="prompt-section">
+            <label>Image Prompt</label>
+            <textarea class="prompt-editor" id="question-prompt" rows="3">{{ question_prompt }}</textarea>
+            <div class="prompt-actions">
+                <button class="btn btn-small" onclick="savePrompt('{{ q.item_id }}', 'question')">Save Prompt</button>
+                <button class="btn btn-small btn-secondary" onclick="document.getElementById('question-prompt').value='{{ default_question_prompt|e }}'">Reset to Auto</button>
+            </div>
+        </div>
+
+        <div class="image-actions">
+            <button class="btn btn-primary" id="gen-question-btn"
+                    onclick="generateQuestionImage('{{ q.item_id }}')">
+                {{ 'Regenerate' if has_q_image else 'Generate Image' }}
+            </button>
+            {% if has_q_image %}
+            <button class="btn btn-success" id="approve-question-btn"
+                    onclick="approveImage('{{ q.item_id }}', 'question')">
+                Approve
+            </button>
+            <button class="btn btn-warning" onclick="flagImage('{{ q.item_id }}')">
+                Flag
+            </button>
+            {% endif %}
+        </div>
+
+        <div id="question-image-preview" class="image-preview-section">
+            {% if has_q_image %}
+            <h3>Generated Image</h3>
+            <img class="image-preview" src="/generated-images/{{ q.item_id }}-question.png?t={{ img_state.question_image.generated_at or '' }}" alt="Generated question image">
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Generate Answer Images Section (only if question has options) -->
+    {% set has_options = q.option1 or q.option2 or q.option3 or q.option4 %}
+    {% if has_options %}
+    <div class="detail-card">
+        <h2>Generate Answer Images</h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+            Generate individual images for each answer option.
+        </p>
+
+        <button class="btn btn-primary" id="gen-all-answers-btn"
+                onclick="generateAllAnswerImages('{{ q.item_id }}')" style="margin-bottom: 1rem;">
+            Generate All Answer Images
+        </button>
+
+        <div class="answer-grid">
+            {% for i in range(1, 5) %}
+            {% set opt = q['option' ~ i] %}
+            {% if opt %}
+            {% set has_gen = answer_has_generated.get(i|string) %}
+            {% set at_ans = at_data.answer_images.get(i|string) if at_data and at_data.answer_images else None %}
+            <div class="answer-card {{ 'correct' if q.answer == i|string else '' }}">
+                <div class="answer-card-header">
+                    <span class="answer-card-num">{{ i }}</span>
+                    <span class="answer-card-text">{{ opt }}</span>
+                    {% if at_ans %}
+                    <span class="pushed-badge">In Airtable</span>
+                    {% endif %}
+                </div>
+
+                <textarea class="prompt-editor" id="answer-{{ i }}-prompt" rows="2">{{ answer_prompts[i|string] }}</textarea>
+
+                <div class="action-buttons">
+                    <button class="btn btn-small btn-primary" id="gen-answer-{{ i }}-btn"
+                            onclick="generateAnswerImage('{{ q.item_id }}', {{ i }})">
+                        {{ 'Regenerate' if has_gen else 'Generate' }}
+                    </button>
+                    {% if has_gen %}
+                    <button class="btn btn-small btn-success"
+                            onclick="approveImage('{{ q.item_id }}', 'answer', {{ i }})">
+                        Approve
+                    </button>
+                    {% endif %}
+                </div>
+
+                <div id="answer-{{ i }}-preview" style="margin-top: 0.75rem;">
+                    {% if has_gen %}
+                    <img class="image-preview" src="/generated-images/{{ q.item_id }}-answer{{ i }}.png?t={{ img_state.answer_images[i|string].generated_at if img_state.answer_images[i|string] else '' }}" alt="Answer {{ i }} image">
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='images.js') }}"></script>
+{% endblock %}
