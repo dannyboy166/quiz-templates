@@ -215,13 +215,20 @@ def create_app():
     print("Loading image state...")
     image_state = load_image_state()
 
-    # Load Airtable data — use local cache if available (instant), otherwise fetch from API (~60s)
+    # Load Airtable data — use local cache if available (instant),
+    # otherwise fetch from API in background (~60s)
     print("Loading Airtable images...")
-    airtable_images = load_cached_airtable_images() or {}
+    cached = load_cached_airtable_images()
+    airtable_images = cached if cached else {}
     if not airtable_images:
-        print("  No cache found, fetching from Airtable API (this takes ~60s)...")
-        airtable_images = load_airtable_images()
-        save_airtable_cache(airtable_images)
+        def _load_airtable_bg():
+            print("  No cache found, fetching from Airtable API in background...")
+            fresh = load_airtable_images()
+            airtable_images.update(fresh)
+            save_airtable_cache(airtable_images)
+        threading.Thread(target=_load_airtable_bg, daemon=True).start()
+    else:
+        print(f"  Loaded {len(airtable_images)} images from cache")
 
     # ALL questions get images eventually — show them all on the image page
     image_questions_list = questions_list
