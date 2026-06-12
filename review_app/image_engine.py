@@ -10,7 +10,10 @@ from dotenv import load_dotenv
 project_root = Path(__file__).resolve().parent.parent
 load_dotenv(project_root / ".env")
 
-from openai import OpenAI
+try:
+    from openai import OpenAI
+except ImportError:
+    OpenAI = None
 
 IMAGE_DATA_DIR = Path(os.environ.get("IMAGE_DATA_DIR", "data/images_generated")).resolve()
 
@@ -21,6 +24,8 @@ _client = None
 def _get_client():
     global _client
     if _client is None:
+        if OpenAI is None:
+            raise Exception("openai package not installed. Run: pip install openai")
         api_key = os.environ.get("OPENAI_API_KEY")
         if not api_key:
             raise Exception("OPENAI_API_KEY not set in .env")
