@@ -10,4 +10,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Railway sets PORT env var
-CMD ["gunicorn", "run_review:app", "--bind", "0.0.0.0:8080", "--workers", "2", "--timeout", "120"]
+CMD ["gunicorn", "run_review:app", "--bind", "0.0.0.0:8080", "--workers", "1", "--threads", "4", "--timeout", "300"]
