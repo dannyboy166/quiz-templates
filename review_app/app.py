@@ -217,6 +217,12 @@ def create_app():
 
     # --- Image generation ---
 
+    print("Loading image modules...")
+    print("  image_state OK")
+    print("  image_engine OK")
+    print("  airtable_loader OK")
+    print("  airtable_push OK")
+
     print("Loading image state...")
     image_state = load_image_state()
 

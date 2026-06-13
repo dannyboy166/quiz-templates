@@ -30,7 +30,10 @@ import argparse
 from pathlib import Path
 from dotenv import load_dotenv
 
-from .db_connect import get_connection
+try:
+    from .db_connect import get_connection
+except ImportError:
+    get_connection = None  # Not needed when imported by review_app
 
 # Load .env from project root
 load_dotenv(Path(__file__).resolve().parents[2] / ".env")
