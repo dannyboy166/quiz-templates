@@ -46,6 +46,7 @@ COLUMNS = [
     ("Hint3", 30, "Third hint (hardest/most helpful)", None),
     ("GetHelp", 40, "What teacher says/shows when student clicks Get Help", None),
     ("Notes", 30, "Internal notes (NOT imported to database)", None),
+    ("InteractiveTemplates", 22, "Additional interactive template IDs (e.g., 5,6). See Reference Data for IDs.", None),
 ]
 
 # Valid subject names (must match SUBJECT_MAP values in import_questions.py)
@@ -106,6 +107,7 @@ SAMPLE_ROWS = [
         "Hint3": "An animal is a thing",
         "GetHelp": "The teacher says: A noun is a naming word. It can be a person like 'teacher', a place like 'school', or a thing like 'elephant'.",
         "Notes": "",
+        "InteractiveTemplates": "",
     },
     # Select All - Maths
     {
@@ -130,6 +132,7 @@ SAMPLE_ROWS = [
         "Hint3": "5 + 5 = 10 and 7 + 3 = 10",
         "GetHelp": "The teacher says: To add two numbers, you can count on from the bigger number. For example, 7 + 3 means start at 7 and count 3 more: 8, 9, 10.",
         "Notes": "",
+        "InteractiveTemplates": "5",
     },
     # True/False - Science
     {
@@ -154,6 +157,7 @@ SAMPLE_ROWS = [
         "Hint3": "Spiders have 8 legs - they are arachnids",
         "GetHelp": "The teacher says: Insects always have 6 legs and 3 body parts. Spiders have 8 legs, so they belong to a different group called arachnids.",
         "Notes": "",
+        "InteractiveTemplates": "",
     },
     # Select One - with image required
     {
@@ -178,6 +182,7 @@ SAMPLE_ROWS = [
         "Hint3": "It looks like a tin can",
         "GetHelp": "A video showing different 3D shapes spinning, with labels appearing on each one.",
         "Notes": "",
+        "InteractiveTemplates": "5,6",
     },
     # VONWQ example
     {
@@ -202,6 +207,7 @@ SAMPLE_ROWS = [
         "Hint3": "'Rain' also has the long 'ay' sound",
         "GetHelp": "The teacher says: Some letters can make different sounds. The letter 'a' in 'cake' makes a long sound - 'ay'. Listen for the same sound in the other words.",
         "Notes": "VONWQ = student hears this question read aloud but doesn't see the text on screen",
+        "InteractiveTemplates": "",
     },
 ]
 
@@ -240,6 +246,7 @@ def create_instructions_sheet(ws):
         ("Q-S - Hint1 to Hint3", "Progressive hints shown when the student asks for help. Hint1 is the gentlest nudge, Hint3 gives the most help. Write each hint in its own column."),
         ("T - GetHelp", "What happens when the student clicks 'Get Help'. This could be text the teacher character says, OR a description of what should be shown (e.g., 'a video of the water cycle')."),
         ("U - Notes", "Internal notes for the team. These are NOT imported to the database."),
+        ("V - InteractiveTemplates", "Additional interactive template IDs this question can use. Comma-separated numbers (e.g., '5,6' for Sort + Link). See Reference Data sheet for the full ID list. Leave blank if the question only uses the primary QuestionType."),
     ]
 
     for header, desc in col_docs:
@@ -526,7 +533,29 @@ def create_reference_sheet(ws):
 
     row += 2
 
-    # --- Section 8: GetHelp Guide ---
+    # --- Section 8: Interactive Template IDs ---
+    ws.cell(row=row, column=1, value="INTERACTIVE TEMPLATE IDs").font = INST_SUBHEADER_FONT
+    row += 1
+    ws.cell(row=row, column=1, value="Use these IDs in the InteractiveTemplates column (V) to assign additional templates to a question.").font = INST_BODY_FONT
+    row += 2
+
+    row = write_header(ws, row, ["ID", "Template Name", "Description", "Example"])
+
+    template_ids = [
+        ("1", "Select One", "Student picks one correct answer", "Standard multiple choice"),
+        ("2", "Select All", "Student picks all correct answers", "Multiple correct options"),
+        ("3", "True/False", "Student picks True or False", "Statement judgement"),
+        ("4", "Written", "Student types a written answer", "Free text response"),
+        ("5", "Sort", "Student drags items into correct order", "Ordering numbers, sequence events"),
+        ("6", "Link", "Student matches/links items together", "Match words to definitions"),
+    ]
+
+    for i, (tid, name, desc, example) in enumerate(template_ids):
+        row = write_row(ws, row, [tid, name, desc, example], alt=(i % 2 == 1))
+
+    row += 2
+
+    # --- Section 9: GetHelp Guide ---
     ws.cell(row=row, column=1, value="GET HELP COLUMN GUIDE").font = INST_SUBHEADER_FONT
     row += 1
     ws.cell(row=row, column=1, value="The GetHelp column describes what happens when a student clicks the 'Get Help' button.").font = INST_BODY_FONT

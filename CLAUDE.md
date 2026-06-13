@@ -290,6 +290,7 @@ quiz-templates/
 │
 ├── scripts/
 │   ├── create_template.py             # Generate QUESTION_TEMPLATE.xlsx (master template)
+│   ├── create_help_scripts.py         # Generate help lesson script Word docs for teacher review
 │   └── bulk_import/                   # Bulk import scripts
 │       ├── __init__.py
 │       ├── db_connect.py              # Database connection (Azure AD token auth)
@@ -313,7 +314,8 @@ quiz-templates/
 │   │   ├── standardized/    # Clean standardized format (Stage 1)
 │   │   ├── drive_stage1/    # Fresh downloads from Google Drive (Stage 1, for comparison)
 │   │   ├── drive_stage2/    # Stage 2 files from Google Drive (Maths + English)
-│   │   └── reference/       # Topic list, ItemID numbering guide
+│   │   ├── reference/       # Topic list, ItemID numbering guide
+│   │   └── help-scripts/    # Help lesson narration scripts (Word docs for teacher review)
 │   └── voiceovers/          # Generated MP3 voice overs (output of generate_voiceovers.py)
 │
 ├── docs/
@@ -793,6 +795,7 @@ Victor reviewed again and found more issues. Fixed via SQL UPDATE/DELETE on DanT
 | File | Purpose |
 |------|---------|
 | `scripts/create_template.py` | Generate QUESTION_TEMPLATE.xlsx (master template for Kristie) |
+| `scripts/create_help_scripts.py` | Generate help lesson narration script Word docs for teacher review |
 | `scripts/bulk_import/db_connect.py` | Database connection (Azure AD token auth, pyodbc) |
 | `scripts/bulk_import/standardize_spreadsheets.py` | Clean Kristie's old messy spreadsheets (legacy, not needed with new template) |
 | `scripts/bulk_import/import_questions.py` | Bulk import questions (handles both old TemplateID and new QuestionType formats) |
@@ -822,4 +825,5 @@ Victor reviewed again and found more issues. Fixed via SQL UPDATE/DELETE on DanT
 | `data/questions/item_question_mapping.csv` | ItemID → QuestionID mapping (backup, SpreadsheetXRef is primary) |
 | `data/questions/reference/Learning Spheres Topic List.xlsx` | Full topic hierarchy for Other Subjects (K-6) |
 | `data/questions/reference/Questions Reference Number Guide.docx` | ItemID numbering system |
+| `data/questions/help-scripts/*.docx` | Help lesson narration scripts for teacher review (5 so far: Partitioning, Addition, Subtraction, Counting, Ordering Numbers) |
 | `DataDict.xlsx` | Table/attribute definitions from Victor (sent 10 Apr 2026, may be in email) |

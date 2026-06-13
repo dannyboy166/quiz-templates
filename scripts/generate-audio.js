@@ -481,6 +481,26 @@ const helpAdditionScenesAudio = [
     text: "Now it's your turn! Try solving some addition questions yourself." },
 ];
 
+// ==========================================
+// HELP - HOMOPHONES
+// ==========================================
+const helpHomophonesAudio = [
+  { file: 'audio/help-homophones/scene-0-intro.mp3',
+    text: "Hello! Today we're learning about homophones. Homophones are words that sound the same but have different spellings and different meanings. Like blue and blew — they sound the same, but one is a colour and the other means the wind blew. Let's learn how to pick the right one." },
+  { file: 'audio/help-homophones/scene-1-to-too-two.mp3',
+    text: "These three words all sound the same but mean different things. Two is the number 2. I have two cats. Too means also, or too much. I want to come too! It's too hot! To is used for everything else — going to the shops, to run, to play. If you're talking about the number, use two. If you mean also or too much, use too. For everything else, use to." },
+  { file: 'audio/help-homophones/scene-2-there-their-theyre.mp3',
+    text: "These three sound the same too. There is a place. The ball is over there. Their means belonging to them. That is their house. They're is short for they are. They're playing outside. A good trick: if you can replace the word with they are and it still makes sense, use they're. If it's about a place, use there. If it belongs to someone, use their." },
+  { file: 'audio/help-homophones/scene-3-common-pairs.mp3',
+    text: "Let's look at some common pairs you'll see in questions. Buy means to purchase something. Bye means goodbye. We are going to buy shoes — that's buy with a u-y. Sun is the star in the sky. Son is a male child. Mark has a son — that's son with an o. Sea is the ocean. See is what your eyes do. Hair is on your head. Hare is a type of rabbit. No is the opposite of yes. Know means to understand something." },
+  { file: 'audio/help-homophones/scene-4-fill-blank.mp3',
+    text: "Most homophone questions give you a sentence with a blank. Her dress is blank. Is it blew or blue? Think about the meaning. The dress is a colour — blue! Blew means the wind blew — that doesn't make sense for a dress. The blank ran very fast. Is it hair or hare? A hare is a fast animal. Hair doesn't run. So the answer is hare. Always read the sentence and think about what the word means — not just how it sounds." },
+  { file: 'audio/help-homophones/scene-5-correct-sentence.mp3',
+    text: "Some questions show you sentences and ask which one uses the homophone correctly. Which sentence uses two correctly? I have two cats. That's right — two means the number! I like going two the shops. That's wrong — it should be to, not two. Which sentence uses the correct homophone? I no how to spell, or I know how to spell? I know how to spell — know means to understand. No is the opposite of yes. Read each sentence carefully and check if the meaning matches the spelling." },
+  { file: 'audio/help-homophones/scene-6-outro.mp3',
+    text: "Now it's your turn! Try picking the right homophones yourself." },
+];
+
 // All templates
 const allTemplates = {
   'word-match': wordMatchAudio,
@@ -502,6 +522,7 @@ const allTemplates = {
   'word-sort': wordSortAudio,
   'help-partitioning': helpPartitioningAudio,
   'help-addition-scenes': helpAdditionScenesAudio,
+  'help-homophones': helpHomophonesAudio,
 };
 
 async function generateAudioWithTimestamps(text, outputPath, speed = 0.9) {
