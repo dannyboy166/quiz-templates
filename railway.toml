@@ -1,10 +1,9 @@
 [build]
-builder = "nixpacks"
-buildCommand = "pip install openai>=1.82.0"
+builder = "dockerfile"
+dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "gunicorn run_review:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120"
 healthcheckPath = "/"
-healthcheckTimeout = 30
+healthcheckTimeout = 60
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
