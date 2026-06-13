@@ -1,7 +1,3 @@
-[build]
-builder = "RAILPACK"
-buildCommand = "pip install openai"
-
 [deploy]
 startCommand = "gunicorn run_review:app --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 300"
 healthcheckPath = "/"
