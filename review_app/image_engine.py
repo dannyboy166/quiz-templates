@@ -2,7 +2,6 @@
 
 import base64
 import os
-import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -17,7 +16,6 @@ except ImportError:
 
 IMAGE_DATA_DIR = Path(os.environ.get("IMAGE_DATA_DIR", "data/images_generated")).resolve()
 
-# Lazy client init (so import doesn't fail if key not set yet)
 _client = None
 
 
@@ -33,47 +31,59 @@ def _get_client():
     return _client
 
 
-def build_question_prompt(q):
+STYLE_SUFFIX = (
+    "Simple, colorful cartoon illustration style suitable for children ages 5-12. "
+    "White or plain background. No text, no writing, no numbers, no letters, no labels."
+)
+
+
+def build_question_prompt(q, airtable_desc=None):
     """Build an image generation prompt from a question dict.
 
-    Uses image_description if available. If not, builds a simple visual
-    prompt — just the key object/concept, not the whole question text.
+    Priority for description source:
+    1. Airtable description (from Georgia's existing work)
+    2. Spreadsheet image_description column
+    3. Placeholder asking Georgia to write the prompt
+
+    Args:
+        q: question dict from spreadsheet
+        airtable_desc: description from Airtable record (if exists)
     """
-    desc = q.get("image_description", "").strip()
+    # Try Airtable description first (e.g. "The sun is hot")
+    desc = ""
+    if airtable_desc:
+        desc = airtable_desc.strip()
 
+    # Fall back to spreadsheet ImageDescription
     if not desc:
-        # No description provided — Georgia will likely edit this.
-        # Give a placeholder hint rather than dumping the question text.
-        desc = (
-            f"[No image description in spreadsheet. "
-            f"Edit this prompt to describe what image you need for: "
-            f"\"{q.get('question_text', '')[:100]}\"]"
-        )
-        return desc
+        desc = q.get("image_description", "").strip()
 
-    return (
-        f"A simple, colorful cartoon illustration for a children's "
-        f"educational quiz (ages 5-12). "
-        f"{desc}. "
-        f"White background, no text, no writing, no numbers, no labels, "
-        f"child-friendly style."
-    )
+    # No description anywhere — show placeholder for Georgia
+    if not desc:
+        q_text = q.get("question_text", "")[:120]
+        return (
+            f"[Edit this prompt] Describe the image you need for this question: "
+            f"\"{q_text}\""
+        )
+
+    return f"{desc}. {STYLE_SUFFIX}"
 
 
 def build_answer_prompt(q, option_num, option_text):
     """Build an image generation prompt for a single answer option."""
+    if not option_text or option_text.strip() in ("", "True", "False"):
+        return ""
+
     return (
-        f"A simple, clear, colorful cartoon illustration of: {option_text}. "
-        f"For a children's educational quiz (ages 5-12). "
-        f"White background, no text, no labels, child-friendly style, "
-        f"single object or concept centered in frame."
+        f"A cartoon illustration of: {option_text}. "
+        f"Single object or concept, centered. {STYLE_SUFFIX}"
     )
 
 
-def generate_image(prompt, output_path, size="1024x1024", quality="medium"):
+def generate_image(prompt, output_path, size="1024x1024", quality="low"):
     """Generate an image via OpenAI API and save to output_path.
 
-    Returns file size in bytes.
+    Returns file size in bytes. Uses quality='low' by default ($0.02/image).
     """
     client = _get_client()
 

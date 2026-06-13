@@ -29,16 +29,18 @@
             <option value="">All Sheets</option>
         </select>
         <select id="filter-status" onchange="applyFilters()">
-            <option value="">All</option>
-            <option value="no_image">Needs Image (not in Airtable)</option>
+            <option value="no_image">Needs Image</option>
+            <option value="">All Questions</option>
             <option value="in_airtable">Done (in Airtable)</option>
             <option value="generated">AI Generated</option>
-            <option value="img_required">Image Required</option>
+            <option value="img_required">Image Required (Y)</option>
         </select>
         <input type="text" id="filter-search" placeholder="Search question text or description..."
                oninput="applyFilters()">
         <span class="filter-count" id="filter-count"></span>
     </div>
+
+    <div class="progress-summary" id="progress-summary" style="margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-muted);"></div>
 
     <div class="question-table-wrap">
         <table class="question-table">
@@ -133,7 +135,16 @@
 
         currentPage = 1;
         renderTable();
-        document.getElementById('filter-count').textContent = filtered.length + ' questions';
+
+        // Progress summary
+        const totalInFilter = filtered.length;
+        const doneInFilter = filtered.filter(q => q.has_at_image).length;
+        const needsInFilter = totalInFilter - doneInFilter;
+        const pct = totalInFilter > 0 ? Math.round(doneInFilter / totalInFilter * 100) : 0;
+        document.getElementById('filter-count').textContent = `${filtered.length} questions`;
+        document.getElementById('progress-summary').innerHTML =
+            `<strong>${doneInFilter}</strong> / ${totalInFilter} done (${pct}%) &mdash; ` +
+            `<strong>${needsInFilter}</strong> still need images`;
     }
 
     function renderTable() {

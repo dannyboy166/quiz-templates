@@ -1,6 +1,7 @@
 """QuestionReview Flask app — voice over review tool for Zoe/Julie."""
 
 import json
+import os
 import time
 import threading
 import queue
@@ -30,7 +31,11 @@ from .image_engine import (
 )
 from .airtable_loader import (
     load_airtable_images, load_cached_airtable_images,
-    save_airtable_cache, get_airtable_table_for_question,
+    save_airtable_cache,
+)
+from .airtable_push import (
+    push_question_image as at_push_question,
+    push_answer_image as at_push_answer,
 )
 
 # Bulk generation state (voiceovers)
@@ -259,8 +264,9 @@ def create_app():
         # Airtable data for this question
         at_data = airtable_images.get(item_id)
 
-        # Build prompts
-        default_q_prompt = build_question_prompt(q)
+        # Build prompts — use Airtable description if available
+        at_desc = at_data.get("description", "") if at_data else ""
+        default_q_prompt = build_question_prompt(q, airtable_desc=at_desc)
         question_prompt = img_state["question_image"].get("prompt") or default_q_prompt
 
         # Answer prompts
@@ -374,6 +380,46 @@ def create_app():
 
         update_image_item_state(image_state, item_id, **img_state)
         return jsonify({"ok": True})
+
+    @app.route("/api/images/push-airtable/<item_id>", methods=["POST"])
+    def api_push_airtable(item_id):
+        q = questions.get(item_id)
+        if not q:
+            return jsonify({"error": "Question not found"}), 404
+
+        data = request.get_json(silent=True) or {}
+        image_type = data.get("image_type", "question")
+        option_num = data.get("option_num")
+
+        # Build public URL for the generated image
+        domain = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "localhost:5050")
+        scheme = "https" if "railway" in domain else "http"
+
+        if image_type == "question":
+            filename = f"{item_id}-question.png"
+            image_url = f"{scheme}://{domain}/generated-images/{filename}"
+            try:
+                table_name, record_id, msg = at_push_question(q, image_url, airtable_images)
+                img_st = get_image_item_state(image_state, item_id)
+                img_st["question_image"]["pushed_at"] = img_now_iso()
+                update_image_item_state(image_state, item_id, **img_st)
+                return jsonify({"ok": True, "table": table_name, "message": msg})
+            except Exception as e:
+                return jsonify({"error": str(e)}), 500
+        elif image_type == "answer" and option_num:
+            filename = f"{item_id}-answer{option_num}.png"
+            image_url = f"{scheme}://{domain}/generated-images/{filename}"
+            try:
+                table_name, record_id, msg = at_push_answer(q, int(option_num), image_url, airtable_images)
+                img_st = get_image_item_state(image_state, item_id)
+                ans = img_st["answer_images"].setdefault(str(option_num), {})
+                ans["pushed_at"] = img_now_iso()
+                update_image_item_state(image_state, item_id, **img_st)
+                return jsonify({"ok": True, "table": table_name, "message": msg})
+            except Exception as e:
+                return jsonify({"error": str(e)}), 500
+        else:
+            return jsonify({"error": "Invalid image_type or missing option_num"}), 400
 
     @app.route("/api/images/bulk-generate", methods=["POST"])
     def api_bulk_generate_images():
