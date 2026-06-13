@@ -1,0 +1,15 @@
+venv/
+node_modules/
+data/
+.env
+.git/
+.claude/
+__pycache__/
+*.pyc
+assets/coloring/
+audio/
+help/
+docs/*.pdf
+test_generated_image*.png
+build_coloring.py
+demo-coloring.html
