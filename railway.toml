@@ -1,5 +1,5 @@
 [deploy]
-startCommand = "gunicorn run_review:app --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 300"
+startCommand = "python upload_spreadsheets.py && gunicorn run_review:app --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 300"
 healthcheckPath = "/"
 healthcheckTimeout = 120
 restartPolicyType = "ON_FAILURE"
