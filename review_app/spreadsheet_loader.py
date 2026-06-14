@@ -1,17 +1,26 @@
 """Load questions from the 3 Stage One spreadsheets into memory."""
 
+import os
 from pathlib import Path
 from collections import defaultdict
 
 import pandas as pd
 
-DRIVE_DIR = Path("data/questions/drive_latest")
+# Check multiple locations for spreadsheet files
+# Local dev: data/questions/drive_latest/
+# Railway: /data/voiceovers/questions/drive_latest/ (on persistent volume)
+_LOCAL_DIR = Path("data/questions/drive_latest")
+_VOLUME_DIR = Path(os.environ.get("DATA_DIR", "data/voiceovers")) / "questions" / "drive_latest"
 
-SPREADSHEET_FILES = [
-    DRIVE_DIR / "Krisite Stage One English Questions WORLD WISE.xlsx",
-    DRIVE_DIR / "Kristie Stage One Mathematics Questions WORLD WISE.xlsx",
-    DRIVE_DIR / "Kristie Stage One Other Subjects Questions WORLD WISE.xlsx",
+DRIVE_DIR = _VOLUME_DIR if _VOLUME_DIR.exists() else _LOCAL_DIR
+
+FILENAMES = [
+    "Krisite Stage One English Questions WORLD WISE.xlsx",
+    "Kristie Stage One Mathematics Questions WORLD WISE.xlsx",
+    "Kristie Stage One Other Subjects Questions WORLD WISE.xlsx",
 ]
+
+SPREADSHEET_FILES = [DRIVE_DIR / f for f in FILENAMES]
 
 QUESTION_TYPE_MAP = {
     "Select One": 1,
