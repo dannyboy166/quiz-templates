@@ -42,6 +42,16 @@
 
     <div class="progress-summary" id="progress-summary" style="margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-muted);"></div>
 
+    <div class="detail-card" style="margin-bottom: 1rem; padding: 1rem;">
+        <label style="font-weight: 700; font-size: 0.9rem; display: block; margin-bottom: 0.4rem;">
+            Default Prompt Template
+            <span style="font-weight: 400; color: var(--text-muted);"> — used when no custom prompt is typed. Use {question} for the question text.</span>
+        </label>
+        <input type="text" id="default-prompt-template"
+               value="We are making images for a children's educational quiz. Make a simple, colorful cartoon image for this question: {question}"
+               style="width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem;">
+    </div>
+
     <div class="question-table-wrap">
         <table class="question-table">
             <thead>

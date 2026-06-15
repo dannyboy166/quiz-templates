@@ -165,12 +165,23 @@ async function bulkGenerateImages() {
     const ids = Array.from(selected);
     if (!ids.length) return;
 
-    // Collect prompts from the list page inputs
+    // Get default prompt template
+    const templateEl = document.getElementById('default-prompt-template');
+    const defaultTemplate = templateEl ? templateEl.value.trim() : '';
+
+    // Collect prompts — use custom if typed, otherwise use default template
     const prompts = {};
     for (const id of ids) {
         const input = document.getElementById(`prompt-${id}`);
-        if (input && input.value.trim()) {
-            prompts[id] = input.value.trim();
+        const customPrompt = input ? input.value.trim() : '';
+
+        if (customPrompt) {
+            prompts[id] = customPrompt;
+        } else if (defaultTemplate) {
+            // Find the question text for this ID
+            const q = ALL_QUESTIONS.find(q => q.id === id);
+            const questionText = q ? q.text : '';
+            prompts[id] = defaultTemplate.replace('{question}', questionText);
         }
     }
 
