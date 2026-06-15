@@ -501,6 +501,34 @@ const helpHomophonesAudio = [
     text: "Now it's your turn! Try picking the right homophones yourself." },
 ];
 
+// ==========================================
+// HELP - SUBTRACTION
+// ==========================================
+const helpSubtractionAudio = [
+  { file: 'audio/help-subtraction/scene-0-intro.mp3',
+    text: "Hello! Today we're learning about subtraction. Subtracting means taking away — finding out how many are left, or what the difference is. There are lots of different subtraction questions, so let's work through them together." },
+  { file: 'audio/help-subtraction/scene-1-take-away.mp3',
+    text: "Let's start with a simple one. 6 take away 4 is ? We start with 6 and remove 4. One, two, three, four taken away — there are now only 2 left. So 6 take away 4 equals 2. You might also see questions written like this: 11 minus 4, or solve this subtraction sum. They all mean the same thing — start with the big number and take it away. The answer is going to be a smaller number than the number you start with." },
+  { file: 'audio/help-subtraction/scene-2-difference.mp3',
+    text: "Some questions show two rows of objects and ask: what is the difference? There are more tractors in the top row than the bottom. To find the difference, line them up and count the extras. The top row has 7 and the bottom row has 4. 7 take away 4 equals 3. So the difference is 3. The word difference just means how many more one group has than the other." },
+  { file: 'audio/help-subtraction/scene-3-word-problems.mp3',
+    text: "Word problems tell a little story. The shopkeeper made 6 sandwiches and sold 2. How many does he have left? Find the numbers — 6 and 2. The words sold and left tell us to subtract. 6 take away 2 equals 4. Look for clue words like left, sold, ate, gave away, or how many remain. They all tell you it's a subtraction question." },
+  { file: 'audio/help-subtraction/scene-4-missing-number.mp3',
+    text: "Sometimes there's a missing number in the subtraction number sentence. 8 take away something equals 3. Think: I start at 8 and need to land on 3. Start at 8 and count back until you get to three — seven, six, five, four, three. That's 5 jumps, so the missing number is 5. The missing number might be at the start too — something take away 5 equals 3. If I start with 3 and add back the 5 I took away, what do I get? 3 plus 5 equals 8. So the missing number is 8. Remember: when the missing number is at the start, adding can help us find the answer to a subtraction question." },
+  { file: 'audio/help-subtraction/scene-5-which-sum.mp3',
+    text: "Some questions ask: which other sum equals this number? For example: what other sum equals 11? You'll see options like 14 minus 4, or 17 minus 6. Work each one out — 14 minus 4 is 10. No, this number sentence does not equal 11. 17 minus 6 is 11. Yes, this number sentence equals 11! So 17 minus 6 is the answer. You will need to solve each answer option until you find the one that matches." },
+  { file: 'audio/help-subtraction/scene-6-subtracting-tens.mp3',
+    text: "When you subtract a round number of tens, only the tens digit changes. 29 take away 10 — the tens digit drops from 2 to 1. The answer is 19. The ones digit stays at 9. 48 take away 20 — the tens digit drops from 4 to 2. The answer is 28. 91 take away 50 — the tens digit drops from 9 to 4. The answer is 41. The ones digit always stays the same when you subtract whole tens." },
+  { file: 'audio/help-subtraction/scene-7-bigger-numbers.mp3',
+    text: "Sometimes the subtraction questions use bigger numbers. We can use what we know about tens and ones to help us. Let's try 35 take away 12. First, take away the 10. 35 take away 10 is 25. Now take away the 2 more. 25 take away 2 is 23. So 35 take away 12 equals 23. Sometimes a question might ask: what is the difference between two numbers? Difference means how much bigger one number is than the other. Let's look at these two numbers. What is the difference between 25 and 20? Count on from 20 to 25. 21, 22, 23, 24, 25. That's 5 more. So the difference between 25 and 20 is 5. When you see bigger numbers, use tens and ones to help you work it out." },
+  { file: 'audio/help-subtraction/scene-8-number-sentence.mp3',
+    text: "Some questions give you a story and ask which number sentence matches. Will baked 36 muffins. He took 23 to school. He had 13 left. Which number sentence represents this? He started with 36 and took away 23. That's 36 minus 23, or 36 take away 23. The clue is that some were taken away — that tells you it's subtraction, not addition or multiplication." },
+  { file: 'audio/help-subtraction/scene-9-true-false.mp3',
+    text: "Sometimes a question gives you an answer and asks if it is correct. 82 minus 19 equals 73. True or false? You will need to work this out yourself to check if this is right or wrong. Start at 82 on a number line. Jump back 10 to 72. Then jump back 9 more to 63. We landed on 63. The question says the answer is 73. 63 is not 73, so the answer is false. Always work it out yourself first, then compare your answer to the answer in the question." },
+  { file: 'audio/help-subtraction/scene-10-outro.mp3',
+    text: "Now it's your turn! Try some subtraction questions yourself." },
+];
+
 // All templates
 const allTemplates = {
   'word-match': wordMatchAudio,
@@ -523,6 +551,7 @@ const allTemplates = {
   'help-partitioning': helpPartitioningAudio,
   'help-addition-scenes': helpAdditionScenesAudio,
   'help-homophones': helpHomophonesAudio,
+  'help-subtraction': helpSubtractionAudio,
 };
 
 async function generateAudioWithTimestamps(text, outputPath, speed = 0.9) {

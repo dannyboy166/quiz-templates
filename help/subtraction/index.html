@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Help Lesson - Subtraction</title>
+  <style>
+    @font-face {
+      font-family: 'Apfel Grotezk';
+      src: url('../../fonts/ApfelGrotezk-Regular.woff2') format('woff2');
+      font-weight: 400; font-style: normal; font-display: swap;
+    }
+    @font-face {
+      font-family: 'Apfel Grotezk';
+      src: url('../../fonts/ApfelGrotezk-Mittel.woff2') format('woff2');
+      font-weight: 500; font-style: normal; font-display: swap;
+    }
+    @font-face {
+      font-family: 'Apfel Grotezk';
+      src: url('../../fonts/ApfelGrotezk-Fett.woff2') format('woff2');
+      font-weight: 700; font-style: normal; font-display: swap;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Apfel Grotezk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #FAE38E;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .back-btn {
+      position: fixed; top: 20px; left: 20px;
+      background: white; color: #333; border: none;
+      padding: 10px 20px; border-radius: 25px;
+      font-size: 16px; font-weight: 600; cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+      transition: transform 0.2s; z-index: 100;
+    }
+    .back-btn:hover { transform: scale(1.05); }
+
+    .trigger-btn {
+      background: #e74c3c; color: white; border: none;
+      padding: 20px 40px; border-radius: 16px;
+      font-size: 24px; font-weight: 600; cursor: pointer;
+      box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+      transition: transform 0.2s;
+    }
+    .trigger-btn:hover { transform: scale(1.05); }
+
+    /* ============ OVERLAY ============ */
+    .help-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1000; opacity: 0; visibility: hidden;
+      transition: opacity 0.3s, visibility 0.3s;
+    }
+    .help-overlay.active { opacity: 1; visibility: visible; }
+
+    .help-container {
+      width: 94%; max-width: 900px;
+      background: white; border-radius: 24px;
+      padding: 30px 30px 20px; position: relative;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      max-height: 95vh; overflow-y: auto;
+    }
+
+    .help-close {
+      position: absolute; top: 12px; right: 12px;
+      width: 36px; height: 36px; border-radius: 50%; border: none;
+      background: #f0f0f0; font-size: 20px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: #666; z-index: 10;
+    }
+
+    .help-title { text-align: center; font-size: 24px; margin-bottom: 12px; color: #333; }
+
+    /* ============ SCENE NAV ============ */
+    .scene-nav {
+      display: flex; gap: 4px; margin-bottom: 12px;
+      overflow-x: auto; scrollbar-width: thin; padding: 2px 0;
+    }
+    .scene-tab {
+      flex-shrink: 0; padding: 5px 10px; border-radius: 16px;
+      border: 2px solid #ddd; background: #f5f5f5;
+      font-size: 11px; font-weight: 600; cursor: pointer;
+      transition: all 0.2s; white-space: nowrap; color: #666;
+    }
+    .scene-tab:hover { border-color: #e74c3c; color: #e74c3c; }
+    .scene-tab.active { background: #e74c3c; color: white; border-color: #e74c3c; }
+    .scene-tab.completed { background: #E8F5E9; border-color: #66BB6A; color: #2E7D32; }
+
+    /* ============ STAGE ============ */
+    .stage {
+      height: 380px;
+      background: linear-gradient(180deg, #E8F5E9 0%, #C8E6C9 100%);
+      border-radius: 16px; position: relative; overflow: hidden; margin-bottom: 12px;
+    }
+    .scene {
+      position: absolute; width: 100%; height: 100%;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity 0.4s;
+    }
+    .scene.active { opacity: 1; pointer-events: auto; }
+
+    /* ============ TEACHER ============ */
+    .teacher-panel {
+      position: absolute; bottom: 10px; right: 12px;
+      width: 100px; height: 140px; z-index: 8;
+      opacity: 0; transition: opacity 0.5s; pointer-events: none;
+    }
+    .teacher-panel.visible { opacity: 1; }
+    .teacher-panel video { width: 100%; height: 100%; object-fit: contain; }
+
+    /* ============ CALLOUT ============ */
+    .callout {
+      background: #f8f8f8; border: 2px solid #e0e0e0;
+      padding: 10px 20px; border-radius: 12px;
+      font-size: 15px; font-weight: 500; color: #333;
+      text-align: center; min-height: 42px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 10px; opacity: 0; transition: opacity 0.3s; line-height: 1.4;
+    }
+    .callout.visible { opacity: 1; }
+
+    /* ============ SHARED COMPONENTS ============ */
+    .scene-title {
+      font-size: 22px; font-weight: 700; color: #333; margin-bottom: 20px;
+      opacity: 0; transform: scale(0.8);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .scene-title.visible { opacity: 1; transform: scale(1); }
+
+    .info-cards { display: flex; gap: 12px; margin-top: 15px; }
+    .info-card {
+      background: white; border: 3px solid #333; border-radius: 12px;
+      padding: 10px 18px; font-size: 14px; font-weight: 600; color: #333;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+      opacity: 0; transform: translateY(10px);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .info-card.visible { opacity: 1; transform: translateY(0); }
+
+    .intro-title {
+      font-size: 36px; font-weight: 700; color: #333; text-align: center;
+      opacity: 0; transform: scale(0);
+      transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .intro-title.visible { opacity: 1; transform: scale(1); }
+    .intro-title .emoji { font-size: 50px; display: block; margin-bottom: 8px; }
+
+    /* ============ SCENE 1: TAKE AWAY ============ */
+    .objects-row {
+      display: flex; gap: 10px; margin-bottom: 15px; align-items: center;
+    }
+    .obj {
+      font-size: 36px; opacity: 0; transform: scale(0);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+    }
+    .obj.visible { opacity: 1; transform: scale(1); }
+    .obj.crossed-out { opacity: 0.3; }
+    .obj.crossed-out::after {
+      content: '✕'; position: absolute; top: -5px; left: 50%;
+      transform: translateX(-50%); color: #e74c3c; font-size: 42px; font-weight: 700;
+    }
+
+    .equation {
+      font-size: 32px; font-weight: 700; color: #333;
+      margin-top: 15px; opacity: 0; transition: opacity 0.4s;
+    }
+    .equation.visible { opacity: 1; }
+    .equation .eq-part { display: inline-block; transition: all 0.3s; }
+    .equation .eq-part.highlight { color: #e74c3c; transform: scale(1.15); }
+
+    /* ============ SCENE 2: DIFFERENCE ============ */
+    .comparison-rows {
+      display: flex; flex-direction: column; gap: 10px; align-items: center; margin-bottom: 10px;
+    }
+    .compare-row {
+      display: flex; gap: 8px; opacity: 0; transition: opacity 0.4s;
+    }
+    .compare-row.visible { opacity: 1; }
+    .compare-item {
+      font-size: 30px; opacity: 0; transform: scale(0);
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .compare-item.visible { opacity: 1; transform: scale(1); }
+    .compare-item.gap { opacity: 0.3; }
+    .gap-bracket {
+      position: absolute; right: -30px; top: 50%; transform: translateY(-50%);
+      font-size: 24px; font-weight: 700; color: #e74c3c;
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .gap-bracket.visible { opacity: 1; }
+
+    .count-badge {
+      position: absolute; top: -18px;
+      width: 28px; height: 28px; border-radius: 50%;
+      background: #e74c3c; color: white;
+      font-size: 14px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transform: scale(0);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .count-badge.visible { opacity: 1; transform: scale(1); }
+
+    .big-answer {
+      font-size: 64px; font-weight: 700; color: #e74c3c;
+      opacity: 0; transform: scale(0);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .big-answer.visible { opacity: 1; transform: scale(1); }
+
+    /* ============ SCENE 3: WORD PROBLEM ============ */
+    .story-text {
+      background: white; border: 3px solid #333; border-radius: 12px;
+      padding: 16px 24px; font-size: 18px; line-height: 1.6; color: #333;
+      max-width: 500px; text-align: left;
+      opacity: 0; transition: opacity 0.4s;
+    }
+    .story-text.visible { opacity: 1; }
+    .story-text .keyword { color: #e74c3c; font-weight: 700; }
+    .story-text .number-hl { color: #e74c3c; font-weight: 700; }
+
+    .extract-equation {
+      font-size: 28px; font-weight: 700; color: #333;
+      margin-top: 15px; opacity: 0; transform: translateY(10px);
+      transition: all 0.4s;
+    }
+    .extract-equation.visible { opacity: 1; transform: translateY(0); }
+    .extract-equation .answer { color: #4CAF50; }
+
+    /* ============ SCENE 4: MISSING NUMBER ============ */
+    .gap-equation {
+      font-size: 36px; font-weight: 700; color: #333;
+      margin-bottom: 15px; opacity: 0; transition: opacity 0.4s;
+    }
+    .gap-equation.visible { opacity: 1; }
+    .gap-box {
+      display: inline-block; width: 50px; height: 45px;
+      border: 3px dashed #e74c3c; border-radius: 8px;
+      text-align: center; line-height: 45px;
+      color: #e74c3c; vertical-align: middle;
+      animation: none;
+    }
+    .gap-box.pulse { animation: pulse 1s ease-in-out infinite; }
+    .gap-box.filled {
+      border-style: solid; background: #E8F5E9; border-color: #4CAF50;
+      color: #4CAF50; animation: none;
+    }
+    @keyframes pulse {
+      0%, 100% { border-color: #e74c3c; }
+      50% { border-color: #F5A623; box-shadow: 0 0 10px rgba(245,166,35,0.3); }
+    }
+
+    .number-line {
+      display: flex; align-items: flex-end; gap: 0;
+      margin-bottom: 15px; margin-top: 10px; opacity: 0; transition: opacity 0.4s;
+    }
+    .number-line.visible { opacity: 1; }
+    .number-line > div { position: relative; }
+    .nl-num {
+      width: 50px; text-align: center; font-size: 22px; font-weight: 700;
+      color: #333; margin-bottom: -6px;
+    }
+    .nl-tick {
+      width: 50px; height: 20px; border-bottom: 3px solid #333;
+      position: relative;
+    }
+    .nl-tick::before {
+      content: ''; position: absolute; bottom: -5px; left: 50%;
+      transform: translateX(-50%); width: 3px; height: 10px; background: #333;
+    }
+    .nl-hop {
+      position: absolute; top: -20px; left: 50%; width: 50px; height: 24px;
+      border: 2.5px solid #e74c3c; border-bottom: none; border-radius: 24px 24px 0 0;
+      opacity: 0; transition: opacity 0.3s;
+      z-index: 2;
+    }
+    .nl-hop.visible { opacity: 1; }
+
+    /* ============ SCENE 5: WHICH SUM ============ */
+    .target-number {
+      width: 70px; height: 70px; border-radius: 50%;
+      background: #e74c3c; color: white;
+      font-size: 32px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 15px;
+      opacity: 0; transform: scale(0);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .target-number.visible { opacity: 1; transform: scale(1); }
+
+    .sum-cards { display: flex; gap: 20px; margin-bottom: 15px; }
+    .sum-card {
+      background: white; border: 3px solid #333; border-radius: 12px;
+      padding: 12px 20px; font-size: 20px; font-weight: 600;
+      display: flex; align-items: center; gap: 8px;
+      opacity: 0; transform: translateY(10px);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .sum-card.visible { opacity: 1; transform: translateY(0); }
+    .sum-card.correct { border-color: #4CAF50; background: #E8F5E9; }
+    .sum-card.wrong { border-color: #E53935; background: #FFEBEE; }
+    .result-icon {
+      font-size: 20px; opacity: 0; transition: opacity 0.3s;
+    }
+    .result-icon.visible { opacity: 1; }
+
+    /* ============ SCENE 6: SUBTRACTING TENS ============ */
+    .tens-demo {
+      display: flex; flex-direction: column; gap: 12px; align-items: center;
+      margin-bottom: 10px;
+    }
+    .tens-row {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 24px; font-weight: 700; color: #333;
+      opacity: 0; transition: opacity 0.4s;
+    }
+    .tens-row.visible { opacity: 1; }
+    .tens-digit { color: #e74c3c; font-size: 28px; }
+    .ones-digit { color: #667eea; }
+    .tens-result {
+      font-size: 28px; font-weight: 700; color: #4CAF50;
+      opacity: 0; transition: opacity 0.4s;
+    }
+    .tens-result.visible { opacity: 1; }
+
+    /* ============ SCENE 7: BIGGER NUMBERS ============ */
+    .split-demo {
+      display: flex; flex-direction: column; gap: 6px; align-items: center;
+      opacity: 0; transition: opacity 0.4s;
+    }
+    .split-demo.visible { opacity: 1; }
+    .split-row {
+      font-size: 22px; font-weight: 600; color: #333;
+      opacity: 0; transition: opacity 0.4s;
+    }
+    .split-row.visible { opacity: 1; }
+    .split-row .tens-part { color: #e74c3c; }
+    .split-row .ones-part { color: #667eea; }
+    .split-row .result-part { color: #4CAF50; font-weight: 700; }
+
+    .count-on-row {
+      display: flex; gap: 8px; font-size: 22px; font-weight: 700;
+      margin-top: 10px; opacity: 0; transition: opacity 0.4s;
+    }
+    .count-on-row.visible { opacity: 1; }
+    .count-num {
+      opacity: 0; transform: scale(0);
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .count-num.visible { opacity: 1; transform: scale(1); }
+
+    /* ============ SCENE 8: NUMBER SENTENCE ============ */
+    .ns-options {
+      display: flex; flex-wrap: wrap; gap: 12px; margin-top: 12px;
+    }
+    .ns-option {
+      background: white; border: 3px solid #333; border-radius: 12px;
+      padding: 10px 18px; font-size: 18px; font-weight: 600;
+      opacity: 0; transform: translateY(10px);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .ns-option.visible { opacity: 1; transform: translateY(0); }
+    .ns-option.correct { border-color: #4CAF50; background: #E8F5E9; }
+    .ns-option.wrong { border-color: #ccc; opacity: 0.5; }
+
+    /* ============ SCENE 9: TRUE/FALSE ============ */
+    .tf-statement {
+      background: white; border: 3px solid #333; border-radius: 12px;
+      padding: 16px 28px; font-size: 26px; font-weight: 700;
+      color: #333; opacity: 0; transition: opacity 0.4s;
+    }
+    .tf-statement.visible { opacity: 1; }
+
+    .tf-working {
+      display: flex; flex-direction: column; gap: 4px; align-items: center;
+      margin-top: 12px;
+    }
+    .tf-step {
+      font-size: 18px; font-weight: 600; color: #555;
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .tf-step.visible { opacity: 1; }
+
+    .tf-verdict {
+      font-size: 32px; font-weight: 700;
+      margin-top: 8px; opacity: 0; transform: scale(0);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .tf-verdict.visible { opacity: 1; transform: scale(1); }
+    .tf-verdict.false-v { color: #E53935; }
+
+    /* ============ OUTRO ============ */
+    .try-btn {
+      background: #e74c3c; color: white; border: none;
+      padding: 14px 32px; border-radius: 30px;
+      font-size: 18px; font-weight: 600; cursor: pointer;
+      margin-top: 15px;
+      opacity: 0; transform: translateY(10px);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .try-btn.visible { opacity: 1; transform: translateY(0); }
+
+    /* ============ CONTROLS ============ */
+    .progress-bar {
+      height: 6px; background: #eee; border-radius: 3px;
+      margin-bottom: 12px; cursor: pointer; position: relative;
+      transition: height 0.2s;
+    }
+    .progress-bar:hover { height: 10px; }
+    .progress-bar.dragging { height: 10px; }
+    .progress-fill {
+      height: 100%; background: #e74c3c; border-radius: 3px;
+      transition: width 0.1s linear;
+    }
+
+    .controls {
+      display: flex; justify-content: center; gap: 12px;
+    }
+    .ctrl-btn {
+      padding: 8px 18px; border-radius: 20px; border: 2px solid #ddd;
+      background: white; font-size: 14px; font-weight: 600;
+      cursor: pointer; color: #555; transition: all 0.2s;
+    }
+    .ctrl-btn:hover { border-color: #e74c3c; color: #e74c3c; }
+    .ctrl-btn.primary {
+      background: #e74c3c; color: white; border-color: #e74c3c;
+    }
+    .ctrl-btn.primary:hover { background: #c0392b; }
+
+    .debug-panel {
+      position: fixed; bottom: 8px; right: 8px;
+      background: rgba(0,0,0,0.7); color: #0f0;
+      font-family: monospace; font-size: 11px;
+      padding: 4px 8px; border-radius: 4px; z-index: 2000;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <a href="../index.html" class="back-btn">← Back</a>
+
+  <button class="trigger-btn" id="start-help">
+    ➖ Get Help: Subtraction
+  </button>
+
+  <div class="help-overlay" id="help-overlay">
+    <div class="help-container">
+      <button class="help-close" id="help-close">✕</button>
+      <h2 class="help-title">Subtraction</h2>
+
+      <div class="scene-nav">
+        <button class="scene-tab active" data-scene="0">Intro</button>
+        <button class="scene-tab" data-scene="1">Take Away</button>
+        <button class="scene-tab" data-scene="2">Difference</button>
+        <button class="scene-tab" data-scene="3">Word Problems</button>
+        <button class="scene-tab" data-scene="4">Missing Number</button>
+        <button class="scene-tab" data-scene="5">Which Sum</button>
+        <button class="scene-tab" data-scene="6">Subtracting Tens</button>
+        <button class="scene-tab" data-scene="7">Bigger Numbers</button>
+        <button class="scene-tab" data-scene="8">Number Sentence</button>
+        <button class="scene-tab" data-scene="9">True / False</button>
+        <button class="scene-tab" data-scene="10">Your Turn</button>
+      </div>
+
+      <div class="stage">
+        <!-- SCENE 0: INTRO -->
+        <div class="scene active" id="scene-0">
+          <div class="intro-title" id="intro-title">
+            <span class="emoji">➖</span>
+            Subtraction
+          </div>
+          <div class="info-cards">
+            <div class="info-card" id="card-take-away">Taking away</div>
+            <div class="info-card" id="card-difference">Finding the difference</div>
+            <div class="info-card" id="card-left">How many are left?</div>
+          </div>
+        </div>
+
+        <!-- SCENE 1: TAKE AWAY -->
+        <div class="scene" id="scene-1">
+          <div class="scene-title" id="s1-title">Take Away</div>
+          <div class="objects-row" id="s1-objects"></div>
+          <div class="equation" id="s1-eq">
+            <span class="eq-part" id="eq-6">6</span>
+            <span class="eq-part" id="eq-minus"> − </span>
+            <span class="eq-part" id="eq-4">4</span>
+            <span class="eq-part" id="eq-equals"> = </span>
+            <span class="eq-part" id="eq-2">2</span>
+          </div>
+          <div class="info-cards">
+            <div class="info-card" id="card-big">Start with the big number</div>
+            <div class="info-card" id="card-take">Take away the small one</div>
+          </div>
+        </div>
+
+        <!-- SCENE 2: DIFFERENCE -->
+        <div class="scene" id="scene-2">
+          <div class="scene-title" id="s2-title">What's the difference?</div>
+          <div class="comparison-rows" id="s2-rows">
+            <div class="compare-row" id="s2-top" style="position: relative;"></div>
+            <div class="compare-row" id="s2-bottom"></div>
+          </div>
+          <div class="big-answer" id="s2-answer">Difference = 3</div>
+          <div class="info-cards">
+            <div class="info-card" id="card-lineup">Line them up</div>
+            <div class="info-card" id="card-gap">Count the gap</div>
+          </div>
+        </div>
+
+        <!-- SCENE 3: WORD PROBLEMS -->
+        <div class="scene" id="scene-3">
+          <div class="scene-title" id="s3-title">Word Problems</div>
+          <div class="story-text" id="s3-story">
+            The shopkeeper made <span class="number-hl">6</span> sandwiches
+            and <span class="keyword">sold</span> <span class="number-hl">2</span>.
+            How many does he have <span class="keyword">left</span>?
+          </div>
+          <div class="extract-equation" id="s3-eq">
+            6 − 2 = <span class="answer">4</span>
+          </div>
+          <div class="info-cards">
+            <div class="info-card" id="card-find">Find the numbers</div>
+            <div class="info-card" id="card-clue">Look for clue words</div>
+          </div>
+        </div>
+
+        <!-- SCENE 4: MISSING NUMBER -->
+        <div class="scene" id="scene-4">
+          <div class="scene-title" id="s4-title">Missing Number</div>
+          <div class="gap-equation" id="s4-eq1">
+            8 − <span class="gap-box" id="gap-box-1">?</span> = 3
+          </div>
+          <div class="number-line" id="s4-numline">
+            <!-- Built dynamically: 3,4,5,6,7,8 -->
+          </div>
+          <div class="gap-equation" id="s4-eq2" style="margin-top: 10px;">
+            <span class="gap-box" id="gap-box-2">?</span> − 5 = 3
+          </div>
+          <div class="equation" id="s4-inverse" style="font-size: 24px;">
+            3 + 5 = <span style="color: #4CAF50;">8</span>
+          </div>
+          <div class="info-cards">
+            <div class="info-card" id="card-count-back">Count the jumps</div>
+            <div class="info-card" id="card-inverse">Or use the inverse</div>
+          </div>
+        </div>
+
+        <!-- SCENE 5: WHICH SUM -->
+        <div class="scene" id="scene-5">
+          <div class="scene-title" id="s5-title">Which Sum Matches?</div>
+          <div class="target-number" id="s5-target">11</div>
+          <div class="sum-cards">
+            <div class="sum-card" id="sc-a">14 − 4 <span class="result-icon" id="sc-a-res"></span></div>
+            <div class="sum-card" id="sc-b">17 − 6 <span class="result-icon" id="sc-b-res"></span></div>
+          </div>
+          <div class="info-cards">
+            <div class="info-card" id="card-work-out">Work out each option</div>
+            <div class="info-card" id="card-match">Find the match</div>
+          </div>
+        </div>
+
+        <!-- SCENE 6: SUBTRACTING TENS -->
+        <div class="scene" id="scene-6">
+          <div class="scene-title" id="s6-title">Subtracting Tens</div>
+          <div class="tens-demo">
+            <div class="tens-row" id="s6-r1">
+              <span><span class="tens-digit">2</span><span class="ones-digit">9</span></span>
+              <span> − 10 → </span>
+              <span class="tens-result" id="s6-r1a"><span class="tens-digit">1</span><span class="ones-digit">9</span></span>
+            </div>
+            <div class="tens-row" id="s6-r2">
+              <span><span class="tens-digit">4</span><span class="ones-digit">8</span></span>
+              <span> − 20 → </span>
+              <span class="tens-result" id="s6-r2a"><span class="tens-digit">2</span><span class="ones-digit">8</span></span>
+            </div>
+            <div class="tens-row" id="s6-r3">
+              <span><span class="tens-digit">9</span><span class="ones-digit">1</span></span>
+              <span> − 50 → </span>
+              <span class="tens-result" id="s6-r3a"><span class="tens-digit">4</span><span class="ones-digit">1</span></span>
+            </div>
+          </div>
+          <div class="info-cards">
+            <div class="info-card" id="card-tens-change">Only the tens digit changes</div>
+            <div class="info-card" id="card-ones-stay">The ones stay the same</div>
+          </div>
+        </div>
+
+        <!-- SCENE 7: BIGGER NUMBERS -->
+        <div class="scene" id="scene-7">
+          <div class="scene-title" id="s7-title">Bigger Numbers</div>
+          <div class="split-demo" id="s7-split">
+            <div class="split-row" id="s7-r1">35 − 12</div>
+            <div class="split-row" id="s7-r2"><span class="tens-part">35 − 10 = 25</span></div>
+            <div class="split-row" id="s7-r3"><span class="ones-part">25 − 2 = 23</span></div>
+            <div class="split-row" id="s7-r4"><span class="result-part">35 − 12 = 23 ✓</span></div>
+          </div>
+          <div class="split-demo" id="s7-diff" style="margin-top: 15px;">
+            <div class="split-row" id="s7-d1">Difference between 25 and 20?</div>
+            <div class="count-on-row" id="s7-count">
+              <span class="count-num" id="cn-21">21</span>
+              <span class="count-num" id="cn-22">22</span>
+              <span class="count-num" id="cn-23">23</span>
+              <span class="count-num" id="cn-24">24</span>
+              <span class="count-num" id="cn-25">25</span>
+            </div>
+            <div class="split-row" id="s7-d2"><span class="result-part">Difference = 5</span></div>
+          </div>
+          <div class="info-cards">
+            <div class="info-card" id="card-split">Split into tens and ones</div>
+            <div class="info-card" id="card-count-on">Count on for difference</div>
+          </div>
+        </div>
+
+        <!-- SCENE 8: NUMBER SENTENCE -->
+        <div class="scene" id="scene-8">
+          <div class="scene-title" id="s8-title">Which Number Sentence?</div>
+          <div class="story-text" id="s8-story">
+            Will baked <span class="number-hl">36</span> muffins.
+            He <span class="keyword">took</span> <span class="number-hl">23</span> to school.
+            He had <span class="number-hl">13</span> <span class="keyword">left</span>.
+          </div>
+          <div class="ns-options" id="s8-options">
+            <div class="ns-option" id="ns-a">36 − 23</div>
+            <div class="ns-option" id="ns-b">13 + 36</div>
+            <div class="ns-option" id="ns-c">36 ÷ 23</div>
+            <div class="ns-option" id="ns-d">23 × 36</div>
+          </div>
+          <div class="info-cards">
+            <div class="info-card" id="card-read">Read the story</div>
+            <div class="info-card" id="card-operation">Pick the matching operation</div>
+          </div>
+        </div>
+
+        <!-- SCENE 9: TRUE/FALSE -->
+        <div class="scene" id="scene-9">
+          <div class="scene-title" id="s9-title">True or False?</div>
+          <div class="tf-statement" id="s9-stmt">82 − 19 = 73</div>
+          <div class="tf-working" id="s9-working">
+            <div class="tf-step" id="tf-s1">Start at 82</div>
+            <div class="tf-step" id="tf-s2">Jump back 10 → 72</div>
+            <div class="tf-step" id="tf-s3">Jump back 9 → 63</div>
+            <div class="tf-step" id="tf-s4">63 ≠ 73</div>
+          </div>
+          <div class="tf-verdict false-v" id="s9-verdict">✗ FALSE</div>
+          <div class="info-cards">
+            <div class="info-card" id="card-work">Work it out yourself</div>
+            <div class="info-card" id="card-compare">Then compare</div>
+          </div>
+        </div>
+
+        <!-- SCENE 10: OUTRO -->
+        <div class="scene" id="scene-10">
+          <div class="intro-title" id="outro-title">
+            <span class="emoji">💪</span>
+            Your Turn!
+          </div>
+          <button class="try-btn" id="try-btn" onclick="document.getElementById('help-overlay').classList.remove('active');">
+            Try some questions →
+          </button>
+        </div>
+
+        <!-- TEACHER PANEL -->
+        <div class="teacher-panel" id="teacher-panel">
+          <video id="teacher-video" muted loop playsinline
+                 src="../../assets/videos/teacher-transparent.webm"></video>
+        </div>
+      </div>
+
+      <div class="callout" id="callout"></div>
+
+      <div class="progress-bar" id="progress-bar">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+
+      <div class="controls">
+        <button class="ctrl-btn" id="prev-btn">← Prev</button>
+        <button class="ctrl-btn" id="replay-btn">↻ Replay</button>
+        <button class="ctrl-btn" id="next-btn">Next →</button>
+        <button class="ctrl-btn primary" id="got-it-btn">Got it!</button>
+      </div>
+    </div>
+  </div>
+
+  <audio id="audio-0" src="../../audio/help-subtraction/scene-0-intro.mp3" preload="auto"></audio>
+  <audio id="audio-1" src="../../audio/help-subtraction/scene-1-take-away.mp3" preload="auto"></audio>
+  <audio id="audio-2" src="../../audio/help-subtraction/scene-2-difference.mp3" preload="auto"></audio>
+  <audio id="audio-3" src="../../audio/help-subtraction/scene-3-word-problems.mp3" preload="auto"></audio>
+  <audio id="audio-4" src="../../audio/help-subtraction/scene-4-missing-number.mp3" preload="auto"></audio>
+  <audio id="audio-5" src="../../audio/help-subtraction/scene-5-which-sum.mp3" preload="auto"></audio>
+  <audio id="audio-6" src="../../audio/help-subtraction/scene-6-subtracting-tens.mp3" preload="auto"></audio>
+  <audio id="audio-7" src="../../audio/help-subtraction/scene-7-bigger-numbers.mp3" preload="auto"></audio>
+  <audio id="audio-8" src="../../audio/help-subtraction/scene-8-number-sentence.mp3" preload="auto"></audio>
+  <audio id="audio-9" src="../../audio/help-subtraction/scene-9-true-false.mp3" preload="auto"></audio>
+  <audio id="audio-10" src="../../audio/help-subtraction/scene-10-outro.mp3" preload="auto"></audio>
+
+  <div class="debug-panel">Scene: <span id="debug-scene">0</span> | Time: <span id="debug-time">0.0s</span></div>
+
+  <script>
+    const TOTAL_SCENES = 11;
+    const overlay = document.getElementById('help-overlay');
+    const callout = document.getElementById('callout');
+    const progressFill = document.getElementById('progress-fill');
+    const progressBar = document.getElementById('progress-bar');
+    const teacherPanel = document.getElementById('teacher-panel');
+    const teacherVideo = document.getElementById('teacher-video');
+
+    // Build scene 1 objects (6 stars)
+    const objRow = document.getElementById('s1-objects');
+    for (let i = 0; i < 6; i++) {
+      const o = document.createElement('span');
+      o.className = 'obj';
+      o.id = 'obj-' + i;
+      o.textContent = '⭐';
+      objRow.appendChild(o);
+    }
+
+    // Build scene 2 comparison rows (7 top, 4 bottom)
+    const topRow = document.getElementById('s2-top');
+    for (let i = 0; i < 7; i++) {
+      const t = document.createElement('span');
+      t.className = 'compare-item';
+      t.id = 'top-' + i;
+      t.textContent = '🚜';
+      topRow.appendChild(t);
+    }
+    const bottomRow = document.getElementById('s2-bottom');
+    for (let i = 0; i < 7; i++) {
+      const t = document.createElement('span');
+      t.className = 'compare-item';
+      t.id = 'bot-' + i;
+      t.textContent = i < 4 ? '🚜' : '';
+      if (i >= 4) t.style.visibility = 'hidden';
+      bottomRow.appendChild(t);
+    }
+
+    // Build scene 4 number line (3 to 8)
+    const numLine = document.getElementById('s4-numline');
+    for (let n = 3; n <= 8; n++) {
+      const div = document.createElement('div');
+      const num = document.createElement('div');
+      num.className = 'nl-num';
+      num.textContent = n;
+      const tick = document.createElement('div');
+      tick.className = 'nl-tick';
+      if (n < 8) {
+        const hop = document.createElement('div');
+        hop.className = 'nl-hop';
+        hop.id = 'hop-' + (8 - n);
+        tick.appendChild(hop);
+      }
+      div.appendChild(num);
+      div.appendChild(tick);
+      numLine.appendChild(div);
+    }
+
+    let currentScene = 0;
+    let timelineIndex = 0;
+    let animationFrame;
+    let isSeeking = false;
+
+    function getAudio(i) { return document.getElementById('audio-' + i); }
+    function show(id) { document.getElementById(id).classList.add('visible'); }
+    function setCallout(t) { callout.textContent = t; callout.classList.add('visible'); }
+    function showTeacher() { teacherPanel.classList.add('visible'); teacherVideo.play().catch(()=>{}); }
+    function hideTeacher() { teacherPanel.classList.remove('visible'); }
+
+    // ============ TIMELINES ============
+    const TIMELINES = {
+      0: [ // INTRO (18.7s)
+        { time: 0.0,  action: () => { show('intro-title'); showTeacher(); } },
+        { time: 0.1,  action: () => setCallout("Hello! Today we're learning about subtraction.") },
+        { time: 5.1,  action: () => { setCallout("Subtracting means taking away — finding out how many are left, or what the difference is."); show('card-take-away'); show('card-difference'); } },
+        { time: 12.9, action: () => { setCallout("There are lots of different subtraction questions, so let's work through them together."); show('card-left'); } },
+      ],
+
+      1: [ // TAKE AWAY (31.9s)
+        { time: 0.0,  action: () => show('s1-title') },
+        { time: 0.1,  action: () => setCallout("Let's start with a simple one.") },
+        { time: 2.0,  action: () => {
+          setCallout("6 take away 4 is ?");
+          for (let i = 0; i < 6; i++) setTimeout(() => show('obj-' + i), i * 80);
+        }},
+        { time: 4.5,  action: () => setCallout("We start with 6 and remove 4.") },
+        { time: 7.1,  action: () => {
+          setCallout("One, two, three, four taken away — there are now only 2 left.");
+          for (let i = 0; i < 4; i++) setTimeout(() => document.getElementById('obj-' + i).classList.add('crossed-out'), i * 400);
+        }},
+        { time: 12.4, action: () => { setCallout("So 6 take away 4 equals 2."); show('s1-eq');
+          document.getElementById('eq-6').classList.add('highlight'); } },
+        { time: 13.5, action: () => { document.getElementById('eq-6').classList.remove('highlight');
+          document.getElementById('eq-4').classList.add('highlight'); } },
+        { time: 14.5, action: () => { document.getElementById('eq-4').classList.remove('highlight');
+          document.getElementById('eq-2').classList.add('highlight'); } },
+        { time: 15.7, action: () => { document.getElementById('eq-2').classList.remove('highlight');
+          setCallout("You might also see questions written like this: 11 minus 4, or solve this subtraction sum."); } },
+        { time: 21.9, action: () => { setCallout("They all mean the same thing — start with the big number and take it away."); show('card-big'); } },
+        { time: 27.5, action: () => { setCallout("The answer is going to be a smaller number than the number you start with."); show('card-take'); } },
+      ],
+
+      2: [ // DIFFERENCE (28.4s)
+        { time: 0.0,  action: () => show('s2-title') },
+        { time: 0.1,  action: () => setCallout("Some questions show two rows of objects and ask: what is the difference?") },
+        { time: 5.5,  action: () => {
+          setCallout("There are more tractors in the top row than the bottom.");
+          show('s2-top'); show('s2-bottom');
+          for (let i = 0; i < 7; i++) setTimeout(() => show('top-' + i), i * 80);
+          for (let i = 0; i < 4; i++) setTimeout(() => show('bot-' + i), i * 80);
+        }},
+        { time: 8.7,  action: () => setCallout("To find the difference, line them up and count the extras.") },
+        { time: 12.6, action: () => setCallout("The top row has 7 and the bottom row has 4.") },
+        { time: 17.4, action: () => {
+          setCallout("7 take away 4 equals 3.");
+          // Count the extras one by one with badges
+          [4, 5, 6].forEach((i, idx) => {
+            setTimeout(() => {
+              const el = document.getElementById('top-' + i);
+              el.style.color = '#e74c3c';
+              el.style.transform = 'scale(1.2)';
+              // Add count badge
+              const badge = document.createElement('span');
+              badge.className = 'count-badge';
+              badge.textContent = idx + 1;
+              badge.id = 'badge-' + i;
+              el.style.position = 'relative';
+              el.appendChild(badge);
+              setTimeout(() => badge.classList.add('visible'), 50);
+            }, idx * 500);
+          });
+        }},
+        { time: 20.8, action: () => { setCallout("So the difference is 3."); show('s2-answer'); } },
+        { time: 23.3, action: () => { setCallout("The word difference just means how many more one group has than the other."); show('card-lineup'); show('card-gap'); } },
+      ],
+
+      3: [ // WORD PROBLEMS (25.9s)
+        { time: 0.0,  action: () => show('s3-title') },
+        { time: 0.1,  action: () => setCallout("Word problems tell a little story.") },
+        { time: 2.3,  action: () => { setCallout("The shopkeeper made 6 sandwiches and sold 2. How many does he have left?"); show('s3-story'); } },
+        { time: 8.1,  action: () => { setCallout("Find the numbers — 6 and 2."); show('card-find'); } },
+        { time: 10.4, action: () => setCallout("The words sold and left tell us to subtract.") },
+        { time: 13.7, action: () => { setCallout("6 take away 2 equals 4."); show('s3-eq'); } },
+        { time: 16.8, action: () => { setCallout("Look for clue words like left, sold, ate, gave away, or how many remain."); show('card-clue'); } },
+        { time: 23.1, action: () => setCallout("They all tell you it's a subtraction question.") },
+      ],
+
+      4: [ // MISSING NUMBER (46.6s)
+        { time: 0.0,  action: () => show('s4-title') },
+        { time: 0.1,  action: () => setCallout("Sometimes there's a missing number in the subtraction number sentence.") },
+        { time: 3.9,  action: () => { setCallout("8 take away something equals 3.");
+          show('s4-eq1'); document.getElementById('gap-box-1').classList.add('pulse'); } },
+        { time: 6.7,  action: () => setCallout("Think: I start at 8 and need to land on 3.") },
+        { time: 11.2, action: () => { setCallout("Start at 8 and count back until you get to three — seven, six, five, four, three."); show('s4-numline'); } },
+        { time: 14.0, action: () => show('hop-1') },
+        { time: 14.8, action: () => show('hop-2') },
+        { time: 15.6, action: () => show('hop-3') },
+        { time: 16.4, action: () => show('hop-4') },
+        { time: 17.2, action: () => show('hop-5') },
+        { time: 18.9, action: () => {
+          setCallout("That's 5 jumps, so the missing number is 5.");
+          const gb = document.getElementById('gap-box-1');
+          gb.classList.remove('pulse'); gb.classList.add('filled'); gb.textContent = '5';
+        }},
+        { time: 22.8, action: () => { setCallout("The missing number might be at the start too — something take away 5 equals 3.");
+          show('s4-eq2'); document.getElementById('gap-box-2').classList.add('pulse'); } },
+        { time: 28.4, action: () => setCallout("If I start with 3 and add back the 5 I took away, what do I get?") },
+        { time: 33.4, action: () => { setCallout("3 plus 5 equals 8."); show('s4-inverse'); } },
+        { time: 36.3, action: () => {
+          setCallout("So the missing number is 8.");
+          const gb2 = document.getElementById('gap-box-2');
+          gb2.classList.remove('pulse'); gb2.classList.add('filled'); gb2.textContent = '8';
+        }},
+        { time: 38.7, action: () => { setCallout("Remember: when the missing number is at the start, adding can help us find the answer."); show('card-count-back'); show('card-inverse'); } },
+      ],
+
+      5: [ // WHICH SUM (30.6s)
+        { time: 0.0,  action: () => show('s5-title') },
+        { time: 0.1,  action: () => setCallout("Some questions ask: which other sum equals this number?") },
+        { time: 3.5,  action: () => { setCallout("For example: what other sum equals 11?"); show('s5-target'); } },
+        { time: 6.3,  action: () => { setCallout("You'll see options like 14 minus 4, or 17 minus 6."); show('sc-a'); show('sc-b'); } },
+        { time: 10.6, action: () => {
+          setCallout("Work each one out — 14 minus 4 is 10. No, this does not equal 11.");
+          document.getElementById('sc-a').classList.add('wrong');
+          document.getElementById('sc-a-res').textContent = '= 10 ✗'; show('sc-a-res');
+        }},
+        { time: 17.0, action: () => {
+          setCallout("17 minus 6 is 11. Yes, this equals 11!");
+          document.getElementById('sc-b').classList.add('correct');
+          document.getElementById('sc-b-res').textContent = '= 11 ✓'; show('sc-b-res');
+        }},
+        { time: 21.9, action: () => setCallout("So 17 minus 6 is the answer.") },
+        { time: 25.5, action: () => { setCallout("You will need to solve each answer option until you find the one that matches."); show('card-work-out'); show('card-match'); } },
+      ],
+
+      6: [ // SUBTRACTING TENS (31.9s)
+        { time: 0.0,  action: () => show('s6-title') },
+        { time: 0.1,  action: () => setCallout("When you subtract a round number of tens, only the tens digit changes.") },
+        { time: 4.6,  action: () => { setCallout("29 take away 10 — the tens digit drops from 2 to 1."); show('s6-r1'); } },
+        { time: 9.4,  action: () => { setCallout("The answer is 19. The ones digit stays at 9."); show('s6-r1a'); } },
+        { time: 13.3, action: () => { setCallout("48 take away 20 — the tens digit drops from 4 to 2."); show('s6-r2'); } },
+        { time: 17.7, action: () => { setCallout("The answer is 28."); show('s6-r2a'); } },
+        { time: 19.4, action: () => { setCallout("91 take away 50 — the tens digit drops from 9 to 4."); show('s6-r3'); } },
+        { time: 24.7, action: () => { setCallout("The answer is 41."); show('s6-r3a'); } },
+        { time: 27.3, action: () => { setCallout("The ones digit always stays the same when you subtract whole tens."); show('card-tens-change'); show('card-ones-stay'); } },
+      ],
+
+      7: [ // BIGGER NUMBERS (56.7s)
+        { time: 0.0,  action: () => show('s7-title') },
+        { time: 0.1,  action: () => setCallout("Sometimes the subtraction questions use bigger numbers.") },
+        { time: 3.5,  action: () => setCallout("We can use what we know about tens and ones to help us.") },
+        { time: 6.8,  action: () => { setCallout("Let's try 35 take away 12."); show('s7-split'); show('s7-r1'); } },
+        { time: 9.4,  action: () => { setCallout("First, take away the 10."); } },
+        { time: 11.2, action: () => { setCallout("35 take away 10 is 25."); show('s7-r2'); } },
+        { time: 14.2, action: () => setCallout("Now take away the 2 more.") },
+        { time: 16.2, action: () => { setCallout("25 take away 2 is 23."); show('s7-r3'); } },
+        { time: 18.9, action: () => { setCallout("So 35 take away 12 equals 23."); show('s7-r4'); } },
+        { time: 22.3, action: () => setCallout("Sometimes a question might ask: what is the difference between two numbers?") },
+        { time: 26.7, action: () => setCallout("Difference means how much bigger one number is than the other.") },
+        { time: 30.5, action: () => { setCallout("Let's look at these two numbers. What is the difference between 25 and 20?"); show('s7-diff'); show('s7-d1'); } },
+        { time: 35.6, action: () => { setCallout("Count on from 20 to 25."); show('s7-count'); } },
+        { time: 39.1, action: () => {
+          setCallout("21, 22, 23, 24, 25.");
+          ['cn-21','cn-22','cn-23','cn-24','cn-25'].forEach((id, i) =>
+            setTimeout(() => show(id), i * 300));
+        }},
+        { time: 45.5, action: () => setCallout("That's 5 more.") },
+        { time: 47.3, action: () => { setCallout("So the difference between 25 and 20 is 5."); show('s7-d2'); } },
+        { time: 51.7, action: () => { setCallout("When you see bigger numbers, use tens and ones to help you work it out."); show('card-split'); show('card-count-on'); } },
+      ],
+
+      8: [ // NUMBER SENTENCE (29.6s)
+        { time: 0.0,  action: () => show('s8-title') },
+        { time: 0.1,  action: () => setCallout("Some questions give you a story and ask which number sentence matches.") },
+        { time: 4.3,  action: () => { setCallout("Will baked 36 muffins. He took 23 to school. He had 13 left."); show('s8-story'); } },
+        { time: 10.7, action: () => setCallout("Which number sentence represents this?") },
+        { time: 13.0, action: () => {
+          setCallout("He started with 36 and took away 23.");
+          ['ns-a','ns-b','ns-c','ns-d'].forEach((id, i) => setTimeout(() => show(id), i * 150));
+        }},
+        { time: 16.5, action: () => {
+          setCallout("That's 36 minus 23, or 36 take away 23.");
+          document.getElementById('ns-a').classList.add('correct');
+          ['ns-b','ns-c','ns-d'].forEach(id => document.getElementById(id).classList.add('wrong'));
+        }},
+        { time: 21.3, action: () => { setCallout("The clue is that some were taken away — that tells you it's subtraction, not addition or multiplication."); show('card-read'); show('card-operation'); } },
+      ],
+
+      9: [ // TRUE/FALSE (38.4s)
+        { time: 0.0,  action: () => show('s9-title') },
+        { time: 0.1,  action: () => setCallout("Sometimes a question gives you an answer and asks if it is correct.") },
+        { time: 3.9,  action: () => { setCallout("82 minus 19 equals 73. True or false?"); show('s9-stmt'); } },
+        { time: 8.8,  action: () => setCallout("You will need to work this out yourself to check if this is right or wrong.") },
+        { time: 12.7, action: () => { setCallout("Start at 82 on a number line."); show('tf-s1'); } },
+        { time: 15.0, action: () => { setCallout("Jump back 10 to 72."); show('tf-s2'); } },
+        { time: 17.2, action: () => { setCallout("Then jump back 9 more to 63."); show('tf-s3'); } },
+        { time: 20.2, action: () => setCallout("We landed on 63.") },
+        { time: 23.0, action: () => { setCallout("The question says the answer is 73."); show('tf-s4'); } },
+        { time: 26.8, action: () => { setCallout("63 is not 73, so the answer is false."); show('s9-verdict'); } },
+        { time: 32.1, action: () => { setCallout("Always work it out yourself first, then compare your answer to the answer in the question."); show('card-work'); show('card-compare'); } },
+      ],
+
+      10: [ // OUTRO (4.7s)
+        { time: 0.0,  action: () => { show('outro-title'); showTeacher(); setCallout("Now it's your turn!"); } },
+        { time: 1.8,  action: () => { setCallout("Try some subtraction questions yourself."); show('try-btn'); } },
+      ],
+    };
+
+    // ============ RESET ============
+    function resetScene(idx) {
+      const el = document.getElementById('scene-' + idx);
+      if (!el) return;
+      el.querySelectorAll('.visible').forEach(e => { if (e !== el) e.classList.remove('visible'); });
+
+      if (idx === 1) {
+        document.querySelectorAll('.obj').forEach(o => { o.classList.remove('crossed-out'); });
+        ['eq-6','eq-minus','eq-4','eq-equals','eq-2'].forEach(id =>
+          document.getElementById(id).classList.remove('highlight'));
+      }
+      if (idx === 2) {
+        for (let i = 0; i < 7; i++) {
+          const t = document.getElementById('top-' + i);
+          if (t) { t.style.color = ''; t.style.transform = ''; t.style.position = ''; }
+          const b = document.getElementById('badge-' + i);
+          if (b) b.remove();
+        }
+      }
+      if (idx === 4) {
+        const gb1 = document.getElementById('gap-box-1');
+        gb1.classList.remove('pulse','filled'); gb1.textContent = '?';
+        const gb2 = document.getElementById('gap-box-2');
+        gb2.classList.remove('pulse','filled'); gb2.textContent = '?';
+        for (let i = 1; i <= 5; i++) {
+          const h = document.getElementById('hop-' + i);
+          if (h) h.classList.remove('visible');
+        }
+      }
+      if (idx === 5) {
+        ['sc-a','sc-b'].forEach(id => {
+          const c = document.getElementById(id);
+          c.classList.remove('correct','wrong','visible');
+        });
+        document.getElementById('sc-a-res').textContent = '';
+        document.getElementById('sc-b-res').textContent = '';
+      }
+      if (idx === 7) {
+        ['cn-21','cn-22','cn-23','cn-24','cn-25'].forEach(id =>
+          document.getElementById(id).classList.remove('visible'));
+      }
+      if (idx === 8) {
+        ['ns-a','ns-b','ns-c','ns-d'].forEach(id => {
+          const el = document.getElementById(id);
+          el.classList.remove('correct','wrong','visible');
+        });
+      }
+      if (idx === 9) {
+        ['tf-s1','tf-s2','tf-s3','tf-s4'].forEach(id =>
+          document.getElementById(id).classList.remove('visible'));
+      }
+
+      callout.classList.remove('visible');
+      hideTeacher();
+    }
+
+    // ============ PLAYBACK ============
+    function switchScene(idx) {
+      const cur = getAudio(currentScene);
+      cur.pause(); cur.currentTime = 0;
+      cancelAnimationFrame(animationFrame);
+      resetScene(currentScene);
+      document.getElementById('scene-' + currentScene).classList.remove('active');
+
+      currentScene = idx;
+      timelineIndex = 0;
+      document.getElementById('scene-' + idx).classList.add('active');
+      document.querySelectorAll('.scene-tab').forEach(t => t.classList.remove('active'));
+      document.querySelector(`[data-scene="${idx}"]`).classList.add('active');
+      document.getElementById('debug-scene').textContent = idx;
+      playCurrentScene();
+    }
+
+    function playCurrentScene() {
+      resetScene(currentScene);
+      timelineIndex = 0;
+      const a = getAudio(currentScene);
+      a.currentTime = 0;
+      progressFill.style.width = '0%';
+      a.play().catch(()=>{});
+      animationFrame = requestAnimationFrame(updateAnimation);
+    }
+
+    function updateAnimation() {
+      if (isSeeking) return;
+      const a = getAudio(currentScene);
+      const t = a.currentTime;
+      const tl = TIMELINES[currentScene];
+      document.getElementById('debug-time').textContent = t.toFixed(1) + 's';
+      if (a.duration) progressFill.style.width = (t / a.duration * 100) + '%';
+      while (timelineIndex < tl.length && t >= tl[timelineIndex].time) {
+        tl[timelineIndex].action();
+        timelineIndex++;
+      }
+      if (!a.paused) animationFrame = requestAnimationFrame(updateAnimation);
+    }
+
+    function stopAll() {
+      for (let i = 0; i < TOTAL_SCENES; i++) { const a = getAudio(i); a.pause(); a.currentTime = 0; }
+      cancelAnimationFrame(animationFrame);
+      resetScene(currentScene);
+      callout.classList.remove('visible');
+      hideTeacher();
+      progressFill.style.width = '0%';
+    }
+
+    // Auto-advance
+    for (let i = 0; i < TOTAL_SCENES; i++) {
+      getAudio(i).addEventListener('ended', () => {
+        document.querySelector(`[data-scene="${currentScene}"]`).classList.add('completed');
+        if (currentScene < TOTAL_SCENES - 1) setTimeout(() => switchScene(currentScene + 1), 1000);
+      });
+    }
+
+    // ============ CONTROLS ============
+    document.getElementById('start-help').addEventListener('click', () => {
+      overlay.classList.add('active');
+      setTimeout(() => {
+        currentScene = 0;
+        document.querySelectorAll('.scene').forEach(s => s.classList.remove('active'));
+        document.getElementById('scene-0').classList.add('active');
+        document.querySelectorAll('.scene-tab').forEach(t => { t.classList.remove('active','completed'); });
+        document.querySelector('[data-scene="0"]').classList.add('active');
+        playCurrentScene();
+      }, 300);
+    });
+
+    document.getElementById('help-close').addEventListener('click', () => { stopAll(); overlay.classList.remove('active'); });
+    document.getElementById('got-it-btn').addEventListener('click', () => { stopAll(); overlay.classList.remove('active'); });
+    document.getElementById('replay-btn').addEventListener('click', () => playCurrentScene());
+    document.getElementById('prev-btn').addEventListener('click', () => { if (currentScene > 0) switchScene(currentScene - 1); });
+    document.getElementById('next-btn').addEventListener('click', () => { if (currentScene < TOTAL_SCENES - 1) switchScene(currentScene + 1); });
+
+    document.querySelectorAll('.scene-tab').forEach(tab => {
+      tab.addEventListener('click', () => switchScene(parseInt(tab.dataset.scene)));
+    });
+
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) { stopAll(); overlay.classList.remove('active'); } });
+
+    // ============ SEEKING ============
+    let isDragging = false, lastSeekTime = 0;
+
+    function showStateAtTime(st) {
+      resetScene(currentScene);
+      const tl = TIMELINES[currentScene];
+      timelineIndex = 0;
+      for (let i = 0; i < tl.length && tl[i].time <= st; i++) { tl[i].action(); timelineIndex = i + 1; }
+    }
+
+    function seekTo(e) {
+      const rect = progressBar.getBoundingClientRect();
+      const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+      const a = getAudio(currentScene);
+      const pct = x / rect.width;
+      lastSeekTime = pct * (a.duration || 20);
+      progressFill.style.width = (pct * 100) + '%';
+      document.getElementById('debug-time').textContent = lastSeekTime.toFixed(1) + 's';
+      showStateAtTime(lastSeekTime);
+    }
+
+    progressBar.addEventListener('mousedown', (e) => {
+      isSeeking = true; getAudio(currentScene).pause();
+      cancelAnimationFrame(animationFrame); isDragging = true;
+      progressBar.classList.add('dragging'); seekTo(e);
+    });
+    document.addEventListener('mousemove', (e) => { if (isDragging) { e.preventDefault(); seekTo(e); } });
+    document.addEventListener('mouseup', () => {
+      if (isDragging) {
+        isDragging = false; progressBar.classList.remove('dragging');
+        const a = getAudio(currentScene);
+        const play = () => { a.currentTime = lastSeekTime; isSeeking = false; a.play().catch(()=>{}); animationFrame = requestAnimationFrame(updateAnimation); };
+        if (a.readyState >= 3) play();
+        else { a.addEventListener('canplay', play, { once: true }); a.load(); }
+      }
+    });
+
+    // Deep link
+    (function() {
+      const p = new URLSearchParams(window.location.search);
+      const s = p.get('scene');
+      if (s !== null) {
+        const idx = parseInt(s, 10);
+        if (idx >= 0 && idx < TOTAL_SCENES) {
+          overlay.classList.add('active');
+          setTimeout(() => {
+            document.querySelectorAll('.scene').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.scene-tab').forEach(t => t.classList.remove('active'));
+            currentScene = idx;
+            document.getElementById('scene-' + idx).classList.add('active');
+            document.querySelector(`[data-scene="${idx}"]`).classList.add('active');
+            playCurrentScene();
+          }, 300);
+        }
+      }
+    })();
+  </script>
+</body>
+</html>
