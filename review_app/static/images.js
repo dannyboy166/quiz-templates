@@ -83,17 +83,14 @@ async function approveImage(itemId, imageType, optionNum) {
     });
     const data = await res.json();
     if (data.ok) {
-        // Update status badge
         const badge = document.querySelector('.status-badge');
         if (badge) {
             badge.className = 'status-badge status-approved';
-            badge.textContent = 'Approved';
+            badge.textContent = data.pushed ? 'Approved + Pushed to Airtable' : 'Approved';
         }
-        // Show push button
-        const pushBtn = imageType === 'question'
-            ? document.getElementById('push-question-btn')
-            : document.getElementById(`push-answer-${optionNum}-btn`);
-        if (pushBtn) pushBtn.style.display = 'inline-flex';
+        if (data.push_error) {
+            alert('Approved but Airtable push failed: ' + data.push_error);
+        }
     }
 }
 

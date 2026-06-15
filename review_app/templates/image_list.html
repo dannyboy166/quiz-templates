@@ -251,9 +251,16 @@
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({image_type: 'question'})
         });
-        if ((await res.json()).ok) {
+        const data = await res.json();
+        if (data.ok) {
             const q = ALL_QUESTIONS.find(q => q.id === itemId);
-            if (q) q.img_status = 'approved';
+            if (q) {
+                q.img_status = 'approved';
+                q.has_at_image = data.pushed;
+            }
+            if (data.push_error) {
+                alert('Approved but Airtable push failed: ' + data.push_error);
+            }
             renderTable();
         }
     }

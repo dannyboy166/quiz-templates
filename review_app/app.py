@@ -342,23 +342,54 @@ def create_app():
 
     @app.route("/api/images/approve/<item_id>", methods=["POST"])
     def api_approve_image(item_id):
-        if item_id not in questions:
+        """Approve an image AND push it to Airtable in one step."""
+        q = questions.get(item_id)
+        if not q:
             return jsonify({"error": "Question not found"}), 404
         data = request.get_json(silent=True) or {}
         image_type = data.get("image_type", "question")
         option_num = data.get("option_num")
 
-        img_state = get_image_item_state(image_state, item_id)
+        # Update local state
+        img_st = get_image_item_state(image_state, item_id)
         if image_type == "question":
-            img_state["question_image"]["approved_at"] = img_now_iso()
+            img_st["question_image"]["approved_at"] = img_now_iso()
         elif image_type == "answer" and option_num:
-            ans = img_state["answer_images"].setdefault(str(option_num), {})
+            ans = img_st["answer_images"].setdefault(str(option_num), {})
             ans["approved_at"] = img_now_iso()
 
-        img_state["status"] = "approved"
-        img_state["flag_note"] = ""
-        update_image_item_state(image_state, item_id, **img_state)
-        return jsonify({"ok": True})
+        img_st["status"] = "approved"
+        img_st["flag_note"] = ""
+        update_image_item_state(image_state, item_id, **img_st)
+
+        # Push to Airtable automatically
+        domain = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "localhost:5050")
+        scheme = "https" if "railway" in domain else "http"
+        push_error = None
+
+        try:
+            if image_type == "question":
+                filename = f"{item_id}-question.png"
+                image_url = f"{scheme}://{domain}/generated-images/{filename}"
+                table_name, record_id, msg = at_push_question(q, image_url, airtable_images)
+                img_st["question_image"]["pushed_at"] = img_now_iso()
+            elif image_type == "answer" and option_num:
+                filename = f"{item_id}-answer{option_num}.png"
+                image_url = f"{scheme}://{domain}/generated-images/{filename}"
+                table_name, record_id, msg = at_push_answer(q, int(option_num), image_url, airtable_images)
+                ans = img_st["answer_images"].setdefault(str(option_num), {})
+                ans["pushed_at"] = img_now_iso()
+
+            update_image_item_state(image_state, item_id, **img_st)
+        except Exception as e:
+            push_error = str(e)
+            print(f"  Airtable push error for {item_id}: {e}")
+
+        return jsonify({
+            "ok": True,
+            "pushed": push_error is None,
+            "push_error": push_error,
+        })
 
     @app.route("/api/images/flag/<item_id>", methods=["POST"])
     def api_flag_image(item_id):
