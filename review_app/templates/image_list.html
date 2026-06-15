@@ -67,7 +67,6 @@
             <img id="preview-img" src="" style="max-width:100%;border-radius:8px;margin:1rem 0;border:2px solid #ddd;">
             <div class="modal-actions" style="justify-content:center;gap:1rem;">
                 <button class="btn btn-success" onclick="previewApprove()">Approve</button>
-                <button class="btn btn-warning" onclick="previewReject()">Reject</button>
                 <button class="btn btn-secondary" onclick="hidePreview()">Close</button>
             </div>
         </div>
@@ -188,7 +187,6 @@
                 <td class="col-actions" style="white-space:nowrap;">
                     ${q.has_gen_image && !q.has_at_image ? `
                         <button class="action-btn approve-btn" onclick="quickApproveImage('${q.id}')" title="Approve">&#10003;</button>
-                        <button class="action-btn flag-btn" onclick="quickRejectImage('${q.id}')" title="Reject">&#10007;</button>
                     ` : q.has_at_image ? '<span class="done-label">Done</span>' : ''}
                 </td>
             </tr>
