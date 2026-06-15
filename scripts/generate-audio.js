@@ -529,6 +529,28 @@ const helpSubtractionAudio = [
     text: "Now it's your turn! Try some subtraction questions yourself." },
 ];
 
+// ==========================================
+// HELP - COUNTING
+// ==========================================
+const helpCountingAudio = [
+  { file: 'audio/help-counting/scene-0-intro.mp3',
+    text: "Hello! Today we're practising counting. Counting means finding out how many there are. You'll see pictures of objects, dots, ten-frames, and blocks — and your job is to count them up. Let's look at the different types of counting questions." },
+  { file: 'audio/help-counting/scene-1-counting-objects.mp3',
+    text: "The simplest counting question shows you some objects and asks how many. You might see questions that say: match the items to the correct number — 8 balls. Or how many blocks, how many eggs, how many butterflies. The trick is to count carefully — touch each one as you go. Don't skip any, and don't count any twice. Here are some balls. One, two, three, four, five, six, seven, eight. There are 8 balls. The last number you say is always the answer." },
+  { file: 'audio/help-counting/scene-2-ten-frames.mp3',
+    text: "Ten-frames make counting bigger numbers much easier. Each full ten-frame has 10 dots. To count, start by counting the full frames in tens — 10, 20, 30, 40, 50, 60. Then count on the extra dots in the last frame — 61, 62. So there are 62 dots. If a question says how many dots altogether, look for ten-frames and count them this way. Full frames first in tens, then count on the extras." },
+  { file: 'audio/help-counting/scene-3-match-to-amount.mp3',
+    text: "Some questions show objects grouped in tens — like pop sticks bundled together. Match the items to the correct amount. First, count the bundles of ten — four bundles is 40 because there is 10 in each bundle. Then count the loose ones — 6 more. 40 plus 6 is 46. The bigger the number, the more important it is to use an efficient strategy and count in groups rather than one by one." },
+  { file: 'audio/help-counting/scene-4-hundreds.mp3',
+    text: "For really big numbers, you'll see hundreds blocks too. Which answer shows 112 blocks? Look for 1 hundred, 1 ten, and 2 ones. That's 100 plus 10 plus 2, which is 112. Sometimes the question uses shapes instead — a circle means 100, a square means 10, a triangle means 1. Which answer represents 262? 2 circles, 6 squares, and 2 triangles — that's 200 plus 60 plus 2. Count the hundreds first, then the tens, then the ones." },
+  { file: 'audio/help-counting/scene-5-reading-picture.mp3',
+    text: "Some questions show a picture with different people and their objects. Who has 31 balls? You need to count each person's group carefully. Jess has 35, Tom has 31, Anna has 25. Tom has 31 — that's the answer. You might also be asked how many does Jess have, or how many altogether. If you see the word altogether, then you need to add the groups together to find the total amount altogether." },
+  { file: 'audio/help-counting/scene-6-true-false.mp3',
+    text: "A true or false counting question gives you a number and a picture. There are 45 leaves. True or false? Count the leaves yourself to check. If you count 45, it's true. If you get a different number, it's false. Here's another one — if there are 6 full ten-frames and one with 8 dots, there would be 68 dots. 6 full frames is 60, plus 8 is 68. That's true! Always count carefully before you answer." },
+  { file: 'audio/help-counting/scene-7-outro.mp3',
+    text: "Now it's your turn! Try some counting questions yourself." },
+];
+
 // All templates
 const allTemplates = {
   'word-match': wordMatchAudio,
@@ -552,6 +574,7 @@ const allTemplates = {
   'help-addition-scenes': helpAdditionScenesAudio,
   'help-homophones': helpHomophonesAudio,
   'help-subtraction': helpSubtractionAudio,
+  'help-counting': helpCountingAudio,
 };
 
 async function generateAudioWithTimestamps(text, outputPath, speed = 0.9) {

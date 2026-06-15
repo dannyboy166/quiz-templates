@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Help Lesson - Counting</title>
+  <style>
+    @font-face {
+      font-family: 'Apfel Grotezk';
+      src: url('../../fonts/ApfelGrotezk-Regular.woff2') format('woff2');
+      font-weight: 400; font-style: normal; font-display: swap;
+    }
+    @font-face {
+      font-family: 'Apfel Grotezk';
+      src: url('../../fonts/ApfelGrotezk-Mittel.woff2') format('woff2');
+      font-weight: 500; font-style: normal; font-display: swap;
+    }
+    @font-face {
+      font-family: 'Apfel Grotezk';
+      src: url('../../fonts/ApfelGrotezk-Fett.woff2') format('woff2');
+      font-weight: 700; font-style: normal; font-display: swap;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Apfel Grotezk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #FAE38E;
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .back-btn {
+      position: fixed; top: 20px; left: 20px;
+      background: white; color: #333; border: none;
+      padding: 10px 20px; border-radius: 25px;
+      font-size: 16px; font-weight: 600; cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+      transition: transform 0.2s; z-index: 100;
+    }
+    .back-btn:hover { transform: scale(1.05); }
+
+    .trigger-btn {
+      background: #F5A623; color: white; border: none;
+      padding: 20px 40px; border-radius: 16px;
+      font-size: 24px; font-weight: 600; cursor: pointer;
+      box-shadow: 0 4px 15px rgba(245, 166, 35, 0.4);
+      transition: transform 0.2s;
+    }
+    .trigger-btn:hover { transform: scale(1.05); }
+
+    /* ============ OVERLAY ============ */
+    .help-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1000; opacity: 0; visibility: hidden;
+      transition: opacity 0.3s, visibility 0.3s;
+    }
+    .help-overlay.active { opacity: 1; visibility: visible; }
+
+    .help-container {
+      width: 94%; max-width: 900px;
+      background: white; border-radius: 24px;
+      padding: 30px 30px 20px; position: relative;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      max-height: 95vh; overflow-y: auto;
+    }
+
+    .help-close {
+      position: absolute; top: 12px; right: 12px;
+      width: 36px; height: 36px; border-radius: 50%; border: none;
+      background: #f0f0f0; font-size: 20px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: #666; z-index: 10;
+    }
+
+    .help-title { text-align: center; font-size: 24px; margin-bottom: 12px; color: #333; }
+
+    /* ============ SCENE NAV ============ */
+    .scene-nav {
+      display: flex; gap: 4px; margin-bottom: 12px;
+      overflow-x: auto; scrollbar-width: thin; padding: 2px 0;
+    }
+    .scene-tab {
+      flex-shrink: 0; padding: 5px 10px; border-radius: 16px;
+      border: 2px solid #ddd; background: #f5f5f5;
+      font-size: 11px; font-weight: 600; cursor: pointer;
+      transition: all 0.2s; white-space: nowrap; color: #666;
+    }
+    .scene-tab:hover { border-color: #F5A623; color: #F5A623; }
+    .scene-tab.active { background: #F5A623; color: white; border-color: #F5A623; }
+    .scene-tab.completed { background: #E8F5E9; border-color: #66BB6A; color: #2E7D32; }
+
+    /* ============ STAGE ============ */
+    .stage {
+      height: 380px;
+      background: linear-gradient(180deg, #E8F5E9 0%, #C8E6C9 100%);
+      border-radius: 16px; position: relative; overflow: hidden; margin-bottom: 12px;
+    }
+    .scene {
+      position: absolute; width: 100%; height: 100%;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity 0.4s;
+    }
+    .scene.active { opacity: 1; pointer-events: auto; }
+
+    /* ============ TEACHER ============ */
+    .teacher-panel {
+      position: absolute; bottom: 10px; right: 12px;
+      width: 100px; height: 140px; z-index: 8;
+      opacity: 0; transition: opacity 0.5s; pointer-events: none;
+    }
+    .teacher-panel.visible { opacity: 1; }
+    .teacher-panel video { width: 100%; height: 100%; object-fit: contain; }
+
+    /* ============ CALLOUT ============ */
+    .callout {
+      background: #f8f8f8; border: 2px solid #e0e0e0;
+      padding: 10px 20px; border-radius: 12px;
+      font-size: 15px; font-weight: 500; color: #333;
+      text-align: center; min-height: 42px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 10px; opacity: 0; transition: opacity 0.3s; line-height: 1.4;
+    }
+    .callout.visible { opacity: 1; }
+
+    /* ============ SHARED COMPONENTS ============ */
+    .scene-title {
+      font-size: 22px; font-weight: 700; color: #333; margin-bottom: 20px;
+      opacity: 0; transform: scale(0.8);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .scene-title.visible { opacity: 1; transform: scale(1); }
+
+    .info-cards { display: flex; gap: 12px; margin-top: 15px; }
+    .info-card {
+      background: white; border: 3px solid #333; border-radius: 12px;
+      padding: 10px 18px; font-size: 14px; font-weight: 600; color: #333;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+      opacity: 0; transform: translateY(10px);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .info-card.visible { opacity: 1; transform: translateY(0); }
+
+    .intro-title {
+      font-size: 36px; font-weight: 700; color: #333; text-align: center;
+      opacity: 0; transform: scale(0);
+      transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .intro-title.visible { opacity: 1; transform: scale(1); }
+    .intro-title .emoji { font-size: 50px; display: block; margin-bottom: 8px; }
+
+    /* ============ SCENE 1: COUNTING OBJECTS ============ */
+    .objects-grid {
+      display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
+      max-width: 350px; margin-bottom: 10px;
+    }
+    .count-obj {
+      font-size: 34px; position: relative;
+      opacity: 0; transform: scale(0);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .count-obj.visible { opacity: 1; transform: scale(1); }
+    .count-num {
+      position: absolute; top: -12px; right: -8px;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: #F5A623; color: white; font-size: 12px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transform: scale(0);
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .count-num.visible { opacity: 1; transform: scale(1); }
+
+    .big-answer {
+      font-size: 48px; font-weight: 700; color: #F5A623;
+      opacity: 0; transform: scale(0);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .big-answer.visible { opacity: 1; transform: scale(1); }
+
+    /* ============ SCENE 2: TEN-FRAMES ============ */
+    .ten-frames-row {
+      display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+      margin-bottom: 10px;
+    }
+    .ten-frame {
+      display: grid; grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(2, 1fr);
+      gap: 2px; width: 100px; height: 44px;
+      border: 2px solid #333; border-radius: 6px; padding: 3px; background: white;
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .ten-frame.visible { opacity: 1; }
+    .tf-dot {
+      border-radius: 50%; background: #ccc;
+      transition: all 0.2s;
+    }
+    .tf-dot.filled { background: #F5A623; }
+    .tf-count-label {
+      font-size: 16px; font-weight: 700; color: #F5A623;
+      text-align: center; margin-top: 2px;
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .tf-count-label.visible { opacity: 1; }
+
+    /* ============ SCENE 3: BUNDLES ============ */
+    .bundles-area {
+      display: flex; gap: 20px; align-items: flex-end; margin-bottom: 10px;
+    }
+    .bundle-group {
+      display: flex; gap: 6px; opacity: 0; transition: opacity 0.4s;
+    }
+    .bundle-group.visible { opacity: 1; }
+    .bundle {
+      width: 20px; height: 60px; background: #8B4513; border-radius: 4px;
+      border: 2px solid #5D2F0F; position: relative;
+      opacity: 0; transform: scale(0);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .bundle.visible { opacity: 1; transform: scale(1); }
+    .bundle.tens {
+      background: repeating-linear-gradient(0deg, #8B4513 0px, #8B4513 4px, #A0522D 4px, #A0522D 6px);
+    }
+    .bundle.ones { height: 30px; }
+    .bundle-label {
+      font-size: 18px; font-weight: 700; color: #333;
+      text-align: center; margin-top: 4px;
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .bundle-label.visible { opacity: 1; }
+
+    .equation {
+      font-size: 28px; font-weight: 700; color: #333;
+      opacity: 0; transition: opacity 0.4s;
+    }
+    .equation.visible { opacity: 1; }
+    .equation .answer { color: #4CAF50; }
+
+    /* ============ SCENE 4: HUNDREDS ============ */
+    .blocks-area {
+      display: flex; gap: 15px; align-items: flex-end; margin-bottom: 10px;
+    }
+    .block-group {
+      display: flex; flex-direction: column; align-items: center;
+      opacity: 0; transition: opacity 0.4s;
+    }
+    .block-group.visible { opacity: 1; }
+    .hundred-block {
+      width: 50px; height: 50px; background: #667eea; border: 2px solid #4a5dbd;
+      border-radius: 4px; display: grid; grid-template-columns: repeat(5, 1fr);
+      grid-template-rows: repeat(5, 1fr); gap: 1px; padding: 2px;
+    }
+    .hundred-block .cell { background: rgba(255,255,255,0.3); border-radius: 1px; }
+    .ten-rod {
+      width: 14px; height: 50px; background: #e74c3c; border: 2px solid #c0392b;
+      border-radius: 3px;
+    }
+    .one-cube {
+      width: 14px; height: 14px; background: #F5A623; border: 2px solid #d4891a;
+      border-radius: 2px;
+    }
+    .block-label {
+      font-size: 13px; font-weight: 600; color: #555; margin-top: 4px;
+    }
+
+    /* shapes version */
+    .shapes-area {
+      display: flex; gap: 8px; align-items: center; margin-top: 10px;
+      opacity: 0; transition: opacity 0.4s;
+    }
+    .shapes-area.visible { opacity: 1; }
+    .shape-item {
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+    }
+    .shape-circle {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: #667eea; border: 2px solid #4a5dbd;
+    }
+    .shape-square {
+      width: 24px; height: 24px;
+      background: #e74c3c; border: 2px solid #c0392b;
+    }
+    .shape-triangle {
+      width: 0; height: 0;
+      border-left: 12px solid transparent;
+      border-right: 12px solid transparent;
+      border-bottom: 22px solid #F5A623;
+    }
+    .shape-label { font-size: 11px; font-weight: 600; color: #555; }
+
+    /* ============ SCENE 5: READING PICTURE ============ */
+    .people-row {
+      display: flex; gap: 20px; margin-bottom: 10px;
+    }
+    .person-card {
+      background: white; border: 3px solid #333; border-radius: 12px;
+      padding: 12px 16px; text-align: center;
+      opacity: 0; transform: translateY(10px);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .person-card.visible { opacity: 1; transform: translateY(0); }
+    .person-card.highlight { border-color: #4CAF50; background: #E8F5E9; }
+    .person-name { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+    .person-count { font-size: 24px; font-weight: 700; color: #F5A623; }
+
+    /* ============ SCENE 6: TRUE/FALSE ============ */
+    .tf-statement {
+      background: white; border: 3px solid #333; border-radius: 12px;
+      padding: 14px 24px; font-size: 22px; font-weight: 700;
+      color: #333; opacity: 0; transition: opacity 0.4s;
+    }
+    .tf-statement.visible { opacity: 1; }
+    .tf-verdict {
+      font-size: 32px; font-weight: 700;
+      margin-top: 10px; opacity: 0; transform: scale(0);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .tf-verdict.visible { opacity: 1; transform: scale(1); }
+    .tf-verdict.true-v { color: #4CAF50; }
+
+    /* ============ OUTRO ============ */
+    .try-btn {
+      background: #F5A623; color: white; border: none;
+      padding: 14px 32px; border-radius: 30px;
+      font-size: 18px; font-weight: 600; cursor: pointer;
+      margin-top: 15px;
+      opacity: 0; transform: translateY(10px);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .try-btn.visible { opacity: 1; transform: translateY(0); }
+
+    /* ============ CONTROLS ============ */
+    .progress-bar {
+      height: 6px; background: #eee; border-radius: 3px;
+      margin-bottom: 12px; cursor: pointer; position: relative;
+      transition: height 0.2s;
+    }
+    .progress-bar:hover { height: 10px; }
+    .progress-bar.dragging { height: 10px; }
+    .progress-fill {
+      height: 100%; background: #F5A623; border-radius: 3px;
+      transition: width 0.1s linear;
+    }
+
+    .controls {
+      display: flex; justify-content: center; gap: 12px;
+    }
+    .ctrl-btn {
+      padding: 8px 18px; border-radius: 20px; border: 2px solid #ddd;
+      background: white; font-size: 14px; font-weight: 600;
+      cursor: pointer; color: #555; transition: all 0.2s;
+    }
+    .ctrl-btn:hover { border-color: #F5A623; color: #F5A623; }
+    .ctrl-btn.primary {
+      background: #F5A623; color: white; border-color: #F5A623;
+    }
+    .ctrl-btn.primary:hover { background: #d4891a; }
+
+    .debug-panel {
+      position: fixed; bottom: 8px; right: 8px;
+      background: rgba(0,0,0,0.7); color: #0f0;
+      font-family: monospace; font-size: 11px;
+      padding: 4px 8px; border-radius: 4px; z-index: 2000;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <a href="../index.html" class="back-btn">← Back</a>
+
+  <button class="trigger-btn" id="start-help">
+    🔢 Get Help: Counting
+  </button>
+
+  <div class="help-overlay" id="help-overlay">
+    <div class="help-container">
+      <button class="help-close" id="help-close">✕</button>
+      <h2 class="help-title">Counting</h2>
+
+      <div class="scene-nav">
+        <button class="scene-tab active" data-scene="0">Intro</button>
+        <button class="scene-tab" data-scene="1">Count Objects</button>
+        <button class="scene-tab" data-scene="2">Ten-Frames</button>
+        <button class="scene-tab" data-scene="3">Match to Amount</button>
+        <button class="scene-tab" data-scene="4">Hundreds</button>
+        <button class="scene-tab" data-scene="5">Read Picture</button>
+        <button class="scene-tab" data-scene="6">True / False</button>
+        <button class="scene-tab" data-scene="7">Your Turn</button>
+      </div>
+
+      <div class="stage">
+        <!-- SCENE 0: INTRO -->
+        <div class="scene active" id="scene-0">
+          <div class="intro-title" id="intro-title">
+            <span class="emoji">🔢</span>
+            Counting
+          </div>
+          <div class="info-cards">
+            <div class="info-card" id="card-objects">Objects</div>
+            <div class="info-card" id="card-dots">Dots & ten-frames</div>
+            <div class="info-card" id="card-blocks">Blocks</div>
+          </div>
+        </div>
+
+        <!-- SCENE 1: COUNTING OBJECTS -->
+        <div class="scene" id="scene-1">
+          <div class="scene-title" id="s1-title">Count the Objects</div>
+          <div class="objects-grid" id="s1-objects"></div>
+          <div class="big-answer" id="s1-answer">8 balls!</div>
+          <div class="info-cards">
+            <div class="info-card" id="card-touch">Touch each one</div>
+            <div class="info-card" id="card-last">The last number is the total</div>
+          </div>
+        </div>
+
+        <!-- SCENE 2: TEN-FRAMES -->
+        <div class="scene" id="scene-2">
+          <div class="scene-title" id="s2-title">Ten-Frames</div>
+          <div class="ten-frames-row" id="s2-frames"></div>
+          <div class="big-answer" id="s2-answer">62</div>
+          <div class="info-cards">
+            <div class="info-card" id="card-full">Full frame = 10</div>
+            <div class="info-card" id="card-extras">Count the extras</div>
+          </div>
+        </div>
+
+        <!-- SCENE 3: MATCH TO AMOUNT -->
+        <div class="scene" id="scene-3">
+          <div class="scene-title" id="s3-title">Match to the Amount</div>
+          <div class="bundles-area" id="s3-bundles">
+            <div style="display: flex; flex-direction: column; align-items: center;">
+              <div class="bundle-group" id="s3-tens"></div>
+              <div class="bundle-label" id="s3-tens-label">4 tens = 40</div>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: center;">
+              <div class="bundle-group" id="s3-ones"></div>
+              <div class="bundle-label" id="s3-ones-label">6 ones</div>
+            </div>
+          </div>
+          <div class="equation" id="s3-eq">40 + 6 = <span class="answer">46</span></div>
+          <div class="info-cards">
+            <div class="info-card" id="card-bundles">Count the bundles of ten</div>
+            <div class="info-card" id="card-loose">Then the loose ones</div>
+          </div>
+        </div>
+
+        <!-- SCENE 4: HUNDREDS -->
+        <div class="scene" id="scene-4">
+          <div class="scene-title" id="s4-title">Hundreds, Tens and Ones</div>
+          <div class="blocks-area" id="s4-blocks">
+            <div class="block-group" id="s4-hundreds">
+              <div class="hundred-block" id="s4-h1"></div>
+              <div class="block-label">100</div>
+            </div>
+            <div class="block-group" id="s4-tens">
+              <div class="ten-rod"></div>
+              <div class="block-label">10</div>
+            </div>
+            <div class="block-group" id="s4-ones-blocks">
+              <div style="display: flex; gap: 3px;">
+                <div class="one-cube"></div>
+                <div class="one-cube"></div>
+              </div>
+              <div class="block-label">2</div>
+            </div>
+          </div>
+          <div class="equation" id="s4-eq1">100 + 10 + 2 = <span class="answer">112</span></div>
+          <div class="shapes-area" id="s4-shapes">
+            <div class="shape-item"><div class="shape-circle"></div><div class="shape-label">100</div></div>
+            <div class="shape-item"><div class="shape-circle"></div><div class="shape-label">100</div></div>
+            <span style="font-size: 18px; font-weight: 700; margin: 0 4px;">+</span>
+            <div class="shape-item"><div class="shape-square"></div><div class="shape-label">10</div></div>
+            <div class="shape-item"><div class="shape-square"></div><div class="shape-label">10</div></div>
+            <div class="shape-item"><div class="shape-square"></div><div class="shape-label">10</div></div>
+            <div class="shape-item"><div class="shape-square"></div><div class="shape-label">10</div></div>
+            <div class="shape-item"><div class="shape-square"></div><div class="shape-label">10</div></div>
+            <div class="shape-item"><div class="shape-square"></div><div class="shape-label">10</div></div>
+            <span style="font-size: 18px; font-weight: 700; margin: 0 4px;">+</span>
+            <div class="shape-item"><div class="shape-triangle"></div><div class="shape-label">1</div></div>
+            <div class="shape-item"><div class="shape-triangle"></div><div class="shape-label">1</div></div>
+            <span style="font-size: 18px; font-weight: 700; margin: 0 4px;">= 262</span>
+          </div>
+          <div class="info-cards">
+            <div class="info-card" id="card-big-block">Big block = 100</div>
+            <div class="info-card" id="card-rod">Rod = 10, cube = 1</div>
+          </div>
+        </div>
+
+        <!-- SCENE 5: READING PICTURE -->
+        <div class="scene" id="scene-5">
+          <div class="scene-title" id="s5-title">Read the Picture</div>
+          <div class="people-row">
+            <div class="person-card" id="s5-jess">
+              <div class="person-name">Jess</div>
+              <div>🏐🏐🏐🏐🏐</div>
+              <div class="person-count">35</div>
+            </div>
+            <div class="person-card" id="s5-tom">
+              <div class="person-name">Tom</div>
+              <div>🏐🏐🏐🏐</div>
+              <div class="person-count">31</div>
+            </div>
+            <div class="person-card" id="s5-anna">
+              <div class="person-name">Anna</div>
+              <div>🏐🏐🏐</div>
+              <div class="person-count">25</div>
+            </div>
+          </div>
+          <div class="info-cards">
+            <div class="info-card" id="card-each">Count each person's group</div>
+            <div class="info-card" id="card-question">Then answer the question</div>
+          </div>
+        </div>
+
+        <!-- SCENE 6: TRUE/FALSE -->
+        <div class="scene" id="scene-6">
+          <div class="scene-title" id="s6-title">True or False?</div>
+          <div class="tf-statement" id="s6-stmt1">There are 45 leaves 🍃</div>
+          <div class="tf-verdict true-v" id="s6-verdict1">✓ TRUE</div>
+          <div class="tf-statement" id="s6-stmt2" style="margin-top: 10px; font-size: 18px;">6 full ten-frames + 8 dots = 68?</div>
+          <div class="tf-verdict true-v" id="s6-verdict2">60 + 8 = 68 ✓ TRUE</div>
+          <div class="info-cards">
+            <div class="info-card" id="card-count-it">Count it yourself</div>
+            <div class="info-card" id="card-then-check">Then check</div>
+          </div>
+        </div>
+
+        <!-- SCENE 7: OUTRO -->
+        <div class="scene" id="scene-7">
+          <div class="intro-title" id="outro-title">
+            <span class="emoji">💪</span>
+            Your Turn!
+          </div>
+          <button class="try-btn" id="try-btn" onclick="document.getElementById('help-overlay').classList.remove('active');">
+            Try some questions →
+          </button>
+        </div>
+
+        <!-- TEACHER PANEL -->
+        <div class="teacher-panel" id="teacher-panel">
+          <video id="teacher-video" muted loop playsinline
+                 src="../../assets/videos/teacher-transparent.webm"></video>
+        </div>
+      </div>
+
+      <div class="callout" id="callout"></div>
+
+      <div class="progress-bar" id="progress-bar">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+
+      <div class="controls">
+        <button class="ctrl-btn" id="prev-btn">← Prev</button>
+        <button class="ctrl-btn" id="replay-btn">↻ Replay</button>
+        <button class="ctrl-btn" id="next-btn">Next →</button>
+        <button class="ctrl-btn primary" id="got-it-btn">Got it!</button>
+      </div>
+    </div>
+  </div>
+
+  <audio id="audio-0" src="../../audio/help-counting/scene-0-intro.mp3" preload="auto"></audio>
+  <audio id="audio-1" src="../../audio/help-counting/scene-1-counting-objects.mp3" preload="auto"></audio>
+  <audio id="audio-2" src="../../audio/help-counting/scene-2-ten-frames.mp3" preload="auto"></audio>
+  <audio id="audio-3" src="../../audio/help-counting/scene-3-match-to-amount.mp3" preload="auto"></audio>
+  <audio id="audio-4" src="../../audio/help-counting/scene-4-hundreds.mp3" preload="auto"></audio>
+  <audio id="audio-5" src="../../audio/help-counting/scene-5-reading-picture.mp3" preload="auto"></audio>
+  <audio id="audio-6" src="../../audio/help-counting/scene-6-true-false.mp3" preload="auto"></audio>
+  <audio id="audio-7" src="../../audio/help-counting/scene-7-outro.mp3" preload="auto"></audio>
+
+  <div class="debug-panel">Scene: <span id="debug-scene">0</span> | Time: <span id="debug-time">0.0s</span></div>
+
+  <script>
+    const TOTAL_SCENES = 8;
+    const overlay = document.getElementById('help-overlay');
+    const callout = document.getElementById('callout');
+    const progressFill = document.getElementById('progress-fill');
+    const progressBar = document.getElementById('progress-bar');
+    const teacherPanel = document.getElementById('teacher-panel');
+    const teacherVideo = document.getElementById('teacher-video');
+
+    // Build scene 1: 8 balls
+    const objGrid = document.getElementById('s1-objects');
+    for (let i = 0; i < 8; i++) {
+      const o = document.createElement('span');
+      o.className = 'count-obj';
+      o.id = 'ball-' + i;
+      o.textContent = '⚽';
+      const n = document.createElement('span');
+      n.className = 'count-num';
+      n.id = 'num-' + i;
+      n.textContent = i + 1;
+      o.appendChild(n);
+      objGrid.appendChild(o);
+    }
+
+    // Build scene 2: 7 ten-frames (6 full + 1 partial with 2 dots)
+    const framesRow = document.getElementById('s2-frames');
+    for (let f = 0; f < 7; f++) {
+      const frame = document.createElement('div');
+      frame.className = 'ten-frame';
+      frame.id = 'frame-' + f;
+      const dotsInFrame = f < 6 ? 10 : 2;
+      for (let d = 0; d < 10; d++) {
+        const dot = document.createElement('div');
+        dot.className = 'tf-dot' + (d < dotsInFrame ? ' filled' : '');
+        frame.appendChild(dot);
+      }
+      framesRow.appendChild(frame);
+    }
+
+    // Build scene 3: bundles (4 tens + 6 ones)
+    const tensGroup = document.getElementById('s3-tens');
+    for (let i = 0; i < 4; i++) {
+      const b = document.createElement('div');
+      b.className = 'bundle tens';
+      b.id = 'ten-' + i;
+      tensGroup.appendChild(b);
+    }
+    const onesGroup = document.getElementById('s3-ones');
+    for (let i = 0; i < 6; i++) {
+      const b = document.createElement('div');
+      b.className = 'bundle ones';
+      b.id = 'one-' + i;
+      onesGroup.appendChild(b);
+    }
+
+    // Build scene 4: hundred block cells
+    const hBlock = document.getElementById('s4-h1');
+    for (let i = 0; i < 25; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      hBlock.appendChild(cell);
+    }
+
+    let currentScene = 0;
+    let timelineIndex = 0;
+    let animationFrame;
+    let isSeeking = false;
+
+    function getAudio(i) { return document.getElementById('audio-' + i); }
+    function show(id) { document.getElementById(id).classList.add('visible'); }
+    function setCallout(t) { callout.textContent = t; callout.classList.add('visible'); }
+    function showTeacher() { teacherPanel.classList.add('visible'); teacherVideo.play().catch(()=>{}); }
+    function hideTeacher() { teacherPanel.classList.remove('visible'); }
+
+    // ============ TIMELINES ============
+    const TIMELINES = {
+      0: [ // INTRO (19.4s)
+        { time: 0.0,  action: () => { show('intro-title'); showTeacher(); } },
+        { time: 0.1,  action: () => setCallout("Hello! Today we're practising counting.") },
+        { time: 4.3,  action: () => setCallout("Counting means finding out how many there are.") },
+        { time: 8.1,  action: () => { setCallout("You'll see pictures of objects, dots, ten-frames, and blocks — and your job is to count them up."); show('card-objects'); show('card-dots'); show('card-blocks'); } },
+        { time: 16.0, action: () => setCallout("Let's look at the different types of counting questions.") },
+      ],
+
+      1: [ // COUNTING OBJECTS (40.9s)
+        { time: 0.0,  action: () => show('s1-title') },
+        { time: 0.1,  action: () => setCallout("The simplest counting question shows you some objects and asks how many.") },
+        { time: 5.8,  action: () => {
+          setCallout("You might see questions that say: match the items to the correct number — 8 balls.");
+          for (let i = 0; i < 8; i++) setTimeout(() => show('ball-' + i), i * 100);
+        }},
+        { time: 16.7, action: () => setCallout("The trick is to count carefully — touch each one as you go.") },
+        { time: 21.9, action: () => setCallout("Don't skip any, and don't count any twice.") },
+        { time: 26.0, action: () => setCallout("Here are some balls.") },
+        { time: 27.9, action: () => {
+          setCallout("One, two, three, four, five, six, seven, eight.");
+          for (let i = 0; i < 8; i++) setTimeout(() => show('num-' + i), i * 400);
+        }},
+        { time: 35.5, action: () => { setCallout("There are 8 balls."); show('s1-answer'); } },
+        { time: 37.4, action: () => { setCallout("The last number you say is always the answer."); show('card-touch'); show('card-last'); } },
+      ],
+
+      2: [ // TEN-FRAMES (31.7s)
+        { time: 0.0,  action: () => show('s2-title') },
+        { time: 0.1,  action: () => setCallout("Ten-frames make counting bigger numbers much easier.") },
+        { time: 3.3,  action: () => { setCallout("Each full ten-frame has 10 dots."); show('frame-0'); } },
+        { time: 5.7,  action: () => {
+          setCallout("To count, start by counting the full frames in tens — 10, 20, 30, 40, 50, 60.");
+          for (let i = 0; i < 6; i++) setTimeout(() => show('frame-' + i), i * 300);
+        }},
+        { time: 13.7, action: () => { setCallout("Then count on the extra dots in the last frame — 61, 62."); show('frame-6'); } },
+        { time: 18.9, action: () => { setCallout("So there are 62 dots."); show('s2-answer'); } },
+        { time: 20.9, action: () => setCallout("If a question says how many dots altogether, look for ten-frames and count them this way.") },
+        { time: 27.1, action: () => { setCallout("Full frames first in tens, then count on the extras."); show('card-full'); show('card-extras'); } },
+      ],
+
+      3: [ // MATCH TO AMOUNT (30.0s)
+        { time: 0.0,  action: () => show('s3-title') },
+        { time: 0.1,  action: () => setCallout("Some questions show objects grouped in tens — like pop sticks bundled together.") },
+        { time: 5.7,  action: () => setCallout("Match the items to the correct amount.") },
+        { time: 8.2,  action: () => {
+          setCallout("First, count the bundles of ten — four bundles is 40.");
+          show('s3-tens');
+          for (let i = 0; i < 4; i++) setTimeout(() => show('ten-' + i), i * 200);
+          setTimeout(() => show('s3-tens-label'), 1000);
+        }},
+        { time: 15.2, action: () => {
+          setCallout("Then count the loose ones — 6 more.");
+          show('s3-ones');
+          for (let i = 0; i < 6; i++) setTimeout(() => show('one-' + i), i * 120);
+          setTimeout(() => show('s3-ones-label'), 900);
+        }},
+        { time: 18.5, action: () => { setCallout("40 plus 6 is 46."); show('s3-eq'); } },
+        { time: 22.0, action: () => { setCallout("The bigger the number, the more important it is to count in groups rather than one by one."); show('card-bundles'); show('card-loose'); } },
+      ],
+
+      4: [ // HUNDREDS (40.1s)
+        { time: 0.0,  action: () => show('s4-title') },
+        { time: 0.1,  action: () => setCallout("For really big numbers, you'll see hundreds blocks too.") },
+        { time: 3.7,  action: () => setCallout("Which answer shows 112 blocks?") },
+        { time: 6.8,  action: () => {
+          setCallout("Look for 1 hundred, 1 ten, and 2 ones. That's 100 plus 10 plus 2, which is 112.");
+          show('s4-hundreds'); show('s4-tens'); show('s4-ones-blocks');
+        }},
+        { time: 14.4, action: () => { setCallout("Sometimes the question uses shapes instead — a circle means 100, a square means 10, a triangle means 1."); show('s4-eq1'); } },
+        { time: 22.8, action: () => setCallout("Which answer represents 262?") },
+        { time: 26.6, action: () => { setCallout("2 circles, 6 squares, and 2 triangles — that's 200 plus 60 plus 2."); show('s4-shapes'); } },
+        { time: 35.3, action: () => { setCallout("Count the hundreds first, then the tens, then the ones."); show('card-big-block'); show('card-rod'); } },
+      ],
+
+      5: [ // READING PICTURE (30.6s)
+        { time: 0.0,  action: () => show('s5-title') },
+        { time: 0.1,  action: () => setCallout("Some questions show a picture with different people and their objects.") },
+        { time: 3.7,  action: () => setCallout("Who has 31 balls?") },
+        { time: 6.2,  action: () => setCallout("You need to count each person's group carefully.") },
+        { time: 9.2,  action: () => {
+          setCallout("Jess has 35, Tom has 31, Anna has 25.");
+          show('s5-jess'); show('s5-tom'); show('s5-anna');
+        }},
+        { time: 15.0, action: () => {
+          setCallout("Tom has 31 — that's the answer.");
+          document.getElementById('s5-tom').classList.add('highlight');
+        }},
+        { time: 18.2, action: () => setCallout("You might also be asked how many does Jess have, or how many altogether.") },
+        { time: 23.1, action: () => { setCallout("If you see the word altogether, add the groups together to find the total."); show('card-each'); show('card-question'); } },
+      ],
+
+      6: [ // TRUE/FALSE (34.7s)
+        { time: 0.0,  action: () => show('s6-title') },
+        { time: 0.1,  action: () => setCallout("A true or false counting question gives you a number and a picture.") },
+        { time: 4.9,  action: () => { setCallout("There are 45 leaves. True or false?"); show('s6-stmt1'); } },
+        { time: 8.9,  action: () => setCallout("Count the leaves yourself to check.") },
+        { time: 11.2, action: () => { setCallout("If you count 45, it's true."); show('s6-verdict1'); } },
+        { time: 17.1, action: () => { setCallout("Here's another one — if there are 6 full ten-frames and one with 8 dots, there would be 68 dots."); show('s6-stmt2'); } },
+        { time: 25.6, action: () => { setCallout("6 full frames is 60, plus 8 is 68. That's true!"); show('s6-verdict2'); } },
+        { time: 31.9, action: () => { setCallout("Always count carefully before you answer."); show('card-count-it'); show('card-then-check'); } },
+      ],
+
+      7: [ // OUTRO (4.2s)
+        { time: 0.0,  action: () => { show('outro-title'); showTeacher(); setCallout("Now it's your turn!"); } },
+        { time: 1.7,  action: () => { setCallout("Try some counting questions yourself."); show('try-btn'); } },
+      ],
+    };
+
+    // ============ RESET ============
+    function resetScene(idx) {
+      const el = document.getElementById('scene-' + idx);
+      if (!el) return;
+      el.querySelectorAll('.visible').forEach(e => { if (e !== el) e.classList.remove('visible'); });
+
+      if (idx === 1) {
+        for (let i = 0; i < 8; i++) {
+          const n = document.getElementById('num-' + i);
+          if (n) n.classList.remove('visible');
+        }
+      }
+      if (idx === 5) {
+        document.getElementById('s5-tom').classList.remove('highlight');
+      }
+
+      callout.classList.remove('visible');
+      hideTeacher();
+    }
+
+    // ============ PLAYBACK ============
+    function switchScene(idx) {
+      const cur = getAudio(currentScene);
+      cur.pause(); cur.currentTime = 0;
+      cancelAnimationFrame(animationFrame);
+      resetScene(currentScene);
+      document.getElementById('scene-' + currentScene).classList.remove('active');
+
+      currentScene = idx;
+      timelineIndex = 0;
+      document.getElementById('scene-' + idx).classList.add('active');
+      document.querySelectorAll('.scene-tab').forEach(t => t.classList.remove('active'));
+      document.querySelector(`[data-scene="${idx}"]`).classList.add('active');
+      document.getElementById('debug-scene').textContent = idx;
+      playCurrentScene();
+    }
+
+    function playCurrentScene() {
+      resetScene(currentScene);
+      timelineIndex = 0;
+      const a = getAudio(currentScene);
+      a.currentTime = 0;
+      progressFill.style.width = '0%';
+      a.play().catch(()=>{});
+      animationFrame = requestAnimationFrame(updateAnimation);
+    }
+
+    function updateAnimation() {
+      if (isSeeking) return;
+      const a = getAudio(currentScene);
+      const t = a.currentTime;
+      const tl = TIMELINES[currentScene];
+      document.getElementById('debug-time').textContent = t.toFixed(1) + 's';
+      if (a.duration) progressFill.style.width = (t / a.duration * 100) + '%';
+      while (timelineIndex < tl.length && t >= tl[timelineIndex].time) {
+        tl[timelineIndex].action();
+        timelineIndex++;
+      }
+      if (!a.paused) animationFrame = requestAnimationFrame(updateAnimation);
+    }
+
+    function stopAll() {
+      for (let i = 0; i < TOTAL_SCENES; i++) { const a = getAudio(i); a.pause(); a.currentTime = 0; }
+      cancelAnimationFrame(animationFrame);
+      resetScene(currentScene);
+      callout.classList.remove('visible');
+      hideTeacher();
+      progressFill.style.width = '0%';
+    }
+
+    // Auto-advance
+    for (let i = 0; i < TOTAL_SCENES; i++) {
+      getAudio(i).addEventListener('ended', () => {
+        document.querySelector(`[data-scene="${currentScene}"]`).classList.add('completed');
+        if (currentScene < TOTAL_SCENES - 1) setTimeout(() => switchScene(currentScene + 1), 1000);
+      });
+    }
+
+    // ============ CONTROLS ============
+    document.getElementById('start-help').addEventListener('click', () => {
+      overlay.classList.add('active');
+      setTimeout(() => {
+        currentScene = 0;
+        document.querySelectorAll('.scene').forEach(s => s.classList.remove('active'));
+        document.getElementById('scene-0').classList.add('active');
+        document.querySelectorAll('.scene-tab').forEach(t => { t.classList.remove('active','completed'); });
+        document.querySelector('[data-scene="0"]').classList.add('active');
+        playCurrentScene();
+      }, 300);
+    });
+
+    document.getElementById('help-close').addEventListener('click', () => { stopAll(); overlay.classList.remove('active'); });
+    document.getElementById('got-it-btn').addEventListener('click', () => { stopAll(); overlay.classList.remove('active'); });
+    document.getElementById('replay-btn').addEventListener('click', () => playCurrentScene());
+    document.getElementById('prev-btn').addEventListener('click', () => { if (currentScene > 0) switchScene(currentScene - 1); });
+    document.getElementById('next-btn').addEventListener('click', () => { if (currentScene < TOTAL_SCENES - 1) switchScene(currentScene + 1); });
+
+    document.querySelectorAll('.scene-tab').forEach(tab => {
+      tab.addEventListener('click', () => switchScene(parseInt(tab.dataset.scene)));
+    });
+
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) { stopAll(); overlay.classList.remove('active'); } });
+
+    // ============ SEEKING ============
+    let isDragging = false, lastSeekTime = 0;
+
+    function showStateAtTime(st) {
+      resetScene(currentScene);
+      const tl = TIMELINES[currentScene];
+      timelineIndex = 0;
+      for (let i = 0; i < tl.length && tl[i].time <= st; i++) { tl[i].action(); timelineIndex = i + 1; }
+    }
+
+    function seekTo(e) {
+      const rect = progressBar.getBoundingClientRect();
+      const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+      const a = getAudio(currentScene);
+      const pct = x / rect.width;
+      lastSeekTime = pct * (a.duration || 20);
+      progressFill.style.width = (pct * 100) + '%';
+      document.getElementById('debug-time').textContent = lastSeekTime.toFixed(1) + 's';
+      showStateAtTime(lastSeekTime);
+    }
+
+    progressBar.addEventListener('mousedown', (e) => {
+      isSeeking = true; getAudio(currentScene).pause();
+      cancelAnimationFrame(animationFrame); isDragging = true;
+      progressBar.classList.add('dragging'); seekTo(e);
+    });
+    document.addEventListener('mousemove', (e) => { if (isDragging) { e.preventDefault(); seekTo(e); } });
+    document.addEventListener('mouseup', () => {
+      if (isDragging) {
+        isDragging = false; progressBar.classList.remove('dragging');
+        const a = getAudio(currentScene);
+        const play = () => { a.currentTime = lastSeekTime; isSeeking = false; a.play().catch(()=>{}); animationFrame = requestAnimationFrame(updateAnimation); };
+        if (a.readyState >= 3) play();
+        else { a.addEventListener('canplay', play, { once: true }); a.load(); }
+      }
+    });
+
+    // Deep link
+    (function() {
+      const p = new URLSearchParams(window.location.search);
+      const s = p.get('scene');
+      if (s !== null) {
+        const idx = parseInt(s, 10);
+        if (idx >= 0 && idx < TOTAL_SCENES) {
+          overlay.classList.add('active');
+          setTimeout(() => {
+            document.querySelectorAll('.scene').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.scene-tab').forEach(t => t.classList.remove('active'));
+            currentScene = idx;
+            document.getElementById('scene-' + idx).classList.add('active');
+            document.querySelector(`[data-scene="${idx}"]`).classList.add('active');
+            playCurrentScene();
+          }, 300);
+        }
+      }
+    })();
+  </script>
+</body>
+</html>
