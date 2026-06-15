@@ -1,6 +1,7 @@
 """Wrapper around generate_voiceovers.py functions for the review app."""
 
 import os
+import sys
 from pathlib import Path
 
 import requests
@@ -41,10 +42,11 @@ def build_options_for_ssml(question):
     return options
 
 
-def get_ssml_for_question(question, speech_override=None):
+def get_ssml_for_question(question, speech_override=None, no_answers=False):
     """Generate the SSML text for a question.
 
     If speech_override is provided, use that instead of auto-generating.
+    If no_answers is True, only read the question text without options.
     """
     if speech_override:
         return speech_override
@@ -52,6 +54,10 @@ def get_ssml_for_question(question, speech_override=None):
     template_id = question.get("template_id")
     if template_id is None:
         template_id = TEMPLATE_SELECT_ONE
+
+    if no_answers:
+        cleaned = clean_text_for_speech(question["question_text"])
+        return f'<break time="0.3s" /> {cleaned}'
 
     options = build_options_for_ssml(question)
     return build_ssml(question["question_text"], template_id, options)
@@ -90,7 +96,7 @@ def generate_audio(ssml_text, output_path, speed=None):
     return len(response.content)
 
 
-def generate_for_question(question, state_item=None):
+def generate_for_question(question, state_item=None, no_answers=False):
     """Generate audio for a question. Returns (ssml, file_size)."""
     speech_override = None
     speed = None
@@ -99,8 +105,37 @@ def generate_for_question(question, state_item=None):
         speech_override = state_item.get("speech_override")
         speed = state_item.get("speed_override")
 
-    ssml = get_ssml_for_question(question, speech_override)
+    ssml = get_ssml_for_question(question, speech_override, no_answers=no_answers)
     output_path = OUTPUT_DIR / f"{question['item_id']}-question.mp3"
+    file_size = generate_audio(ssml, output_path, speed)
+
+    return ssml, file_size
+
+
+# --- Hint audio ---
+
+def get_ssml_for_hint(hint_text, speech_override=None):
+    """Generate SSML for a hint. Simpler than questions — no options or T/F."""
+    if speech_override:
+        return speech_override
+    cleaned = clean_text_for_speech(hint_text)
+    return f'<break time="0.3s" /> {cleaned}'
+
+
+def generate_for_hint(question, hint_num, hint_state=None):
+    """Generate audio for a hint. Returns (ssml, file_size)."""
+    hint_text = question.get(f"hint{hint_num}", "")
+    if not hint_text:
+        raise Exception(f"No hint{hint_num} text for {question['item_id']}")
+
+    speech_override = None
+    speed = None
+    if hint_state:
+        speech_override = hint_state.get("speech_override")
+        speed = hint_state.get("speed_override")
+
+    ssml = get_ssml_for_hint(hint_text, speech_override)
+    output_path = OUTPUT_DIR / f"{question['item_id']}-hint{hint_num}.mp3"
     file_size = generate_audio(ssml, output_path, speed)
 
     return ssml, file_size

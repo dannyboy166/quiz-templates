@@ -16,9 +16,11 @@ from .spreadsheet_loader import load_all_questions, TEMPLATE_NAMES
 from .state import (
     load_state, save_state, get_item_state, update_item_state,
     has_audio, now_iso, VOICEOVER_DIR, DATA_DIR,
+    get_hint_state, update_hint_state, has_hint_audio,
 )
 from .voiceover_engine import (
     get_ssml_for_question, generate_for_question,
+    get_ssml_for_hint, generate_for_hint,
 )
 from .image_state import (
     load_image_state, save_image_state, get_image_item_state,
@@ -131,6 +133,20 @@ def create_app():
         audio_exists = has_audio(item_id)
         ssml = get_ssml_for_question(q, item_state.get("speech_override"))
 
+        # Build hint data
+        hint_data = []
+        for h in range(1, 4):
+            hint_text = q.get(f"hint{h}", "")
+            if hint_text:
+                hs = get_hint_state(state, item_id, h)
+                hint_data.append({
+                    "num": h,
+                    "text": hint_text,
+                    "state": hs,
+                    "audio_exists": has_hint_audio(item_id, h),
+                    "ssml": get_ssml_for_hint(hint_text, hs.get("speech_override")),
+                })
+
         # Find prev/next for navigation
         idx = next((i for i, qq in enumerate(questions_list) if qq["item_id"] == item_id), None)
         prev_id = questions_list[idx - 1]["item_id"] if idx and idx > 0 else None
@@ -140,6 +156,7 @@ def create_app():
                                q=q, state=item_state,
                                audio_exists=audio_exists,
                                ssml=ssml,
+                               hint_data=hint_data,
                                template_name=TEMPLATE_NAMES.get(q.get("template_id"), "Unknown"),
                                prev_id=prev_id, next_id=next_id)
 
@@ -151,8 +168,9 @@ def create_app():
         if not q:
             return jsonify({"error": "Question not found"}), 404
         item_state = get_item_state(state, item_id)
+        no_answers = request.args.get("no_answers") == "1"
         try:
-            ssml, file_size = generate_for_question(q, item_state)
+            ssml, file_size = generate_for_question(q, item_state, no_answers=no_answers)
             update_item_state(state, item_id, generated_at=now_iso())
             return jsonify({"ok": True, "ssml": ssml, "size": file_size})
         except Exception as e:
@@ -196,6 +214,86 @@ def create_app():
         ssml = get_ssml_for_question(q)
         return jsonify({"ssml": ssml})
 
+    # --- Undo routes ---
+
+    @app.route("/api/undo/<item_id>", methods=["POST"])
+    def api_undo(item_id):
+        if item_id not in questions:
+            return jsonify({"error": "Question not found"}), 404
+        update_item_state(state, item_id, status="pending",
+                          approved_at=None, flag_note="")
+        return jsonify({"ok": True})
+
+    @app.route("/api/undo-hint/<item_id>/<int:hint_num>", methods=["POST"])
+    def api_undo_hint(item_id, hint_num):
+        if item_id not in questions or hint_num not in (1, 2, 3):
+            return jsonify({"error": "Not found"}), 404
+        update_hint_state(state, item_id, hint_num,
+                          status="pending", approved_at=None, flag_note="")
+        return jsonify({"ok": True})
+
+    # --- Hint API routes ---
+
+    @app.route("/api/generate-hint/<item_id>/<int:hint_num>", methods=["POST"])
+    def api_generate_hint(item_id, hint_num):
+        q = questions.get(item_id)
+        if not q or hint_num not in (1, 2, 3):
+            return jsonify({"error": "Not found"}), 404
+        if not q.get(f"hint{hint_num}"):
+            return jsonify({"error": f"No hint{hint_num} text"}), 400
+        hs = get_hint_state(state, item_id, hint_num)
+        try:
+            ssml, file_size = generate_for_hint(q, hint_num, hs)
+            update_hint_state(state, item_id, hint_num, generated_at=now_iso())
+            return jsonify({"ok": True, "ssml": ssml, "size": file_size})
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+    @app.route("/api/approve-hint/<item_id>/<int:hint_num>", methods=["POST"])
+    def api_approve_hint(item_id, hint_num):
+        if item_id not in questions or hint_num not in (1, 2, 3):
+            return jsonify({"error": "Not found"}), 404
+        data = request.get_json(silent=True) or {}
+        mode = data.get("mode", "audio_text")
+        update_hint_state(state, item_id, hint_num,
+                          status="approved", mode=mode,
+                          approved_at=now_iso(), flag_note="")
+        return jsonify({"ok": True})
+
+    @app.route("/api/flag-hint/<item_id>/<int:hint_num>", methods=["POST"])
+    def api_flag_hint(item_id, hint_num):
+        if item_id not in questions or hint_num not in (1, 2, 3):
+            return jsonify({"error": "Not found"}), 404
+        data = request.get_json(silent=True) or {}
+        note = data.get("note", "")
+        update_hint_state(state, item_id, hint_num,
+                          status="flagged", flag_note=note)
+        return jsonify({"ok": True})
+
+    @app.route("/api/update-hint-speech/<item_id>/<int:hint_num>", methods=["POST"])
+    def api_update_hint_speech(item_id, hint_num):
+        if item_id not in questions or hint_num not in (1, 2, 3):
+            return jsonify({"error": "Not found"}), 404
+        data = request.get_json(silent=True) or {}
+        updates = {}
+        if "ssml" in data:
+            updates["speech_override"] = data["ssml"] or None
+        if "speed" in data:
+            updates["speed_override"] = data["speed"] or None
+        update_hint_state(state, item_id, hint_num, **updates)
+        return jsonify({"ok": True})
+
+    @app.route("/api/preview-hint-ssml/<item_id>/<int:hint_num>")
+    def api_preview_hint_ssml(item_id, hint_num):
+        q = questions.get(item_id)
+        if not q or hint_num not in (1, 2, 3):
+            return jsonify({"error": "Not found"}), 404
+        hint_text = q.get(f"hint{hint_num}", "")
+        if not hint_text:
+            return jsonify({"error": f"No hint{hint_num}"}), 400
+        ssml = get_ssml_for_hint(hint_text)
+        return jsonify({"ssml": ssml})
+
     @app.route("/api/stats")
     def api_stats():
         return jsonify(_compute_stats(questions_list, state))
@@ -204,11 +302,16 @@ def create_app():
     def api_bulk_generate():
         data = request.get_json(silent=True) or {}
         item_ids = data.get("item_ids", [])
+        hint_jobs = data.get("hint_jobs", [])
         valid_ids = [iid for iid in item_ids if iid in questions]
-        if not valid_ids:
-            return jsonify({"error": "No valid item IDs"}), 400
-        bulk_queue.put(valid_ids)
-        return jsonify({"ok": True, "count": len(valid_ids)})
+        valid_hints = [hj for hj in hint_jobs
+                       if hj.get("item_id") in questions
+                       and hj.get("hint_num") in (1, 2, 3)]
+        total = len(valid_ids) + len(valid_hints)
+        if total == 0:
+            return jsonify({"error": "No valid jobs"}), 400
+        bulk_queue.put((valid_ids, valid_hints))
+        return jsonify({"ok": True, "count": total})
 
     @app.route("/api/bulk-status")
     def api_bulk_status():
@@ -565,19 +668,30 @@ def create_app():
 
     def bulk_worker():
         while True:
-            item_ids = bulk_queue.get()
-            if item_ids is None:
+            job = bulk_queue.get()
+            if job is None:
                 break
+
+            # Support both old format (list) and new format (tuple)
+            if isinstance(job, tuple):
+                item_ids, hint_jobs = job
+            else:
+                item_ids, hint_jobs = job, []
+
+            total = len(item_ids) + len(hint_jobs)
 
             with bulk_lock:
                 bulk_status["running"] = True
-                bulk_status["total"] = len(item_ids)
+                bulk_status["total"] = total
                 bulk_status["completed"] = 0
                 bulk_status["errors"] = []
+                bulk_status["current_type"] = "question"
 
+            # Generate question audio
             for item_id in item_ids:
                 with bulk_lock:
                     bulk_status["current_item"] = item_id
+                    bulk_status["current_type"] = "question"
 
                 q = questions.get(item_id)
                 if not q:
@@ -590,7 +704,7 @@ def create_app():
                 try:
                     generate_for_question(q, item_state)
                     update_item_state(state, item_id, generated_at=now_iso())
-                    time.sleep(0.5)  # ElevenLabs rate limit
+                    time.sleep(0.5)
                 except Exception as e:
                     with bulk_lock:
                         bulk_status["errors"].append({"item_id": item_id, "error": str(e)})
@@ -598,9 +712,38 @@ def create_app():
                 with bulk_lock:
                     bulk_status["completed"] += 1
 
+            # Generate hint audio
+            for hj in hint_jobs:
+                item_id = hj["item_id"]
+                hint_num = hj["hint_num"]
+
+                with bulk_lock:
+                    bulk_status["current_item"] = f"{item_id} hint{hint_num}"
+                    bulk_status["current_type"] = "hint"
+
+                q = questions.get(item_id)
+                if not q or not q.get(f"hint{hint_num}"):
+                    with bulk_lock:
+                        bulk_status["errors"].append({"item_id": item_id, "error": f"No hint{hint_num}"})
+                        bulk_status["completed"] += 1
+                    continue
+
+                hs = get_hint_state(state, item_id, hint_num)
+                try:
+                    generate_for_hint(q, hint_num, hs)
+                    update_hint_state(state, item_id, hint_num, generated_at=now_iso())
+                    time.sleep(0.5)
+                except Exception as e:
+                    with bulk_lock:
+                        bulk_status["errors"].append({"item_id": f"{item_id}:hint{hint_num}", "error": str(e)})
+
+                with bulk_lock:
+                    bulk_status["completed"] += 1
+
             with bulk_lock:
                 bulk_status["running"] = False
                 bulk_status["current_item"] = None
+                bulk_status["current_type"] = None
 
             bulk_queue.task_done()
 
@@ -616,12 +759,18 @@ def _compute_stats(questions_list, state):
     total_approved = 0
     total_audio = 0
     total_flagged = 0
+    total_hints = 0
+    total_hints_audio = 0
+    total_hints_approved = 0
+    total_hints_flagged = 0
 
     for q in questions_list:
         subj = q["subject"] or "Unknown"
         if subj not in by_subject:
             by_subject[subj] = {"total": 0, "approved": 0, "flagged": 0,
-                                "has_audio": 0, "pending": 0}
+                                "has_audio": 0, "pending": 0,
+                                "hints_total": 0, "hints_audio": 0,
+                                "hints_approved": 0, "hints_flagged": 0}
         by_subject[subj]["total"] += 1
 
         item_id = q["item_id"]
@@ -641,36 +790,83 @@ def _compute_stats(questions_list, state):
             by_subject[subj]["has_audio"] += 1
             total_audio += 1
 
+        # Hint stats
+        for h in range(1, 4):
+            if q.get(f"hint{h}"):
+                total_hints += 1
+                by_subject[subj]["hints_total"] += 1
+                if has_hint_audio(item_id, h):
+                    total_hints_audio += 1
+                    by_subject[subj]["hints_audio"] += 1
+                hs = s.get("hints", {}).get(f"hint{h}", {})
+                if hs.get("status") == "approved":
+                    total_hints_approved += 1
+                    by_subject[subj]["hints_approved"] += 1
+                elif hs.get("status") == "flagged":
+                    total_hints_flagged += 1
+                    by_subject[subj]["hints_flagged"] += 1
+
     return {
         "by_subject": by_subject,
         "total": len(questions_list),
         "total_approved": total_approved,
         "total_audio": total_audio,
         "total_flagged": total_flagged,
+        "total_hints": total_hints,
+        "total_hints_audio": total_hints_audio,
+        "total_hints_approved": total_hints_approved,
+        "total_hints_flagged": total_hints_flagged,
     }
 
 
 def _get_flagged(questions, state):
-    """Get all flagged questions with their notes."""
+    """Get all flagged questions and hints with their notes."""
     flagged = []
     for item_id, s in state.items():
-        if s.get("status") == "flagged" and item_id in questions:
-            q = questions[item_id]
+        if item_id not in questions:
+            continue
+        q = questions[item_id]
+        if s.get("status") == "flagged":
             flagged.append({
                 "item_id": item_id,
                 "question_text": q["question_text"][:80],
                 "subject": q["subject"],
                 "note": s.get("flag_note", ""),
+                "type": "question",
             })
+        for h in range(1, 4):
+            hs = s.get("hints", {}).get(f"hint{h}", {})
+            if hs.get("status") == "flagged":
+                flagged.append({
+                    "item_id": item_id,
+                    "question_text": f"Hint {h}: {q.get(f'hint{h}', '')[:60]}",
+                    "subject": q["subject"],
+                    "note": hs.get("flag_note", ""),
+                    "type": "hint",
+                })
     return flagged
 
 
 def _questions_for_client(questions_list, state):
-    """Build compact question list for client-side filtering."""
+    """Build question list with hint summaries for client-side filtering."""
     result = []
     for q in questions_list:
         item_id = q["item_id"]
         s = state.get(item_id, {})
+
+        hints = []
+        for h in range(1, 4):
+            hint_text = q.get(f"hint{h}", "")
+            if hint_text:
+                hs = s.get("hints", {}).get(f"hint{h}", {})
+                hints.append({
+                    "n": h,
+                    "t": hint_text[:60],
+                    "audio": has_hint_audio(item_id, h),
+                    "status": hs.get("status", "pending"),
+                    "mode": hs.get("mode", "audio_text"),
+                })
+
         result.append({
             "id": item_id,
             "text": q["question_text"][:80],
@@ -681,6 +877,7 @@ def _questions_for_client(questions_list, state):
             "status": s.get("status", "pending"),
             "audio": has_audio(item_id),
             "grade": q["grade"],
+            "hints": hints,
         })
     return result
 

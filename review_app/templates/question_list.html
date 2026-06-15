@@ -12,6 +12,10 @@
                 <input type="checkbox" id="select-all" onchange="toggleSelectAll(this.checked)">
                 Select visible
             </label>
+            <label class="hints-toggle-label">
+                <input type="checkbox" id="show-hints" onchange="renderTable()">
+                Show Hints
+            </label>
         </div>
     </div>
 
@@ -32,8 +36,8 @@
             {% endfor %}
         </select>
         <select id="filter-status" onchange="applyFilters()">
-            <option value="needs_review">Needs Review</option>
             <option value="">All</option>
+            <option value="needs_review">Needs Review</option>
             <option value="pending">Pending (no audio)</option>
             <option value="approved">Approved</option>
             <option value="flagged">Flagged</option>
@@ -65,7 +69,6 @@
 
     <div class="pagination" id="pagination"></div>
 
-    <!-- Hidden audio player for inline playback -->
     <audio id="list-audio-player" preload="none"></audio>
 
     <div class="bulk-progress" id="bulk-progress" style="display:none;">
@@ -85,12 +88,18 @@
     let currentPage = 1;
     let selected = new Set();
 
-    // Read URL params for initial filters
     const params = new URLSearchParams(window.location.search);
     if (params.get('subject')) document.getElementById('filter-subject').value = params.get('subject');
     if (params.has('status')) document.getElementById('filter-status').value = params.get('status');
+    if (params.get('sheet')) document.getElementById('filter-sheet').value = params.get('sheet');
+    if (params.get('hints') === '1') document.getElementById('show-hints').checked = true;
+    const initialTopic = params.get('topic');
 
     applyFilters();
+    if (initialTopic) {
+        document.getElementById('filter-topic').value = initialTopic;
+        applyFilters();
+    }
 
     function applyFilters() {
         const subject = document.getElementById('filter-subject').value;
@@ -99,15 +108,13 @@
         const status = document.getElementById('filter-status').value;
         const search = document.getElementById('filter-search').value.toLowerCase();
 
-        // Update topic dropdown
         const topicSelect = document.getElementById('filter-topic');
         const currentTopic = topicSelect.value;
         topicSelect.innerHTML = '<option value="">All Topics</option>';
         if (subject && TOPICS_BY_SUBJECT[subject]) {
             TOPICS_BY_SUBJECT[subject].forEach(t => {
                 const opt = document.createElement('option');
-                opt.value = t;
-                opt.textContent = t;
+                opt.value = t; opt.textContent = t;
                 if (t === currentTopic) opt.selected = true;
                 topicSelect.appendChild(opt);
             });
@@ -132,11 +139,15 @@
     }
 
     function renderTable() {
+        const showHints = document.getElementById('show-hints').checked;
         const start = (currentPage - 1) * PER_PAGE;
         const page = filtered.slice(start, start + PER_PAGE);
         const tbody = document.getElementById('question-tbody');
 
-        tbody.innerHTML = page.map(q => `
+        let html = '';
+        for (const q of page) {
+            // Question row
+            html += `
             <tr class="question-row ${q.status}" onclick="window.location='/questions/${q.id}'">
                 <td class="col-check" onclick="event.stopPropagation()">
                     <input type="checkbox" ${selected.has(q.id) ? 'checked' : ''}
@@ -147,37 +158,78 @@
                 <td class="col-type"><span class="type-badge type-${q.type.toLowerCase().replace(/[^a-z]/g, '')}">${q.type}</span></td>
                 <td class="col-subject">${q.subject}</td>
                 <td class="col-status">
-                    ${q.status === 'approved' ? '<span class="status-icon approved" title="Approved">&#10003;</span>' :
-                      q.status === 'flagged' ? '<span class="status-icon flagged" title="Flagged">&#9873;</span>' :
-                      '<span class="status-icon pending" title="Pending">&mdash;</span>'}
+                    ${q.status === 'approved' ? '<span class="status-icon approved">&#10003;</span>' :
+                      q.status === 'flagged' ? '<span class="status-icon flagged">&#9873;</span>' :
+                      '<span class="status-icon pending">&mdash;</span>'}
                 </td>
                 <td class="col-audio">
-                    ${q.audio ? '<span class="audio-icon" title="Has audio">&#9835;</span>' : ''}
+                    ${q.audio ? '<span class="audio-icon">&#9835;</span>' : ''}
                 </td>
                 <td class="col-play" onclick="event.stopPropagation()">
-                    ${q.audio ? `<button class="play-btn" onclick="playAudio('${q.id}', this)" title="Play audio">&#9654;</button>` : ''}
+                    ${q.audio ? `<button class="play-btn" onclick="playAudio('${q.id}', 'question', this)">&#9654;</button>` : ''}
                 </td>
                 <td class="col-actions" onclick="event.stopPropagation()">
                     ${q.audio ? `
                         <div class="row-actions">
-                            ${q.status !== 'approved' ? `<button class="action-btn approve-btn" onclick="quickApprove('${q.id}', this)" title="Approve">&#10003;</button>` : `<span class="done-label">Done</span>`}
-                            ${q.status !== 'flagged' ? `<button class="action-btn flag-btn" onclick="quickFlag('${q.id}')" title="Flag for Dan">&#9873;</button>` : `<span class="flagged-label">Flagged</span>`}
+                            ${q.status !== 'approved' ? `<button class="action-btn approve-btn" onclick="quickApprove('${q.id}')" title="Approve">&#10003;</button>` : `<span class="done-label">Done</span>`}
+                            ${q.status !== 'flagged' ? `<button class="action-btn flag-btn" onclick="quickFlag('${q.id}')" title="Flag">&#9873;</button>` : `<span class="flagged-label">Flagged</span>`}
+                            ${q.status !== 'pending' ? `<button class="action-btn undo-btn" onclick="quickUndo('${q.id}')" title="Undo to pending">&#8634;</button>` : ''}
                         </div>
                     ` : ''}
                 </td>
-            </tr>
-        `).join('');
+            </tr>`;
 
+            // Hint rows
+            if (showHints && q.hints && q.hints.length) {
+                for (const h of q.hints) {
+                    const hintKey = `${q.id}:hint${h.n}`;
+                    html += `
+                    <tr class="hint-row ${h.status}">
+                        <td class="col-check">
+                            <input type="checkbox" ${selected.has(hintKey) ? 'checked' : ''}
+                                   onchange="toggleSelect('${hintKey}', this.checked)">
+                        </td>
+                        <td class="col-id hint-indent">Hint ${h.n}</td>
+                        <td class="col-text hint-text-cell">${escapeHtml(h.t)}</td>
+                        <td class="col-type"></td>
+                        <td class="col-subject"></td>
+                        <td class="col-status">
+                            ${h.status === 'approved' ? '<span class="status-icon approved">&#10003;</span>' :
+                              h.status === 'flagged' ? '<span class="status-icon flagged">&#9873;</span>' :
+                              '<span class="status-icon pending">&mdash;</span>'}
+                        </td>
+                        <td class="col-audio">
+                            ${h.audio ? '<span class="audio-icon">&#9835;</span>' : ''}
+                        </td>
+                        <td class="col-play">
+                            ${h.audio ? `<button class="play-btn play-btn-small" onclick="playAudio('${q.id}', 'hint${h.n}', this)">&#9654;</button>` : ''}
+                        </td>
+                        <td class="col-actions">
+                            <div class="row-actions">
+                                ${h.status !== 'approved' ? `
+                                    <select class="approve-mode-inline" onchange="quickApproveHint('${q.id}', ${h.n}, this.value); this.value='';" title="Approve as...">
+                                        <option value="">Approve...</option>
+                                        <option value="audio_text">A+T</option>
+                                        <option value="audio_only">Audio</option>
+                                        <option value="text_only">Text</option>
+                                    </select>
+                                ` : `<span class="done-label">${h.mode === 'audio_text' ? 'A+T' : h.mode === 'audio_only' ? 'Audio' : 'Text'}</span>`}
+                                ${h.status !== 'flagged' ? `<button class="action-btn flag-btn" onclick="quickFlagHint('${q.id}', ${h.n})" title="Flag">&#9873;</button>` : ''}
+                                ${h.status !== 'pending' ? `<button class="action-btn undo-btn" onclick="quickUndoHint('${q.id}', ${h.n})" title="Undo">&#8634;</button>` : ''}
+                            </div>
+                        </td>
+                    </tr>`;
+                }
+            }
+        }
+        tbody.innerHTML = html;
         renderPagination();
         updateBulkButton();
     }
 
     function renderPagination() {
         const totalPages = Math.ceil(filtered.length / PER_PAGE);
-        if (totalPages <= 1) {
-            document.getElementById('pagination').innerHTML = '';
-            return;
-        }
+        if (totalPages <= 1) { document.getElementById('pagination').innerHTML = ''; return; }
         let html = '';
         if (currentPage > 1) html += `<button onclick="goPage(${currentPage-1})">&laquo; Prev</button>`;
         html += `<span class="page-info">Page ${currentPage} of ${totalPages}</span>`;
@@ -193,9 +245,18 @@
     }
 
     function toggleSelectAll(checked) {
+        const showHints = document.getElementById('show-hints').checked;
         const start = (currentPage - 1) * PER_PAGE;
         const page = filtered.slice(start, start + PER_PAGE);
-        page.forEach(q => { if (checked) selected.add(q.id); else selected.delete(q.id); });
+        page.forEach(q => {
+            if (checked) selected.add(q.id); else selected.delete(q.id);
+            if (showHints && q.hints) {
+                q.hints.forEach(h => {
+                    const key = `${q.id}:hint${h.n}`;
+                    if (checked) selected.add(key); else selected.delete(key);
+                });
+            }
+        });
         renderTable();
     }
 
@@ -207,63 +268,106 @@
 
     let currentlyPlaying = null;
 
-    function playAudio(itemId, btn) {
+    function playAudio(itemId, type, btn) {
         const player = document.getElementById('list-audio-player');
+        const key = `${itemId}:${type}`;
+        const filename = type === 'question' ? `${itemId}-question.mp3` : `${itemId}-${type}.mp3`;
 
-        // If clicking the same one that's playing, stop it
-        if (currentlyPlaying === itemId && !player.paused) {
-            player.pause();
-            player.currentTime = 0;
-            btn.innerHTML = '&#9654;';
-            btn.classList.remove('playing');
+        if (currentlyPlaying === key && !player.paused) {
+            player.pause(); player.currentTime = 0;
+            btn.innerHTML = '&#9654;'; btn.classList.remove('playing');
             currentlyPlaying = null;
             return;
         }
 
-        // Reset any previous playing button
         document.querySelectorAll('.play-btn.playing').forEach(b => {
-            b.innerHTML = '&#9654;';
-            b.classList.remove('playing');
+            b.innerHTML = '&#9654;'; b.classList.remove('playing');
         });
 
-        // Play this one
-        player.src = `/audio/${itemId}-question.mp3?t=${Date.now()}`;
+        player.src = `/audio/${filename}?t=${Date.now()}`;
         player.play();
-        btn.innerHTML = '&#9632;';
-        btn.classList.add('playing');
-        currentlyPlaying = itemId;
+        btn.innerHTML = '&#9632;'; btn.classList.add('playing');
+        currentlyPlaying = key;
 
         player.onended = () => {
-            btn.innerHTML = '&#9654;';
-            btn.classList.remove('playing');
+            btn.innerHTML = '&#9654;'; btn.classList.remove('playing');
             currentlyPlaying = null;
         };
     }
 
-    async function quickApprove(itemId, btn) {
+    async function quickApprove(itemId) {
         const res = await fetch(`/api/approve/${itemId}`, {method: 'POST'});
-        const data = await res.json();
-        if (data.ok) {
-            // Update local data
+        if ((await res.json()).ok) {
             const q = ALL_QUESTIONS.find(q => q.id === itemId);
             if (q) q.status = 'approved';
-            // Re-filter so it disappears from "Needs Review"
             applyFilters();
         }
     }
 
     async function quickFlag(itemId) {
         const note = prompt('What\'s the issue? (optional)');
-        if (note === null) return; // cancelled
+        if (note === null) return;
         const res = await fetch(`/api/flag/${itemId}`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({note: note})
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({note})
         });
-        const data = await res.json();
-        if (data.ok) {
+        if ((await res.json()).ok) {
             const q = ALL_QUESTIONS.find(q => q.id === itemId);
             if (q) q.status = 'flagged';
+            renderTable();
+        }
+    }
+
+    async function quickApproveHint(itemId, hintNum, mode) {
+        if (!mode) return;
+        const res = await fetch(`/api/approve-hint/${itemId}/${hintNum}`, {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({mode})
+        });
+        if ((await res.json()).ok) {
+            const q = ALL_QUESTIONS.find(q => q.id === itemId);
+            if (q && q.hints) {
+                const h = q.hints.find(h => h.n === hintNum);
+                if (h) { h.status = 'approved'; h.mode = mode; }
+            }
+            renderTable();
+        }
+    }
+
+    async function quickFlagHint(itemId, hintNum) {
+        const note = prompt('What\'s the issue with this hint? (optional)');
+        if (note === null) return;
+        const res = await fetch(`/api/flag-hint/${itemId}/${hintNum}`, {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({note})
+        });
+        if ((await res.json()).ok) {
+            const q = ALL_QUESTIONS.find(q => q.id === itemId);
+            if (q && q.hints) {
+                const h = q.hints.find(h => h.n === hintNum);
+                if (h) h.status = 'flagged';
+            }
+            renderTable();
+        }
+    }
+
+    async function quickUndo(itemId) {
+        const res = await fetch(`/api/undo/${itemId}`, {method: 'POST'});
+        if ((await res.json()).ok) {
+            const q = ALL_QUESTIONS.find(q => q.id === itemId);
+            if (q) q.status = 'pending';
+            renderTable();
+        }
+    }
+
+    async function quickUndoHint(itemId, hintNum) {
+        const res = await fetch(`/api/undo-hint/${itemId}/${hintNum}`, {method: 'POST'});
+        if ((await res.json()).ok) {
+            const q = ALL_QUESTIONS.find(q => q.id === itemId);
+            if (q && q.hints) {
+                const h = q.hints.find(h => h.n === hintNum);
+                if (h) h.status = 'pending';
+            }
             renderTable();
         }
     }
