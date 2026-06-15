@@ -31,25 +31,11 @@ def _get_client():
     return _client
 
 
-STYLE_SUFFIX = (
-    "Simple, colorful cartoon illustration style suitable for children ages 5-12. "
-    "White or plain background. "
-    "IMPORTANT: Do NOT include any text, words, letters, numbers, or labels anywhere in the image. "
-    "The image must contain ONLY illustrations, no writing of any kind."
-)
-
-
 def build_question_prompt(q, airtable_desc=None):
-    """Build an image generation prompt from a question dict.
+    """Build a default prompt suggestion from question context.
 
-    Priority for description source:
-    1. Airtable description (from Georgia's existing work)
-    2. Spreadsheet image_description column
-    3. Placeholder asking Georgia to write the prompt
-
-    Args:
-        q: question dict from spreadsheet
-        airtable_desc: description from Airtable record (if exists)
+    Georgia will edit this before generating — it's just a starting point.
+    The prompt is sent to OpenAI exactly as typed, no style suffix added.
     """
     # Try Airtable description first (e.g. "The sun is hot")
     desc = ""
@@ -60,26 +46,18 @@ def build_question_prompt(q, airtable_desc=None):
     if not desc:
         desc = q.get("image_description", "").strip()
 
-    # No description anywhere — show placeholder for Georgia
+    # No description — empty prompt for Georgia to fill in
     if not desc:
-        q_text = q.get("question_text", "")[:120]
-        return (
-            f"[Edit this prompt] Describe the image you need for this question: "
-            f"\"{q_text}\""
-        )
+        return ""
 
-    return f"{desc}. {STYLE_SUFFIX}"
+    return desc
 
 
 def build_answer_prompt(q, option_num, option_text):
-    """Build an image generation prompt for a single answer option."""
+    """Build a default prompt for an answer option image."""
     if not option_text or option_text.strip() in ("", "True", "False"):
         return ""
-
-    return (
-        f"A cartoon illustration of: {option_text}. "
-        f"Single object or concept, centered. {STYLE_SUFFIX}"
-    )
+    return option_text
 
 
 def generate_image(prompt, output_path, size="1024x1024", quality="low"):

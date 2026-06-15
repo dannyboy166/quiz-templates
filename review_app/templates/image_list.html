@@ -49,10 +49,9 @@
                     <th class="col-check"><input type="checkbox" id="header-check" onchange="toggleSelectAll(this.checked)"></th>
                     <th class="col-id">ItemID</th>
                     <th class="col-text">Question</th>
+                    <th style="min-width:200px;">Prompt</th>
                     <th class="col-subject">Category</th>
-                    <th class="col-subject">Topic</th>
                     <th class="col-img-status">Airtable</th>
-                    <th class="col-img-status">Req</th>
                 </tr>
             </thead>
             <tbody id="question-tbody"></tbody>
@@ -153,22 +152,24 @@
         const tbody = document.getElementById('question-tbody');
 
         tbody.innerHTML = page.map(q => `
-            <tr class="question-row ${q.has_at_image ? 'approved' : ''}" onclick="window.location='/images/${q.id}'">
+            <tr class="question-row ${q.has_at_image ? 'approved' : ''}">
                 <td class="col-check" onclick="event.stopPropagation()">
                     <input type="checkbox" ${selected.has(q.id) ? 'checked' : ''}
                            onchange="toggleSelect('${q.id}', this.checked)">
                 </td>
-                <td class="col-id">${q.id}</td>
-                <td class="col-text">${escapeHtml(q.text)}</td>
+                <td class="col-id" onclick="window.location='/images/${q.id}'" style="cursor:pointer;">${q.id}</td>
+                <td class="col-text" onclick="window.location='/images/${q.id}'" style="cursor:pointer;">${escapeHtml(q.text)}</td>
+                <td onclick="event.stopPropagation()">
+                    <input type="text" class="list-prompt-input" id="prompt-${q.id}"
+                           placeholder="Type what image you need..."
+                           value="${escapeHtml(q.desc || '')}"
+                           style="width:100%;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:0.8rem;">
+                </td>
                 <td class="col-subject">${q.category || q.subject}</td>
-                <td class="col-subject" style="font-size:0.75rem;">${q.topic || ''}</td>
                 <td class="col-img-status">
                     ${q.has_at_image ? '<span class="status-icon approved" title="In Airtable">&#10003;</span>'
                       : q.has_gen_image ? '<span class="img-status-dot generated" title="AI Generated"></span>'
                       : '<span class="status-icon pending" title="No image">&mdash;</span>'}
-                </td>
-                <td class="col-img-status">
-                    ${q.img_req === 'Y' ? '<span style="color:var(--warning);font-weight:700;">Y</span>' : ''}
                 </td>
             </tr>
         `).join('');

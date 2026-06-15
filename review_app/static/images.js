@@ -160,10 +160,19 @@ async function pushToAirtable(itemId, imageType, optionNum) {
     }
 }
 
-// Bulk generation for image list page
+// Bulk generation for image list page — sends prompts from the list inputs
 async function bulkGenerateImages() {
     const ids = Array.from(selected);
     if (!ids.length) return;
+
+    // Collect prompts from the list page inputs
+    const prompts = {};
+    for (const id of ids) {
+        const input = document.getElementById(`prompt-${id}`);
+        if (input && input.value.trim()) {
+            prompts[id] = input.value.trim();
+        }
+    }
 
     const btn = document.getElementById('bulk-gen-btn');
     btn.disabled = true;
@@ -173,7 +182,7 @@ async function bulkGenerateImages() {
         const res = await fetch('/api/images/bulk-generate', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({item_ids: ids})
+            body: JSON.stringify({item_ids: ids, prompts: prompts})
         });
         const data = await res.json();
         if (data.ok) {
