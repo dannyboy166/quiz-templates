@@ -49,9 +49,9 @@
                     <th class="col-check"><input type="checkbox" id="header-check" onchange="toggleSelectAll(this.checked)"></th>
                     <th class="col-id">ItemID</th>
                     <th class="col-text">Question</th>
-                    <th style="min-width:200px;">Prompt</th>
-                    <th class="col-subject">Category</th>
-                    <th class="col-img-status">Airtable</th>
+                    <th style="min-width:180px;">Prompt</th>
+                    <th class="col-img-status">Image</th>
+                    <th class="col-actions">Actions</th>
                 </tr>
             </thead>
             <tbody id="question-tbody"></tbody>
@@ -59,6 +59,19 @@
     </div>
 
     <div class="pagination" id="pagination"></div>
+
+    <!-- Image preview modal -->
+    <div class="modal-overlay" id="preview-modal" style="display:none;" onclick="if(event.target===this)hidePreview()">
+        <div class="modal-content" style="max-width:550px;text-align:center;">
+            <h3>Image Preview — <span id="preview-id"></span></h3>
+            <img id="preview-img" src="" style="max-width:100%;border-radius:8px;margin:1rem 0;border:2px solid #ddd;">
+            <div class="modal-actions" style="justify-content:center;gap:1rem;">
+                <button class="btn btn-success" onclick="previewApprove()">Approve</button>
+                <button class="btn btn-warning" onclick="previewReject()">Reject</button>
+                <button class="btn btn-secondary" onclick="hidePreview()">Close</button>
+            </div>
+        </div>
+    </div>
 
     <div class="bulk-progress" id="bulk-progress" style="display:none;">
         <div class="progress-bar-outer">
@@ -153,23 +166,30 @@
 
         tbody.innerHTML = page.map(q => `
             <tr class="question-row ${q.has_at_image ? 'approved' : ''}">
-                <td class="col-check" onclick="event.stopPropagation()">
+                <td class="col-check">
                     <input type="checkbox" ${selected.has(q.id) ? 'checked' : ''}
                            onchange="toggleSelect('${q.id}', this.checked)">
                 </td>
-                <td class="col-id" onclick="window.location='/images/${q.id}'" style="cursor:pointer;">${q.id}</td>
-                <td class="col-text" onclick="window.location='/images/${q.id}'" style="cursor:pointer;">${escapeHtml(q.text)}</td>
-                <td onclick="event.stopPropagation()">
+                <td class="col-id"><a href="/images/${q.id}" style="color:inherit;text-decoration:none;font-weight:600;">${q.id}</a></td>
+                <td class="col-text">${escapeHtml(q.text)}</td>
+                <td>
                     <input type="text" class="list-prompt-input" id="prompt-${q.id}"
                            placeholder="Type what image you need..."
                            value="${escapeHtml(q.desc || '')}"
                            style="width:100%;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:0.8rem;">
                 </td>
-                <td class="col-subject">${q.category || q.subject}</td>
-                <td class="col-img-status">
+                <td class="col-img-status" style="text-align:center;">
                     ${q.has_at_image ? '<span class="status-icon approved" title="In Airtable">&#10003;</span>'
-                      : q.has_gen_image ? '<span class="img-status-dot generated" title="AI Generated"></span>'
-                      : '<span class="status-icon pending" title="No image">&mdash;</span>'}
+                      : q.has_gen_image ? `<img src="/generated-images/${q.id}-question.png"
+                           class="list-thumb" onclick="showPreview('${q.id}')"
+                           title="Click to preview" style="width:40px;height:40px;border-radius:4px;object-fit:cover;cursor:pointer;border:1px solid #ddd;">`
+                      : '<span class="status-icon pending">&mdash;</span>'}
+                </td>
+                <td class="col-actions" style="white-space:nowrap;">
+                    ${q.has_gen_image && !q.has_at_image ? `
+                        <button class="action-btn approve-btn" onclick="quickApproveImage('${q.id}')" title="Approve">&#10003;</button>
+                        <button class="action-btn flag-btn" onclick="quickRejectImage('${q.id}')" title="Reject">&#10007;</button>
+                    ` : q.has_at_image ? '<span class="done-label">Done</span>' : ''}
                 </td>
             </tr>
         `).join('');
@@ -201,5 +221,52 @@
         btn.textContent = selected.size ? `Generate Selected (${selected.size})` : 'Generate Selected';
     }
     function escapeHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+    // Preview modal
+    function showPreview(itemId) {
+        const overlay = document.getElementById('preview-modal');
+        const img = document.getElementById('preview-img');
+        const idSpan = document.getElementById('preview-id');
+        img.src = `/generated-images/${itemId}-question.png?t=${Date.now()}`;
+        idSpan.textContent = itemId;
+        overlay.dataset.itemId = itemId;
+        overlay.style.display = 'flex';
+    }
+
+    function hidePreview() {
+        document.getElementById('preview-modal').style.display = 'none';
+    }
+
+    async function quickApproveImage(itemId) {
+        const res = await fetch(`/api/images/approve/${itemId}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({image_type: 'question'})
+        });
+        if ((await res.json()).ok) {
+            const q = ALL_QUESTIONS.find(q => q.id === itemId);
+            if (q) q.img_status = 'approved';
+            renderTable();
+        }
+    }
+
+    function quickRejectImage(itemId) {
+        // Just clear the generated image status so they can regenerate
+        const q = ALL_QUESTIONS.find(q => q.id === itemId);
+        if (q) q.has_gen_image = false;
+        renderTable();
+    }
+
+    async function previewApprove() {
+        const itemId = document.getElementById('preview-modal').dataset.itemId;
+        await quickApproveImage(itemId);
+        hidePreview();
+    }
+
+    function previewReject() {
+        const itemId = document.getElementById('preview-modal').dataset.itemId;
+        quickRejectImage(itemId);
+        hidePreview();
+    }
 </script>
 {% endblock %}
