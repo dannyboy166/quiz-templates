@@ -646,109 +646,109 @@
 
     // ============ TIMELINES ============
     const TIMELINES = {
-      0: [ // INTRO (19.4s)
+      0: [ // INTRO (22.2s)
         { time: 0.0,  action: () => { show('intro-title'); showTeacher(); } },
         { time: 0.1,  action: () => setCallout("Hello! Today we're practising counting.") },
-        { time: 4.3,  action: () => setCallout("Counting means finding out how many there are.") },
-        { time: 8.1,  action: () => { setCallout("You'll see pictures of objects, dots, ten-frames, and blocks — and your job is to count them up."); show('card-objects'); show('card-dots'); show('card-blocks'); } },
-        { time: 16.0, action: () => setCallout("Let's look at the different types of counting questions.") },
+        { time: 5.2,  action: () => setCallout("Counting means finding out how many there are.") },
+        { time: 9.2,  action: () => { setCallout("You'll see pictures of objects, dots, ten-frames, and blocks — and your job is to count them up."); show('card-objects'); show('card-dots'); show('card-blocks'); } },
+        { time: 18.9, action: () => setCallout("Let's look at the different types of counting questions.") },
       ],
 
-      1: [ // COUNTING OBJECTS (40.9s)
+      1: [ // COUNTING OBJECTS (40.7s)
         { time: 0.0,  action: () => show('s1-title') },
         { time: 0.1,  action: () => setCallout("The simplest counting question shows you some objects and asks how many.") },
-        { time: 5.8,  action: () => {
+        { time: 5.3,  action: () => {
           setCallout("You might see questions that say: match the items to the correct number — 8 balls.");
           for (let i = 0; i < 8; i++) setTimeout(() => show('ball-' + i), i * 100);
         }},
-        { time: 16.7, action: () => setCallout("The trick is to count carefully — touch each one as you go.") },
-        { time: 21.9, action: () => setCallout("Don't skip any, and don't count any twice.") },
-        { time: 26.0, action: () => setCallout("Here are some balls.") },
-        { time: 27.9, action: () => {
+        { time: 16.4, action: () => setCallout("The trick is to count carefully — touch each one as you go.") },
+        { time: 21.8, action: () => setCallout("Don't skip any, and don't count any twice.") },
+        { time: 25.7, action: () => setCallout("Here are some balls.") },
+        { time: 27.7, action: () => {
           setCallout("One, two, three, four, five, six, seven, eight.");
           for (let i = 0; i < 8; i++) setTimeout(() => show('num-' + i), i * 400);
         }},
-        { time: 35.5, action: () => { setCallout("There are 8 balls."); show('s1-answer'); } },
-        { time: 37.4, action: () => { setCallout("The last number you say is always the answer."); show('card-touch'); show('card-last'); } },
+        { time: 35.7, action: () => { setCallout("There are 8 balls."); show('s1-answer'); } },
+        { time: 37.6, action: () => { setCallout("The last number you say is always the answer."); show('card-touch'); show('card-last'); } },
       ],
 
-      2: [ // TEN-FRAMES (31.7s)
+      2: [ // TEN-FRAMES (31.9s)
         { time: 0.0,  action: () => show('s2-title') },
         { time: 0.1,  action: () => setCallout("Ten-frames make counting bigger numbers much easier.") },
-        { time: 3.3,  action: () => { setCallout("Each full ten-frame has 10 dots."); show('frame-0'); } },
-        { time: 5.7,  action: () => {
+        { time: 3.5,  action: () => { setCallout("Each full ten-frame has 10 dots."); show('frame-0'); } },
+        { time: 6.4,  action: () => {
           setCallout("To count, start by counting the full frames in tens — 10, 20, 30, 40, 50, 60.");
           for (let i = 0; i < 6; i++) setTimeout(() => show('frame-' + i), i * 300);
         }},
-        { time: 13.7, action: () => { setCallout("Then count on the extra dots in the last frame — 61, 62."); show('frame-6'); } },
-        { time: 18.9, action: () => { setCallout("So there are 62 dots."); show('s2-answer'); } },
-        { time: 20.9, action: () => setCallout("If a question says how many dots altogether, look for ten-frames and count them this way.") },
-        { time: 27.1, action: () => { setCallout("Full frames first in tens, then count on the extras."); show('card-full'); show('card-extras'); } },
+        { time: 13.5, action: () => { setCallout("Then count on the extra dots in the last frame — 61, 62."); show('frame-6'); } },
+        { time: 18.6, action: () => { setCallout("So there are 62 dots."); show('s2-answer'); } },
+        { time: 20.6, action: () => setCallout("If a question says how many dots altogether, look for ten-frames and count them this way.") },
+        { time: 27.2, action: () => { setCallout("Full frames first in tens, then count on the extras."); show('card-full'); show('card-extras'); } },
       ],
 
-      3: [ // MATCH TO AMOUNT (30.0s)
+      3: [ // MATCH TO AMOUNT (29.9s)
         { time: 0.0,  action: () => show('s3-title') },
         { time: 0.1,  action: () => setCallout("Some questions show objects grouped in tens — like pop sticks bundled together.") },
-        { time: 5.7,  action: () => setCallout("Match the items to the correct amount.") },
-        { time: 8.2,  action: () => {
+        { time: 5.8,  action: () => setCallout("Match the items to the correct amount.") },
+        { time: 8.7,  action: () => {
           setCallout("First, count the bundles of ten — four bundles is 40.");
           show('s3-tens');
           for (let i = 0; i < 4; i++) setTimeout(() => show('ten-' + i), i * 200);
           setTimeout(() => show('s3-tens-label'), 1000);
         }},
-        { time: 15.2, action: () => {
+        { time: 15.6, action: () => {
           setCallout("Then count the loose ones — 6 more.");
           show('s3-ones');
           for (let i = 0; i < 6; i++) setTimeout(() => show('one-' + i), i * 120);
           setTimeout(() => show('s3-ones-label'), 900);
         }},
-        { time: 18.5, action: () => { setCallout("40 plus 6 is 46."); show('s3-eq'); } },
-        { time: 22.0, action: () => { setCallout("The bigger the number, the more important it is to count in groups rather than one by one."); show('card-bundles'); show('card-loose'); } },
+        { time: 18.6, action: () => { setCallout("40 plus 6 is 46."); show('s3-eq'); } },
+        { time: 22.1, action: () => { setCallout("The bigger the number, the more important it is to count in groups rather than one by one."); show('card-bundles'); show('card-loose'); } },
       ],
 
-      4: [ // HUNDREDS (40.1s)
+      4: [ // HUNDREDS (37.4s)
         { time: 0.0,  action: () => show('s4-title') },
         { time: 0.1,  action: () => setCallout("For really big numbers, you'll see hundreds blocks too.") },
-        { time: 3.7,  action: () => setCallout("Which answer shows 112 blocks?") },
-        { time: 6.8,  action: () => {
+        { time: 3.6,  action: () => setCallout("Which answer shows 112 blocks?") },
+        { time: 6.4,  action: () => {
           setCallout("Look for 1 hundred, 1 ten, and 2 ones. That's 100 plus 10 plus 2, which is 112.");
           show('s4-hundreds'); show('s4-tens'); show('s4-ones-blocks');
         }},
-        { time: 14.4, action: () => { setCallout("Sometimes the question uses shapes instead — a circle means 100, a square means 10, a triangle means 1."); show('s4-eq1'); } },
-        { time: 22.8, action: () => setCallout("Which answer represents 262?") },
-        { time: 26.6, action: () => { setCallout("2 circles, 6 squares, and 2 triangles — that's 200 plus 60 plus 2."); show('s4-shapes'); } },
-        { time: 35.3, action: () => { setCallout("Count the hundreds first, then the tens, then the ones."); show('card-big-block'); show('card-rod'); } },
+        { time: 14.5, action: () => { setCallout("Sometimes the question uses shapes instead — a circle means 100, a square means 10, a triangle means 1."); show('s4-eq1'); } },
+        { time: 22.1, action: () => setCallout("Which answer represents 262?") },
+        { time: 25.6, action: () => { setCallout("2 circles, 6 squares, and 2 triangles — that's 200 plus 60 plus 2."); show('s4-shapes'); } },
+        { time: 33.0, action: () => { setCallout("Count the hundreds first, then the tens, then the ones."); show('card-big-block'); show('card-rod'); } },
       ],
 
-      5: [ // READING PICTURE (30.6s)
+      5: [ // READING PICTURE (30.9s)
         { time: 0.0,  action: () => show('s5-title') },
         { time: 0.1,  action: () => setCallout("Some questions show a picture with different people and their objects.") },
-        { time: 3.7,  action: () => setCallout("Who has 31 balls?") },
-        { time: 6.2,  action: () => setCallout("You need to count each person's group carefully.") },
-        { time: 9.2,  action: () => {
+        { time: 4.3,  action: () => setCallout("Who has 31 balls?") },
+        { time: 6.4,  action: () => setCallout("You need to count each person's group carefully.") },
+        { time: 9.3,  action: () => {
           setCallout("Jess has 35, Tom has 31, Anna has 25.");
           show('s5-jess'); show('s5-tom'); show('s5-anna');
         }},
-        { time: 15.0, action: () => {
+        { time: 15.1, action: () => {
           setCallout("Tom has 31 — that's the answer.");
           document.getElementById('s5-tom').classList.add('highlight');
         }},
-        { time: 18.2, action: () => setCallout("You might also be asked how many does Jess have, or how many altogether.") },
-        { time: 23.1, action: () => { setCallout("If you see the word altogether, add the groups together to find the total."); show('card-each'); show('card-question'); } },
+        { time: 18.3, action: () => setCallout("You might also be asked how many does Jess have, or how many altogether.") },
+        { time: 23.4, action: () => { setCallout("If you see the word altogether, add the groups together to find the total."); show('card-each'); show('card-question'); } },
       ],
 
-      6: [ // TRUE/FALSE (34.7s)
+      6: [ // TRUE/FALSE (36.1s)
         { time: 0.0,  action: () => show('s6-title') },
         { time: 0.1,  action: () => setCallout("A true or false counting question gives you a number and a picture.") },
-        { time: 4.9,  action: () => { setCallout("There are 45 leaves. True or false?"); show('s6-stmt1'); } },
-        { time: 8.9,  action: () => setCallout("Count the leaves yourself to check.") },
-        { time: 11.2, action: () => { setCallout("If you count 45, it's true."); show('s6-verdict1'); } },
-        { time: 17.1, action: () => { setCallout("Here's another one — if there are 6 full ten-frames and one with 8 dots, there would be 68 dots."); show('s6-stmt2'); } },
-        { time: 25.6, action: () => { setCallout("6 full frames is 60, plus 8 is 68. That's true!"); show('s6-verdict2'); } },
-        { time: 31.9, action: () => { setCallout("Always count carefully before you answer."); show('card-count-it'); show('card-then-check'); } },
+        { time: 4.8,  action: () => { setCallout("There are 45 leaves. True or false?"); show('s6-stmt1'); } },
+        { time: 9.1,  action: () => setCallout("Count the leaves yourself to check.") },
+        { time: 11.5, action: () => { setCallout("If you count 45, it's true."); show('s6-verdict1'); } },
+        { time: 17.4, action: () => { setCallout("Here's another one — if there are 6 full ten-frames and one with 8 dots, there would be 68 dots."); show('s6-stmt2'); } },
+        { time: 26.1, action: () => { setCallout("6 full frames is 60, plus 8 is 68. That's true!"); show('s6-verdict2'); } },
+        { time: 33.2, action: () => { setCallout("Always count carefully before you answer."); show('card-count-it'); show('card-then-check'); } },
       ],
 
-      7: [ // OUTRO (4.2s)
+      7: [ // OUTRO (4.6s)
         { time: 0.0,  action: () => { show('outro-title'); showTeacher(); setCallout("Now it's your turn!"); } },
         { time: 1.7,  action: () => { setCallout("Try some counting questions yourself."); show('try-btn'); } },
       ],
