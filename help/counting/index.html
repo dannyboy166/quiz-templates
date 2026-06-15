@@ -247,18 +247,25 @@
     }
     .block-group.visible { opacity: 1; }
     .hundred-block {
-      width: 50px; height: 50px; background: #667eea; border: 2px solid #4a5dbd;
-      border-radius: 4px; display: grid; grid-template-columns: repeat(5, 1fr);
-      grid-template-rows: repeat(5, 1fr); gap: 1px; padding: 2px;
+      width: 60px; height: 60px; background: #667eea; border: 2px solid #4a5dbd;
+      border-radius: 2px; display: grid; grid-template-columns: repeat(10, 1fr);
+      grid-template-rows: repeat(10, 1fr); gap: 1px; padding: 1px;
     }
-    .hundred-block .cell { background: rgba(255,255,255,0.3); border-radius: 1px; }
+    .hundred-block .cell {
+      background: rgba(255,255,255,0.35); border-radius: 0;
+    }
     .ten-rod {
-      width: 14px; height: 50px; background: #e74c3c; border: 2px solid #c0392b;
-      border-radius: 3px;
+      width: 14px; height: 60px; background: #e74c3c; border: 2px solid #c0392b;
+      border-radius: 2px; position: relative;
+      background-image: repeating-linear-gradient(
+        180deg,
+        transparent 0px, transparent 4px,
+        rgba(255,255,255,0.4) 4px, rgba(255,255,255,0.4) 5px
+      );
     }
     .one-cube {
       width: 14px; height: 14px; background: #F5A623; border: 2px solid #d4891a;
-      border-radius: 2px;
+      border-radius: 1px;
     }
     .block-label {
       font-size: 13px; font-weight: 600; color: #555; margin-top: 4px;
@@ -625,9 +632,9 @@
       onesGroup.appendChild(b);
     }
 
-    // Build scene 4: hundred block cells
+    // Build scene 4: hundred block cells (10x10 = 100)
     const hBlock = document.getElementById('s4-h1');
-    for (let i = 0; i < 25; i++) {
+    for (let i = 0; i < 100; i++) {
       const cell = document.createElement('div');
       cell.className = 'cell';
       hBlock.appendChild(cell);
@@ -706,18 +713,18 @@
         { time: 22.1, action: () => { setCallout("The bigger the number, the more important it is to count in groups rather than one by one."); show('card-bundles'); show('card-loose'); } },
       ],
 
-      4: [ // HUNDREDS (37.4s)
+      4: [ // HUNDREDS (39.4s)
         { time: 0.0,  action: () => show('s4-title') },
         { time: 0.1,  action: () => setCallout("For really big numbers, you'll see hundreds blocks too.") },
-        { time: 3.6,  action: () => setCallout("Which answer shows 112 blocks?") },
+        { time: 3.3,  action: () => setCallout("Which answer shows 112 blocks?") },
         { time: 6.4,  action: () => {
           setCallout("Look for 1 hundred, 1 ten, and 2 ones. That's 100 plus 10 plus 2, which is 112.");
           show('s4-hundreds'); show('s4-tens'); show('s4-ones-blocks');
         }},
-        { time: 14.5, action: () => { setCallout("Sometimes the question uses shapes instead — a circle means 100, a square means 10, a triangle means 1."); show('s4-eq1'); } },
-        { time: 22.1, action: () => setCallout("Which answer represents 262?") },
-        { time: 25.6, action: () => { setCallout("2 circles, 6 squares, and 2 triangles — that's 200 plus 60 plus 2."); show('s4-shapes'); } },
-        { time: 33.0, action: () => { setCallout("Count the hundreds first, then the tens, then the ones."); show('card-big-block'); show('card-rod'); } },
+        { time: 13.7, action: () => { setCallout("Sometimes the question uses shapes instead — a circle means 100, a square means 10, a triangle means 1."); show('s4-eq1'); } },
+        { time: 22.5, action: () => setCallout("Which answer represents 262?") },
+        { time: 26.3, action: () => { setCallout("2 circles, 6 squares, and 2 triangles — that's 200 plus 60 plus 2."); show('s4-shapes'); } },
+        { time: 34.7, action: () => { setCallout("Count the hundreds first, then the tens, then the ones."); show('card-big-block'); show('card-rod'); } },
       ],
 
       5: [ // READING PICTURE (30.9s)
@@ -737,15 +744,15 @@
         { time: 23.4, action: () => { setCallout("If you see the word altogether, add the groups together to find the total."); show('card-each'); show('card-question'); } },
       ],
 
-      6: [ // TRUE/FALSE (36.1s)
+      6: [ // TRUE/FALSE (36.4s)
         { time: 0.0,  action: () => show('s6-title') },
         { time: 0.1,  action: () => setCallout("A true or false counting question gives you a number and a picture.") },
-        { time: 4.8,  action: () => { setCallout("There are 45 leaves. True or false?"); show('s6-stmt1'); } },
-        { time: 9.1,  action: () => setCallout("Count the leaves yourself to check.") },
-        { time: 11.5, action: () => { setCallout("If you count 45, it's true."); show('s6-verdict1'); } },
-        { time: 17.4, action: () => { setCallout("Here's another one — if there are 6 full ten-frames and one with 8 dots, there would be 68 dots."); show('s6-stmt2'); } },
-        { time: 26.1, action: () => { setCallout("6 full frames is 60, plus 8 is 68. That's true!"); show('s6-verdict2'); } },
-        { time: 33.2, action: () => { setCallout("Always count carefully before you answer."); show('card-count-it'); show('card-then-check'); } },
+        { time: 4.1,  action: () => { setCallout("There are 45 leaves. True or false?"); show('s6-stmt1'); } },
+        { time: 8.4,  action: () => setCallout("Count the leaves yourself to check.") },
+        { time: 10.9, action: () => { setCallout("If you count 45, it's true."); show('s6-verdict1'); } },
+        { time: 17.1, action: () => { setCallout("Here's another one — if there are 6 full ten-frames and one with 8 dots, there would be 68 dots."); show('s6-stmt2'); } },
+        { time: 26.2, action: () => { setCallout("6 full frames is 60, plus 8 is 68. That's true!"); show('s6-verdict2'); } },
+        { time: 33.4, action: () => { setCallout("Always count carefully before you answer."); show('card-count-it'); show('card-then-check'); } },
       ],
 
       7: [ // OUTRO (4.6s)
