@@ -69,10 +69,11 @@ def generate_image(prompt, output_path, size="1024x1024", quality="high"):
 
     response = client.images.generate(
         model="gpt-image-1",
-        prompt=prompt,
+        prompt=prompt[:4000],  # OpenAI prompt length limit
         n=1,
         size=size,
         quality=quality,
+        timeout=120,  # 2 min timeout per image
     )
 
     image_data = base64.b64decode(response.data[0].b64_json)

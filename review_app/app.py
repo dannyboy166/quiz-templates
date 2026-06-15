@@ -514,6 +514,7 @@ def create_app():
                     update_image_item_state(image_state, item_id, **img_st)
                     time.sleep(1)  # OpenAI rate limit
                 except Exception as e:
+                    print(f"  Image generation error for {item_id}: {e}")
                     with img_bulk_lock:
                         img_bulk_status["errors"].append({"item_id": item_id, "error": str(e)})
 

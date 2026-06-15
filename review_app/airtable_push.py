@@ -81,6 +81,8 @@ def get_table_for_question(q):
 
 
 def _headers():
+    if not AIRTABLE_TOKEN:
+        raise Exception("AIRTABLE_TOKEN not set — cannot push images")
     return {
         "Authorization": f"Bearer {AIRTABLE_TOKEN}",
         "Content-Type": "application/json",
@@ -112,7 +114,9 @@ def find_record(table_id, item_id):
         data = resp.json()
         for r in data["records"]:
             rid = str(r["fields"].get("Which Question it refers to", "")).strip()
-            if rid == item_id:
+            # Normalize: strip leading zeros to match spreadsheet format
+            rid_normalized = rid.lstrip("0") or rid
+            if rid_normalized == item_id or rid == item_id:
                 return r
 
         offset = data.get("offset")

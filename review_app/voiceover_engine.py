@@ -1,7 +1,6 @@
 """Wrapper around generate_voiceovers.py functions for the review app."""
 
 import os
-import sys
 from pathlib import Path
 
 import requests
