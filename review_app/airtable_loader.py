@@ -170,9 +170,11 @@ def load_airtable_images():
         # Process records
         for r in records:
             f = r["fields"]
-            item_id = str(f.get("Which Question it refers to", "")).strip()
-            if not item_id:
+            raw_id = str(f.get("Which Question it refers to", "")).strip()
+            if not raw_id:
                 continue
+            # Normalize: strip leading zeros to match spreadsheet format
+            item_id = raw_id.lstrip("0") or raw_id
 
             # Question image — check multiple possible column names
             q_img = (_get_attachment_info(f.get("Question Image SVG"))
