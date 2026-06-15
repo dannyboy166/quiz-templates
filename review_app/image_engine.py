@@ -33,7 +33,9 @@ def _get_client():
 
 STYLE_SUFFIX = (
     "Simple, colorful cartoon illustration style suitable for children ages 5-12. "
-    "White or plain background. No text, no writing, no numbers, no letters, no labels."
+    "White or plain background. "
+    "IMPORTANT: Do NOT include any text, words, letters, numbers, or labels anywhere in the image. "
+    "The image must contain ONLY illustrations, no writing of any kind."
 )
 
 

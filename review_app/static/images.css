@@ -38,7 +38,7 @@
 .image-preview-section h3 { margin-bottom: 0.75rem; }
 
 .image-preview {
-    max-width: 512px; border-radius: 10px; border: 2px solid var(--card-border);
+    max-width: 100%; width: 400px; border-radius: 10px; border: 2px solid var(--card-border);
     display: block;
 }
 .image-preview:hover { border-color: var(--primary); }
