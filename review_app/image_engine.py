@@ -60,10 +60,10 @@ def build_answer_prompt(q, option_num, option_text):
     return option_text
 
 
-def generate_image(prompt, output_path, size="1024x1024", quality="low"):
+def generate_image(prompt, output_path, size="1024x1024", quality="high"):
     """Generate an image via OpenAI API and save to output_path.
 
-    Returns file size in bytes. Uses quality='low' by default ($0.02/image).
+    Returns file size in bytes. Uses quality='high' ($0.08/image) for best results.
     """
     client = _get_client()
 
