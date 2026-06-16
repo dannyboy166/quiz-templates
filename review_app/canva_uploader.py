@@ -186,13 +186,14 @@ def clean_prompt_for_name(prompt):
     """Strip boilerplate from AI prompt to get a short image description.
 
     Georgia's style: '50 stars in square with word 50', '125 on an abacus'
-    Our prompts: 'A simple, clear, colorful cartoon illustration... White background, no text...'
     """
     if not prompt:
         return ""
     import re
     # Remove common boilerplate phrases from OpenAI prompts
     boilerplate = [
+        r"We are making images for a children'?s educational quiz\.?\s*",
+        r"Make a simple,? ?colorful cartoon image for this question:\s*",
         r"A simple,? ?clear,? ?colorful cartoon illustration for a children'?s educational quiz[^.]*\.\s*",
         r"A simple,? ?clear,? ?colorful cartoon illustration[^.]*\.\s*",
         r"A simple cartoon illustration[^.]*\.\s*",
@@ -200,6 +201,7 @@ def clean_prompt_for_name(prompt):
         r"White background,?\s*no text[^.]*\.?\s*",
         r"No text,?\s*no labels[^.]*\.?\s*",
         r"\(ages \d+-\d+\)\.?\s*",
+        r"child-?friendly style\.?\s*",
     ]
     text = prompt
     for pattern in boilerplate:
