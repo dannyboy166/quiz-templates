@@ -170,7 +170,11 @@ def upload_image_from_url(image_url, name):
         except Exception:
             error_body = resp.text
         print(f"  Canva API error {resp.status_code}: {error_body}")
-        print(f"  Request was: name={name!r}, url={image_url!r}")
+
+        # "already exists" means it uploaded successfully before — not a real error
+        if isinstance(error_body, dict) and "already exists" in error_body.get("message", ""):
+            return None, "already_uploaded"
+
         raise RuntimeError(f"Canva API {resp.status_code}: {error_body}")
 
     result = resp.json()
