@@ -164,7 +164,15 @@ def upload_image_from_url(image_url, name):
         "url": image_url,
     }, timeout=60)
 
-    resp.raise_for_status()
+    if not resp.ok:
+        try:
+            error_body = resp.json()
+        except Exception:
+            error_body = resp.text
+        print(f"  Canva API error {resp.status_code}: {error_body}")
+        print(f"  Request was: name={name!r}, url={image_url!r}")
+        raise RuntimeError(f"Canva API {resp.status_code}: {error_body}")
+
     result = resp.json()
     job = result.get("job", {})
     return job.get("id"), job.get("status")
