@@ -40,6 +40,7 @@
         <span class="filter-count" id="filter-count"></span>
     </div>
 
+    <div id="canva-status-banner"></div>
     <div class="progress-summary" id="progress-summary" style="margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-muted);"></div>
 
     <div class="detail-card" style="margin-bottom: 1rem; padding: 1rem;">
@@ -116,6 +117,16 @@
     if (params.has('status')) document.getElementById('filter-status').value = params.get('status');
 
     applyFilters();
+
+    // Check Canva connection status
+    fetch('/api/canva/status').then(r => r.json()).then(data => {
+        const banner = document.getElementById('canva-status-banner');
+        if (data.connected) {
+            banner.innerHTML = '<div style="background:#efe;border:1px solid #cfc;padding:8px 14px;border-radius:6px;margin-bottom:1rem;font-size:0.9rem;">Canva connected — approved images auto-upload to Canva</div>';
+        } else {
+            banner.innerHTML = '<div style="background:#fff3cd;border:1px solid #ffc107;padding:8px 14px;border-radius:6px;margin-bottom:1rem;font-size:0.9rem;">Canva not connected — <a href="/canva/auth">click here to connect</a> so approved images upload automatically</div>';
+        }
+    }).catch(() => {});
 
     function applyFilters() {
         const subject = document.getElementById('filter-subject').value;

@@ -621,9 +621,24 @@ def create_app():
     def canva_auth():
         """Start Canva OAuth flow — Georgia visits this once to connect."""
         if canva_uploader.is_connected():
-            return """<h2>Canva is connected!</h2>
+            return """<!DOCTYPE html><html><head><title>Canva Connected</title>
+            <style>body{font-family:system-ui;max-width:500px;margin:60px auto;text-align:center}
+            .btn{display:inline-block;padding:10px 20px;border-radius:6px;text-decoration:none;margin:8px}
+            .btn-primary{background:#4CAF50;color:white}.btn-secondary{background:#eee;color:#333}
+            </style></head><body>
+            <h2>Canva is connected!</h2>
             <p>Images will auto-upload to Canva when you approve them.</p>
-            <a href="/images">Back to Images</a>"""
+            <a class="btn btn-primary" href="/images">Back to Images</a>
+            <br><a class="btn btn-secondary" href="/canva/disconnect">Disconnect &amp; Reconnect</a>
+            </body></html>"""
+
+        if not canva_uploader.get_client_id():
+            return """<!DOCTYPE html><html><head><title>Canva Not Configured</title>
+            <style>body{font-family:system-ui;max-width:500px;margin:60px auto;text-align:center}
+            </style></head><body>
+            <h2>Canva not configured</h2>
+            <p>Missing CANVA_CLIENT_ID environment variable. Add it in Railway.</p>
+            </body></html>""", 500
 
         domain = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "localhost:5050")
         scheme = "https" if "railway" in domain else "http"
@@ -637,24 +652,38 @@ def create_app():
         """Handle Canva OAuth callback — exchange code for tokens."""
         error = request.args.get("error")
         if error:
-            return f"""<h2>Canva authorization failed</h2>
-            <p>Error: {error}</p>
-            <a href="/canva/auth">Try again</a>""", 400
+            error_desc = request.args.get("error_description", error)
+            return f"""<!DOCTYPE html><html><head><title>Canva Error</title>
+            <style>body{{font-family:system-ui;max-width:500px;margin:60px auto;text-align:center}}
+            .error{{background:#fee;border:1px solid #fcc;padding:16px;border-radius:8px;margin:20px 0}}
+            .btn{{display:inline-block;padding:10px 20px;background:#4CAF50;color:white;
+            border-radius:6px;text-decoration:none}}</style></head><body>
+            <h2>Canva authorization failed</h2>
+            <div class="error">{error_desc}</div>
+            <a class="btn" href="/canva/auth">Try again</a>
+            </body></html>""", 400
 
         code = request.args.get("code")
         state = request.args.get("state")
 
         if not code:
-            return "<h2>Missing authorization code</h2>", 400
+            return """<!DOCTYPE html><html><body>
+            <h2>Missing authorization code</h2>
+            <a href="/canva/auth">Try again</a></body></html>""", 400
 
-        # Verify state matches
+        # Verify state matches (CSRF protection)
         expected_state = canva_oauth_state.get("state")
         if state != expected_state:
-            return "<h2>State mismatch — possible CSRF. Try again.</h2>", 403
+            print(f"  [Canva] State mismatch: got={state}, expected={expected_state}")
+            return """<!DOCTYPE html><html><body>
+            <h2>State mismatch — please try again</h2>
+            <a href="/canva/auth">Retry authorization</a></body></html>""", 403
 
         code_verifier = canva_oauth_state.get("code_verifier")
         if not code_verifier:
-            return "<h2>Missing code verifier — try again.</h2>", 400
+            return """<!DOCTYPE html><html><body>
+            <h2>Session expired — please try again</h2>
+            <a href="/canva/auth">Retry authorization</a></body></html>""", 400
 
         domain = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "localhost:5050")
         scheme = "https" if "railway" in domain else "http"
@@ -662,13 +691,32 @@ def create_app():
 
         try:
             canva_uploader.exchange_code(code, code_verifier, redirect_uri)
-            return """<h2>Canva connected!</h2>
-            <p>Images will now auto-upload to Canva when you approve them.</p>
-            <a href="/images">Go to Images</a>"""
+            return """<!DOCTYPE html><html><head><title>Canva Connected</title>
+            <style>body{font-family:system-ui;max-width:500px;margin:60px auto;text-align:center}
+            .success{background:#efe;border:1px solid #cfc;padding:16px;border-radius:8px;margin:20px 0}
+            .btn{display:inline-block;padding:10px 20px;background:#4CAF50;color:white;
+            border-radius:6px;text-decoration:none}</style></head><body>
+            <h2>Canva connected!</h2>
+            <div class="success">Images will now auto-upload to Canva when you approve them.</div>
+            <a class="btn" href="/images">Go to Images</a>
+            </body></html>"""
         except Exception as e:
-            return f"""<h2>Token exchange failed</h2>
-            <p>Error: {e}</p>
-            <a href="/canva/auth">Try again</a>""", 500
+            print(f"  [Canva] Token exchange error: {e}")
+            return f"""<!DOCTYPE html><html><head><title>Canva Error</title>
+            <style>body{{font-family:system-ui;max-width:500px;margin:60px auto;text-align:center}}
+            .error{{background:#fee;border:1px solid #fcc;padding:16px;border-radius:8px;margin:20px 0;
+            word-break:break-word}}.btn{{display:inline-block;padding:10px 20px;background:#4CAF50;
+            color:white;border-radius:6px;text-decoration:none}}</style></head><body>
+            <h2>Connection failed</h2>
+            <div class="error">{e}</div>
+            <a class="btn" href="/canva/auth">Try again</a>
+            </body></html>""", 500
+
+    @app.route("/canva/disconnect")
+    def canva_disconnect():
+        """Disconnect Canva — delete tokens and allow re-authorization."""
+        canva_uploader.disconnect()
+        return redirect("/canva/auth")
 
     @app.route("/api/canva/status")
     def api_canva_status():
