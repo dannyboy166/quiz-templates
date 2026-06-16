@@ -9,7 +9,7 @@ from pathlib import Path
 
 from flask import (
     Flask, render_template, jsonify, request,
-    send_from_directory, abort,
+    send_from_directory, abort, redirect,
 )
 
 from .spreadsheet_loader import load_all_questions, TEMPLATE_NAMES
@@ -39,6 +39,7 @@ from .airtable_push import (
     push_question_image as at_push_question,
     push_answer_image as at_push_answer,
 )
+from . import canva_uploader
 
 # Bulk generation state (voiceovers)
 bulk_status = {
@@ -445,7 +446,7 @@ def create_app():
 
     @app.route("/api/images/approve/<item_id>", methods=["POST"])
     def api_approve_image(item_id):
-        """Approve an image AND push it to Airtable in one step."""
+        """Approve an image AND push it to Canva in one step."""
         q = questions.get(item_id)
         if not q:
             return jsonify({"error": "Question not found"}), 404
@@ -465,33 +466,47 @@ def create_app():
         img_st["flag_note"] = ""
         update_image_item_state(image_state, item_id, **img_st)
 
-        # Push to Airtable automatically
+        # Build public URL for the image
         domain = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "localhost:5050")
         scheme = "https" if "railway" in domain else "http"
-        push_error = None
 
-        try:
-            if image_type == "question":
-                filename = f"{item_id}-question.png"
-                image_url = f"{scheme}://{domain}/generated-images/{filename}"
-                table_name, record_id, msg = at_push_question(q, image_url, airtable_images)
-                img_st["question_image"]["pushed_at"] = img_now_iso()
-            elif image_type == "answer" and option_num:
-                filename = f"{item_id}-answer{option_num}.png"
-                image_url = f"{scheme}://{domain}/generated-images/{filename}"
-                table_name, record_id, msg = at_push_answer(q, int(option_num), image_url, airtable_images)
-                ans = img_st["answer_images"].setdefault(str(option_num), {})
-                ans["pushed_at"] = img_now_iso()
+        canva_error = None
+        canva_uploaded = False
 
-            update_image_item_state(image_state, item_id, **img_st)
-        except Exception as e:
-            push_error = str(e)
-            print(f"  Airtable push error for {item_id}: {e}")
+        # Push to Canva if connected
+        if canva_uploader.is_connected():
+            try:
+                if image_type == "question":
+                    filename = f"{item_id}-question.png"
+                    image_url = f"{scheme}://{domain}/generated-images/{filename}"
+                    prompt = img_st["question_image"].get("prompt", q.get("question_text", ""))
+                    asset_name = canva_uploader.build_asset_name(item_id, prompt)
+                    job_id, status = canva_uploader.upload_image_from_url(image_url, asset_name)
+                    img_st["question_image"]["canva_pushed_at"] = img_now_iso()
+                    canva_uploaded = True
+                elif image_type == "answer" and option_num:
+                    filename = f"{item_id}-answer{option_num}.png"
+                    image_url = f"{scheme}://{domain}/generated-images/{filename}"
+                    ans_state = img_st["answer_images"].get(str(option_num), {})
+                    prompt = ans_state.get("prompt", q.get(f"option{option_num}", f"Answer {option_num}"))
+                    asset_name = canva_uploader.build_asset_name(f"{item_id}-answer{option_num}", prompt)
+                    job_id, status = canva_uploader.upload_image_from_url(image_url, asset_name)
+                    ans = img_st["answer_images"].setdefault(str(option_num), {})
+                    ans["canva_pushed_at"] = img_now_iso()
+                    canva_uploaded = True
+
+                update_image_item_state(image_state, item_id, **img_st)
+                print(f"  Canva upload for {item_id}: job={job_id} status={status}")
+            except Exception as e:
+                canva_error = str(e)
+                print(f"  Canva upload error for {item_id}: {e}")
+        else:
+            canva_error = "Not connected to Canva — visit /canva/auth to connect"
 
         return jsonify({
             "ok": True,
-            "pushed": push_error is None,
-            "push_error": push_error,
+            "canva_uploaded": canva_uploaded,
+            "canva_error": canva_error,
         })
 
     @app.route("/api/images/flag/<item_id>", methods=["POST"])
@@ -596,6 +611,69 @@ def create_app():
             return jsonify({"ok": True, "count": len(fresh)})
         except Exception as e:
             return jsonify({"error": str(e)}), 500
+
+    # --- Canva OAuth routes ---
+
+    # In-memory store for OAuth state (code_verifier, state param)
+    canva_oauth_state = {}
+
+    @app.route("/canva/auth")
+    def canva_auth():
+        """Start Canva OAuth flow — Georgia visits this once to connect."""
+        if canva_uploader.is_connected():
+            return """<h2>Canva is connected!</h2>
+            <p>Images will auto-upload to Canva when you approve them.</p>
+            <a href="/images">Back to Images</a>"""
+
+        domain = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "localhost:5050")
+        scheme = "https" if "railway" in domain else "http"
+        redirect_uri = f"{scheme}://{domain}/canva/callback"
+
+        auth_url = canva_uploader.get_auth_url(redirect_uri, canva_oauth_state)
+        return redirect(auth_url)
+
+    @app.route("/canva/callback")
+    def canva_callback():
+        """Handle Canva OAuth callback — exchange code for tokens."""
+        error = request.args.get("error")
+        if error:
+            return f"""<h2>Canva authorization failed</h2>
+            <p>Error: {error}</p>
+            <a href="/canva/auth">Try again</a>""", 400
+
+        code = request.args.get("code")
+        state = request.args.get("state")
+
+        if not code:
+            return "<h2>Missing authorization code</h2>", 400
+
+        # Verify state matches
+        expected_state = canva_oauth_state.get("state")
+        if state != expected_state:
+            return "<h2>State mismatch — possible CSRF. Try again.</h2>", 403
+
+        code_verifier = canva_oauth_state.get("code_verifier")
+        if not code_verifier:
+            return "<h2>Missing code verifier — try again.</h2>", 400
+
+        domain = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "localhost:5050")
+        scheme = "https" if "railway" in domain else "http"
+        redirect_uri = f"{scheme}://{domain}/canva/callback"
+
+        try:
+            canva_uploader.exchange_code(code, code_verifier, redirect_uri)
+            return """<h2>Canva connected!</h2>
+            <p>Images will now auto-upload to Canva when you approve them.</p>
+            <a href="/images">Go to Images</a>"""
+        except Exception as e:
+            return f"""<h2>Token exchange failed</h2>
+            <p>Error: {e}</p>
+            <a href="/canva/auth">Try again</a>""", 500
+
+    @app.route("/api/canva/status")
+    def api_canva_status():
+        """Check if Canva is connected."""
+        return jsonify({"connected": canva_uploader.is_connected()})
 
     # --- Image bulk worker ---
 
