@@ -256,10 +256,9 @@
             const q = ALL_QUESTIONS.find(q => q.id === itemId);
             if (q) {
                 q.img_status = 'approved';
-                q.has_at_image = data.pushed;
             }
-            if (data.push_error) {
-                alert('Approved but Airtable push failed: ' + data.push_error);
+            if (data.canva_error) {
+                alert('Approved but Canva upload failed: ' + data.canva_error);
             }
             renderTable();
         }

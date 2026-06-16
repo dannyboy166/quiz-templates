@@ -86,10 +86,10 @@ async function approveImage(itemId, imageType, optionNum) {
         const badge = document.querySelector('.status-badge');
         if (badge) {
             badge.className = 'status-badge status-approved';
-            badge.textContent = data.pushed ? 'Approved + Pushed to Airtable' : 'Approved';
+            badge.textContent = data.canva_uploaded ? 'Approved + Sent to Canva' : 'Approved';
         }
-        if (data.push_error) {
-            alert('Approved but Airtable push failed: ' + data.push_error);
+        if (data.canva_error) {
+            alert('Approved but Canva upload failed: ' + data.canva_error);
         }
     }
 }
