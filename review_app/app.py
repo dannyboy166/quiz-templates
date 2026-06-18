@@ -1023,7 +1023,7 @@ def _questions_for_image_client(questions_list, image_state, at_images):
             "idx": idx,  # preserve spreadsheet order
             "id": item_id,
             "text": q["question_text"][:80],
-            "desc": q.get("image_description", "")[:80],
+            "desc": q.get("notes", "")[:80],
             "subject": q["subject"],
             "category": q.get("category", ""),
             "topic": q["topic"],

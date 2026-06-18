@@ -42,9 +42,9 @@ def build_question_prompt(q, airtable_desc=None):
     if airtable_desc:
         desc = airtable_desc.strip()
 
-    # Fall back to spreadsheet ImageDescription
+    # Fall back to spreadsheet Notes column
     if not desc:
-        desc = q.get("image_description", "").strip()
+        desc = q.get("notes", "").strip()
 
     # No description — empty prompt for Georgia to fill in
     if not desc:
