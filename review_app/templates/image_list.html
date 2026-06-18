@@ -258,21 +258,35 @@
     }
 
     async function quickApproveImage(itemId) {
-        const res = await fetch(`/api/images/approve/${itemId}`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({image_type: 'question'})
-        });
-        const data = await res.json();
-        if (data.ok) {
-            const q = ALL_QUESTIONS.find(q => q.id === itemId);
-            if (q) {
-                q.img_status = 'approved';
+        // Show sending state
+        const btn = event && event.target ? event.target : null;
+        if (btn) { btn.disabled = true; btn.textContent = '...'; }
+
+        try {
+            const res = await fetch(`/api/images/approve/${itemId}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({image_type: 'question'})
+            });
+            const data = await res.json();
+            if (data.ok) {
+                const q = ALL_QUESTIONS.find(q => q.id === itemId);
+                if (q) {
+                    q.img_status = 'approved';
+                    q.has_at_image = true;
+                }
+                if (data.canva_error) {
+                    alert('Approved but Canva upload failed: ' + data.canva_error);
+                } else if (data.canva_uploaded) {
+                    if (btn) { btn.textContent = 'Sent!'; btn.style.background = '#4CAF50'; btn.style.color = 'white'; }
+                    setTimeout(() => renderTable(), 800);
+                    return;
+                }
+                renderTable();
             }
-            if (data.canva_error) {
-                alert('Approved but Canva upload failed: ' + data.canva_error);
-            }
-            renderTable();
+        } catch (e) {
+            alert('Error: ' + e.message);
+            if (btn) { btn.disabled = false; btn.textContent = '✓'; }
         }
     }
 
