@@ -23,10 +23,17 @@ import requests
 AUTH_URL = "https://www.canva.com/api/oauth/authorize"
 TOKEN_URL = "https://api.canva.com/rest/v1/oauth/token"
 URL_ASSET_UPLOAD_URL = "https://api.canva.com/rest/v1/url-asset-uploads"
+GET_UPLOAD_JOB_URL = "https://api.canva.com/rest/v1/url-asset-uploads"  # GET {id}
+FOLDERS_URL = "https://api.canva.com/rest/v1/folders"
+MOVE_ITEM_URL = "https://api.canva.com/rest/v1/folders/move"
 
 # Token storage on Railway volume (persists across deploys)
 DATA_DIR = Path(os.environ.get("DATA_DIR", "data/voiceovers"))
 TOKEN_FILE = DATA_DIR / "canva_tokens.json"
+FOLDER_ID_FILE = DATA_DIR / "canva_folder_id.txt"
+
+# Target folder name in Canva
+CANVA_FOLDER_NAME = "WorldWise Images"
 
 
 def get_client_id():
@@ -106,7 +113,7 @@ def get_auth_url(redirect_uri, state_store):
     params = {
         "code_challenge": challenge,
         "code_challenge_method": "s256",
-        "scope": "asset:read asset:write",
+        "scope": "asset:read asset:write folder:read folder:write",
         "response_type": "code",
         "client_id": get_client_id(),
         "state": state,
@@ -250,7 +257,118 @@ def upload_image_from_url(image_url, name):
     status = job.get("status", "unknown")
     job_id = job.get("id")
     print(f"  [Canva] Upload job={job_id} status={status}")
+
+    # Try to get the asset ID and move to folder
+    asset_id = None
+    if job.get("asset"):
+        asset_id = job["asset"].get("id")
+    elif job_id and status == "in_progress":
+        # Poll for completion to get asset ID
+        asset_id = _poll_upload_job(job_id)
+
+    if asset_id:
+        _move_to_folder(asset_id)
+
     return job_id, status
+
+
+# ---------------------------------------------------------------------------
+# Upload job polling
+# ---------------------------------------------------------------------------
+
+def _poll_upload_job(job_id, max_attempts=5):
+    """Poll an upload job until complete, return asset ID or None."""
+    access_token = _get_access_token()
+    for attempt in range(max_attempts):
+        time.sleep(2)
+        resp = requests.get(f"{GET_UPLOAD_JOB_URL}/{job_id}", headers={
+            "Authorization": f"Bearer {access_token}",
+        }, timeout=30)
+        if resp.ok:
+            job = resp.json().get("job", {})
+            if job.get("status") == "success" and job.get("asset"):
+                asset_id = job["asset"]["id"]
+                print(f"  [Canva] Upload complete, asset_id={asset_id}")
+                return asset_id
+            elif job.get("status") == "failed":
+                print(f"  [Canva] Upload job failed: {job.get('error')}")
+                return None
+    print(f"  [Canva] Upload job still processing after {max_attempts} polls, skipping folder move")
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Folder management
+# ---------------------------------------------------------------------------
+
+def _get_folder_id():
+    """Get the WorldWise Images folder ID, creating it if needed."""
+    # Check cached folder ID
+    if FOLDER_ID_FILE.exists():
+        folder_id = FOLDER_ID_FILE.read_text().strip()
+        if folder_id:
+            return folder_id
+
+    access_token = _get_access_token()
+
+    # Search for existing folder
+    resp = requests.get(FOLDERS_URL, headers={
+        "Authorization": f"Bearer {access_token}",
+    }, params={"query": CANVA_FOLDER_NAME}, timeout=30)
+
+    if resp.ok:
+        items = resp.json().get("items", [])
+        for item in items:
+            if item.get("folder", {}).get("name") == CANVA_FOLDER_NAME:
+                folder_id = item["folder"]["id"]
+                FOLDER_ID_FILE.parent.mkdir(parents=True, exist_ok=True)
+                FOLDER_ID_FILE.write_text(folder_id)
+                print(f"  [Canva] Found existing folder: {CANVA_FOLDER_NAME} ({folder_id})")
+                return folder_id
+
+    # Create new folder
+    print(f"  [Canva] Creating folder: {CANVA_FOLDER_NAME}")
+    resp = requests.post(FOLDERS_URL, headers={
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json",
+    }, json={
+        "name": CANVA_FOLDER_NAME,
+        "parent_folder_id": "root",
+    }, timeout=30)
+
+    if resp.ok:
+        folder = resp.json().get("folder", {})
+        folder_id = folder.get("id")
+        if folder_id:
+            FOLDER_ID_FILE.parent.mkdir(parents=True, exist_ok=True)
+            FOLDER_ID_FILE.write_text(folder_id)
+            print(f"  [Canva] Created folder: {CANVA_FOLDER_NAME} ({folder_id})")
+            return folder_id
+
+    print(f"  [Canva] Could not create folder: {resp.status_code} {resp.text}")
+    return None
+
+
+def _move_to_folder(asset_id):
+    """Move an asset to the WorldWise Images folder."""
+    folder_id = _get_folder_id()
+    if not folder_id:
+        print(f"  [Canva] No folder ID — skipping move")
+        return
+
+    access_token = _get_access_token()
+    resp = requests.post(MOVE_ITEM_URL, headers={
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json",
+    }, json={
+        "item_id": asset_id,
+        "to_folder_id": folder_id,
+    }, timeout=30)
+
+    if resp.status_code == 204:
+        print(f"  [Canva] Moved to {CANVA_FOLDER_NAME} folder")
+    else:
+        print(f"  [Canva] Move failed: {resp.status_code} {resp.text}")
 
 
 # ---------------------------------------------------------------------------
