@@ -123,6 +123,17 @@
     if (params.get('subject')) document.getElementById('filter-subject').value = params.get('subject');
     if (params.get('sheet')) document.getElementById('filter-sheet').value = params.get('sheet');
     if (params.has('status')) document.getElementById('filter-status').value = params.get('status');
+    if (params.get('topic')) {
+        // Topic dropdown gets populated in applyFilters, so set it after
+        setTimeout(() => {
+            const topicEl = document.getElementById('filter-topic');
+            if (topicEl) topicEl.value = params.get('topic');
+            applyFilters();
+        }, 0);
+    }
+    if (params.get('search')) document.getElementById('filter-search').value = params.get('search');
+    if (params.get('page')) currentPage = parseInt(params.get('page')) || 1;
+    if (params.get('size')) document.getElementById('image-size').value = params.get('size');
 
     applyFilters();
 
@@ -141,7 +152,19 @@
         const topic = document.getElementById('filter-topic').value;
         const sheet = document.getElementById('filter-sheet').value;
         const status = document.getElementById('filter-status').value;
-        const search = document.getElementById('filter-search').value.toLowerCase();
+        const search = document.getElementById('filter-search').value.toLowerCase().trim();
+        const imgSize = document.getElementById('image-size')?.value || '';
+
+        // Save filters to URL so refresh preserves them
+        const p = new URLSearchParams();
+        if (subject) p.set('subject', subject);
+        if (topic) p.set('topic', topic);
+        if (sheet) p.set('sheet', sheet);
+        if (status) p.set('status', status);
+        if (search) p.set('search', search);
+        if (imgSize && imgSize !== '1024x1024') p.set('size', imgSize);
+        const newUrl = p.toString() ? `?${p}` : window.location.pathname;
+        history.replaceState(null, '', newUrl);
 
         // Update topic dropdown
         const topicSelect = document.getElementById('filter-topic');
@@ -236,7 +259,14 @@
         document.getElementById('pagination').innerHTML = html;
     }
 
-    function goPage(n) { currentPage = n; renderTable(); window.scrollTo(0, 0); }
+    function goPage(n) {
+        currentPage = n;
+        const p = new URLSearchParams(window.location.search);
+        if (n > 1) p.set('page', n); else p.delete('page');
+        history.replaceState(null, '', p.toString() ? `?${p}` : window.location.pathname);
+        renderTable();
+        window.scrollTo(0, 0);
+    }
     function toggleSelect(id, checked) { if (checked) selected.add(id); else selected.delete(id); updateBulkButton(); }
     function toggleSelectAll(checked) {
         const start = (currentPage - 1) * PER_PAGE;
