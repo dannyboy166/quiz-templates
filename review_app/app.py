@@ -523,6 +523,20 @@ def create_app():
         update_image_item_state(image_state, item_id, **img_state)
         return jsonify({"ok": True})
 
+    @app.route("/api/images/undo/<item_id>", methods=["POST"])
+    def api_undo_image(item_id):
+        """Reset image state back to pending — undo approve/flag."""
+        if item_id not in questions:
+            return jsonify({"error": "Question not found"}), 404
+        img_st = get_image_item_state(image_state, item_id)
+        img_st["status"] = "pending"
+        img_st["flag_note"] = ""
+        if "question_image" in img_st:
+            img_st["question_image"]["approved_at"] = None
+            img_st["question_image"]["canva_pushed_at"] = None
+        update_image_item_state(image_state, item_id, **img_st)
+        return jsonify({"ok": True})
+
     @app.route("/api/images/save-prompt/<item_id>", methods=["POST"])
     def api_save_image_prompt(item_id):
         if item_id not in questions:
