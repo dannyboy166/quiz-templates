@@ -419,11 +419,14 @@ def create_app():
         size = data.get("size", "1024x1024")
         try:
             prompt, file_size = generate_question_image(q, prompt_override, size=size)
-            # Update state
-            img_state = get_image_item_state(image_state, item_id)
-            img_state["question_image"]["prompt"] = prompt
-            img_state["question_image"]["generated_at"] = img_now_iso()
-            update_image_item_state(image_state, item_id, **img_state)
+            # Update state — reset approval since image changed
+            img_st = get_image_item_state(image_state, item_id)
+            img_st["question_image"]["prompt"] = prompt
+            img_st["question_image"]["generated_at"] = img_now_iso()
+            img_st["question_image"]["approved_at"] = None
+            img_st["question_image"]["canva_pushed_at"] = None
+            img_st["status"] = "pending"
+            update_image_item_state(image_state, item_id, **img_st)
             return jsonify({"ok": True, "prompt": prompt, "size": file_size})
         except Exception as e:
             return jsonify({"error": str(e)}), 500
@@ -478,9 +481,11 @@ def create_app():
         # Push to Canva if connected
         if canva_uploader.is_connected():
             try:
+                # Add timestamp to URL so Canva treats regenerated images as new
+                ts = int(time.time())
                 if image_type == "question":
                     filename = f"{item_id}-question.png"
-                    image_url = f"{scheme}://{domain}/generated-images/{filename}"
+                    image_url = f"{scheme}://{domain}/generated-images/{filename}?v={ts}"
                     prompt = img_st["question_image"].get("prompt", q.get("question_text", ""))
                     asset_name = canva_uploader.build_asset_name(item_id, prompt)
                     job_id, status = canva_uploader.upload_image_from_url(image_url, asset_name)
@@ -488,7 +493,7 @@ def create_app():
                     canva_uploaded = True
                 elif image_type == "answer" and option_num:
                     filename = f"{item_id}-answer{option_num}.png"
-                    image_url = f"{scheme}://{domain}/generated-images/{filename}"
+                    image_url = f"{scheme}://{domain}/generated-images/{filename}?v={ts}"
                     ans_state = img_st["answer_images"].get(str(option_num), {})
                     prompt = ans_state.get("prompt", q.get(f"option{option_num}", f"Answer {option_num}"))
                     asset_name = canva_uploader.build_asset_name(f"{item_id}-answer{option_num}", prompt)

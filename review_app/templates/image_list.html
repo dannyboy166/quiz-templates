@@ -352,7 +352,11 @@
             const data = await res.json();
             if (data.ok) {
                 const q = ALL_QUESTIONS.find(q => q.id === itemId);
-                if (q) q.has_gen_image = true;
+                if (q) {
+                    q.has_gen_image = true;
+                    q.img_status = 'pending';
+                    q.has_at_image = false;
+                }
                 renderTable();
             } else {
                 alert('Error: ' + (data.error || 'Unknown error'));
