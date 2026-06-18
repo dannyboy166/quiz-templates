@@ -5,6 +5,7 @@ import os
 import time
 import threading
 import queue
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 from flask import (
@@ -727,6 +728,29 @@ def create_app():
 
     # --- Image bulk worker ---
 
+    # Number of parallel image generations (safe for Tier 1-2)
+    IMG_PARALLEL = 3
+
+    def _generate_one_image(item_id, prompt_override, size):
+        """Generate a single image — called from thread pool."""
+        q = questions.get(item_id)
+        if not q:
+            return item_id, None, "Not found"
+
+        if not prompt_override:
+            return item_id, None, "No prompt — type a prompt first"
+
+        try:
+            prompt, _ = generate_question_image(q, prompt_override, size=size)
+            img_st = get_image_item_state(image_state, item_id)
+            img_st["question_image"]["prompt"] = prompt
+            img_st["question_image"]["generated_at"] = img_now_iso()
+            update_image_item_state(image_state, item_id, **img_st)
+            return item_id, prompt, None
+        except Exception as e:
+            print(f"  Image generation error for {item_id}: {e}")
+            return item_id, None, str(e)
+
     def image_bulk_worker():
         while True:
             queue_item = img_bulk_queue.get()
@@ -742,54 +766,41 @@ def create_app():
             else:
                 item_ids, prompts, size = queue_item, {}, "1024x1024"
 
-            with img_bulk_lock:
-                img_bulk_status["running"] = True
-                img_bulk_status["total"] = len(item_ids)
-                img_bulk_status["completed"] = 0
-                img_bulk_status["errors"] = []
-
+            # Build jobs list with prompts resolved
+            jobs = []
             for item_id in item_ids:
-                with img_bulk_lock:
-                    img_bulk_status["current_item"] = item_id
-
-                q = questions.get(item_id)
-                if not q:
-                    with img_bulk_lock:
-                        img_bulk_status["errors"].append({"item_id": item_id, "error": "Not found"})
-                        img_bulk_status["completed"] += 1
-                    continue
-
-                # Use prompt from list page if provided, otherwise from state
                 prompt_override = prompts.get(item_id)
                 if not prompt_override:
                     img_st = get_image_item_state(image_state, item_id)
                     prompt_override = img_st["question_image"].get("prompt") or None
+                jobs.append((item_id, prompt_override, size))
 
-                if not prompt_override:
+            with img_bulk_lock:
+                img_bulk_status["running"] = True
+                img_bulk_status["total"] = len(jobs)
+                img_bulk_status["completed"] = 0
+                img_bulk_status["errors"] = []
+
+            print(f"  [Bulk] Starting {len(jobs)} images, {IMG_PARALLEL} parallel")
+
+            with ThreadPoolExecutor(max_workers=IMG_PARALLEL) as pool:
+                futures = {
+                    pool.submit(_generate_one_image, item_id, prompt, sz): item_id
+                    for item_id, prompt, sz in jobs
+                }
+                for future in as_completed(futures):
+                    item_id, prompt, error = future.result()
                     with img_bulk_lock:
-                        img_bulk_status["errors"].append({"item_id": item_id, "error": "No prompt — type a prompt first"})
                         img_bulk_status["completed"] += 1
-                    continue
-
-                try:
-                    prompt, _ = generate_question_image(q, prompt_override, size=size)
-                    img_st = get_image_item_state(image_state, item_id)
-                    img_st["question_image"]["prompt"] = prompt
-                    img_st["question_image"]["generated_at"] = img_now_iso()
-                    update_image_item_state(image_state, item_id, **img_st)
-                    time.sleep(1)  # OpenAI rate limit
-                except Exception as e:
-                    print(f"  Image generation error for {item_id}: {e}")
-                    with img_bulk_lock:
-                        img_bulk_status["errors"].append({"item_id": item_id, "error": str(e)})
-
-                with img_bulk_lock:
-                    img_bulk_status["completed"] += 1
+                        img_bulk_status["current_item"] = item_id
+                        if error:
+                            img_bulk_status["errors"].append({"item_id": item_id, "error": error})
 
             with img_bulk_lock:
                 img_bulk_status["running"] = False
                 img_bulk_status["current_item"] = None
 
+            print(f"  [Bulk] Done — {img_bulk_status['completed']} completed, {len(img_bulk_status['errors'])} errors")
             img_bulk_queue.task_done()
 
     img_worker = threading.Thread(target=image_bulk_worker, daemon=True)
