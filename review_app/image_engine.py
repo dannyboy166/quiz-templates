@@ -60,10 +60,10 @@ def build_answer_prompt(q, option_num, option_text):
     return option_text
 
 
-def generate_image(prompt, output_path, size="1024x1024", quality="medium"):
+def generate_image(prompt, output_path, size="1024x1024", quality="auto"):
     """Generate an image via OpenAI API and save to output_path.
 
-    quality options: 'low' (~15s), 'medium' (~30s), 'high' (~150-280s)
+    quality options: 'low' (~5s), 'medium' (~30s), 'high' (~150-280s), 'auto' (model picks)
     """
     client = _get_client()
 
