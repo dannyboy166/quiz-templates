@@ -60,10 +60,10 @@ def build_answer_prompt(q, option_num, option_text):
     return option_text
 
 
-def generate_image(prompt, output_path, size="1024x1024", quality="high"):
+def generate_image(prompt, output_path, size="1024x1024", quality="medium"):
     """Generate an image via OpenAI API and save to output_path.
 
-    Returns file size in bytes. Uses quality='high' ($0.08/image) for best results.
+    quality options: 'low' (~15s), 'medium' (~30s), 'high' (~150-280s)
     """
     client = _get_client()
 
@@ -74,7 +74,7 @@ def generate_image(prompt, output_path, size="1024x1024", quality="high"):
         n=1,
         size=size,
         quality=quality,
-        timeout=120,  # 2 min timeout per image
+        timeout=300,  # 5 min timeout for gpt-image-2
     )
 
     image_data = base64.b64decode(response.data[0].b64_json)
