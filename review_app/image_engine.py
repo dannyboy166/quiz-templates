@@ -69,7 +69,7 @@ def generate_image(prompt, output_path, size="1024x1024", quality="high"):
 
     print(f"  [OpenAI] Generating image: {prompt[:100]}...")
     response = client.images.generate(
-        model="gpt-image-1",
+        model="gpt-image-2",
         prompt=prompt[:4000],  # OpenAI prompt length limit
         n=1,
         size=size,
