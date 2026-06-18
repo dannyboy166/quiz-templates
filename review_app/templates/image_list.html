@@ -48,9 +48,17 @@
             Default Prompt Template
             <span style="font-weight: 400; color: var(--text-muted);"> — used when no custom prompt is typed. Use {question} for the question text.</span>
         </label>
-        <input type="text" id="default-prompt-template"
-               value="We are making images for a children's educational quiz. Make a simple, colorful cartoon image for this question: {question}"
-               style="width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem;">
+        <div style="display: flex; gap: 8px; align-items: center;">
+            <input type="text" id="default-prompt-template"
+                   value="We are making images for a children's educational quiz. Make a simple, colorful cartoon image for this question: {question}"
+                   style="flex: 1; padding: 8px 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem;">
+            <select id="image-size" style="padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem;">
+                <option value="1024x1024">Square</option>
+                <option value="1536x1024">Landscape</option>
+                <option value="1024x1536">Portrait</option>
+                <option value="auto">Auto</option>
+            </select>
+        </div>
     </div>
 
     <div class="question-table-wrap">
@@ -305,10 +313,11 @@
         imgCell.innerHTML = '<span class="spinner" style="display:inline-block;width:20px;height:20px;"></span>';
 
         try {
+            const size = document.getElementById('image-size')?.value || '1024x1024';
             const res = await fetch(`/api/images/generate/${itemId}`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({prompt: prompt})
+                body: JSON.stringify({prompt: prompt, size: size})
             });
             const data = await res.json();
             if (data.ok) {

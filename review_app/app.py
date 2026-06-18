@@ -415,8 +415,9 @@ def create_app():
             return jsonify({"error": "Question not found"}), 404
         data = request.get_json(silent=True) or {}
         prompt_override = data.get("prompt")
+        size = data.get("size", "1024x1024")
         try:
-            prompt, file_size = generate_question_image(q, prompt_override)
+            prompt, file_size = generate_question_image(q, prompt_override, size=size)
             # Update state
             img_state = get_image_item_state(image_state, item_id)
             img_state["question_image"]["prompt"] = prompt
@@ -585,10 +586,11 @@ def create_app():
         data = request.get_json(silent=True) or {}
         item_ids = data.get("item_ids", [])
         prompts = data.get("prompts", {})  # {item_id: prompt_text}
+        size = data.get("size", "1024x1024")
         valid_ids = [iid for iid in item_ids if iid in questions]
         if not valid_ids:
             return jsonify({"error": "No valid item IDs"}), 400
-        img_bulk_queue.put((valid_ids, prompts))
+        img_bulk_queue.put((valid_ids, prompts, size))
         return jsonify({"ok": True, "count": len(valid_ids)})
 
     @app.route("/api/images/bulk-status")
@@ -731,11 +733,14 @@ def create_app():
             if queue_item is None:
                 break
 
-            # Unpack — supports (item_ids, prompts) tuple or just item_ids list
-            if isinstance(queue_item, tuple):
+            # Unpack — supports (item_ids, prompts, size) tuple or just item_ids list
+            if isinstance(queue_item, tuple) and len(queue_item) == 3:
+                item_ids, prompts, size = queue_item
+            elif isinstance(queue_item, tuple):
                 item_ids, prompts = queue_item
+                size = "1024x1024"
             else:
-                item_ids, prompts = queue_item, {}
+                item_ids, prompts, size = queue_item, {}, "1024x1024"
 
             with img_bulk_lock:
                 img_bulk_status["running"] = True
@@ -767,7 +772,7 @@ def create_app():
                     continue
 
                 try:
-                    prompt, _ = generate_question_image(q, prompt_override)
+                    prompt, _ = generate_question_image(q, prompt_override, size=size)
                     img_st = get_image_item_state(image_state, item_id)
                     img_st["question_image"]["prompt"] = prompt
                     img_st["question_image"]["generated_at"] = img_now_iso()

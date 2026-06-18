@@ -4,6 +4,8 @@ async function generateQuestionImage(itemId) {
     const btn = document.getElementById('gen-question-btn');
     const previewDiv = document.getElementById('question-image-preview');
     const prompt = document.getElementById('question-prompt').value;
+    const sizeEl = document.getElementById('image-size') || document.getElementById('detail-image-size');
+    const size = sizeEl ? sizeEl.value : '1024x1024';
 
     btn.disabled = true;
     previewDiv.innerHTML = '<div class="generating-overlay"><span class="spinner"></span> Generating image...</div>';
@@ -12,7 +14,7 @@ async function generateQuestionImage(itemId) {
         const res = await fetch(`/api/images/generate/${itemId}`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({prompt: prompt})
+            body: JSON.stringify({prompt: prompt, size: size})
         });
         const data = await res.json();
         if (data.ok) {
@@ -190,7 +192,7 @@ async function bulkGenerateImages() {
         const res = await fetch('/api/images/bulk-generate', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({item_ids: ids, prompts: prompts})
+            body: JSON.stringify({item_ids: ids, prompts: prompts, size: document.getElementById('image-size')?.value || '1024x1024'})
         });
         const data = await res.json();
         if (data.ok) {

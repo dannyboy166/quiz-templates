@@ -87,11 +87,11 @@ def generate_image(prompt, output_path, size="1024x1024", quality="auto"):
     return len(image_data)
 
 
-def generate_question_image(q, prompt_override=None):
+def generate_question_image(q, prompt_override=None, size="1024x1024"):
     """Generate and save a question image. Returns (prompt, file_size)."""
     prompt = prompt_override or build_question_prompt(q)
     output_path = IMAGE_DATA_DIR / f"{q['item_id']}-question.png"
-    file_size = generate_image(prompt, output_path)
+    file_size = generate_image(prompt, output_path, size=size)
     return prompt, file_size
 
 
