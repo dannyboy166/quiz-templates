@@ -302,31 +302,27 @@ def _poll_upload_job(job_id, max_attempts=5):
 # ---------------------------------------------------------------------------
 
 def _get_folder_id():
-    """Get the WorldWise Images folder ID, creating it if needed."""
+    """Get the WorldWise Images folder ID, creating it if needed.
+
+    Caches folder ID on disk so we only search/create once.
+    """
     # Check cached folder ID
     if FOLDER_ID_FILE.exists():
         folder_id = FOLDER_ID_FILE.read_text().strip()
         if folder_id:
             return folder_id
 
+    # Also check env var (can be set manually if auto-detect fails)
+    folder_id = os.environ.get("CANVA_FOLDER_ID", "")
+    if folder_id:
+        FOLDER_ID_FILE.parent.mkdir(parents=True, exist_ok=True)
+        FOLDER_ID_FILE.write_text(folder_id)
+        print(f"  [Canva] Using folder ID from env: {folder_id}")
+        return folder_id
+
     access_token = _get_access_token()
 
-    # Search for existing folder
-    resp = requests.get(FOLDERS_URL, headers={
-        "Authorization": f"Bearer {access_token}",
-    }, params={"query": CANVA_FOLDER_NAME}, timeout=30)
-
-    if resp.ok:
-        items = resp.json().get("items", [])
-        for item in items:
-            if item.get("folder", {}).get("name") == CANVA_FOLDER_NAME:
-                folder_id = item["folder"]["id"]
-                FOLDER_ID_FILE.parent.mkdir(parents=True, exist_ok=True)
-                FOLDER_ID_FILE.write_text(folder_id)
-                print(f"  [Canva] Found existing folder: {CANVA_FOLDER_NAME} ({folder_id})")
-                return folder_id
-
-    # Create new folder
+    # Try to create the folder (if it already exists, Canva returns an error)
     print(f"  [Canva] Creating folder: {CANVA_FOLDER_NAME}")
     resp = requests.post(FOLDERS_URL, headers={
         "Authorization": f"Bearer {access_token}",
@@ -345,7 +341,27 @@ def _get_folder_id():
             print(f"  [Canva] Created folder: {CANVA_FOLDER_NAME} ({folder_id})")
             return folder_id
 
-    print(f"  [Canva] Could not create folder: {resp.status_code} {resp.text}")
+    # If create failed (maybe already exists), try listing root folder items
+    print(f"  [Canva] Create failed ({resp.status_code}), searching root for existing folder...")
+    resp = requests.get(f"{FOLDERS_URL}/root/items", headers={
+        "Authorization": f"Bearer {access_token}",
+    }, params={"item_types": "folder"}, timeout=30)
+
+    if resp.ok:
+        items = resp.json().get("items", [])
+        for item in items:
+            folder_data = item.get("folder", {})
+            if folder_data.get("name") == CANVA_FOLDER_NAME:
+                folder_id = folder_data.get("id")
+                FOLDER_ID_FILE.parent.mkdir(parents=True, exist_ok=True)
+                FOLDER_ID_FILE.write_text(folder_id)
+                print(f"  [Canva] Found existing folder: {CANVA_FOLDER_NAME} ({folder_id})")
+                return folder_id
+        print(f"  [Canva] Folder not found in {len(items)} root items")
+    else:
+        print(f"  [Canva] Could not list root folder: {resp.status_code} {resp.text}")
+
+    print(f"  [Canva] No folder — images will stay in Uploads. Set CANVA_FOLDER_ID env var to fix.")
     return None
 
 
