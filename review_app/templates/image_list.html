@@ -208,6 +208,7 @@
                 <td class="col-actions" style="white-space:nowrap;">
                     ${q.has_gen_image && !q.has_at_image ? `
                         <button class="action-btn approve-btn" onclick="quickApproveImage('${q.id}')" title="Approve">&#10003;</button>
+                        <button class="action-btn" onclick="regenerateImage('${q.id}')" title="Regenerate with prompt" style="font-size:0.8rem;">&#8635;</button>
                     ` : q.has_at_image ? '<span class="done-label">Done</span>' : ''}
                 </td>
             </tr>
@@ -271,6 +272,41 @@
             if (data.canva_error) {
                 alert('Approved but Canva upload failed: ' + data.canva_error);
             }
+            renderTable();
+        }
+    }
+
+    async function regenerateImage(itemId) {
+        const input = document.getElementById(`prompt-${itemId}`);
+        const prompt = input ? input.value.trim() : '';
+        if (!prompt) {
+            alert('Type a prompt first, then click regenerate');
+            if (input) input.focus();
+            return;
+        }
+
+        // Show generating state
+        const row = input.closest('tr');
+        const imgCell = row.querySelector('.col-img-status');
+        imgCell.innerHTML = '<span class="spinner" style="display:inline-block;width:20px;height:20px;"></span>';
+
+        try {
+            const res = await fetch(`/api/images/generate/${itemId}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({prompt: prompt})
+            });
+            const data = await res.json();
+            if (data.ok) {
+                const q = ALL_QUESTIONS.find(q => q.id === itemId);
+                if (q) q.has_gen_image = true;
+                renderTable();
+            } else {
+                alert('Error: ' + (data.error || 'Unknown error'));
+                renderTable();
+            }
+        } catch (e) {
+            alert('Error: ' + e.message);
             renderTable();
         }
     }

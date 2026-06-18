@@ -241,7 +241,14 @@ async function pollImageBulkStatus() {
             if (indicatorText) indicatorText.textContent = 'Done!';
             setTimeout(() => {
                 hideImageBulkProgress();
-                window.location.reload();
+                // Update generated status for completed items without reloading the page
+                // so Georgia stays on her current filtered view and scroll position
+                for (const id of selected) {
+                    const q = ALL_QUESTIONS.find(q => q.id === id);
+                    if (q) q.has_gen_image = true;
+                }
+                selected.clear();
+                renderTable();
             }, 1500);
         }
     } catch (e) {
