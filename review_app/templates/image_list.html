@@ -263,7 +263,8 @@
                            style="width:100%;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:0.8rem;">
                 </td>
                 <td class="col-img-status" style="text-align:center;">
-                    ${q.has_at_image ? '<span class="status-icon approved" title="In Airtable">&#10003;</span>'
+                    ${editingItems.has(q.id) ? '<div style="width:80px;height:80px;display:inline-flex;align-items:center;justify-content:center;border:2px dashed #4CAF50;border-radius:4px;"><span class="spinner" style="width:24px;height:24px;"></span></div>'
+                      : q.has_at_image ? '<span class="status-icon approved" title="In Airtable">&#10003;</span>'
                       : q.has_gen_image ? `<img src="/generated-images/${q.id}-question.png?t=${Date.now()}"
                            class="list-thumb" onclick="showPreview('${q.id}')"
                            title="Click to preview" style="width:80px;height:80px;border-radius:4px;object-fit:cover;cursor:pointer;border:1px solid #ddd;">`
@@ -361,6 +362,9 @@
         document.getElementById('preview-modal').style.display = 'none';
     }
 
+    // Track items currently being edited
+    const editingItems = new Set();
+
     async function previewEdit() {
         const itemId = document.getElementById('preview-modal').dataset.itemId;
         const editInput = document.getElementById('preview-edit-instruction');
@@ -371,11 +375,10 @@
             return;
         }
 
-        const btn = document.getElementById('preview-edit-btn');
-        const img = document.getElementById('preview-img');
-        btn.disabled = true;
-        btn.textContent = 'Editing...';
-        img.style.opacity = '0.4';
+        // Close preview and run edit in background
+        hidePreview();
+        editingItems.add(itemId);
+        renderTable();  // Shows spinner on the thumbnail
 
         try {
             const size = document.getElementById('image-size')?.value || '1536x1024';
@@ -385,21 +388,18 @@
                 body: JSON.stringify({prompt: instruction, size: size})
             });
             const data = await res.json();
+            editingItems.delete(itemId);
             if (data.ok) {
-                img.src = `/generated-images/${itemId}-question.png?t=${Date.now()}`;
-                editInput.value = '';
-                // Reset approve button since image changed
-                const approveBtn = document.getElementById('preview-approve-btn');
-                if (approveBtn) { approveBtn.textContent = 'Approve & Send to Canva'; approveBtn.disabled = false; }
+                const q = ALL_QUESTIONS.find(q => q.id === itemId);
+                if (q) { q.has_gen_image = true; q.img_status = 'pending'; q.has_at_image = false; }
             } else {
-                alert('Edit failed: ' + (data.error || 'Unknown error'));
+                alert(`Edit failed for ${itemId}: ` + (data.error || 'Unknown error'));
             }
         } catch (e) {
-            alert('Edit failed: ' + e.message);
+            editingItems.delete(itemId);
+            alert(`Edit failed for ${itemId}: ` + e.message);
         }
-        btn.disabled = false;
-        btn.textContent = 'Edit';
-        img.style.opacity = '1';
+        renderTable();
     }
 
     async function quickApproveImage(itemId) {
