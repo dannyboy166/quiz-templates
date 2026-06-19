@@ -110,6 +110,15 @@
     let currentPage = 1;
     let selected = new Set();
 
+    // Prompt cache — survives re-renders, debounce-saved to backend
+    const promptCache = {};
+    const saveTimers = {};
+
+    // Initialize prompt cache from backend-saved prompts
+    ALL_QUESTIONS.forEach(q => {
+        if (q.saved_prompt) promptCache[q.id] = q.saved_prompt;
+    });
+
     // Build sheet dropdown from data
     const sheetsSet = [...new Set(ALL_QUESTIONS.map(q => q.sheet).filter(Boolean))];
     const sheetSelect = document.getElementById('filter-sheet');
@@ -215,7 +224,15 @@
         const page = filtered.slice(start, start + PER_PAGE);
         const tbody = document.getElementById('question-tbody');
 
-        tbody.innerHTML = page.map(q => `
+        // Capture typed prompts before re-render
+        tbody.querySelectorAll('.list-prompt-input').forEach(input => {
+            const id = input.id.replace('prompt-', '');
+            if (input.value.trim()) promptCache[id] = input.value;
+        });
+
+        tbody.innerHTML = page.map(q => {
+            const promptVal = promptCache[q.id] || q.saved_prompt || q.desc || '';
+            return `
             <tr class="question-row ${q.has_at_image ? 'approved' : ''}">
                 <td class="col-check">
                     <input type="checkbox" ${selected.has(q.id) ? 'checked' : ''}
@@ -226,14 +243,14 @@
                 <td>
                     <input type="text" class="list-prompt-input" id="prompt-${q.id}"
                            placeholder="Type what image you need..."
-                           value="${escapeHtml(q.desc || '')}"
+                           value="${escapeHtml(promptVal)}"
                            style="width:100%;padding:4px 6px;border:1px solid #ddd;border-radius:4px;font-size:0.8rem;">
                 </td>
                 <td class="col-img-status" style="text-align:center;">
                     ${q.has_at_image ? '<span class="status-icon approved" title="In Airtable">&#10003;</span>'
-                      : q.has_gen_image ? `<img src="/generated-images/${q.id}-question.png"
+                      : q.has_gen_image ? `<img src="/generated-images/${q.id}-question.png?t=${Date.now()}"
                            class="list-thumb" onclick="showPreview('${q.id}')"
-                           title="Click to preview" style="width:40px;height:40px;border-radius:4px;object-fit:cover;cursor:pointer;border:1px solid #ddd;">`
+                           title="Click to preview" style="width:80px;height:80px;border-radius:4px;object-fit:cover;cursor:pointer;border:1px solid #ddd;">`
                       : '<span class="status-icon pending">&mdash;</span>'}
                 </td>
                 <td class="col-actions" style="white-space:nowrap;">
@@ -242,12 +259,28 @@
                         <button class="action-btn" onclick="regenerateImage('${q.id}')" title="Regenerate with prompt" style="font-size:0.8rem;">&#8635;</button>
                     ` : q.has_at_image ? '<span class="done-label">Done</span>' : ''}
                 </td>
-            </tr>
-        `).join('');
+            </tr>`;
+        }).join('');
 
         renderPagination();
         updateBulkButton();
     }
+
+    // Debounced auto-save prompts to backend
+    document.getElementById('question-tbody').addEventListener('input', e => {
+        if (e.target.classList.contains('list-prompt-input')) {
+            const id = e.target.id.replace('prompt-', '');
+            promptCache[id] = e.target.value;
+            clearTimeout(saveTimers[id]);
+            saveTimers[id] = setTimeout(() => {
+                fetch(`/api/images/save-prompt/${id}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({image_type: 'question', prompt: e.target.value})
+                });
+            }, 1500);
+        }
+    });
 
     function renderPagination() {
         const totalPages = Math.ceil(filtered.length / PER_PAGE);

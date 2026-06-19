@@ -1054,11 +1054,13 @@ def _questions_for_image_client(questions_list, image_state, at_images):
         s = image_state.get(item_id, {})
         at = at_images.get(item_id)
         has_at_img = bool(at and (at.get("question_image") or at.get("answer_images")))
+        saved_prompt = s.get("question_image", {}).get("prompt", "")
         result.append({
             "idx": idx,  # preserve spreadsheet order
             "id": item_id,
             "text": q["question_text"][:80],
             "desc": q.get("notes", "")[:80],
+            "saved_prompt": saved_prompt[:200] if saved_prompt else "",
             "subject": q["subject"],
             "category": q.get("category", ""),
             "topic": q["topic"],
