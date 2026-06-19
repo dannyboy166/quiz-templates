@@ -8,6 +8,9 @@
             <button class="btn btn-primary" id="bulk-gen-btn" onclick="bulkGenerateImages()" disabled>
                 Generate Selected
             </button>
+            <button class="btn btn-secondary" id="sync-btn" onclick="syncAirtable()" title="Sync with Airtable to see images done outside this app">
+                Sync
+            </button>
             <label class="select-all-label">
                 <input type="checkbox" id="select-all" onchange="toggleSelectAll(this.checked)">
                 Select visible
@@ -129,6 +132,9 @@
     // Prompt cache — survives re-renders, debounce-saved to backend
     const promptCache = {};
     const saveTimers = {};
+
+    // Track items currently being edited (shows spinner on thumbnail)
+    const editingItems = new Set();
 
     // Initialize prompt cache from backend-saved prompts
     ALL_QUESTIONS.forEach(q => {
@@ -362,9 +368,6 @@
         document.getElementById('preview-modal').style.display = 'none';
     }
 
-    // Track items currently being edited
-    const editingItems = new Set();
-
     async function previewEdit() {
         const itemId = document.getElementById('preview-modal').dataset.itemId;
         const editInput = document.getElementById('preview-edit-instruction');
@@ -492,6 +495,28 @@
         const itemId = document.getElementById('preview-modal').dataset.itemId;
         quickRejectImage(itemId);
         hidePreview();
+    }
+
+    async function syncAirtable() {
+        const btn = document.getElementById('sync-btn');
+        btn.disabled = true;
+        btn.textContent = 'Syncing...';
+        try {
+            const res = await fetch('/api/images/refresh-airtable', {method: 'POST'});
+            const data = await res.json();
+            if (data.ok) {
+                btn.textContent = `Synced (${data.count})`;
+                setTimeout(() => window.location.reload(), 1000);
+            } else {
+                alert('Sync failed: ' + (data.error || 'Unknown'));
+                btn.textContent = 'Sync';
+                btn.disabled = false;
+            }
+        } catch (e) {
+            alert('Sync failed: ' + e.message);
+            btn.textContent = 'Sync';
+            btn.disabled = false;
+        }
     }
 </script>
 {% endblock %}
