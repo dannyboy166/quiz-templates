@@ -50,11 +50,11 @@
         </label>
         <div style="display: flex; gap: 8px; align-items: center;">
             <input type="text" id="default-prompt-template"
-                   value="We are making images for a children's educational quiz. Make a simple, colorful cartoon image for this question: {question}"
+                   value="Create a graphic of this scenario: {question}. No writing in the graphic."
                    style="flex: 1; padding: 8px 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem;">
             <select id="image-size" style="padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem;">
                 <option value="1024x1024">Square</option>
-                <option value="1536x1024">Landscape</option>
+                <option value="1536x1024" selected>Landscape</option>
                 <option value="1024x1536">Portrait</option>
                 <option value="auto">Auto</option>
             </select>
