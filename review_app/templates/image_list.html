@@ -81,11 +81,27 @@
 
     <!-- Image preview modal -->
     <div class="modal-overlay" id="preview-modal" style="display:none;" onclick="if(event.target===this)hidePreview()">
-        <div class="modal-content" style="max-width:550px;text-align:center;">
-            <h3>Image Preview — <span id="preview-id"></span></h3>
-            <img id="preview-img" src="" style="max-width:100%;border-radius:8px;margin:1rem 0;border:2px solid #ddd;">
-            <div class="modal-actions" style="justify-content:center;gap:1rem;">
-                <button class="btn btn-success" onclick="previewApprove()">Approve</button>
+        <div class="modal-content" style="max-width:600px;text-align:center;">
+            <h3 style="margin-bottom:0.5rem;"><span id="preview-id"></span></h3>
+            <p id="preview-question" style="font-size:0.9rem;color:var(--text-muted);margin:0 0 0.5rem 0;text-align:left;"></p>
+            <img id="preview-img" src="" style="max-width:100%;border-radius:8px;margin:0.5rem 0;border:2px solid #ddd;">
+
+            <!-- Edit section -->
+            <div style="margin:0.75rem 0;padding:0.75rem;background:#f0f7ff;border-radius:8px;border:1px solid #cce0ff;text-align:left;">
+                <label style="font-weight:600;font-size:0.85rem;display:block;margin-bottom:0.3rem;">
+                    Quick Edit <span style="font-weight:400;color:var(--text-muted);">— tweak without regenerating</span>
+                </label>
+                <div style="display:flex;gap:6px;">
+                    <input type="text" id="preview-edit-instruction" placeholder='e.g. "remove the text", "white background"'
+                           style="flex:1;padding:6px 10px;border:1px solid #cce0ff;border-radius:6px;font-size:0.85rem;">
+                    <button class="btn btn-primary" id="preview-edit-btn" onclick="previewEdit()" style="white-space:nowrap;font-size:0.85rem;">
+                        Edit
+                    </button>
+                </div>
+            </div>
+
+            <div class="modal-actions" style="justify-content:center;gap:0.75rem;">
+                <button class="btn btn-success" id="preview-approve-btn" onclick="previewApprove()">Approve &amp; Send to Canva</button>
                 <button class="btn btn-secondary" onclick="hidePreview()">Close</button>
             </div>
         </div>
@@ -318,14 +334,72 @@
         const overlay = document.getElementById('preview-modal');
         const img = document.getElementById('preview-img');
         const idSpan = document.getElementById('preview-id');
+        const questionP = document.getElementById('preview-question');
+        const editInput = document.getElementById('preview-edit-instruction');
+
         img.src = `/generated-images/${itemId}-question.png?t=${Date.now()}`;
         idSpan.textContent = itemId;
         overlay.dataset.itemId = itemId;
+
+        // Show full question text + options
+        const q = ALL_QUESTIONS.find(q => q.id === itemId);
+        if (q) {
+            questionP.textContent = q.text;
+        }
+
+        // Clear edit input
+        if (editInput) editInput.value = '';
+
+        // Reset approve button
+        const approveBtn = document.getElementById('preview-approve-btn');
+        if (approveBtn) { approveBtn.textContent = 'Approve & Send to Canva'; approveBtn.disabled = false; }
+
         overlay.style.display = 'flex';
     }
 
     function hidePreview() {
         document.getElementById('preview-modal').style.display = 'none';
+    }
+
+    async function previewEdit() {
+        const itemId = document.getElementById('preview-modal').dataset.itemId;
+        const editInput = document.getElementById('preview-edit-instruction');
+        const instruction = editInput ? editInput.value.trim() : '';
+        if (!instruction) {
+            alert('Type an edit instruction (e.g. "remove the text")');
+            if (editInput) editInput.focus();
+            return;
+        }
+
+        const btn = document.getElementById('preview-edit-btn');
+        const img = document.getElementById('preview-img');
+        btn.disabled = true;
+        btn.textContent = 'Editing...';
+        img.style.opacity = '0.4';
+
+        try {
+            const size = document.getElementById('image-size')?.value || '1536x1024';
+            const res = await fetch(`/api/images/edit/${itemId}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({prompt: instruction, size: size})
+            });
+            const data = await res.json();
+            if (data.ok) {
+                img.src = `/generated-images/${itemId}-question.png?t=${Date.now()}`;
+                editInput.value = '';
+                // Reset approve button since image changed
+                const approveBtn = document.getElementById('preview-approve-btn');
+                if (approveBtn) { approveBtn.textContent = 'Approve & Send to Canva'; approveBtn.disabled = false; }
+            } else {
+                alert('Edit failed: ' + (data.error || 'Unknown error'));
+            }
+        } catch (e) {
+            alert('Edit failed: ' + e.message);
+        }
+        btn.disabled = false;
+        btn.textContent = 'Edit';
+        img.style.opacity = '1';
     }
 
     async function quickApproveImage(itemId) {
