@@ -31,6 +31,8 @@ from .image_state import (
 from .image_engine import (
     build_question_prompt, build_answer_prompt,
     generate_question_image, generate_answer_image,
+    edit_question_image, get_version_files, restore_version,
+    IMAGE_DATA_DIR as IMG_ENGINE_DIR,
 )
 from .airtable_loader import (
     load_airtable_images, load_cached_airtable_images,
@@ -541,6 +543,82 @@ def create_app():
             img_st["question_image"]["canva_pushed_at"] = None
         update_image_item_state(image_state, item_id, **img_st)
         return jsonify({"ok": True})
+
+    @app.route("/api/images/edit/<item_id>", methods=["POST"])
+    def api_edit_image(item_id):
+        """Edit an existing image with an instruction (e.g. 'remove the text')."""
+        q = questions.get(item_id)
+        if not q:
+            return jsonify({"error": "Question not found"}), 404
+        data = request.get_json(silent=True) or {}
+        edit_prompt = data.get("prompt", "")
+        size = data.get("size", "1024x1024")
+        if not edit_prompt:
+            return jsonify({"error": "Edit instruction required"}), 400
+        try:
+            prompt, file_size = edit_question_image(q, edit_prompt, size=size)
+            img_st = get_image_item_state(image_state, item_id)
+            img_st["question_image"]["edit_prompt"] = prompt
+            img_st["question_image"]["generated_at"] = img_now_iso()
+            img_st["question_image"]["approved_at"] = None
+            img_st["question_image"]["canva_pushed_at"] = None
+            img_st["status"] = "pending"
+            update_image_item_state(image_state, item_id, **img_st)
+            return jsonify({"ok": True, "prompt": prompt, "size": file_size})
+        except FileNotFoundError:
+            return jsonify({"error": "No image exists to edit — generate one first"}), 400
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+    @app.route("/api/images/versions/<item_id>")
+    def api_image_versions(item_id):
+        """Get version history for an image."""
+        if item_id not in questions:
+            return jsonify({"error": "Question not found"}), 404
+
+        versions = []
+        for vfile in get_version_files(item_id, "question"):
+            # Extract version number from filename
+            name = vfile.name
+            versions.append({
+                "filename": name,
+                "url": f"/generated-images/{name}",
+                "size": vfile.stat().st_size,
+            })
+
+        current_path = IMG_ENGINE_DIR / f"{item_id}-question.png"
+        current = None
+        if current_path.exists():
+            current = {
+                "filename": current_path.name,
+                "url": f"/generated-images/{current_path.name}",
+                "size": current_path.stat().st_size,
+            }
+
+        return jsonify({"current": current, "versions": versions})
+
+    @app.route("/api/images/restore-version/<item_id>", methods=["POST"])
+    def api_restore_version(item_id):
+        """Restore a previous version as the current image."""
+        if item_id not in questions:
+            return jsonify({"error": "Question not found"}), 404
+        data = request.get_json(silent=True) or {}
+        version_num = data.get("version")
+        if not version_num:
+            return jsonify({"error": "Version number required"}), 400
+        try:
+            restore_version(item_id, version_num, "question")
+            img_st = get_image_item_state(image_state, item_id)
+            img_st["question_image"]["generated_at"] = img_now_iso()
+            img_st["question_image"]["approved_at"] = None
+            img_st["question_image"]["canva_pushed_at"] = None
+            img_st["status"] = "pending"
+            update_image_item_state(image_state, item_id, **img_st)
+            return jsonify({"ok": True})
+        except FileNotFoundError as e:
+            return jsonify({"error": str(e)}), 404
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
 
     @app.route("/api/images/save-prompt/<item_id>", methods=["POST"])
     def api_save_image_prompt(item_id):

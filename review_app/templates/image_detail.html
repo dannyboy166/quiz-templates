@@ -142,12 +142,38 @@
             {% endif %}
         </div>
 
+        {% if has_q_image %}
+        <!-- Edit existing image (small adjustments without full regeneration) -->
+        <div style="margin-top: 1rem; padding: 0.75rem; background: #f0f7ff; border-radius: 8px; border: 1px solid #cce0ff;">
+            <label style="font-weight: 600; font-size: 0.85rem; display: block; margin-bottom: 0.4rem;">
+                Edit Image
+                <span style="font-weight: 400; color: var(--text-muted);"> — tweak without full regeneration (e.g. "remove the text", "make background white")</span>
+            </label>
+            <div style="display: flex; gap: 8px;">
+                <input type="text" id="edit-instruction" placeholder="e.g. remove text, change background..."
+                       style="flex:1; padding: 6px 10px; border: 1px solid #cce0ff; border-radius: 6px; font-size: 0.85rem;">
+                <select id="detail-image-size" style="padding: 6px; border: 1px solid #cce0ff; border-radius: 6px; font-size: 0.85rem;">
+                    <option value="1024x1024">Square</option>
+                    <option value="1536x1024" selected>Landscape</option>
+                    <option value="1024x1536">Portrait</option>
+                </select>
+                <button class="btn btn-primary" id="edit-question-btn"
+                        onclick="editQuestionImage('{{ q.item_id }}')" style="white-space:nowrap;">
+                    Edit Image
+                </button>
+            </div>
+        </div>
+        {% endif %}
+
         <div id="question-image-preview" class="image-preview-section">
             {% if has_q_image %}
             <h3>Generated Image</h3>
             <img class="image-preview" src="/generated-images/{{ q.item_id }}-question.png?t={{ img_state.question_image.generated_at or '' }}" alt="Generated question image">
             {% endif %}
         </div>
+
+        <!-- Version history -->
+        <div id="version-history" style="margin-top: 1rem;"></div>
     </div>
 
     <!-- Generate Answer Images Section (only if question has options) -->
@@ -209,4 +235,10 @@
 {% endblock %}
 {% block scripts %}
 <script src="{{ url_for('static', filename='images.js') }}"></script>
+<script>
+    // Load version history on page load
+    {% if has_q_image %}
+    loadVersions('{{ q.item_id }}');
+    {% endif %}
+</script>
 {% endblock %}

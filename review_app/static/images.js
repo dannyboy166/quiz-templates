@@ -96,6 +96,98 @@ async function approveImage(itemId, imageType, optionNum) {
     }
 }
 
+async function editQuestionImage(itemId) {
+    const editInput = document.getElementById('edit-instruction');
+    const instruction = editInput ? editInput.value.trim() : '';
+    if (!instruction) {
+        alert('Type an edit instruction (e.g. "remove the text", "make background white")');
+        if (editInput) editInput.focus();
+        return;
+    }
+
+    const btn = document.getElementById('edit-question-btn');
+    const previewDiv = document.getElementById('question-image-preview');
+    const sizeEl = document.getElementById('detail-image-size') || document.getElementById('image-size');
+    const size = sizeEl ? sizeEl.value : '1024x1024';
+
+    btn.disabled = true;
+    btn.textContent = 'Editing...';
+    previewDiv.innerHTML = '<div class="generating-overlay"><span class="spinner"></span> Editing image...</div>';
+
+    try {
+        const res = await fetch(`/api/images/edit/${itemId}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({prompt: instruction, size: size})
+        });
+        const data = await res.json();
+        if (data.ok) {
+            previewDiv.innerHTML = `<img class="image-preview" src="/generated-images/${itemId}-question.png?t=${Date.now()}" alt="Edited question image">`;
+            const badge = document.querySelector('.status-badge');
+            if (badge) { badge.className = 'status-badge status-pending'; badge.textContent = 'Edited — needs approval'; }
+            editInput.value = '';
+            loadVersions(itemId);
+        } else {
+            previewDiv.innerHTML = `<div class="no-image">Error: ${data.error || 'Unknown error'}</div>`;
+        }
+    } catch (e) {
+        previewDiv.innerHTML = `<div class="no-image">Error: ${e.message}</div>`;
+    }
+    btn.disabled = false;
+    btn.textContent = 'Edit Image';
+}
+
+async function loadVersions(itemId) {
+    const container = document.getElementById('version-history');
+    if (!container) return;
+
+    try {
+        const res = await fetch(`/api/images/versions/${itemId}`);
+        const data = await res.json();
+        if (!data.versions || data.versions.length === 0) {
+            container.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;">No previous versions yet.</p>';
+            return;
+        }
+        container.innerHTML = '<h3 style="margin-bottom:0.5rem;">Previous Versions</h3>' +
+            '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
+            data.versions.map((v, i) => `
+                <div style="text-align:center;cursor:pointer;" onclick="restoreVersion('${itemId}', ${i+1})">
+                    <img src="${v.url}?t=${Date.now()}" style="width:100px;height:100px;object-fit:cover;border-radius:6px;border:2px solid #ddd;">
+                    <div style="font-size:0.75rem;color:var(--text-muted);">v${i+1}</div>
+                </div>
+            `).join('') +
+            '</div>';
+    } catch (e) {
+        container.innerHTML = '';
+    }
+}
+
+async function restoreVersion(itemId, versionNum) {
+    if (!confirm(`Restore version ${versionNum}? Current image will be archived.`)) return;
+
+    try {
+        const res = await fetch(`/api/images/restore-version/${itemId}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({version: versionNum})
+        });
+        const data = await res.json();
+        if (data.ok) {
+            const previewDiv = document.getElementById('question-image-preview');
+            if (previewDiv) {
+                previewDiv.innerHTML = `<img class="image-preview" src="/generated-images/${itemId}-question.png?t=${Date.now()}" alt="Restored question image">`;
+            }
+            const badge = document.querySelector('.status-badge');
+            if (badge) { badge.className = 'status-badge status-pending'; badge.textContent = 'Restored — needs approval'; }
+            loadVersions(itemId);
+        } else {
+            alert('Error: ' + (data.error || 'Unknown'));
+        }
+    } catch (e) {
+        alert('Error: ' + e.message);
+    }
+}
+
 async function flagImage(itemId) {
     const note = prompt("What's the issue? (optional)");
     if (note === null) return;
