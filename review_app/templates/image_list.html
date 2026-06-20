@@ -278,8 +278,11 @@
                 </td>
                 <td class="col-actions" style="white-space:nowrap;">
                     ${q.has_gen_image && !q.has_at_image ? `
-                        <button class="action-btn approve-btn" onclick="quickApproveImage('${q.id}')" title="Approve">&#10003;</button>
+                        <button class="action-btn approve-btn" onclick="quickApproveImage('${q.id}')" title="Approve & send to Canva">&#10003;</button>
                         <button class="action-btn" onclick="regenerateImage('${q.id}')" title="Regenerate with prompt" style="font-size:0.8rem;">&#8635;</button>
+                    ` : q.img_status === 'approved' && q.has_gen_image ? `
+                        <span class="done-label">Sent</span>
+                        <button class="action-btn" onclick="resendToCanva('${q.id}')" title="Resend to Canva" style="font-size:0.7rem;">&#8635;</button>
                     ` : q.has_at_image ? '<span class="done-label">Done</span>' : ''}
                 </td>
             </tr>`;
@@ -495,6 +498,28 @@
         const itemId = document.getElementById('preview-modal').dataset.itemId;
         quickRejectImage(itemId);
         hidePreview();
+    }
+
+    async function resendToCanva(itemId) {
+        const btn = event && event.target ? event.target : null;
+        if (btn) { btn.disabled = true; btn.textContent = '...'; }
+        try {
+            const res = await fetch(`/api/images/approve/${itemId}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({image_type: 'question'})
+            });
+            const data = await res.json();
+            if (data.canva_error) {
+                alert('Resend failed: ' + data.canva_error);
+            } else if (btn) {
+                btn.textContent = '✓';
+                btn.style.color = '#4CAF50';
+            }
+        } catch (e) {
+            alert('Resend failed: ' + e.message);
+        }
+        if (btn) { btn.disabled = false; }
     }
 
     async function syncAirtable() {
