@@ -253,7 +253,7 @@
         });
 
         tbody.innerHTML = page.map(q => {
-            const promptVal = promptCache[q.id] || q.saved_prompt || q.desc || '';
+            const promptVal = promptCache[q.id] || q.saved_prompt || '';
             return `
             <tr class="question-row ${q.has_at_image ? 'approved' : ''}">
                 <td class="col-check">
