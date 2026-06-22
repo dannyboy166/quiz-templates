@@ -1175,6 +1175,7 @@
       <!-- Controls -->
       <div class="help-controls">
         <button class="help-btn secondary" id="prev-btn">&#9664; Prev</button>
+        <button class="help-btn secondary" id="pause-btn">&#9208; Pause</button>
         <button class="help-btn secondary" id="replay-btn">&#8635; Replay</button>
         <button class="help-btn secondary" id="next-btn">Next &#9654;</button>
         <button class="help-btn primary" id="got-it-btn">Got it!</button>
@@ -1508,6 +1509,7 @@
 
       // Update debug
       document.getElementById('debug-scene').textContent = sceneIdx;
+      document.getElementById('pause-btn').textContent = '⏸ Pause';
 
       // Play
       playCurrentScene();
@@ -1598,7 +1600,22 @@
       overlay.classList.remove('active');
     });
 
+    document.getElementById('pause-btn').addEventListener('click', () => {
+      const a = getAudio(currentScene);
+      const btn = document.getElementById('pause-btn');
+      if (a.paused) {
+        a.play().catch(()=>{});
+        animationFrame = requestAnimationFrame(updateAnimation);
+        btn.textContent = '⏸ Pause';
+      } else {
+        a.pause();
+        cancelAnimationFrame(animationFrame);
+        btn.textContent = '▶ Play';
+      }
+    });
+
     document.getElementById('replay-btn').addEventListener('click', () => {
+      document.getElementById('pause-btn').textContent = '⏸ Pause';
       playCurrentScene();
     });
 

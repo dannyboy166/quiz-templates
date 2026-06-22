@@ -275,6 +275,18 @@
     .doubles-equation.visible { opacity: 1; }
 
     /* ============ SCENE 5: WORD PROBLEM ============ */
+    .keyword-bubbles {
+      display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
+      margin-bottom: 15px; max-width: 500px;
+    }
+    .kw-bubble {
+      background: #667eea; color: white; border-radius: 20px;
+      padding: 6px 16px; font-size: 16px; font-weight: 600;
+      opacity: 0; transform: scale(0);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .kw-bubble.visible { opacity: 1; transform: scale(1); }
+
     .story-text {
       background: white; border: 3px solid #333; border-radius: 12px;
       padding: 16px 24px; font-size: 18px; line-height: 1.6; color: #333;
@@ -343,25 +355,36 @@
     .nl-hop.visible { opacity: 1; }
 
     /* ============ SCENE 7: PLACE VALUE ============ */
-    .pv-addition {
-      display: flex; flex-direction: column; align-items: center; gap: 2px;
-      opacity: 0; transition: opacity 0.4s;
+    .pv-grid {
+      display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;
+      width: 100%; max-width: 700px;
     }
-    .pv-addition.visible { opacity: 1; }
+    .pv-card {
+      background: white; border: 3px solid #333; border-radius: 16px;
+      padding: 16px 20px; min-width: 180px; text-align: center;
+      opacity: 0; transform: translateY(15px);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .pv-card.visible { opacity: 1; transform: translateY(0); }
+    .pv-card .pv-problem {
+      font-size: 22px; font-weight: 700; color: #333;
+      margin-bottom: 8px; padding-bottom: 8px;
+      border-bottom: 2px solid #eee;
+    }
     .pv-row {
-      font-size: 18px; font-weight: 700; color: #333;
+      font-size: 15px; font-weight: 600; color: #555;
       opacity: 0; transition: opacity 0.3s;
+      margin: 3px 0;
     }
     .pv-row.visible { opacity: 1; }
     .pv-row .tens-part { color: #667eea; }
     .pv-row .ones-part { color: #F5A623; }
-    .pv-row .result { color: #4CAF50; font-size: 20px; }
-    .pv-row .arrow { color: #999; }
-    .pv-line {
-      width: 200px; height: 3px; background: #333;
+    .pv-result {
+      font-size: 24px; font-weight: 700; color: #4CAF50;
+      margin-top: 8px; padding-top: 8px; border-top: 2px solid #eee;
       opacity: 0; transition: opacity 0.3s;
     }
-    .pv-line.visible { opacity: 1; }
+    .pv-result.visible { opacity: 1; }
 
     /* ============ SCENE 8: TRUE/FALSE ============ */
     .tf-statement {
@@ -561,6 +584,7 @@
           <div class="scene-title" id="s3-title">Pairs that make 10</div>
           <div class="ten-frame-large" id="tf-10"></div>
           <div class="pairs-list" id="pairs-list">
+            <div class="pair-badge" id="pair-010">0 + 10</div>
             <div class="pair-badge" id="pair-19">1 + 9</div>
             <div class="pair-badge" id="pair-28">2 + 8</div>
             <div class="pair-badge" id="pair-37">3 + 7</div>
@@ -597,6 +621,13 @@
         <!-- SCENE 5: WORD PROBLEMS -->
         <div class="scene" id="scene-5">
           <div class="scene-title" id="s5-title">Word problems</div>
+          <div class="keyword-bubbles" id="s5-keywords">
+            <span class="kw-bubble" id="kw-altogether">altogether</span>
+            <span class="kw-bubble" id="kw-total">in total</span>
+            <span class="kw-bubble" id="kw-add">add</span>
+            <span class="kw-bubble" id="kw-joins">joins</span>
+            <span class="kw-bubble" id="kw-more">gets more</span>
+          </div>
           <div class="story-text" id="story">
             <span class="number-hl">Ben</span> has <span class="number-hl" id="hl-7">7</span> toy cars.
             He gets <span class="number-hl" id="hl-5">5</span> more.
@@ -634,21 +665,23 @@
         <!-- SCENE 7: BIGGER NUMBERS -->
         <div class="scene" id="scene-7">
           <div class="scene-title" id="s7-title">Adding bigger numbers</div>
-          <div class="pv-addition" id="pv-add1">
-            <div class="pv-row" id="pv-r1">29 + 10</div>
-            <div class="pv-row" id="pv-r1a"><span class="arrow">&rarr;</span> tens: 2 &rarr; <span class="tens-part">3</span></div>
-            <div class="pv-row" id="pv-r1b"><span class="result">= 39</span></div>
-          </div>
-          <div class="pv-addition" id="pv-add2" style="margin-top:4px;">
-            <div class="pv-row" id="pv-r2">28 + 30</div>
-            <div class="pv-row" id="pv-r2a"><span class="arrow">&rarr;</span> tens: 2 &rarr; <span class="tens-part">5</span></div>
-            <div class="pv-row" id="pv-r2b"><span class="result">= 58</span></div>
-          </div>
-          <div class="pv-addition" id="pv-add3" style="margin-top:4px;">
-            <div class="pv-row" id="pv-r3">36 + 25</div>
-            <div class="pv-row" id="pv-r3a"><span class="tens-part">30 + 20 = 50</span></div>
-            <div class="pv-row" id="pv-r3b"><span class="ones-part">6 + 5 = 11</span></div>
-            <div class="pv-row" id="pv-r3c"><span class="result">50 + 11 = 61</span></div>
+          <div class="pv-grid">
+            <div class="pv-card" id="pv-add1">
+              <div class="pv-problem">29 + 10</div>
+              <div class="pv-row" id="pv-r1a">tens: 2 → <span class="tens-part">3</span></div>
+              <div class="pv-result" id="pv-r1b">= 39</div>
+            </div>
+            <div class="pv-card" id="pv-add2">
+              <div class="pv-problem">28 + 30</div>
+              <div class="pv-row" id="pv-r2a">tens: 2 → <span class="tens-part">5</span></div>
+              <div class="pv-result" id="pv-r2b">= 58</div>
+            </div>
+            <div class="pv-card" id="pv-add3">
+              <div class="pv-problem">36 + 25</div>
+              <div class="pv-row" id="pv-r3a"><span class="tens-part">30 + 20 = 50</span></div>
+              <div class="pv-row" id="pv-r3b"><span class="ones-part">6 + 5 = 11</span></div>
+              <div class="pv-result" id="pv-r3c">= 61</div>
+            </div>
           </div>
           <div class="info-cards" id="s7-cards">
             <div class="info-card" id="card-tens-first">Add the tens first</div>
@@ -692,6 +725,7 @@
 
       <div class="help-controls">
         <button class="help-btn secondary" id="prev-btn">&#9664; Prev</button>
+        <button class="help-btn secondary" id="pause-btn">&#9208; Pause</button>
         <button class="help-btn secondary" id="replay-btn">&#8635; Replay</button>
         <button class="help-btn secondary" id="next-btn">Next &#9654;</button>
         <button class="help-btn primary" id="got-it-btn">Got it!</button>
@@ -780,38 +814,39 @@
         { time: 18.5, action: () => { setCallout("just put the groups together and count how many altogether"); show('card-put'); show('card-count'); } },
       ],
 
-      2: [ // WHICH SUM (30.2s)
+      2: [ // WHICH SUM (35.5s)
         { time: 0.0,  action: () => show('s2-title') },
         { time: 0.1,  action: () => setCallout("Sometimes you're given a target number and asked which sum makes it.") },
-        { time: 3.5,  action: () => { setCallout("For example: which sum equals 7?"); show('target-7'); } },
-        { time: 6.4,  action: () => { setCallout("Is it 3 plus 4,"); show('sc-a'); } },
-        { time: 7.9,  action: () => { setCallout("or 2 plus 6?"); show('sc-b'); } },
-        { time: 9.8,  action: () => setCallout("Let's check.") },
-        { time: 11.5, action: () => { setCallout("3 plus 4 is 7 — yes!");
+        { time: 3.8,  action: () => { setCallout("For example: which sum equals 7?"); show('target-7'); } },
+        { time: 6.9,  action: () => { setCallout("Is it 3 plus 4,"); show('sc-a'); } },
+        { time: 8.4,  action: () => { setCallout("or 2 plus 6?"); show('sc-b'); } },
+        { time: 10.3, action: () => setCallout("Let's check.") },
+        { time: 11.6, action: () => { setCallout("3 plus 4 is 7 — yes, that's the one!");
           document.getElementById('sc-a').classList.add('correct');
-          document.getElementById('sc-a-res').textContent = '7 \u2713';
+          document.getElementById('sc-a-res').textContent = '7 ✓';
           show('sc-a-res'); } },
-        { time: 14.1, action: () => { setCallout("And 2 plus 6 is 8 — no.");
+        { time: 14.9, action: () => { setCallout("And 2 plus 6 is 8 — that's not 7, so it's not the right answer.");
           document.getElementById('sc-b').classList.add('wrong');
-          document.getElementById('sc-b-res').textContent = '8 \u2717';
+          document.getElementById('sc-b-res').textContent = '8 ✗ not 7';
           show('sc-b-res'); } },
-        { time: 16.9, action: () => setCallout("So 3 plus 4 is the answer.") },
-        { time: 19.3, action: () => { setCallout("Here's something interesting: you can swap the numbers around and the answer stays the same."); show('card-check'); } },
-        { time: 24.8, action: () => { setCallout("3 plus 4 equals 4 plus 3. Both make 7."); show('swap-demo'); show('card-order'); } },
+        { time: 20.1, action: () => setCallout("So 3 plus 4 is the answer.") },
+        { time: 23.1, action: () => { setCallout("Here's something interesting: you can swap the numbers around and the answer stays the same."); show('card-check'); } },
+        { time: 29.8, action: () => { setCallout("3 plus 4 equals 4 plus 3. Both make 7."); show('swap-demo'); show('card-order'); } },
       ],
 
       3: [ // PAIRS OF 10 (23.7s)
         { time: 0.0,  action: () => show('s3-title') },
         { time: 0.1,  action: () => setCallout("Pairs that make 10 are really important because they help us solve bigger addition questions.") },
-        { time: 4.3,  action: () => { setCallout("Here are the pairs: 0 and 10, 1 and 9,"); show('tf-10');
-          fillTenPair(1, 'blue', 'orange'); show('pair-19'); } },
-        { time: 7.2,  action: () => { setCallout("2 and 8,"); fillTenPair(2, 'blue', 'orange'); show('pair-28'); } },
-        { time: 8.7,  action: () => { setCallout("3 and 7,"); fillTenPair(3, 'blue', 'orange'); show('pair-37'); } },
-        { time: 10.2, action: () => { setCallout("4 and 6,"); fillTenPair(4, 'blue', 'orange'); show('pair-46'); } },
-        { time: 11.7, action: () => { setCallout("5 and 5."); fillTenPair(5, 'blue', 'orange'); show('pair-55'); } },
-        { time: 14.7, action: () => setCallout("Each pair adds to 10.") },
-        { time: 16.8, action: () => { setCallout("So if a question asks you to select the pair that adds to 10 and you see 3 and 7,"); show('card-learn'); } },
-        { time: 22.2, action: () => { setCallout("you know that's a match."); show('card-always'); } },
+        { time: 5.4,  action: () => { setCallout("Here are the pairs: 0 and 10, 1 and 9,"); show('tf-10'); } },
+        { time: 6.8,  action: () => { fillTenPair(0, 'blue', 'orange'); show('pair-010'); } },
+        { time: 8.2,  action: () => { fillTenPair(1, 'blue', 'orange'); show('pair-19'); } },
+        { time: 9.5,  action: () => { setCallout("2 and 8,"); fillTenPair(2, 'blue', 'orange'); show('pair-28'); } },
+        { time: 10.7, action: () => { setCallout("3 and 7,"); fillTenPair(3, 'blue', 'orange'); show('pair-37'); } },
+        { time: 12.1, action: () => { setCallout("4 and 6,"); fillTenPair(4, 'blue', 'orange'); show('pair-46'); } },
+        { time: 13.5, action: () => { setCallout("5 and 5."); fillTenPair(5, 'blue', 'orange'); show('pair-55'); } },
+        { time: 15.2, action: () => setCallout("Each pair adds to 10.") },
+        { time: 17.4, action: () => { setCallout("So if a question asks you to select the pair that adds to 10 and you see 3 and 7,"); show('card-learn'); } },
+        { time: 22.3, action: () => { setCallout("you know that's a match."); show('card-always'); } },
       ],
 
       4: [ // DOUBLES (22.2s)
@@ -833,50 +868,54 @@
         { time: 0.0,  action: () => show('s5-title') },
         { time: 0.1,  action: () => setCallout("Word problems tell a little story.") },
         { time: 2.3,  action: () => setCallout("The trick is finding the numbers and the word that tells you to add.") },
-        { time: 6.3,  action: () => setCallout("Listen for words like altogether, in total, add, joins, or gets more.") },
+        { time: 6.3,  action: () => {
+          setCallout("Listen for words like altogether, in total, add, joins, or gets more.");
+          ['kw-altogether','kw-total','kw-add','kw-joins','kw-more'].forEach((id, i) =>
+            setTimeout(() => show(id), i * 400));
+        }},
         { time: 12.3, action: () => { setCallout("Here's one: Ben has 7 toy cars. He gets 5 more. How many altogether?"); show('story'); } },
         { time: 19.4, action: () => { setCallout("Find the numbers — 7 and 5."); show('card-find'); } },
         { time: 22.2, action: () => { setCallout("The word altogether tells us to add."); show('card-words'); } },
         { time: 24.9, action: () => { setCallout("7 plus 5 equals 12."); show('extract-eq'); } },
       ],
 
-      6: [ // MISSING NUMBER (25.3s)
+      6: [ // MISSING NUMBER (30.0s)
         { time: 0.0,  action: () => show('s6-title') },
         { time: 0.1,  action: () => setCallout("Missing number questions have a gap you need to fill.") },
-        { time: 3.1,  action: () => { setCallout("Something like: 8 plus what equals 13?"); show('gap-eq');
+        { time: 3.5,  action: () => { setCallout("Something like: 8 plus what equals 13?"); show('gap-eq');
           document.getElementById('gap-box').classList.add('pulse'); } },
-        { time: 7.4,  action: () => setCallout("Think of it as: what do I need to add to 8 to get to 13?") },
+        { time: 6.8,  action: () => setCallout("Think of it as: what do I need to add to 8 to get to 13?") },
         { time: 11.8, action: () => { setCallout("You can count on from 8 —"); show('num-line'); } },
-        { time: 13.3, action: () => { setCallout("nine,"); show('hop-1'); } },
-        { time: 13.9, action: () => { setCallout("ten,"); show('hop-2'); } },
-        { time: 14.4, action: () => { setCallout("eleven,"); show('hop-3'); } },
-        { time: 15.1, action: () => { setCallout("twelve,"); show('hop-4'); } },
-        { time: 15.7, action: () => { setCallout("thirteen —"); show('hop-5'); } },
-        { time: 16.8, action: () => setCallout("that's 5 jumps or we might also say 5 counts.") },
-        { time: 18.6, action: () => { setCallout("So the missing number is 5.");
+        { time: 13.4, action: () => { setCallout("nine,"); show('hop-1'); } },
+        { time: 14.0, action: () => { setCallout("ten,"); show('hop-2'); } },
+        { time: 14.5, action: () => { setCallout("eleven,"); show('hop-3'); } },
+        { time: 15.2, action: () => { setCallout("twelve,"); show('hop-4'); } },
+        { time: 15.8, action: () => { setCallout("thirteen —"); show('hop-5'); } },
+        { time: 16.9, action: () => setCallout("that's 5 jumps or we might also say 5 counts.") },
+        { time: 21.4, action: () => { setCallout("So the missing number is 5.");
           const gb = document.getElementById('gap-box');
           gb.classList.remove('pulse'); gb.classList.add('filled'); gb.textContent = '5';
           show('card-count-on'); } },
-        { time: 20.7, action: () => { setCallout("You can also think backwards: 13 take away 8 is 5."); show('card-subtract'); } },
+        { time: 24.0, action: () => { setCallout("You can also think backwards: 13 take away 8 is 5."); show('card-subtract'); } },
       ],
 
-      7: [ // BIGGER NUMBERS (39.1s)
+      7: [ // BIGGER NUMBERS (41.4s)
         { time: 0.0,  action: () => show('s7-title') },
         { time: 0.1,  action: () => setCallout("When the numbers get bigger,") },
         { time: 1.4,  action: () => setCallout("use what you know about tens and ones.") },
-        { time: 4.0,  action: () => { setCallout("Let's try 29 plus 10."); show('pv-add1'); show('pv-r1'); } },
-        { time: 6.3,  action: () => setCallout("We're just adding one ten,") },
-        { time: 7.8,  action: () => { setCallout("so the tens digit goes up by one —"); show('pv-r1a'); } },
-        { time: 9.9,  action: () => { setCallout("29 becomes 39."); show('pv-r1b'); } },
-        { time: 12.2, action: () => setCallout("Easy!") },
-        { time: 13.2, action: () => { setCallout("What about 28 plus 30?"); show('pv-add2'); show('pv-r2'); } },
-        { time: 15.3, action: () => { setCallout("That's adding 3 tens."); } },
-        { time: 17.1, action: () => { setCallout("The tens digit goes from 2 to 5 —"); show('pv-r2a'); } },
-        { time: 19.6, action: () => { setCallout("28 becomes 58."); show('pv-r2b'); } },
-        { time: 22.1, action: () => { setCallout("For trickier ones like 36 plus 25 we can break up the numbers to make it easier to solve,"); show('pv-add3'); show('pv-r3'); } },
-        { time: 25.5, action: () => { setCallout("add the tens first: 30 plus 20 is 50."); show('pv-r3a'); show('card-tens-first'); } },
-        { time: 30.2, action: () => { setCallout("Then add the ones: 6 plus 5 is 11."); show('pv-r3b'); show('card-then-ones'); } },
-        { time: 34.9, action: () => { setCallout("50 plus 11 is 61 because 50 and 10 make 60, then one more makes 61."); show('pv-r3c'); } },
+        { time: 3.8,  action: () => { setCallout("Let's try 29 plus 10."); show('pv-add1'); } },
+        { time: 6.1,  action: () => setCallout("We're just adding one ten,") },
+        { time: 7.7,  action: () => { setCallout("so the tens digit goes up by one —"); show('pv-r1a'); } },
+        { time: 9.8,  action: () => { setCallout("29 becomes 39."); show('pv-r1b'); } },
+        { time: 12.3, action: () => setCallout("Easy!") },
+        { time: 13.4, action: () => { setCallout("What about 28 plus 30?"); show('pv-add2'); } },
+        { time: 15.4, action: () => setCallout("That's adding 3 tens.") },
+        { time: 17.3, action: () => { setCallout("The tens digit goes from 2 to 5 —"); show('pv-r2a'); } },
+        { time: 19.7, action: () => { setCallout("28 becomes 58."); show('pv-r2b'); } },
+        { time: 21.8, action: () => { setCallout("For trickier ones like 36 plus 25 we can break up the numbers to make it easier to solve,"); show('pv-add3'); } },
+        { time: 27.7, action: () => { setCallout("add the tens first: 30 plus 20 is 50."); show('pv-r3a'); show('card-tens-first'); } },
+        { time: 31.5, action: () => { setCallout("Then add the ones: 6 plus 5 is 11."); show('pv-r3b'); show('card-then-ones'); } },
+        { time: 35.1, action: () => { setCallout("50 plus 11 is 61 because 50 and 10 make 60, then one more makes 61."); show('pv-r3c'); } },
       ],
 
       8: [ // TRUE/FALSE (23.7s)
@@ -949,7 +988,7 @@
           document.getElementById(id).classList.remove('visible'));
       }
       if (idx === 7) {
-        ['pv-r1','pv-r1a','pv-r1b','pv-r2','pv-r2a','pv-r2b','pv-r3','pv-r3a','pv-r3b','pv-r3c'].forEach(id =>
+        ['pv-r1a','pv-r1b','pv-r2a','pv-r2b','pv-r3a','pv-r3b','pv-r3c'].forEach(id =>
           document.getElementById(id).classList.remove('visible'));
       }
       if (idx === 8) {
@@ -975,6 +1014,7 @@
       document.querySelectorAll('.scene-tab').forEach(t => t.classList.remove('active'));
       document.querySelector(`[data-scene="${idx}"]`).classList.add('active');
       document.getElementById('debug-scene').textContent = idx;
+      document.getElementById('pause-btn').textContent = '⏸ Pause';
       playCurrentScene();
     }
 
@@ -1034,7 +1074,20 @@
 
     document.getElementById('help-close').addEventListener('click', () => { stopAll(); overlay.classList.remove('active'); });
     document.getElementById('got-it-btn').addEventListener('click', () => { stopAll(); overlay.classList.remove('active'); });
-    document.getElementById('replay-btn').addEventListener('click', () => playCurrentScene());
+    document.getElementById('pause-btn').addEventListener('click', () => {
+      const a = getAudio(currentScene);
+      const btn = document.getElementById('pause-btn');
+      if (a.paused) {
+        a.play().catch(()=>{});
+        animationFrame = requestAnimationFrame(updateAnimation);
+        btn.textContent = '⏸ Pause';
+      } else {
+        a.pause();
+        cancelAnimationFrame(animationFrame);
+        btn.textContent = '▶ Play';
+      }
+    });
+    document.getElementById('replay-btn').addEventListener('click', () => { document.getElementById('pause-btn').textContent = '⏸ Pause'; playCurrentScene(); });
     document.getElementById('prev-btn').addEventListener('click', () => { if (currentScene > 0) switchScene(currentScene - 1); });
     document.getElementById('next-btn').addEventListener('click', () => { if (currentScene < TOTAL_SCENES - 1) switchScene(currentScene + 1); });
 

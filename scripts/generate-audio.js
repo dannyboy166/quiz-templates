@@ -464,7 +464,7 @@ const helpAdditionScenesAudio = [
   { file: 'audio/help-addition-scenes/scene-1-groups.mp3',
     text: "Let's start with the simplest kind. I have 3 apples here, and 2 apples here. When I push them together, I get 5 altogether. We write that as 3 plus 2 equals 5. So when a question says complete the sum or solve this addition problem, just put the groups together and count how many altogether." },
   { file: 'audio/help-addition-scenes/scene-2-which-sum.mp3',
-    text: "Sometimes you're given a target number and asked which sum makes it. For example: which sum equals 7? Is it 3 plus 4, or 2 plus 6? Let's check. 3 plus 4 is 7 — yes! And 2 plus 6 is 8 — no. So 3 plus 4 is the answer. Here's something interesting: you can swap the numbers around and the answer stays the same. 3 plus 4 equals 4 plus 3. Both make 7." },
+    text: "Sometimes you're given a target number and asked which sum makes it. For example: which sum equals 7? Is it 3 plus 4, or 2 plus 6? Let's check. 3 plus 4 is 7 — yes, that's the one! And 2 plus 6 is 8 — that's not 7, so it's not the right answer. So 3 plus 4 is the answer. Here's something interesting: you can swap the numbers around and the answer stays the same. 3 plus 4 equals 4 plus 3. Both make 7." },
   { file: 'audio/help-addition-scenes/scene-3-pairs-ten.mp3',
     text: "Pairs that make 10 are really important because they help us solve bigger addition questions. Here are the pairs: 0 and 10, 1 and 9, 2 and 8, 3 and 7, 4 and 6, 5 and 5. Each pair adds to 10. So if a question asks you to select the pair that adds to 10 and you see 3 and 7, you know that's a match." },
   { file: 'audio/help-addition-scenes/scene-4-doubles.mp3',
