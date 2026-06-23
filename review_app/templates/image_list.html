@@ -277,13 +277,16 @@
                       : '<span class="status-icon pending">&mdash;</span>'}
                 </td>
                 <td class="col-actions" style="white-space:nowrap;">
-                    ${q.has_gen_image && !q.has_at_image ? `
+                    ${q.has_gen_image && !q.has_at_image && q.img_status !== 'approved' ? `
                         <button class="action-btn approve-btn" onclick="quickApproveImage('${q.id}')" title="Approve & send to Canva">&#10003;</button>
                         <button class="action-btn" onclick="regenerateImage('${q.id}')" title="Regenerate with prompt" style="font-size:0.8rem;">&#8635;</button>
                     ` : q.img_status === 'approved' && q.has_gen_image ? `
                         <span class="done-label">Sent</span>
                         <button class="action-btn" onclick="resendToCanva('${q.id}')" title="Resend to Canva" style="font-size:0.7rem;">&#8635;</button>
-                    ` : q.has_at_image ? '<span class="done-label">Done</span>' : ''}
+                    ` : q.has_at_image ? '<span class="done-label">Done</span>'
+                      : !q.has_gen_image && !editingItems.has(q.id) ? `
+                        <button class="action-btn" onclick="regenerateImage('${q.id}')" title="Generate image" style="font-size:0.8rem;">&#9654;</button>
+                    ` : ''}
                 </td>
             </tr>`;
         }).join('');
