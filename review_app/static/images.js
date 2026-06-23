@@ -261,17 +261,17 @@ async function bulkGenerateImages() {
     const defaultTemplate = templateEl ? templateEl.value.trim() : '';
 
     // Collect prompts — use custom if typed, otherwise use default template
+    // {question} gets replaced with actual question text in both cases
     const prompts = {};
     for (const id of ids) {
         const input = document.getElementById(`prompt-${id}`);
         const customPrompt = input ? input.value.trim() : '';
+        const q = ALL_QUESTIONS.find(q => q.id === id);
+        const questionText = q ? q.text : '';
 
         if (customPrompt) {
-            prompts[id] = customPrompt;
+            prompts[id] = customPrompt.replace('{question}', questionText);
         } else if (defaultTemplate) {
-            // Find the question text for this ID
-            const q = ALL_QUESTIONS.find(q => q.id === id);
-            const questionText = q ? q.text : '';
             prompts[id] = defaultTemplate.replace('{question}', questionText);
         }
     }

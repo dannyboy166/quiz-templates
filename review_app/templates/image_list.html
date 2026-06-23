@@ -441,19 +441,42 @@
         }
     }
 
-    async function regenerateImage(itemId) {
+    function resolvePrompt(itemId) {
+        // Get the prompt for this item — custom prompt, or fall back to default template
         const input = document.getElementById(`prompt-${itemId}`);
-        const prompt = input ? input.value.trim() : '';
+        const customPrompt = input ? input.value.trim() : '';
+        const q = ALL_QUESTIONS.find(q => q.id === itemId);
+        const questionText = q ? q.text : '';
+
+        if (customPrompt) {
+            // Replace {question} if present in custom prompt
+            return customPrompt.replace('{question}', questionText);
+        }
+
+        // Fall back to default template
+        const templateEl = document.getElementById('default-prompt-template');
+        const template = templateEl ? templateEl.value.trim() : '';
+        if (template) {
+            return template.replace('{question}', questionText);
+        }
+
+        return '';
+    }
+
+    async function regenerateImage(itemId) {
+        const prompt = resolvePrompt(itemId);
         if (!prompt) {
-            alert('Type a prompt first, then click regenerate');
+            const input = document.getElementById(`prompt-${itemId}`);
+            alert('Type a prompt or set a default template first');
             if (input) input.focus();
             return;
         }
 
         // Show generating state
-        const row = input.closest('tr');
-        const imgCell = row.querySelector('.col-img-status');
-        imgCell.innerHTML = '<span class="spinner" style="display:inline-block;width:20px;height:20px;"></span>';
+        const input = document.getElementById(`prompt-${itemId}`);
+        const row = input ? input.closest('tr') : null;
+        const imgCell = row ? row.querySelector('.col-img-status') : null;
+        if (imgCell) imgCell.innerHTML = '<span class="spinner" style="display:inline-block;width:20px;height:20px;"></span>';
 
         try {
             const size = document.getElementById('image-size')?.value || '1024x1024';
