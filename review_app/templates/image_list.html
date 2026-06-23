@@ -444,9 +444,6 @@
         }
     }
 
-    // Base style instruction prepended to ALL prompts (per-row and default template)
-    const BASE_STYLE = "For a children's educational quiz. Simple, colorful cartoon style. No text or writing in the image.";
-
     function resolvePrompt(itemId) {
         // Get the prompt for this item — custom prompt, or fall back to default template
         const input = document.getElementById(`prompt-${itemId}`);
@@ -455,9 +452,8 @@
         const questionText = q ? q.text : '';
 
         if (customPrompt) {
-            // Per-row prompt: prepend base style + replace {question} if present
-            const resolved = customPrompt.replace('{question}', questionText);
-            return `${BASE_STYLE} ${resolved}`;
+            // Send exactly what Georgia typed, with {question} replaced if present
+            return customPrompt.replace('{question}', questionText);
         }
 
         // Fall back to default template

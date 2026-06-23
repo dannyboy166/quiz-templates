@@ -260,9 +260,6 @@ async function bulkGenerateImages() {
     const templateEl = document.getElementById('default-prompt-template');
     const defaultTemplate = templateEl ? templateEl.value.trim() : '';
 
-    // Base style prepended to per-row prompts (same as in image_list.html resolvePrompt)
-    const BASE_STYLE = "For a children's educational quiz. Simple, colorful cartoon style. No text or writing in the image.";
-
     // Collect prompts — use custom if typed, otherwise use default template
     // {question} gets replaced with actual question text in both cases
     const prompts = {};
@@ -273,8 +270,7 @@ async function bulkGenerateImages() {
         const questionText = q ? q.text : '';
 
         if (customPrompt) {
-            const resolved = customPrompt.replace('{question}', questionText);
-            prompts[id] = `${BASE_STYLE} ${resolved}`;
+            prompts[id] = customPrompt.replace('{question}', questionText);
         } else if (defaultTemplate) {
             prompts[id] = defaultTemplate.replace('{question}', questionText);
         }
