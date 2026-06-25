@@ -31,9 +31,9 @@ ENGLISH_CATEGORY_TO_TABLE = {
     "Phonics": "Phonics",
     "Spelling": "Spelling",
     "Punctuation": "Punctuation",
-    "Grammar": None,  # No Airtable table yet
-    "Vocabulary": None,
-    "Reading Comprehension": None,
+    "Grammar": "Grammar",
+    "Vocabulary": "Vocabulary",
+    "Reading Comprehension": "Reading Comprehension",
 }
 
 # All tables to fetch from
@@ -49,6 +49,9 @@ AIRTABLE_TABLES = {
     "Science & technology": "tblsUEwLBE9dTAobz",
     "Creative Arts": "tbl3whnn4cLfuxOFo",
     "PD H PE": "tbloE0Yd8BN7lHLeY",
+    "Grammar": "tbl76z58j4rGFx6pW",
+    "Vocabulary": "tbl12tkYndZ4S1ZLC",
+    "Reading Comprehension": "tbl185wrpUgWClX6o",
 }
 
 
