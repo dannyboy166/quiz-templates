@@ -231,6 +231,43 @@ Open `help/{topic}/index.html` in Chrome/Safari.
 | Audio element | `id="audio-{N}"` | `id="audio-1"` |
 | Scene-specific el | `id="s{N}-{name}"` | `id="s1-equation"` |
 
+## Responsive Rules
+
+All lessons must work on different screen sizes. Victor's portal embeds lessons in an iframe of unknown dimensions.
+
+**Stage height** — use `min()` not fixed px:
+```css
+.stage { height: min(380px, 55vh); }
+/* At 600px breakpoint: */
+.stage { height: min(300px, 50vh); }
+```
+
+**Stage overflow** — scroll, don't clip:
+```css
+.stage { overflow-y: auto; overflow-x: hidden; }
+```
+
+**Info cards** — always wrap on narrow screens:
+```css
+.info-cards { flex-wrap: wrap; justify-content: center; }
+```
+
+**Media query at 600px** — every lesson must have one. Scale down:
+- `.scene-title` → 18px
+- `.intro-title` → 26px
+- `.callout` → 13px
+- `.info-card` → 12px, padding 6px 12px
+- `.scene-tab` → 10px
+- `.teacher-panel` → 70x100px
+- Large equations/answers → scale proportionally
+- Topic-specific elements → scale as needed
+
+**Testing** — check each lesson at:
+- Full screen (desktop)
+- 600px width (tablet)
+- 400px width (phone)
+- Use Chrome DevTools responsive mode
+
 ## ElevenLabs Settings
 
 | Setting | Value |

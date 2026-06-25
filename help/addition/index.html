@@ -97,9 +97,9 @@
 
     /* ============ STAGE ============ */
     .stage {
-      height: 380px;
+      height: min(380px, 55vh);
       background: linear-gradient(180deg, #E8F5E9 0%, #C8E6C9 100%);
-      border-radius: 16px; position: relative; overflow: hidden; margin-bottom: 12px;
+      border-radius: 16px; position: relative; overflow-y: auto; overflow-x: hidden; margin-bottom: 12px;
     }
     .scene {
       position: absolute; width: 100%; height: 100%;
@@ -136,7 +136,7 @@
     }
     .scene-title.visible { opacity: 1; transform: scale(1); }
 
-    .info-cards { display: flex; gap: 12px; margin-top: 15px; }
+    .info-cards { display: flex; gap: 12px; margin-top: 15px; flex-wrap: wrap; justify-content: center; }
     .info-card {
       background: white; border: 3px solid #333; border-radius: 12px;
       padding: 10px 18px; font-size: 14px; font-weight: 600; color: #333;
@@ -475,15 +475,23 @@
 
     @media (max-width: 600px) {
       .help-container { padding: 20px 15px 15px; }
-      .stage { height: 300px; }
+      .stage { height: min(300px, 50vh); }
       .scene-tab { font-size: 10px; padding: 4px 8px; }
+      .scene-title { font-size: 18px; margin-bottom: 12px; }
       .intro-title { font-size: 26px; }
       .callout { font-size: 13px; }
       .teacher-panel { width: 70px; height: 100px; }
+      .info-card { font-size: 12px; padding: 6px 12px; }
       .apple { font-size: 30px; }
+      .equation { font-size: 24px; }
+      .big-answer { font-size: 40px; }
       .sum-card { font-size: 16px; padding: 8px 14px; }
       .story-text { font-size: 15px; padding: 12px 16px; }
       .gap-equation { font-size: 28px; }
+      .tf-statement { font-size: 20px; padding: 12px 20px; }
+      .tf-verdict { font-size: 28px; }
+      .pv-card { min-width: 140px; padding: 10px 14px; }
+      .pv-card .pv-problem { font-size: 18px; }
     }
   </style>
 </head>
