@@ -320,17 +320,18 @@
 
     /* ============ SCENE 6: TRUE/FALSE ============ */
     .tf-example {
-      opacity: 0; transition: opacity 0.4s; margin-bottom: 8px;
+      opacity: 0; transition: opacity 0.4s; margin-bottom: 4px;
+      display: none; text-align: center;
     }
-    .tf-example.visible { opacity: 1; }
+    .tf-example.visible { opacity: 1; display: block; }
     .tf-statement {
       background: white; border: 3px solid #333; border-radius: 12px;
       padding: 10px 20px; font-size: 20px; font-weight: 700;
       color: #333; margin-bottom: 6px;
     }
     .leaf-grid {
-      display: flex; flex-wrap: wrap; gap: 2px; max-width: 360px;
-      justify-content: center; font-size: 14px; margin-bottom: 4px;
+      display: flex; flex-wrap: wrap; gap: 2px; max-width: 700px;
+      justify-content: center; font-size: 42px; margin-bottom: 6px;
     }
     .tf-frames-row {
       display: flex; flex-wrap: wrap; gap: 4px; justify-content: center;
@@ -412,7 +413,7 @@
       .dot-rows { font-size: 6px; }
       .tf-statement { font-size: 16px; padding: 8px 16px; }
       .tf-verdict { font-size: 18px; }
-      .leaf-grid { font-size: 10px; }
+      .leaf-grid { font-size: 28px; max-width: 100%; }
     }
   </style>
 </head>
@@ -845,7 +846,11 @@
         { time: 4.5,  action: () => { setCallout("There are 45 leaves. True or false?"); show('s6-ex1'); } },
         { time: 8.8,  action: () => setCallout("Count the leaves yourself to check.") },
         { time: 11.3, action: () => { setCallout("If you count 45, it's true. If you get a different number, it's false."); show('s6-verdict1'); } },
-        { time: 17.6, action: () => { setCallout("Here's another one — if there are 6 full ten-frames and one with 8 dots, there would be 68 dots."); show('s6-ex2'); } },
+        { time: 17.6, action: () => {
+          setCallout("Here's another one — if there are 6 full ten-frames and one with 8 dots, there would be 68 dots.");
+          document.getElementById('s6-ex1').classList.remove('visible');
+          show('s6-ex2');
+        }},
         { time: 25.8, action: () => { setCallout("6 full frames is 60, plus 8 is 68. That's true!"); show('s6-verdict2'); } },
         { time: 32.5, action: () => { setCallout("Always count carefully before you answer."); show('card-count-it'); show('card-then-check'); } },
       ],
