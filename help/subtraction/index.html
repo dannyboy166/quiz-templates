@@ -180,7 +180,7 @@
 
     /* ============ SCENE 2: DIFFERENCE ============ */
     .comparison-rows {
-      display: flex; flex-direction: column; gap: 10px; align-items: center; margin-bottom: 10px;
+      display: flex; flex-direction: column; gap: 10px; align-items: flex-start; margin-bottom: 10px;
     }
     .compare-row {
       display: flex; gap: 8px; opacity: 0; transition: opacity 0.4s;
@@ -218,6 +218,18 @@
     .big-answer.visible { opacity: 1; transform: scale(1); }
 
     /* ============ SCENE 3: WORD PROBLEM ============ */
+    .keyword-bubbles {
+      display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
+      margin-top: 10px; max-width: 500px;
+    }
+    .kw-bubble {
+      background: #e74c3c; color: white; border-radius: 20px;
+      padding: 6px 16px; font-size: 16px; font-weight: 600;
+      opacity: 0; transform: scale(0);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .kw-bubble.visible { opacity: 1; transform: scale(1); }
+
     .story-text {
       background: white; border: 3px solid #333; border-radius: 12px;
       padding: 16px 24px; font-size: 18px; line-height: 1.6; color: #333;
@@ -496,6 +508,10 @@
             <span class="eq-part" id="eq-equals"> = </span>
             <span class="eq-part" id="eq-2">2</span>
           </div>
+          <div class="info-cards" style="margin-top: 10px;">
+            <div class="info-card" id="s1-example1">11 − 4 = ?</div>
+            <div class="info-card" id="s1-example2">solve this subtraction sum</div>
+          </div>
           <div class="info-cards">
             <div class="info-card" id="card-big">Start with the big number</div>
             <div class="info-card" id="card-take">Take away the small one</div>
@@ -526,6 +542,13 @@
           </div>
           <div class="extract-equation" id="s3-eq">
             6 − 2 = <span class="answer">4</span>
+          </div>
+          <div class="keyword-bubbles" id="s3-keywords">
+            <span class="kw-bubble" id="kw-left">left</span>
+            <span class="kw-bubble" id="kw-sold">sold</span>
+            <span class="kw-bubble" id="kw-ate">ate</span>
+            <span class="kw-bubble" id="kw-gave">gave away</span>
+            <span class="kw-bubble" id="kw-remain">how many remain</span>
           </div>
           <div class="info-cards">
             <div class="info-card" id="card-find">Find the numbers</div>
@@ -683,6 +706,7 @@
 
       <div class="controls">
         <button class="ctrl-btn" id="prev-btn">← Prev</button>
+        <button class="ctrl-btn" id="pause-btn">⏸ Pause</button>
         <button class="ctrl-btn" id="replay-btn">↻ Replay</button>
         <button class="ctrl-btn" id="next-btn">Next →</button>
         <button class="ctrl-btn primary" id="got-it-btn">Got it!</button>
@@ -802,6 +826,8 @@
           document.getElementById('eq-2').classList.add('highlight'); } },
         { time: 15.7, action: () => { document.getElementById('eq-2').classList.remove('highlight');
           setCallout("You might also see questions written like this: 11 minus 4, or solve this subtraction sum."); } },
+        { time: 18.1, action: () => show('s1-example1') },
+        { time: 19.8, action: () => show('s1-example2') },
         { time: 21.9, action: () => { setCallout("They all mean the same thing — start with the big number and take it away."); show('card-big'); } },
         { time: 27.5, action: () => { setCallout("The answer is going to be a smaller number than the number you start with."); show('card-take'); } },
       ],
@@ -840,44 +866,49 @@
         { time: 23.3, action: () => { setCallout("The word difference just means how many more one group has than the other."); show('card-lineup'); show('card-gap'); } },
       ],
 
-      3: [ // WORD PROBLEMS (25.9s)
+      3: [ // WORD PROBLEMS (25.5s)
         { time: 0.0,  action: () => show('s3-title') },
         { time: 0.1,  action: () => setCallout("Word problems tell a little story.") },
-        { time: 2.3,  action: () => { setCallout("The shopkeeper made 6 sandwiches and sold 2. How many does he have left?"); show('s3-story'); } },
-        { time: 8.1,  action: () => { setCallout("Find the numbers — 6 and 2."); show('card-find'); } },
-        { time: 10.4, action: () => setCallout("The words sold and left tell us to subtract.") },
-        { time: 13.7, action: () => { setCallout("6 take away 2 equals 4."); show('s3-eq'); } },
-        { time: 16.8, action: () => { setCallout("Look for clue words like left, sold, ate, gave away, or how many remain."); show('card-clue'); } },
-        { time: 23.1, action: () => setCallout("They all tell you it's a subtraction question.") },
+        { time: 2.8,  action: () => { setCallout("The shopkeeper made 6 sandwiches and sold 2. How many does he have left?"); show('s3-story'); } },
+        { time: 8.3,  action: () => { setCallout("Find the numbers — 6 and 2."); show('card-find'); } },
+        { time: 10.9, action: () => setCallout("The words sold and left tell us to subtract.") },
+        { time: 14.2, action: () => { setCallout("6 take away 2 equals 4."); show('s3-eq'); } },
+        { time: 16.9, action: () => { setCallout("Look for clue words like left, sold, ate, gave away, or how many remain."); show('card-clue'); } },
+        { time: 18.3, action: () => show('kw-left') },
+        { time: 18.8, action: () => show('kw-sold') },
+        { time: 19.4, action: () => show('kw-ate') },
+        { time: 19.9, action: () => show('kw-gave') },
+        { time: 21.0, action: () => show('kw-remain') },
+        { time: 22.7, action: () => setCallout("They all tell you it's a subtraction question.") },
       ],
 
-      4: [ // MISSING NUMBER (46.6s)
+      4: [ // MISSING NUMBER (45.9s)
         { time: 0.0,  action: () => show('s4-title') },
         { time: 0.1,  action: () => setCallout("Sometimes there's a missing number in the subtraction number sentence.") },
-        { time: 3.9,  action: () => { setCallout("8 take away something equals 3.");
+        { time: 4.1,  action: () => { setCallout("8 take away something equals 3.");
           show('s4-eq1'); document.getElementById('gap-box-1').classList.add('pulse'); } },
-        { time: 6.7,  action: () => setCallout("Think: I start at 8 and need to land on 3.") },
-        { time: 11.2, action: () => { setCallout("Start at 8 and count back until you get to three — seven, six, five, four, three."); show('s4-numline'); } },
-        { time: 14.0, action: () => show('hop-1') },
-        { time: 14.8, action: () => show('hop-2') },
-        { time: 15.6, action: () => show('hop-3') },
-        { time: 16.4, action: () => show('hop-4') },
-        { time: 17.2, action: () => show('hop-5') },
-        { time: 18.9, action: () => {
+        { time: 7.6,  action: () => setCallout("Think: I start at 8 and need to land on 3.") },
+        { time: 11.4, action: () => { setCallout("Start at 8 and count back until you get to three — seven, six, five, four, three."); show('s4-numline'); } },
+        { time: 14.4, action: () => show('hop-1') },
+        { time: 15.2, action: () => show('hop-2') },
+        { time: 15.9, action: () => show('hop-3') },
+        { time: 16.7, action: () => show('hop-4') },
+        { time: 17.4, action: () => show('hop-5') },
+        { time: 18.6, action: () => {
           setCallout("That's 5 jumps, so the missing number is 5.");
           const gb = document.getElementById('gap-box-1');
           gb.classList.remove('pulse'); gb.classList.add('filled'); gb.textContent = '5';
         }},
-        { time: 22.8, action: () => { setCallout("The missing number might be at the start too — something take away 5 equals 3.");
+        { time: 22.1, action: () => { setCallout("The missing number might be at the start too — something take away 5 equals 3.");
           show('s4-eq2'); document.getElementById('gap-box-2').classList.add('pulse'); } },
-        { time: 28.4, action: () => setCallout("If I start with 3 and add back the 5 I took away, what do I get?") },
-        { time: 33.4, action: () => { setCallout("3 plus 5 equals 8."); show('s4-inverse'); } },
-        { time: 36.3, action: () => {
+        { time: 27.6, action: () => setCallout("If I start with 3 and add back the 5 I took away, what do I get?") },
+        { time: 33.2, action: () => { setCallout("3 plus 5 equals 8."); show('s4-inverse'); } },
+        { time: 36.7, action: () => {
           setCallout("So the missing number is 8.");
           const gb2 = document.getElementById('gap-box-2');
           gb2.classList.remove('pulse'); gb2.classList.add('filled'); gb2.textContent = '8';
         }},
-        { time: 38.7, action: () => { setCallout("Remember: when the missing number is at the start, adding can help us find the answer."); show('card-count-back'); show('card-inverse'); } },
+        { time: 38.8, action: () => { setCallout("Remember: when the missing number is at the start, adding can help us find the answer."); show('card-count-back'); show('card-inverse'); } },
       ],
 
       5: [ // WHICH SUM (30.6s)
@@ -1042,6 +1073,7 @@
       document.querySelectorAll('.scene-tab').forEach(t => t.classList.remove('active'));
       document.querySelector(`[data-scene="${idx}"]`).classList.add('active');
       document.getElementById('debug-scene').textContent = idx;
+      document.getElementById('pause-btn').textContent = '⏸ Pause';
       playCurrentScene();
     }
 
@@ -1101,7 +1133,20 @@
 
     document.getElementById('help-close').addEventListener('click', () => { stopAll(); overlay.classList.remove('active'); });
     document.getElementById('got-it-btn').addEventListener('click', () => { stopAll(); overlay.classList.remove('active'); });
-    document.getElementById('replay-btn').addEventListener('click', () => playCurrentScene());
+    document.getElementById('pause-btn').addEventListener('click', () => {
+      const a = getAudio(currentScene);
+      const btn = document.getElementById('pause-btn');
+      if (a.paused) {
+        a.play().catch(()=>{});
+        animationFrame = requestAnimationFrame(updateAnimation);
+        btn.textContent = '⏸ Pause';
+      } else {
+        a.pause();
+        cancelAnimationFrame(animationFrame);
+        btn.textContent = '▶ Play';
+      }
+    });
+    document.getElementById('replay-btn').addEventListener('click', () => { document.getElementById('pause-btn').textContent = '⏸ Pause'; playCurrentScene(); });
     document.getElementById('prev-btn').addEventListener('click', () => { if (currentScene > 0) switchScene(currentScene - 1); });
     document.getElementById('next-btn').addEventListener('click', () => { if (currentScene < TOTAL_SCENES - 1) switchScene(currentScene + 1); });
 
