@@ -571,6 +571,28 @@ const helpOrdinalNumbersAudio = [
     text: "Now it's your turn! Try some ordinal number questions yourself." },
 ];
 
+// ==========================================
+// HELP - TELLING THE TIME
+// ==========================================
+const helpTellingTimeAudio = [
+  { file: 'audio/help-telling-time/scene-0-intro.mp3',
+    text: "Hello! Today we're learning about telling the time. We use clocks to know what time it is. We use calendars to know what year, month or day it is. Let's look at the different types of time questions." },
+  { file: 'audio/help-telling-time/scene-1-oclock.mp3',
+    text: "When the long hand points straight up to 12, it's an o'clock time. The short hand tells us the hour. If the short hand points to 3 and the long hand points to 12, it's 3 o'clock. If the short hand points to 9, it's 9 o'clock. Remember: the short hand is the hour hand, and the long hand is the minute hand." },
+  { file: 'audio/help-telling-time/scene-2-half-past.mp3',
+    text: "When the long hand points straight down to 6, it's half past. Half past means 30 minutes past the hour. If the short hand is between 3 and 4, and the long hand points to 6, it's half past 3. We can also write it as 3:30. Notice the short hand moves a little bit past the hour — it's halfway between 3 and 4." },
+  { file: 'audio/help-telling-time/scene-3-quarter.mp3',
+    text: "When the long hand points to 3, it's quarter past. Quarter past means 15 minutes past the hour. So if the short hand is just past 2, and the long hand is on 3, it's quarter past 2. When the long hand points to 9, it's quarter to the next hour. Quarter to means 15 minutes before the next hour. If the long hand is on 9 and the short hand is almost at 5, it's quarter to 5." },
+  { file: 'audio/help-telling-time/scene-4-days.mp3',
+    text: "There are 7 days in a week. Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday. If today is Tuesday, tomorrow is Wednesday. If today is Saturday, yesterday was Friday. To answer these questions you need to know the order of the days of the week." },
+  { file: 'audio/help-telling-time/scene-5-months.mp3',
+    text: "There are 12 months in a year. January, February, March, April, May, June, July, August, September, October, November, December. What month comes after April? May! What month comes before July? June! January is the first month at the beginning of the year. December is the last month at the end of the year. A question might ask you which month is the third month — that's March." },
+  { file: 'audio/help-telling-time/scene-6-calendar.mp3',
+    text: "A calendar shows you all the days in a month. To find what day of the week a date falls on, find the date number and look up to the top of that column. What day of the week is the 5th of May? Find 5 on the calendar, look up — it's a Monday. Some questions ask what day is 2 days before or 3 days after a date. Just count forwards or backwards on the calendar from that date." },
+  { file: 'audio/help-telling-time/scene-7-outro.mp3',
+    text: "Now it's your turn! Try some time and calendar questions yourself." },
+];
+
 // All templates
 const allTemplates = {
   'word-match': wordMatchAudio,
@@ -596,6 +618,7 @@ const allTemplates = {
   'help-subtraction': helpSubtractionAudio,
   'help-counting': helpCountingAudio,
   'help-ordinal-numbers': helpOrdinalNumbersAudio,
+  'help-telling-time': helpTellingTimeAudio,
 };
 
 async function generateAudioWithTimestamps(text, outputPath, speed = 0.9) {
