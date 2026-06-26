@@ -551,6 +551,26 @@ const helpCountingAudio = [
     text: "Now it's your turn! Try some counting questions yourself." },
 ];
 
+// ==========================================
+// HELP - ORDINAL NUMBERS
+// ==========================================
+const helpOrdinalNumbersAudio = [
+  { file: 'audio/help-ordinal-numbers/scene-0-intro.mp3',
+    text: "Hello! Today we're learning about ordinal numbers. Ordinal numbers tell us the position or order of something. Instead of how many, they tell us which one — like first, second, or third. Let's find out how they work." },
+  { file: 'audio/help-ordinal-numbers/scene-1-what-are-ordinals.mp3',
+    text: "Ordinary numbers like 1, 2, 3 tell us how many. Ordinal numbers tell us what position something is in. First, second, third, fourth, fifth — these are ordinal numbers. We write them with special endings: 1st, 2nd, 3rd, 4th, 5th. They tell us the order — who came first, who came second, and so on." },
+  { file: 'audio/help-ordinal-numbers/scene-2-to-twenty.mp3',
+    text: "Let's learn the ordinal numbers from first to twentieth. First is written 1st. Second is written 2nd. Third is written 3rd. After that, most of them end in T-H. Fourth, fifth, sixth, seventh, eighth, ninth, tenth. Eleventh, twelfth — twelfth is a tricky one! Thirteenth, fourteenth, fifteenth. Sixteenth, seventeenth, eighteenth, nineteenth, twentieth. Look closely at the spelling of these ones: first, second, third, fifth, eighth, ninth, and twelfth — they don't follow the usual pattern of just adding T-H at the end." },
+  { file: 'audio/help-ordinal-numbers/scene-3-race.mp3',
+    text: "Many questions show a race and ask about positions. The race had 6 entries. What position did Ben finish in? Look at the picture — count from the front. The one at the very front is 1st. The next one is 2nd, then 3rd, then 4th, and so on. If Ben is at the front, he finished 1st. Always count from the start of the race — the leader is 1st." },
+  { file: 'audio/help-ordinal-numbers/scene-4-front-behind.mp3',
+    text: "Some questions ask how many finished in front of or behind someone. Josh finished 3rd. How many finished in front of Josh? If Josh is 3rd, then 1st and 2nd are in front of him — that's 2. How many finished behind Josh? If there were 6 in the race and Josh is 3rd, then 4th, 5th, and 6th are behind him — that's 3. In front means a lower position number. Behind means a higher position number." },
+  { file: 'audio/help-ordinal-numbers/scene-5-true-false.mp3',
+    text: "True or false questions test what you know about ordinal order. The third student in a line is before the fifth student. True or false? Third comes before fifth — 3rd, 4th, 5th. That's true! First is the ordinal number for 1. True or false? Yes! 1st means first. That's true! Twelfth is the ordinal number for 20. True or false? No — twelfth is 12th, not 20th. Twentieth is the ordinal number for 20. That's false!" },
+  { file: 'audio/help-ordinal-numbers/scene-6-outro.mp3',
+    text: "Now it's your turn! Try some ordinal number questions yourself." },
+];
+
 // All templates
 const allTemplates = {
   'word-match': wordMatchAudio,
@@ -575,6 +595,7 @@ const allTemplates = {
   'help-homophones': helpHomophonesAudio,
   'help-subtraction': helpSubtractionAudio,
   'help-counting': helpCountingAudio,
+  'help-ordinal-numbers': helpOrdinalNumbersAudio,
 };
 
 async function generateAudioWithTimestamps(text, outputPath, speed = 0.9) {
