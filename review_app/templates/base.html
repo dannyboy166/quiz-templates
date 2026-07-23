@@ -18,7 +18,9 @@
         <div class="nav-links">
             <a href="/" class="nav-link">Dashboard</a>
             <a href="/questions" class="nav-link">Questions</a>
+            <a href="/library" class="nav-link">Library</a>
             <a href="/images" class="nav-link">Images</a>
+            {% if session.get('authed') %}<a href="/logout" class="nav-link nav-logout">Log out</a>{% endif %}
         </div>
         <div class="nav-status" id="bulk-indicator" style="display:none;">
             <span class="spinner"></span>

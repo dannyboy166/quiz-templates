@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+{% block title %}Voice-Over Library — QuestionReview{% endblock %}
+{% block content %}
+<div class="library-page">
+    <div class="list-header">
+        <div>
+            <h1>Voice-Over Library</h1>
+            <p class="library-sub">
+                {% if include_all %}
+                    Showing <strong>all</strong> voice-overs (approved, pending &amp; flagged).
+                {% else %}
+                    Showing <strong>approved</strong> voice-overs, ready to use.
+                {% endif %}
+            </p>
+        </div>
+        <div class="list-actions">
+            <button class="btn btn-primary" id="zip-selected-btn" onclick="downloadZip(true)" disabled>
+                Download Selected (ZIP)
+            </button>
+            <button class="btn btn-secondary" id="zip-all-btn" onclick="downloadZip(false)">
+                Download All Shown (ZIP)
+            </button>
+        </div>
+    </div>
+
+    <div class="filter-bar">
+        <select id="filter-subject" onchange="applyFilters()">
+            <option value="">All Subjects</option>
+            {% for s in subjects %}
+            <option value="{{ s }}">{{ s }}</option>
+            {% endfor %}
+        </select>
+        <select id="filter-topic" onchange="applyFilters()">
+            <option value="">All Topics</option>
+        </select>
+        <input type="text" id="filter-search" placeholder="Search question text or ItemID..."
+               oninput="applyFilters()">
+        <label class="select-all-label">
+            <input type="checkbox" id="select-all" onchange="toggleSelectAll(this.checked)">
+            Select visible
+        </label>
+        <label class="hints-toggle-label" title="Include approved hint audio in downloads">
+            <input type="checkbox" id="show-all-statuses"
+                   {% if include_all %}checked{% endif %}
+                   onchange="window.location = this.checked ? '/library?all=1' : '/library'">
+            Show all statuses
+        </label>
+        <span class="filter-count" id="filter-count"></span>
+    </div>
+
+    <div class="question-table-wrap">
+        <table class="question-table library-table">
+            <thead>
+                <tr>
+                    <th class="col-check"><input type="checkbox" id="header-check" onchange="toggleSelectAll(this.checked)"></th>
+                    <th class="col-id">ItemID</th>
+                    <th class="col-text">Question</th>
+                    <th class="col-subject">Subject</th>
+                    <th class="col-topic">Topic</th>
+                    <th class="col-status">Status</th>
+                    <th class="col-audio-files">Audio</th>
+                    <th class="col-actions">Play / Download</th>
+                </tr>
+            </thead>
+            <tbody id="library-tbody"></tbody>
+        </table>
+    </div>
+
+    <div class="pagination" id="pagination"></div>
+
+    <audio id="lib-audio-player" preload="none"></audio>
+
+    <div class="zip-progress" id="zip-progress" style="display:none;">
+        <span class="spinner"></span> <span id="zip-progress-text">Preparing ZIP…</span>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+    const ALL_ITEMS = {{ items_json|safe }};
+    const TOPICS_BY_SUBJECT = {{ topics_by_subject|safe }};
+    const INCLUDE_ALL = {{ 'true' if include_all else 'false' }};
+    const PER_PAGE = 50;
+    let filtered = ALL_ITEMS;
+    let currentPage = 1;
+    let selected = new Set();
+
+    // Restore filters from URL (?subject=&topic=&search=)
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('subject')) document.getElementById('filter-subject').value = params.get('subject');
+    if (params.get('search')) document.getElementById('filter-search').value = params.get('search');
+    const initialTopic = params.get('topic');
+
+    applyFilters();
+    if (initialTopic) {
+        document.getElementById('filter-topic').value = initialTopic;
+        applyFilters();
+    }
+
+    function applyFilters() {
+        const subject = document.getElementById('filter-subject').value;
+        const topic = document.getElementById('filter-topic').value;
+        const search = document.getElementById('filter-search').value.toLowerCase();
+
+        // rebuild topic dropdown for the chosen subject
+        const topicSelect = document.getElementById('filter-topic');
+        const currentTopic = topicSelect.value;
+        topicSelect.innerHTML = '<option value="">All Topics</option>';
+        if (subject && TOPICS_BY_SUBJECT[subject]) {
+            TOPICS_BY_SUBJECT[subject].forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t; opt.textContent = t;
+                if (t === currentTopic) opt.selected = true;
+                topicSelect.appendChild(opt);
+            });
+        }
+
+        filtered = ALL_ITEMS.filter(it => {
+            if (subject && it.subject !== subject) return false;
+            if (topic && it.topic !== topic) return false;
+            if (search && !it.text.toLowerCase().includes(search) && !it.id.includes(search)) return false;
+            return true;
+        });
+
+        currentPage = 1;
+        renderTable();
+        const n = filtered.length;
+        document.getElementById('filter-count').textContent =
+            n + (n === 1 ? ' item' : ' items');
+    }
+
+    function audioCount(it) {
+        return (it.question_file ? 1 : 0) + (it.hints ? it.hints.length : 0);
+    }
+
+    function renderTable() {
+        const start = (currentPage - 1) * PER_PAGE;
+        const page = filtered.slice(start, start + PER_PAGE);
+        const tbody = document.getElementById('library-tbody');
+
+        let html = '';
+        for (const it of page) {
+            const statusBadge =
+                it.status === 'approved' ? '<span class="status-badge status-approved">Approved</span>' :
+                it.status === 'flagged' ? '<span class="status-badge status-flagged">Flagged</span>' :
+                '<span class="status-badge status-pending">Pending</span>';
+
+            // audio action buttons: question + each hint
+            let actions = '';
+            if (it.question_file) {
+                actions += `
+                    <span class="audio-action">
+                        <button class="play-btn" onclick="playFile('${it.question_file}', this)" title="Play question">&#9654;</button>
+                        <a class="dl-btn" href="/audio/${it.question_file}" download title="Download question">&#8681; Q</a>
+                    </span>`;
+            }
+            for (const h of (it.hints || [])) {
+                actions += `
+                    <span class="audio-action">
+                        <button class="play-btn play-btn-small" onclick="playFile('${h.file}', this)" title="Play hint ${h.n}">&#9654;</button>
+                        <a class="dl-btn" href="/audio/${h.file}" download title="Download hint ${h.n}">&#8681; H${h.n}</a>
+                    </span>`;
+            }
+
+            html += `
+            <tr class="library-row">
+                <td class="col-check">
+                    <input type="checkbox" ${selected.has(it.id) ? 'checked' : ''}
+                           onchange="toggleSelect('${it.id}', this.checked)">
+                </td>
+                <td class="col-id">${it.id}</td>
+                <td class="col-text">${escapeHtml(it.text)}</td>
+                <td class="col-subject">${escapeHtml(it.subject)}</td>
+                <td class="col-topic">${escapeHtml(it.topic)}</td>
+                <td class="col-status">${statusBadge}</td>
+                <td class="col-audio-files">${audioCount(it)}</td>
+                <td class="col-actions"><div class="audio-actions">${actions}</div></td>
+            </tr>`;
+        }
+        tbody.innerHTML = html || '<tr><td colspan="8" class="empty-row">No voice-overs match these filters.</td></tr>';
+        renderPagination();
+        updateZipButton();
+        syncHeaderCheck();
+    }
+
+    function renderPagination() {
+        const totalPages = Math.ceil(filtered.length / PER_PAGE);
+        if (totalPages <= 1) { document.getElementById('pagination').innerHTML = ''; return; }
+        let html = '';
+        if (currentPage > 1) html += `<button onclick="goPage(${currentPage-1})">&laquo; Prev</button>`;
+        html += `<span class="page-info">Page ${currentPage} of ${totalPages}</span>`;
+        if (currentPage < totalPages) html += `<button onclick="goPage(${currentPage+1})">Next &raquo;</button>`;
+        document.getElementById('pagination').innerHTML = html;
+    }
+
+    function goPage(n) { currentPage = n; renderTable(); window.scrollTo(0, 0); }
+
+    function toggleSelect(id, checked) {
+        if (checked) selected.add(id); else selected.delete(id);
+        updateZipButton();
+        syncHeaderCheck();
+    }
+
+    function toggleSelectAll(checked) {
+        const start = (currentPage - 1) * PER_PAGE;
+        const page = filtered.slice(start, start + PER_PAGE);
+        page.forEach(it => { if (checked) selected.add(it.id); else selected.delete(it.id); });
+        document.getElementById('select-all').checked = checked;
+        document.getElementById('header-check').checked = checked;
+        renderTable();
+    }
+
+    function syncHeaderCheck() {
+        const start = (currentPage - 1) * PER_PAGE;
+        const page = filtered.slice(start, start + PER_PAGE);
+        const allSel = page.length > 0 && page.every(it => selected.has(it.id));
+        document.getElementById('select-all').checked = allSel;
+        document.getElementById('header-check').checked = allSel;
+    }
+
+    function updateZipButton() {
+        const btn = document.getElementById('zip-selected-btn');
+        btn.disabled = selected.size === 0;
+        btn.textContent = selected.size
+            ? `Download Selected (${selected.size}) ZIP`
+            : 'Download Selected (ZIP)';
+    }
+
+    // --- Audio playback (single shared element) ---
+    let currentSrc = null;
+    function playFile(filename, btn) {
+        const player = document.getElementById('lib-audio-player');
+        if (currentSrc === filename && !player.paused) {
+            player.pause(); player.currentTime = 0;
+            resetPlayBtns();
+            currentSrc = null;
+            return;
+        }
+        resetPlayBtns();
+        player.src = `/audio/${filename}?t=${Date.now()}`;
+        player.play();
+        btn.innerHTML = '&#9632;'; btn.classList.add('playing');
+        currentSrc = filename;
+        player.onended = () => { resetPlayBtns(); currentSrc = null; };
+    }
+    function resetPlayBtns() {
+        document.querySelectorAll('.play-btn.playing').forEach(b => {
+            b.innerHTML = '&#9654;'; b.classList.remove('playing');
+        });
+    }
+
+    // --- ZIP download ---
+    async function downloadZip(onlySelected) {
+        const ids = onlySelected
+            ? Array.from(selected)
+            : filtered.map(it => it.id);
+        if (!ids.length) return;
+
+        const count = ids.length;
+        const prog = document.getElementById('zip-progress');
+        document.getElementById('zip-progress-text').textContent =
+            `Preparing ZIP of ${count} item${count === 1 ? '' : 's'}…`;
+        prog.style.display = 'flex';
+        document.getElementById('zip-selected-btn').disabled = true;
+        document.getElementById('zip-all-btn').disabled = true;
+
+        try {
+            // Always send explicit ids (the endpoint requires an explicit
+            // selection so an empty body never dumps the whole library).
+            const res = await fetch('/api/library/download-zip', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ids, all: INCLUDE_ALL}),
+            });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                alert('Could not build ZIP: ' + (err.error || res.status));
+                return;
+            }
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'worldwise-voiceovers.zip';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        } catch (e) {
+            alert('ZIP download failed: ' + e);
+        } finally {
+            prog.style.display = 'none';
+            document.getElementById('zip-all-btn').disabled = false;
+            updateZipButton();
+        }
+    }
+
+    function escapeHtml(s) {
+        const d = document.createElement('div');
+        d.textContent = s;
+        return d.innerHTML;
+    }
+</script>
+{% endblock %}

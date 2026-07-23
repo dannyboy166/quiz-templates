@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Sign in — QuestionReview{% endblock %}
+{% block content %}
+<div class="login-page">
+    <div class="login-card">
+        <h1>QuestionReview</h1>
+        <p class="login-sub">Enter the shared password to continue.</p>
+        {% if error %}
+        <div class="login-error">{{ error }}</div>
+        {% endif %}
+        <form method="POST" class="login-form">
+            <input type="password" name="password" placeholder="Password"
+                   autofocus autocomplete="current-password" required>
+            <button type="submit" class="btn btn-primary">Sign in</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

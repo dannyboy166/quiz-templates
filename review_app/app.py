@@ -2,15 +2,22 @@
 
 import json
 import os
+import re
+import io
+import csv
 import time
+import hmac
+import zipfile
 import threading
 import queue
+from datetime import timedelta
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 from flask import (
     Flask, render_template, jsonify, request,
-    send_from_directory, abort, redirect,
+    send_from_directory, abort, redirect, Response,
+    session, url_for,
 )
 
 from .spreadsheet_loader import load_all_questions, TEMPLATE_NAMES
@@ -70,7 +77,82 @@ img_bulk_queue = queue.Queue()
 def create_app():
     app = Flask(__name__)
 
+    # --- Simple shared-password gate ------------------------------------
+    # The app has no user accounts. If ACCESS_PASSWORD is set, every page
+    # (except the login form and audio/static assets) requires the password
+    # once per browser session. If it's unset, the app stays open (dev/local).
+    ACCESS_PASSWORD = os.environ.get("ACCESS_PASSWORD")
+
+    # The session cookie that carries "authed" is only as trustworthy as the
+    # signing key. If the gate is on, a real SECRET_KEY is mandatory — a known
+    # default would let anyone forge an authed cookie and bypass the password.
+    secret_key = os.environ.get("SECRET_KEY")
+    if ACCESS_PASSWORD and not secret_key:
+        raise RuntimeError(
+            "ACCESS_PASSWORD is set but SECRET_KEY is not. Refusing to start: "
+            "a signed session with a guessable key is not real auth. "
+            "Set SECRET_KEY to a long random value."
+        )
+    app.secret_key = secret_key or "dev-insecure-open-mode"
+    app.permanent_session_lifetime = timedelta(days=7)
+
     project_root = Path(__file__).resolve().parent.parent
+
+    # Exact paths + asset prefixes that never require auth. Audio and generated
+    # images must be reachable so the library can play/download files; static
+    # assets (css/fonts/js) too. Everything else is gated.
+    _OPEN_EXACT = {"/login", "/logout", "/favicon.ico"}
+    _OPEN_PREFIXES = ("/assets/", "/static/", "/audio/", "/generated-images/")
+
+    def _is_open_path(path):
+        return path in _OPEN_EXACT or path.startswith(_OPEN_PREFIXES)
+
+    def _safe_next(target):
+        """Only allow same-site relative redirects (a single leading slash,
+        not '//host' or 'https:'). Prevents open-redirect phishing."""
+        if not target:
+            return None
+        if target.startswith("//") or "://" in target or "\\" in target:
+            return None
+        if not target.startswith("/"):
+            return None
+        return target
+
+    @app.before_request
+    def _require_login():
+        if not ACCESS_PASSWORD:
+            return  # gate disabled
+        if _is_open_path(request.path):
+            return
+        if session.get("authed"):
+            return
+        # Preserve the full original URL (path + query) so filtered/deep links
+        # survive the login round-trip.
+        return redirect(url_for("login", next=request.full_path.rstrip("?")))
+
+    @app.route("/login", methods=["GET", "POST"])
+    def login():
+        if not ACCESS_PASSWORD:
+            return redirect(url_for("dashboard"))
+        nxt = _safe_next(request.args.get("next")) or url_for("dashboard")
+        if session.get("authed"):
+            return redirect(nxt)
+        error = None
+        if request.method == "POST":
+            supplied = request.form.get("password", "")
+            if hmac.compare_digest(supplied, ACCESS_PASSWORD):
+                session["authed"] = True
+                session.permanent = True
+                return redirect(nxt)
+            error = "Incorrect password."
+        return render_template("login.html", error=error)
+
+    @app.route("/logout")
+    def logout():
+        session.clear()
+        if ACCESS_PASSWORD:
+            return redirect(url_for("login"))
+        return redirect(url_for("dashboard"))
 
     # Load data on startup
     print("Loading spreadsheets...")
@@ -127,6 +209,168 @@ def create_app():
                                subjects=subjects,
                                topics_by_subject=json.dumps(topics_by_subject),
                                sheets=sheets)
+
+    # --- Voice-over Library (read-only, for Julie) ----------------------
+    # Shows only APPROVED voice-overs that actually have audio on disk, so
+    # they can be browsed, searched, played, and downloaded (single or ZIP)
+    # for hand-off. A "Show all statuses" toggle reveals pending/flagged too.
+
+    def _library_items(include_all=False):
+        """Build the client-side list for the library.
+
+        By default only items with status 'approved' AND an audio file.
+        Each item carries its downloadable question/hint filenames.
+        """
+        items = []
+        for q in questions_list:
+            item_id = q["item_id"]
+            s = state.get(item_id, {})
+            status = s.get("status", "pending")
+            q_has_audio = has_audio(item_id)
+
+            # Approved hints that have audio (each independently shippable).
+            hint_files = []
+            for h in range(1, 4):
+                if not q.get(f"hint{h}"):
+                    continue
+                hs = s.get("hints", {}).get(f"hint{h}", {})
+                if has_hint_audio(item_id, h) and (include_all or hs.get("status") == "approved"):
+                    hint_files.append({
+                        "n": h,
+                        "file": f"{item_id}-hint{h}.mp3",
+                        "status": hs.get("status", "pending"),
+                    })
+
+            question_ready = q_has_audio and (include_all or status == "approved")
+            if not question_ready and not hint_files:
+                continue
+
+            items.append({
+                "id": item_id,
+                "text": q["question_text"][:120],
+                "subject": q["subject"],
+                "topic": q["topic"],
+                "type": q["question_type"],
+                "grade": q["grade"],
+                "status": status,
+                "question_file": f"{item_id}-question.mp3" if question_ready else None,
+                "hints": hint_files,
+            })
+        return items
+
+    @app.route("/library")
+    def library():
+        include_all = request.args.get("all") == "1"
+        items = _library_items(include_all=include_all)
+        return render_template(
+            "library.html",
+            items_json=json.dumps(items, ensure_ascii=False),
+            subjects=subjects,
+            topics_by_subject=json.dumps(topics_by_subject),
+            include_all=include_all,
+            total=len(items),
+        )
+
+    @app.route("/api/library/download-zip", methods=["POST"])
+    def library_download_zip():
+        """Zip the requested item_ids' audio with a manifest.csv.
+
+        Body: {"ids": ["20012001", ...], "all": false}. Files are renamed to
+        self-describing names; manifest.csv maps them back to metadata.
+        """
+        data = request.get_json(silent=True) or {}
+        include_all = bool(data.get("all"))
+        # Require an explicit selection: either a non-empty id list, or the
+        # caller must opt in to "everything shown" with want_all=True. This
+        # avoids an empty/missing ids body silently zipping the whole library.
+        raw_ids = data.get("ids")
+        want_all = bool(data.get("want_all"))
+        if raw_ids is None and not want_all:
+            return jsonify({"ok": False, "error": "No items selected."}), 400
+        wanted = set(raw_ids or [])
+
+        items = _library_items(include_all=include_all)
+        if not want_all:
+            if not wanted:
+                return jsonify({"ok": False, "error": "No items selected."}), 400
+            items = [it for it in items if it["id"] in wanted]
+        if not items:
+            return jsonify({"ok": False, "error": "No matching audio."}), 400
+
+        def _slug(txt):
+            txt = re.sub(r"[^\w\s-]", "", str(txt or "")).strip()
+            return re.sub(r"[\s-]+", "_", txt) or "na"
+
+        def _csv_safe(val):
+            """Neutralise CSV/Excel formula injection: a leading =,+,-,@ (or
+            tab/CR) makes Excel evaluate the cell as a formula."""
+            s = "" if val is None else str(val)
+            if s and s[0] in ("=", "+", "-", "@", "\t", "\r"):
+                return "'" + s
+            return s
+
+        buf = io.BytesIO()
+        manifest_rows = [(
+            "filename", "item_id", "kind", "subject", "topic",
+            "question_type", "grade", "status", "question_text",
+        )]
+        used_names = set()
+
+        def _unique(name):
+            base, ext = os.path.splitext(name)
+            candidate, i = name, 2
+            while candidate in used_names:
+                candidate = f"{base}_{i}{ext}"
+                i += 1
+            used_names.add(candidate)
+            return candidate
+
+        written = 0
+        missing = []  # (item_id, filename) that were expected but not on disk
+        voiceover_dir = Path(VOICEOVER_DIR)
+        with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+            for it in items:
+                prefix = f"{_slug(it['subject'])}_{_slug(it['topic'])}_{it['id']}"
+                sources = []
+                if it.get("question_file"):
+                    sources.append(("question", it["question_file"], f"{prefix}_question.mp3"))
+                for h in it.get("hints", []):
+                    sources.append((f"hint{h['n']}", h["file"], f"{prefix}_hint{h['n']}.mp3"))
+
+                for kind, src_name, nice_name in sources:
+                    src_path = voiceover_dir / src_name
+                    if not src_path.exists():
+                        missing.append((it["id"], src_name))
+                        continue
+                    arcname = _unique(nice_name)
+                    zf.write(src_path, arcname)
+                    written += 1
+                    manifest_rows.append(tuple(_csv_safe(c) for c in (
+                        arcname, it["id"], kind, it["subject"], it["topic"],
+                        it["type"], it["grade"], it["status"], it["text"],
+                    )))
+
+            csv_buf = io.StringIO()
+            csv.writer(csv_buf).writerows(manifest_rows)
+            zf.writestr("manifest.csv", csv_buf.getvalue())
+
+            # If anything expected was missing on disk, record it in the ZIP so
+            # the hand-off is never silently short a file.
+            if missing:
+                note = "item_id,missing_file\n" + "\n".join(
+                    f"{iid},{fn}" for iid, fn in missing
+                )
+                zf.writestr("MISSING_FILES.txt", note)
+
+        if written == 0:
+            return jsonify({"ok": False, "error": "No audio files found on disk."}), 404
+
+        buf.seek(0)
+        headers = {"Content-Disposition": 'attachment; filename="worldwise-voiceovers.zip"'}
+        if missing:
+            # surface count without breaking the download
+            headers["X-Missing-Files"] = str(len(missing))
+        return Response(buf.getvalue(), mimetype="application/zip", headers=headers)
 
     @app.route("/questions/<item_id>")
     def question_detail(item_id):
