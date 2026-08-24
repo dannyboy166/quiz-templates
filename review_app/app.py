@@ -101,7 +101,7 @@ def create_app():
     # Exact paths + asset prefixes that never require auth. Audio and generated
     # images must be reachable so the library can play/download files; static
     # assets (css/fonts/js) too. Everything else is gated.
-    _OPEN_EXACT = {"/login", "/logout", "/favicon.ico"}
+    _OPEN_EXACT = {"/login", "/logout", "/favicon.ico", "/api/pipeline-stats"}
     _OPEN_PREFIXES = ("/assets/", "/static/", "/audio/", "/generated-images/")
 
     def _is_open_path(path):
@@ -545,6 +545,37 @@ def create_app():
     @app.route("/api/stats")
     def api_stats():
         return jsonify(_compute_stats(questions_list, state))
+
+    @app.route("/api/pipeline-stats")
+    def api_pipeline_stats():
+        """Read-only, auth-exempt pipeline readiness export.
+
+        Returns aggregate counts plus a per-ItemID readiness map so the
+        voiceover/hint approval state can be cross-referenced against the
+        images (Airtable) and the database. Purely additive; no writes."""
+        items = {}
+        for q in questions_list:
+            item_id = q["item_id"]
+            s = state.get(item_id, {})
+            hints = {}
+            for h in range(1, 4):
+                if q.get(f"hint{h}"):
+                    hs = s.get("hints", {}).get(f"hint{h}", {})
+                    hints[f"hint{h}"] = {
+                        "status": hs.get("status", "pending"),
+                        "has_audio": has_hint_audio(item_id, h),
+                    }
+            items[item_id] = {
+                "subject": q["subject"],
+                "topic": q["topic"],
+                "vo_status": s.get("status", "pending"),
+                "has_vo_audio": has_audio(item_id),
+                "hints": hints,
+            }
+        return jsonify({
+            "summary": _compute_stats(questions_list, state),
+            "items": items,
+        })
 
     @app.route("/api/bulk-generate", methods=["POST"])
     def api_bulk_generate():
