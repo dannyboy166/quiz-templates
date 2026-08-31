@@ -101,7 +101,7 @@ def create_app():
     # Exact paths + asset prefixes that never require auth. Audio and generated
     # images must be reachable so the library can play/download files; static
     # assets (css/fonts/js) too. Everything else is gated.
-    _OPEN_EXACT = {"/login", "/logout", "/favicon.ico", "/api/pipeline-stats"}
+    _OPEN_EXACT = {"/login", "/logout", "/favicon.ico", "/healthz", "/api/pipeline-stats"}
     _OPEN_PREFIXES = ("/assets/", "/static/", "/audio/", "/generated-images/")
 
     def _is_open_path(path):
@@ -153,6 +153,12 @@ def create_app():
         if ACCESS_PASSWORD:
             return redirect(url_for("login"))
         return redirect(url_for("dashboard"))
+
+    @app.route("/healthz")
+    def healthz():
+        # Trivial liveness probe for Railway. Does NO data work, so a slow/erroring
+        # data endpoint can never take the deploy down. Must stay in _OPEN_EXACT.
+        return "ok", 200
 
     # Load data on startup
     print("Loading spreadsheets...")
