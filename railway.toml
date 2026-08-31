@@ -1,6 +1,9 @@
 [deploy]
 startCommand = "python upload_spreadsheets.py && gunicorn run_review:app --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 300"
-healthcheckPath = "/"
-healthcheckTimeout = 120
+# Healthcheck must hit an UNAUTHENTICATED path. With ACCESS_PASSWORD set, "/"
+# redirects to /login (302) and Railway treats that as unhealthy -> deploy fails.
+# /api/pipeline-stats is in the auth-exempt allowlist and returns 200.
+healthcheckPath = "/api/pipeline-stats"
+healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
