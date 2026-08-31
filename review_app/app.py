@@ -565,12 +565,37 @@ def create_app():
                         "status": hs.get("status", "pending"),
                         "has_audio": has_hint_audio(item_id, h),
                     }
+            # options present in the spreadsheet (for completeness gating)
+            opts = [q.get(f"option{n}", "") for n in range(1, 5)]
+            opt_count = sum(1 for o in opts if str(o).strip())
+            # image readiness (Georgia) — question image + per-answer images
+            img_s = get_image_item_state(image_state, item_id)
+            answer_imgs = {}
+            for n in range(1, 5):
+                slot = (img_s.get("answer_images", {}) or {}).get(str(n), {}) if isinstance(img_s, dict) else {}
+                answer_imgs[str(n)] = {
+                    "status": slot.get("status", "pending") if isinstance(slot, dict) else "pending",
+                    "has_image": has_answer_image(item_id, n),
+                }
+            q_img_slot = img_s.get("question_image", {}) if isinstance(img_s, dict) else {}
             items[item_id] = {
                 "subject": q["subject"],
                 "topic": q["topic"],
+                "question_type": q.get("question_type", ""),
                 "vo_status": s.get("status", "pending"),
                 "has_vo_audio": has_audio(item_id),
                 "hints": hints,
+                # spreadsheet content presence
+                "has_question_text": bool(str(q.get("question_text", "")).strip()),
+                "option_count": opt_count,
+                "answer": bool(str(q.get("answer", "")).strip()),
+                "image_required": str(q.get("image_required", "")).strip().upper(),
+                # image pipeline (Georgia)
+                "question_image": {
+                    "status": q_img_slot.get("status", "pending") if isinstance(q_img_slot, dict) else "pending",
+                    "has_image": has_question_image(item_id),
+                },
+                "answer_images": answer_imgs,
             }
         return jsonify({
             "summary": _compute_stats(questions_list, state),
