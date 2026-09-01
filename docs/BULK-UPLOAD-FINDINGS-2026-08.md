@@ -222,6 +222,40 @@ would try to play an SVG — a broken voice-over, with **no error** (silent corr
   enabled → 502s, deploys "FAILED". Fixed with `/healthz` (trivial, auth-exempt). NO data lost. NEVER
   `railway up` (274MB, and it overrides git deploy) — deploy is git-push only.
 
+## 10. FULL AUDIT (1 Sep 2026) — DB is clean; tooling hardened
+
+A 3-agent read-only audit (DB integrity + both web apps + scripts/sequence) ran after the
+collision bug. **Headline: the DATABASE is healthy** — the collision was a single isolated
+incident (QID 7544, fixed). Across 7,643 questions / 2,251 blobs:
+- **0** wrong-type links (Reader/Audio→non-audio, Image→non-image, options too)
+- **0** dangling FKs, **0** duplicate questions/blobs/hint rows
+- All CDN spot-checks pass. Only 22 questions Active; 7,620 correctly Pending.
+
+**Structural risk (not a live bug):** 76 blobs share the `{ItemID}-question` Filename base across
+image(110)+audio(111). This is the collision *surface* — mitigated by making every blob lookup
+BlobTypeCD-aware (done, below).
+
+**Fixes applied (all tooling, no data touched):**
+- **NEW `verify_complete.py`** — bulletproof read-only verifier, supersedes verify_roadsafety.py.
+  Checks: VO linked & both audio(111) [collision guard], question image present/type-110/serves,
+  EVERY hint level voiced(111) & serves, audio-only (0 text-replace rows), Select All option images,
+  status, dup rows — and a **fleet-wide guard** (`--fleet-guard`) for wrong-type links/dangling FKs
+  across the whole schema. **Builds all CDN URLs from Blob.Path/Filename/FileTypeExtn, never the ItemID.**
+  Usage: `verify_complete.py --qids-file <qids> [--expect-active]` or `--fleet-guard`.
+- **`import_from_airtable.blob_exists_in_db`** now filters `BlobTypeCD=110` (was Filename-only — the
+  mirror of the collision bug on the image side).
+- **`ingest_voiceovers`** now normalizes every ids-file ItemID to un-padded form (matches the app +
+  CDN + DB naming). A padded `00110039` no longer 404s the download / mis-names the blob.
+- **`set_active.py`** (per-batch revert) supersedes `set_active_roadsafety.py` (single-file revert that
+  could clobber on re-run). Use `set_active.py` going forward.
+- **verify_roadsafety.py is DEPRECATED** — it built CDN URLs from the raw ItemID (false 404s for padded
+  IDs) and didn't check images/hints/text-blank/fleet-collision. Use `verify_complete.py`.
+
+**Known-but-fine (from audit, no action):** app's image-state tracks its own local PNGs (not the DB) —
+never trust the app for "has image", check the DB/CDN. 13 Active demo/interactive questions (no ItemID)
+have hint-audio on non-standard elements — Victor's test questions, flag if asked. BlobTypeCD 122 =
+EdContent HTML help lessons (legend gap only). Audio serves as application/octet-stream (browsers fine).
+
 ## 6. Still-open items for the full 244
 
 - **184** question voice-overs still to link (56 already done incl. the 42), **~459** approved hint VOs to attach.

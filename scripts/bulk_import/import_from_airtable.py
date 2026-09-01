@@ -129,9 +129,14 @@ def download_attachment(url, dest_path):
 
 
 def blob_exists_in_db(cursor, schema, filename):
-    """Check if a blob with this filename already exists in the database."""
+    """Check if an IMAGE blob with this filename already exists.
+
+    MUST filter BlobTypeCD=110 (image). Audio blobs share the '{ItemID}-question'
+    Filename base (different extension); matching on Filename alone would treat an
+    existing AUDIO blob as a duplicate image and skip creating the image (the mirror
+    of the voice-over collision bug fixed in ingest_voiceovers.blob_exists)."""
     cursor.execute(
-        f"SELECT BlobID FROM {schema}.Blob WHERE Filename = ?",
+        f"SELECT BlobID FROM {schema}.Blob WHERE Filename = ? AND BlobTypeCD = 110",
         (filename,)
     )
     return cursor.fetchone() is not None

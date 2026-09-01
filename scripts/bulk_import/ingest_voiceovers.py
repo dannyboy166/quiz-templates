@@ -218,9 +218,18 @@ def main():
     apply = args.apply
     mode = "APPLY (writing)" if apply else "DRY-RUN (no writes)"
 
-    ids = [l.strip() for l in Path(args.ids_file).read_text().splitlines() if l.strip()]
+    # Normalize every ItemID to the un-padded form. The review app serves audio and the
+    # CDN/DB store blobs WITHOUT leading zeros (140601-..., not 00140601-...), while sheet
+    # ItemIDs may be padded. Using the raw padded form would 404 the download and/or create
+    # a wrongly-named blob. norm() gives the canonical form used everywhere downstream.
+    raw = [l.strip() for l in Path(args.ids_file).read_text().splitlines() if l.strip()]
+    ids = [norm(x) for x in raw]
+    padded = [(r, n) for r, n in zip(raw, ids) if r != n]
     print(f"Mode: {mode}")
     print(f"Target ItemIDs: {len(ids)}")
+    if padded:
+        print(f"  normalized {len(padded)} padded ItemID(s) to un-padded form "
+              f"(e.g. {padded[0][0]} -> {padded[0][1]})")
 
     conn = db_conn()
     # Victor asked us to record the exact run time (for DB restore if needed).
