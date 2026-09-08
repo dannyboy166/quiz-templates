@@ -17,7 +17,7 @@ except ImportError:
 
 IMAGE_DATA_DIR = Path(os.environ.get("IMAGE_DATA_DIR", "data/images_generated")).resolve()
 
-MAX_VERSIONS = 3  # Keep last 3 versions of each image
+MAX_VERSIONS = 5  # Keep last 5 versions of each image (revert if you liked an earlier one)
 
 _client = None
 

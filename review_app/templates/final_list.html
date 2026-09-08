@@ -1,56 +1,81 @@
 {% extends "base.html" %}
 {% block title %}Final Stage — QuestionReview{% endblock %}
 {% block content %}
-<div class="question-list-page final-list-page">
-    <div class="list-header">
-        <h1>Final Stage</h1>
-        <div class="list-actions">
-            <span class="filter-count">{{ complete_n }} / {{ total }} complete</span>
-            &nbsp;·&nbsp;
-            <span class="filter-count" style="color:#2e7d32;">{{ approved_n }} approved for upload</span>
-            &nbsp;·&nbsp;
-            <a class="btn btn-secondary btn-sm" href="/api/final/manifest" target="_blank">View manifest</a>
-        </div>
-    </div>
+<style>
+  .fl-wrap { max-width: 1120px; margin: 0 auto; }
+  .fl-hero { background: linear-gradient(135deg, var(--bg-blue,#eaf2ff), #f6f9ff); border:1px solid var(--card-border,#e3e3e3); border-radius:14px; padding:1.3rem 1.5rem; margin-bottom:1.2rem; }
+  .fl-hero h1 { margin:0 0 .2rem; font-size:1.6rem; }
+  .fl-hero p { margin:0; color:var(--text-muted,#666); font-size:.9rem; max-width:70ch; }
+  .fl-stats { display:flex; gap:1.5rem; flex-wrap:wrap; margin-top:1rem; }
+  .fl-stat { }
+  .fl-stat .n { font-size:1.7rem; font-weight:700; font-variant-numeric:tabular-nums; line-height:1; }
+  .fl-stat .l { font-size:.78rem; color:var(--text-muted,#666); text-transform:uppercase; letter-spacing:.04em; }
+  .fl-stat.ok .n { color: var(--correct-text,#1c7a41); }
+  .fl-stat.up .n { color: #2b6cb0; }
+  .fl-progress { height:10px; border-radius:6px; background: var(--progress-track,#e6e8ec); overflow:hidden; margin-top:1rem; }
+  .fl-progress > span { display:block; height:100%; background: linear-gradient(90deg,#41b06a,#2e8b57); border-radius:6px; transition:width .4s; }
 
-    <p style="color:var(--text-muted);font-size:0.9rem;margin:0 0 1rem;">
-        Read-only assembly view (Phase 1). Each question checked against the completeness gates
-        (text, type, answer, options, image, voice-over, hints). Green = ready for upload.
-        Content comes from the live Google Sheets.
-    </p>
+  .fl-controls { display:flex; gap:.6rem; flex-wrap:wrap; align-items:center; margin-bottom:1rem; }
+  .fl-controls input, .fl-controls select { padding:.5rem .7rem; border:1px solid var(--card-border,#ccc); border-radius:8px; font:inherit; background:var(--card-bg,#fff); }
+  .fl-controls input { flex:1; min-width:220px; }
+  .fl-count { color:var(--text-muted,#666); font-size:.85rem; margin-left:auto; }
 
-    <div class="filter-bar" style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:1rem;">
-        <input type="text" id="filter-text" placeholder="Search text / ItemID…" oninput="applyFilters()"
-               style="flex:1;min-width:200px;">
-        <select id="filter-subject" onchange="applyFilters()">
-            <option value="">All subjects</option>
-            {% for s in subjects %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
-        </select>
-        <select id="filter-status" onchange="applyFilters()">
-            <option value="">All</option>
-            <option value="complete">Complete</option>
-            <option value="incomplete">Incomplete</option>
-            <option value="approved">Approved for upload</option>
-            <option value="not-approved">Not approved</option>
-        </select>
-    </div>
+  .fl-table { width:100%; border-collapse:separate; border-spacing:0; }
+  .fl-table thead th { text-align:left; font-size:.75rem; text-transform:uppercase; letter-spacing:.04em; color:var(--text-muted,#888); padding:.5rem .7rem; border-bottom:2px solid var(--border-light,#eee); }
+  .fl-table tbody td { padding:.6rem .7rem; border-bottom:1px solid var(--border-light,#f0f0f0); vertical-align:middle; }
+  .fl-table tbody tr { cursor:pointer; }
+  .fl-table tbody tr:hover { background: var(--bg-blue,#f2f7ff); }
+  .fl-id { font-variant-numeric:tabular-nums; color:var(--text-muted,#888); font-size:.85rem; }
+  .fl-qtext { font-weight:500; }
+  .fl-typechip { font-size:.72rem; padding:.15rem .5rem; border-radius:999px; background:var(--badge-bg,#eef1f5); color:var(--badge-text,#555); white-space:nowrap; }
+  .fl-mini { width:90px; height:7px; border-radius:5px; background:var(--progress-track,#e6e8ec); overflow:hidden; display:inline-block; vertical-align:middle; margin-right:.5rem; }
+  .fl-mini > span { display:block; height:100%; border-radius:5px; }
+  .pill { font-size:.75rem; font-weight:700; padding:.2rem .6rem; border-radius:999px; white-space:nowrap; }
+  .pill.approved { background: var(--correct-bg,#e6f7ec); color: var(--correct-text,#1c7a41); }
+  .pill.ready { background:#e3f0ff; color:#1c5fb0; }
+  .pill.wip { background: var(--bg-yellow,#fff4d6); color:#9a6a00; }
+  .pill.empty { background:#fdeaea; color:#b23b3b; }
+  .fl-pager { margin-top:1.1rem; display:flex; gap:.5rem; align-items:center; justify-content:center; color:var(--text-muted,#666); font-size:.85rem; }
+</style>
 
-    <div style="overflow-x:auto;">
-        <table class="review-table" id="final-table" style="width:100%;">
-            <thead>
-                <tr>
-                    <th>ItemID</th>
-                    <th>Question</th>
-                    <th>Subject</th>
-                    <th>Type</th>
-                    <th>Gates</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody id="final-tbody"></tbody>
-        </table>
+<div class="fl-wrap">
+  <div class="fl-hero">
+    <h1>🏁 Final Stage</h1>
+    <p>Build each question to 100% — text, image, voice-overs and hints — then approve it for upload.
+       Everything comes live from the Google Sheets. Click any question to open it.</p>
+    <div class="fl-stats">
+      <div class="fl-stat"><div class="n" id="s-total">{{ total }}</div><div class="l">Questions</div></div>
+      <div class="fl-stat ok"><div class="n" id="s-complete">{{ complete_n }}</div><div class="l">Ready ✓</div></div>
+      <div class="fl-stat up"><div class="n" id="s-approved">{{ approved_n }}</div><div class="l">Approved for upload</div></div>
     </div>
-    <div id="pager" style="margin-top:1rem;text-align:center;"></div>
+    <div class="fl-progress"><span id="s-bar" style="width:{{ (100 * complete_n / total) if total else 0 }}%"></span></div>
+    <div style="margin-top:.7rem;">
+      <a class="btn btn-secondary btn-small" href="/api/final/manifest" target="_blank">📋 View upload list</a>
+    </div>
+  </div>
+
+  <div class="fl-controls">
+    <input type="text" id="filter-text" placeholder="🔍 Search question text or ItemID…" oninput="applyFilters()">
+    <select id="filter-subject" onchange="applyFilters()">
+      <option value="">All subjects</option>
+      {% for s in subjects %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
+    </select>
+    <select id="filter-status" onchange="applyFilters()">
+      <option value="">All statuses</option>
+      <option value="approved">✓ Approved</option>
+      <option value="complete">Ready (not approved)</option>
+      <option value="incomplete">Needs work</option>
+    </select>
+    <span class="fl-count" id="fl-count"></span>
+  </div>
+
+  <div style="overflow-x:auto;">
+    <table class="fl-table">
+      <thead><tr><th>ItemID</th><th>Question</th><th>Subject</th><th>Type</th><th>Progress</th><th>Status</th></tr></thead>
+      <tbody id="final-tbody"></tbody>
+    </table>
+  </div>
+  <div class="fl-pager" id="pager"></div>
 </div>
 
 <script>
@@ -60,53 +85,55 @@ let page = 1;
 const PAGE_SIZE = 100;
 
 function applyFilters() {
-    const txt = document.getElementById('filter-text').value.toLowerCase();
-    const subj = document.getElementById('filter-subject').value;
-    const status = document.getElementById('filter-status').value;
-    filtered = ALL_ROWS.filter(r => {
-        if (subj && r.subject !== subj) return false;
-        if (status === 'complete' && !r.complete) return false;
-        if (status === 'incomplete' && r.complete) return false;
-        if (status === 'approved' && !r.approved) return false;
-        if (status === 'not-approved' && r.approved) return false;
-        if (txt && !(r.text.toLowerCase().includes(txt) || r.id.toLowerCase().includes(txt))) return false;
-        return true;
-    });
-    page = 1;
-    render();
+  const txt = document.getElementById('filter-text').value.toLowerCase();
+  const subj = document.getElementById('filter-subject').value;
+  const status = document.getElementById('filter-status').value;
+  filtered = ALL_ROWS.filter(r => {
+    if (subj && r.subject !== subj) return false;
+    if (status === 'complete' && (!r.complete || r.approved)) return false;
+    if (status === 'incomplete' && r.complete) return false;
+    if (status === 'approved' && !r.approved) return false;
+    if (txt && !(r.text.toLowerCase().includes(txt) || r.id.toLowerCase().includes(txt))) return false;
+    return true;
+  });
+  page = 1;
+  render();
+}
+
+function statusPill(r) {
+  if (r.approved) return '<span class="pill approved">✓ Approved</span>';
+  if (r.complete) return '<span class="pill ready">Ready</span>';
+  if (r.passed === 0) return '<span class="pill empty">Not started</span>';
+  return '<span class="pill wip">Needs work</span>';
 }
 
 function render() {
-    const tbody = document.getElementById('final-tbody');
-    const start = (page - 1) * PAGE_SIZE;
-    const rows = filtered.slice(start, start + PAGE_SIZE);
-    tbody.innerHTML = rows.map(r => {
-        const badge = r.approved
-            ? '<span class="status-badge status-approved">✓ Approved</span>'
-            : r.complete
-            ? '<span class="status-badge status-approved">Complete</span>'
-            : '<span class="status-badge">' + r.passed + '/' + r.total + '</span>';
-        const bar = r.complete ? '#2e7d32' : (r.passed === 0 ? '#c0392b' : '#e0a800');
-        return `<tr>
-            <td><a href="/final/${r.id}">${r.id}</a></td>
-            <td>${escapeHtml(r.text)}</td>
-            <td>${escapeHtml(r.subject)}</td>
-            <td>${escapeHtml(r.type)}</td>
-            <td><span style="color:${bar};font-weight:700;">${r.passed}/${r.total}</span></td>
-            <td>${badge}</td>
-        </tr>`;
-    }).join('');
-    const pages = Math.ceil(filtered.length / PAGE_SIZE) || 1;
-    document.getElementById('pager').innerHTML =
-        `Page ${page} / ${pages} &nbsp; (${filtered.length} questions) ` +
-        (page > 1 ? `<button class="btn btn-secondary" onclick="page--;render()">Prev</button> ` : '') +
-        (page < pages ? `<button class="btn btn-secondary" onclick="page++;render()">Next</button>` : '');
+  const tbody = document.getElementById('final-tbody');
+  const start = (page - 1) * PAGE_SIZE;
+  const rows = filtered.slice(start, start + PAGE_SIZE);
+  tbody.innerHTML = rows.map(r => {
+    const pct = Math.round(100 * r.passed / r.total);
+    const barColor = r.complete ? '#2e8b57' : (r.passed === 0 ? '#d38b8b' : '#e0a800');
+    return `<tr onclick="location.href='/final/${r.id}'">
+      <td class="fl-id">${r.id}</td>
+      <td class="fl-qtext">${escapeHtml(r.text)}</td>
+      <td>${escapeHtml(r.subject)}</td>
+      <td><span class="fl-typechip">${escapeHtml(r.type || '—')}</span></td>
+      <td><span class="fl-mini"><span style="width:${pct}%;background:${barColor}"></span></span><span style="font-variant-numeric:tabular-nums;font-size:.8rem;color:var(--text-muted,#888)">${r.passed}/${r.total}</span></td>
+      <td>${statusPill(r)}</td>
+    </tr>`;
+  }).join('');
+  const pages = Math.ceil(filtered.length / PAGE_SIZE) || 1;
+  document.getElementById('fl-count').textContent = filtered.length + ' shown';
+  document.getElementById('pager').innerHTML =
+    (page > 1 ? `<button class="btn btn-secondary btn-small" onclick="page--;render()">← Prev</button>` : '') +
+    `<span>Page ${page} of ${pages}</span>` +
+    (page < pages ? `<button class="btn btn-secondary btn-small" onclick="page++;render()">Next →</button>` : '');
 }
 
 function escapeHtml(s) {
-    return (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  return (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
-
 render();
 </script>
 {% endblock %}

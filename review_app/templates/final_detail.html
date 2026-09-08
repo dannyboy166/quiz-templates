@@ -174,10 +174,11 @@
           <div class="fs-muted" style="color:#a67c00;">Image exists in Airtable but no preview is loaded — click “Sync” on the Images tab to refresh previews.</div>
         {% endif %}
         <div class="edit-row" style="flex-direction:column; align-items:stretch;">
-          <textarea id="q-image-prompt" class="edit-box" placeholder="Describe the image you want (leave blank to use the brief below)">{{ a.image_description }}</textarea>
+          <label class="fs-muted" style="font-weight:600;">Make a brand-new image</label>
+          <textarea id="q-image-prompt" class="edit-box" placeholder="Describe the image you want (leave blank to use the brief)">{{ a.image_description }}</textarea>
           <div style="display:flex; gap:.4rem; flex-wrap:wrap; margin-top:.4rem;">
             <button class="btn btn-primary" id="q-image-btn" onclick="genQuestionImage('{{ a.item_id }}')">
-              {{ 'Regenerate image' if a.has_q_image else 'Generate image' }}
+              {{ 'Make new image' if a.has_q_image else 'Generate image' }}
             </button>
             {% if a.has_q_image %}
               <button class="btn btn-success" id="q-image-airtable-btn" onclick="sendImageToAirtable('{{ a.item_id }}')">
@@ -186,6 +187,23 @@
             {% endif %}
             <span class="fs-status" id="q-image-status"></span>
           </div>
+
+          {% if a.has_q_image and not a.q_image_is_lottie %}
+          <div style="margin-top:.9rem; padding-top:.7rem; border-top:1px dashed var(--border-light,#eee);">
+            <label class="fs-muted" style="font-weight:600;">Tweak the current image <span style="font-weight:400;">(keeps it, changes only what you say)</span></label>
+            <textarea id="q-image-edit" class="edit-box" placeholder="e.g. make the background white · remove the text · add a smiling sun"></textarea>
+            <div style="display:flex; gap:.4rem; margin-top:.4rem;">
+              <button class="btn btn-secondary" id="q-image-edit-btn" onclick="editQuestionImage('{{ a.item_id }}')">Tweak image</button>
+              <span class="fs-status" id="q-image-edit-status"></span>
+            </div>
+          </div>
+
+          <div style="margin-top:.9rem; padding-top:.7rem; border-top:1px dashed var(--border-light,#eee);">
+            <button class="btn btn-secondary btn-small" id="q-versions-btn" onclick="loadVersions('{{ a.item_id }}')">↩ Previous versions</button>
+            <span class="fs-muted" style="font-size:.8rem;"> — revert if you liked an earlier one</span>
+            <div id="q-versions" style="display:flex; gap:.6rem; flex-wrap:wrap; margin-top:.6rem;"></div>
+          </div>
+          {% endif %}
         </div>
       </div>
 
@@ -341,6 +359,33 @@ async function genQuestionImage(itemId){
   _busy('q-image-btn',true,'Generating image…'); _setStatus('q-image-status','Calling OpenAI (~30s)…',null);
   try{ await _post(`/api/images/generate/${itemId}`,{prompt}); _setStatus('q-image-status','Done',true); setTimeout(()=>location.reload(),600); }
   catch(e){ _setStatus('q-image-status','Failed: '+e.message,false); _busy('q-image-btn',false); }
+}
+async function editQuestionImage(itemId){
+  const instr=(document.getElementById('q-image-edit')||{}).value.trim();
+  if(!instr){ _setStatus('q-image-edit-status','Type what to change first',false); return; }
+  _busy('q-image-edit-btn',true,'Tweaking…'); _setStatus('q-image-edit-status','Editing the current image (~30s)…',null);
+  try{ await _post(`/api/images/edit/${itemId}`,{prompt:instr}); _setStatus('q-image-edit-status','Done',true); setTimeout(()=>location.reload(),600); }
+  catch(e){ _setStatus('q-image-edit-status','Failed: '+e.message,false); _busy('q-image-edit-btn',false); }
+}
+async function loadVersions(itemId){
+  const box=document.getElementById('q-versions');
+  box.innerHTML='<span class="fs-muted">Loading…</span>';
+  try{
+    const res=await fetch(`/api/images/versions/${itemId}`); const d=await res.json();
+    if(!d.versions || !d.versions.length){ box.innerHTML='<span class="fs-muted">No earlier versions saved yet. (Older versions are kept each time you make a new image.)</span>'; return; }
+    box.innerHTML = d.versions.map(v=>{
+      const m = v.filename.match(/-v(\d+)\./); const num = m?m[1]:'';
+      return `<div style="text-align:center;">
+        <img src="${v.url}?t=${Date.now()}" style="width:90px;height:90px;object-fit:cover;border:1px solid #ddd;border-radius:8px;display:block;">
+        <button class="btn btn-secondary btn-small" style="margin-top:.3rem;" onclick="revertVersion('${itemId}', ${num})">Use this one</button>
+      </div>`;
+    }).join('');
+  }catch(e){ box.innerHTML='<span style="color:var(--danger,#c0392b)">Failed: '+e.message+'</span>'; }
+}
+async function revertVersion(itemId, num){
+  if(!confirm('Revert to this earlier image? (Your current image is kept in history too.)'))return;
+  try{ await _post(`/api/images/restore-version/${itemId}`,{version:num}); location.reload(); }
+  catch(e){ alert('Revert failed: '+e.message); }
 }
 async function sendImageToAirtable(itemId){
   _busy('q-image-airtable-btn',true,'Sending…'); _setStatus('q-image-status','Saving to Airtable library…',null);
