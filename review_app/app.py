@@ -33,7 +33,7 @@ from .state import (
 from .voiceover_engine import (
     get_ssml_for_question, generate_for_question,
     get_ssml_for_hint, generate_for_hint,
-    generate_for_option,
+    generate_for_option, get_ssml_for_option,
 )
 from .image_state import (
     load_image_state, save_image_state, get_image_item_state,
@@ -689,6 +689,48 @@ def create_app():
             return jsonify({"error": f"No hint{hint_num}"}), 400
         ssml = get_ssml_for_hint(hint_text)
         return jsonify({"ssml": ssml})
+
+    @app.route("/api/update-option-speech/<item_id>/<int:option_num>", methods=["POST"])
+    def api_update_option_speech(item_id, option_num):
+        if item_id not in questions or option_num not in (1, 2, 3, 4):
+            return jsonify({"error": "Not found"}), 404
+        data = request.get_json(silent=True) or {}
+        updates = {}
+        if "ssml" in data:
+            updates["speech_override"] = data["ssml"] or None
+        if "speed" in data:
+            updates["speed_override"] = data["speed"] or None
+        update_option_state(state, item_id, option_num, **updates)
+        return jsonify({"ok": True})
+
+    @app.route("/api/speech-text/<item_id>")
+    def api_speech_text(item_id):
+        """Return the current 'how it's read' text for question / a hint / an option.
+
+        Query: kind=question|hint|option, num=<n>. Returns {override, default} — the
+        reviewer's saved override (if any) and the auto-generated default, so the edit box
+        can be pre-filled and 'Reset' can restore the default. Does NOT change any text.
+        """
+        q = questions.get(item_id)
+        if not q:
+            return jsonify({"error": "Question not found"}), 404
+        kind = request.args.get("kind", "question")
+        num = request.args.get("num")
+        try:
+            if kind == "question":
+                st = get_item_state(state, item_id)
+                default = get_ssml_for_question(q)
+            elif kind == "hint" and num:
+                st = get_hint_state(state, item_id, int(num))
+                default = get_ssml_for_hint(q.get(f"hint{num}", ""))
+            elif kind == "option" and num:
+                st = get_option_state(state, item_id, int(num))
+                default = get_ssml_for_option(q.get(f"option{num}", ""))
+            else:
+                return jsonify({"error": "bad kind/num"}), 400
+        except Exception as e:
+            return jsonify({"error": str(e)}), 400
+        return jsonify({"override": st.get("speech_override") or "", "default": default})
 
     @app.route("/api/stats")
     def api_stats():

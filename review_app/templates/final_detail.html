@@ -164,6 +164,10 @@
                   </div>
                   <span class="fs-status" id="optvo-s-{{ opt.num }}"></span>
                   <div id="av-o{{ opt.num }}" class="av-box"></div>
+                  <details class="speech-details" style="margin-top:.3rem;">
+                    <summary class="fs-muted" style="cursor:pointer;font-size:.8rem;">✏️ How it's read</summary>
+                    <div class="speech-editor" data-kind="option" data-item="{{ a.item_id }}" data-num="{{ opt.num }}"></div>
+                  </details>
                 {% elif opt.text %}
                   <button class="btn btn-secondary btn-small" id="optvo-{{ opt.num }}" onclick="genOptionVO('{{ a.item_id }}', {{ opt.num }})">Generate VO</button>
                   <span class="fs-status" id="optvo-s-{{ opt.num }}"></span>
@@ -246,6 +250,10 @@
           <span class="fs-status" id="q-vo-status"></span>
         </div>
         <div id="av-q" class="av-box"></div>
+        <details class="speech-details" style="margin-top:.5rem;">
+          <summary class="fs-muted" style="cursor:pointer;">✏️ Change how it's read aloud (pauses, wording)</summary>
+          <div class="speech-editor" data-kind="question" data-item="{{ a.item_id }}"></div>
+        </details>
       </div>
 
       <!-- HINTS -->
@@ -266,6 +274,10 @@
                 <span class="fs-status" id="hintvo-s-{{ h.num }}"></span>
               </div>
               <div id="av-h{{ h.num }}" class="av-box"></div>
+              <details class="speech-details" style="margin-top:.3rem;">
+                <summary class="fs-muted" style="cursor:pointer;font-size:.85rem;">✏️ Change how it's read aloud</summary>
+                <div class="speech-editor" data-kind="hint" data-item="{{ a.item_id }}" data-num="{{ h.num }}"></div>
+              </details>
 
               <!-- Optional hint image (only some hints need a picture) -->
               <div style="margin-top:.5rem;">
@@ -482,6 +494,66 @@ async function genHintVO(itemId,n){
   try{ await _post(`/api/generate-hint/${itemId}/${n}`); _setStatus('hintvo-s-'+n,'Done',true); setTimeout(()=>location.reload(),600); }
   catch(e){ _setStatus('hintvo-s-'+n,'Failed: '+e.message,false); _busy('hintvo-'+n,false); }
 }
+// "How it's read aloud" editor — a per-part speech override (SSML) that changes the audio
+// WITHOUT touching the real question/option/hint text. Lazy-loads when the section is opened.
+document.querySelectorAll('details.speech-details').forEach(det => {
+  det.addEventListener('toggle', () => {
+    if (!det.open) return;
+    const box = det.querySelector('.speech-editor');
+    if (box.dataset.loaded) return;
+    box.dataset.loaded = '1';
+    initSpeechEditor(box);
+  });
+});
+
+async function initSpeechEditor(box){
+  const kind = box.dataset.kind, item = box.dataset.item, num = box.dataset.num;
+  box.innerHTML = '<span class="fs-muted">Loading…</span>';
+  let data = {};
+  try {
+    const qs = 'kind=' + kind + (num ? '&num=' + num : '');
+    const res = await fetch(`/api/speech-text/${item}?${qs}`);
+    data = await res.json();
+    if (data.error) throw new Error(data.error);
+  } catch(e){ box.innerHTML = '<span style="color:var(--danger,#c0392b)">'+e.message+'</span>'; return; }
+
+  const current = data.override || data.default || '';
+  box.innerHTML = '';
+  const help = document.createElement('div');
+  help.className = 'fs-muted'; help.style.cssText = 'font-size:.78rem;margin:.3rem 0;';
+  help.innerHTML = 'Changes only how it\'s <b>read aloud</b> — not the real text. '
+    + 'Add a pause with <code>&lt;break time="0.5s"/&gt;</code>, or reword for clearer speech.';
+  const ta = document.createElement('textarea');
+  ta.className = 'edit-box'; ta.rows = 3; ta.value = current;
+  const row = document.createElement('div'); row.className = 'edit-row';
+  const save = document.createElement('button'); save.className='btn btn-primary btn-small'; save.textContent='Save';
+  const reset = document.createElement('button'); reset.className='btn btn-secondary btn-small'; reset.textContent='Reset to default';
+  const regen = document.createElement('button'); regen.className='btn btn-secondary btn-small'; regen.textContent='Save + regenerate audio';
+  const stat = document.createElement('span'); stat.className='fs-status';
+  box.append(help, ta, row); row.append(save, reset, regen, stat);
+
+  const saveOverride = async (val) => {
+    const url = kind==='question' ? `/api/update-speech/${item}`
+              : kind==='hint' ? `/api/update-hint-speech/${item}/${num}`
+              : `/api/update-option-speech/${item}/${num}`;
+    await _post(url, {ssml: val});
+  };
+  save.onclick = async () => { stat.textContent='Saving…'; try{ await saveOverride(ta.value); stat.textContent='Saved ✓ (applies next time you generate)'; }catch(e){ stat.textContent='Failed: '+e.message; } };
+  reset.onclick = async () => { stat.textContent='Resetting…'; try{ await saveOverride(''); ta.value=data.default||''; stat.textContent='Reset to default ✓'; }catch(e){ stat.textContent='Failed: '+e.message; } };
+  regen.onclick = async () => {
+    stat.textContent='Saving…';
+    try{
+      await saveOverride(ta.value);
+      stat.textContent='Generating audio…';
+      const gen = kind==='question' ? `/api/generate/${item}`
+                : kind==='hint' ? `/api/generate-hint/${item}/${num}`
+                : `/api/generate-option/${item}/${num}`;
+      await _post(gen);
+      stat.textContent='Done — reloading…'; setTimeout(()=>location.reload(), 600);
+    }catch(e){ stat.textContent='Failed: '+e.message; }
+  };
+}
+
 async function genHintImage(itemId,n){
   const prompt=(document.getElementById('hintimg-p-'+n)||{}).value.trim();
   if(!prompt){ _setStatus('hintimg-s-'+n,'Describe the picture first',false); return; }
