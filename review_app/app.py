@@ -840,6 +840,73 @@ def create_app():
         return render_template("final_detail.html",
                                a=assembled, prev_id=prev_id, next_id=next_id)
 
+    @app.route("/api/final/generate-all/<item_id>", methods=["POST"])
+    def api_final_generate_all(item_id):
+        """Generate every MISSING piece of a question in one go.
+
+        By default only fills gaps (never overwrites existing media). Pass
+        {"force": true} to regenerate everything. Returns a per-part result list.
+        Reuses the same generators the individual buttons use — nothing new is
+        written beyond the media files, and nothing is deleted.
+        """
+        q = questions.get(item_id)
+        if not q:
+            return jsonify({"error": "Question not found"}), 404
+        data = request.get_json(silent=True) or {}
+        force = bool(data.get("force"))
+        results = []
+
+        def _do(part, exists, fn):
+            if exists and not force:
+                results.append({"part": part, "status": "skipped", "reason": "already present"})
+                return
+            try:
+                fn()
+                results.append({"part": part, "status": "generated"})
+            except Exception as e:
+                results.append({"part": part, "status": "error", "error": str(e)})
+
+        qtype = q.get("question_type", "")
+        is_tf = qtype == "True/False"
+        is_written = qtype == "Written"
+
+        # Question image (every question needs one)
+        _do("question-image", has_question_image(item_id),
+            lambda: generate_question_image(q, None))
+
+        # Question voice-over
+        def _gen_q_vo():
+            generate_for_question(q, get_item_state(state, item_id))
+            update_item_state(state, item_id, generated_at=now_iso())
+        _do("question-vo", has_audio(item_id), _gen_q_vo)
+
+        # Per-hint voice-overs (only levels that have hint text)
+        for n in (1, 2, 3):
+            if not q.get(f"hint{n}"):
+                continue
+            def _gen_hint(n=n):
+                generate_for_hint(q, n, get_hint_state(state, item_id, n))
+                update_hint_state(state, item_id, n, generated_at=now_iso())
+            _do(f"hint{n}-vo", has_hint_audio(item_id, n), _gen_hint)
+
+        # Per-option voice-overs (skip True/False + Written — no options list)
+        if not is_tf and not is_written:
+            for n in (1, 2, 3, 4):
+                if not q.get(f"option{n}"):
+                    continue
+                def _gen_opt(n=n):
+                    generate_for_option(q, n, get_option_state(state, item_id, n))
+                    update_option_state(state, item_id, n, generated_at=now_iso())
+                _do(f"option{n}-vo", has_option_audio(item_id, n), _gen_opt)
+
+        generated = sum(1 for r in results if r["status"] == "generated")
+        errors = [r for r in results if r["status"] == "error"]
+        return jsonify({
+            "ok": len(errors) == 0,
+            "generated": generated,
+            "results": results,
+        })
+
     @app.route("/api/final/stats")
     def api_final_stats():
         rows = [final_stage.summary_row(q, image_state, state, airtable_images)

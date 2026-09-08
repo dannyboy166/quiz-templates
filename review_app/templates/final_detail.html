@@ -172,9 +172,19 @@
                     </li>
                 {% endfor %}
             </ul>
+            <div style="margin-top:1rem;">
+                <button class="btn btn-primary" id="gen-all-btn" style="width:100%;"
+                        onclick="generateComplete('{{ a.item_id }}')">
+                    ⚡ Generate everything missing
+                </button>
+                <label style="display:block;margin-top:0.4rem;font-size:0.8rem;color:var(--text-muted);">
+                    <input type="checkbox" id="gen-all-force"> also regenerate parts that already exist
+                </label>
+                <div id="gen-all-results" style="margin-top:0.5rem;font-size:0.85rem;"></div>
+            </div>
             <p style="color:var(--text-muted);font-size:0.8rem;margin-top:1rem;">
-                Generate any missing part inline. Per-option voice-over and
-                "Generate Complete Question" come in later phases.
+                Fills every missing image + voice-over (question, options, hints) in one click.
+                Existing parts are skipped unless you tick the box.
             </p>
         </div>
     </div>
@@ -260,6 +270,29 @@ async function genOptionVO(itemId, n) {
     } catch (e) {
         _setStatus('opt-vo-status-' + n, 'Failed: ' + e.message, false);
         _busy('opt-vo-btn-' + n, false);
+    }
+}
+
+async function generateComplete(itemId) {
+    const force = (document.getElementById('gen-all-force') || {}).checked || false;
+    const out = document.getElementById('gen-all-results');
+    _busy('gen-all-btn', true, 'Generating… (this can take a minute)');
+    out.innerHTML = '<span style="color:var(--text-muted);">Generating all missing parts… '
+        + 'images ~30s each, voice-overs a few seconds each. Please wait.</span>';
+    try {
+        const data = await _post(`/api/final/generate-all/${itemId}`, {force: force});
+        const rows = (data.results || []).map(r => {
+            const color = r.status === 'generated' ? '#2e7d32'
+                : r.status === 'skipped' ? 'var(--text-muted)' : '#c0392b';
+            const label = r.status === 'error' ? ('error: ' + r.error) : r.status;
+            return `<div style="color:${color};">${r.part}: ${label}</div>`;
+        }).join('');
+        out.innerHTML = `<strong>Generated ${data.generated} part(s).</strong>` + rows
+            + '<div style="margin-top:0.4rem;">Reloading…</div>';
+        setTimeout(() => location.reload(), 1200);
+    } catch (e) {
+        out.innerHTML = '<span style="color:#c0392b;">Failed: ' + e.message + '</span>';
+        _busy('gen-all-btn', false);
     }
 }
 </script>
