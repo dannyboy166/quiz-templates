@@ -142,9 +142,15 @@ def verify_batch(cur, qids, expect_active, sample_cdn=True):
         audio_levels = {}
         for lvl, bt, p, fn, ext in cur.fetchall():
             audio_levels[lvl] = (bt, p, fn, ext)
-        # every text level must have audio (unless we already blanked text — so also count blanked levels)
-        cur.execute(f"""SELECT DISTINCT HintLevelNum FROM {SCHEMA}.HintReplacement
-                        WHERE QuestionID=? AND HTMLElementID=?""", (qid, TEXT_ELEM))
+        # every ACTIVE hint level must have audio. Only count levels whose parent QuestionHint
+        # is StatusCD=4 (Active) — deactivated (stale) levels are not served by the portal
+        # (GetNextQuestion counts only StatusCD=4 hints), so they must be ignored here too.
+        cur.execute(f"""SELECT DISTINCT hr.HintLevelNum
+                        FROM {SCHEMA}.HintReplacement hr
+                        JOIN {SCHEMA}.QuestionHint qh
+                          ON qh.QuestionID=hr.QuestionID AND qh.HintLevelNum=hr.HintLevelNum
+                        WHERE hr.QuestionID=? AND hr.HTMLElementID=? AND qh.StatusCD=?""",
+                    (qid, TEXT_ELEM, STATUS_ACTIVE))
         all_text_levels = {row[0] for row in cur.fetchall()}
         for lvl in all_text_levels:
             if lvl not in audio_levels:

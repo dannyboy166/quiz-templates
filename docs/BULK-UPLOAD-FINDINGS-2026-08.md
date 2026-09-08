@@ -7,6 +7,13 @@ bulk upload — it captures the non-obvious gotchas that cost time.
 Environment: DevTest schema (`wwa_dev` DB), UserID=8, container `devtestblobs`,
 CDN `https://wwblobserver-gdchhdg2bdhgf7cc.z01.azurefd.net/devtestblobs`.
 
+> **Companion doc:** `docs/QUESTION-STUDIO-FULL-SPEC.md` is the authoritative field-by-field
+> map of a question (UI + DB + student runtime), built from Victor's source 7 Sep 2026.
+> Read it for: must-set-or-insert-fails fields (Title, PlayAudioOnRenderFlag, IsNumericOnlyAnswer —
+> bits with NO default; Question timestamps default NULL), per-type scoring keys (CorrectAnswerText
+> encoding), which templates render the question image, Written needing WrittenAnswerOption rows,
+> Sort/Link needing OptionGroups, and the ColorSchemeID gap in our importer.
+
 ---
 
 ## 0. The golden rules (Victor's, in writing)
@@ -264,5 +271,51 @@ EdContent HTML help lessons (legend gap only). Audio serves as application/octet
 - **20 DB text typo fixes** identified (sheet-fixed typos not yet pushed to DB); 2 sheet typos (`fasle`) already fixed.
 - Re-run the **Select All + question-image** pre-flight check (§3) across the full 244.
 - Environment note: the local `venv/` broke after a Python 3.14 upgrade (empty `bin/`). Rebuild:
-  `python3 -m venv venv && venv/bin/python -m pip install pyodbc azure-identity azure-storage-blob requests`.
+  `python3 -m venv venv && venv/bin/python -m pip install pyodbc azure-identity azure-storage-blob requests pillow`.
   ODBC "Driver 18 for SQL Server" is installed. Auth = `AzureCliCredential` (run `az login` first).
+
+## 7. Session 7 Sep 2026 — new tools, findings & first real complete batch
+
+**New scripts (all read-only or reversible):**
+- **`completeness_report.py`** — THE single source of truth. Reconciles spreadsheet + review app + DB
+  into ONE verdict per question: READY / NEEDS_INGEST / NEEDS_IMAGE_SYNC / DB_EXTRA_HINTS / NEEDS_IMAGE /
+  NEEDS_VO / NOT_IN_DB. Run this instead of ad-hoc counts. Full detail: `reference_completeness_report` memory.
+- **`remove_stale_hints.py`** — removes hint levels that are in the DB but NOT in the spreadsheet
+  (May-import leftovers). Spreadsheet = truth; never touches a real/voiced hint; blanks text + sets
+  QuestionHint.StatusCD=6; per-batch revert snapshot; `--revert`.
+- **`docs/QUESTION-STUDIO-FULL-SPEC.md`** — authoritative field-by-field map of a question (UI+DB+runtime).
+
+**Key findings:**
+- **"READY" requires the image IN THE DB, not just Airtable.** Airtable-only images don't render in the
+  portal → verdict NEEDS_IMAGE_SYNC (run `import_from_airtable`). `verify_complete` blocks activation if
+  ImageBlobID is NULL. (This corrected an over-loose earlier check that would've activated image-less Qs.)
+- **verify_complete FIX:** it now only counts hint levels whose QuestionHint.StatusCD=4 (Active) — matching
+  what GetNextQuestion serves. Deactivated (stale) levels are ignored. Before the fix it false-flagged
+  removed stale hints as "NO voice-over".
+- **The three sources drift.** App/Airtable are far ahead of the DB. 7 Sep whole-schema:
+  READY 4 · NEEDS_INGEST ~264-397 · NEEDS_IMAGE_SYNC 4383 · DB_EXTRA_HINTS 41 · NEEDS_IMAGE 2086 ·
+  NEEDS_VO 807 · NOT_IN_DB 318. The real backlog is CONTENT (Zoe VO + Georgia images); the movable-now
+  part is OUR ingest/sync.
+
+**⚠️ IMAGE BLOAT — raster-in-SVG (systemic, ~85% of images):**
+- Georgia's images (via Canva→Airtable) are saved as **SVGs with a full-res PNG embedded in base64** —
+  not true vectors. Median ~1.5 MB, up to 4.5 MB. Of 2,467 loaded: **2,107 fake-SVG (~4.2 GB)**, 154 real
+  vector SVG (~19 KB ea, leave alone), 134 Lottie json (fine).
+- **Fix: convert to WebP** (unwrap PNG → WebP). Proven: 3.1 MB → 144 KB (~95%), no visible quality loss.
+  Do it at sync time + a retro pass over the 2,107. **The SVG already contains full-quality pixels — no
+  originals needed**, nobody's work is wasted. Skip real vector SVGs (they have no embedded raster).
+- Portal renders images via plain `<img>` (only `.json`=Lottie is special-cased) → WebP will display.
+  BLOCKER: emailed Victor 7 Sep to confirm (1) CDN serves `.webp` with right content-type, (2) no upload
+  validation rejects WebP. NOT built yet — pending his reply. Does NOT block uploading (swap later, no rework).
+- Does NOT truly scale (it's a fixed 1536px raster in an SVG costume); WebP keeps it exactly as-is, lighter.
+
+**⚠️ ElevenLabs OUT OF CREDITS (7 Sep):** VO generator throws `quota_exceeded 401` — workspace at
+0/238,890 credits. Georgia/Zoe blocked from generating NEW voiceovers until topped up/upgraded at
+https://elevenlabs.io/app/subscription (or monthly reset). Does NOT block ingesting already-generated audio.
+
+**✅ FIRST REAL COMPLETE BATCH LIVE (7 Sep):** 31 Personal Hygiene questions Active in DevTest —
+image + question VO + hint VO (audio-only), all verified 0 problems. 4 of 35 held (Select All missing
+option images → Georgia). Also synced Creative Arts images (575). Full flow that worked:
+`completeness_report` → `ingest_voiceovers --include-hints --apply` → `set_hints_audio_only --apply` →
+`remove_stale_hints --apply` → `verify_complete` → split clean vs flagged → `set_active --apply`.
+Per-batch revert snapshots in `data/questions/backups/`.

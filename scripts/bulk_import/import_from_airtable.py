@@ -81,7 +81,44 @@ CONTENT_TYPES = {
     '.jpeg': 'image/jpeg',
     '.gif': 'image/gif',
     '.json': 'application/json',
+    '.webp': 'image/webp',
 }
+
+# WebP conversion — matches Victor's converted library (native resolution, lossy).
+WEBP_QUALITY = 85  # visually lossless for quiz images; ~90% smaller than raster-in-SVG
+
+
+def convert_to_webp(src_path, file_ext):
+    """If src is a raster PNG/JPG OR a 'fake' SVG (SVG wrapping an embedded base64 raster),
+    convert it to a WebP file and return (webp_path, True). If it's a REAL vector SVG (no
+    embedded raster) or a Lottie JSON, return (src_path, False) — leave it untouched.
+
+    The embedded raster is the full-quality source, so no originals are needed and no
+    quality is lost beyond WebP's lossy step at q85.
+    """
+    import base64
+    import io
+    import re
+    from PIL import Image
+
+    ext = file_ext.lower()
+    img = None
+
+    if ext in ('.png', '.jpg', '.jpeg'):
+        img = Image.open(src_path)
+    elif ext == '.svg':
+        raw = open(src_path, 'rb').read()
+        txt = raw.decode('utf-8', 'ignore')
+        m = re.search(r'data:image/(png|jpeg);base64,([A-Za-z0-9+/=]+)', txt)
+        if not m:
+            return src_path, False  # real vector SVG — leave alone
+        img = Image.open(io.BytesIO(base64.b64decode(m.group(2))))
+    else:
+        return src_path, False  # json/gif/etc — leave alone
+
+    webp_path = src_path + '.webp'
+    img.convert('RGB').save(webp_path, 'WEBP', quality=WEBP_QUALITY, method=6)
+    return webp_path, True
 
 
 def get_airtable_records(table_name):
@@ -136,10 +173,32 @@ def blob_exists_in_db(cursor, schema, filename):
     existing AUDIO blob as a duplicate image and skip creating the image (the mirror
     of the voice-over collision bug fixed in ingest_voiceovers.blob_exists)."""
     cursor.execute(
-        f"SELECT BlobID FROM {schema}.Blob WHERE Filename = ? AND BlobTypeCD = 110",
+        f"SELECT BlobID, FileTypeExtn FROM {schema}.Blob WHERE Filename = ? AND BlobTypeCD = 110",
         (filename,)
     )
-    return cursor.fetchone() is not None
+    row = cursor.fetchone()
+    return row is not None
+
+
+def existing_image_blob(cursor, schema, filename):
+    """Return (BlobID, FileTypeExtn) for an existing image blob, or None."""
+    cursor.execute(
+        f"SELECT BlobID, FileTypeExtn FROM {schema}.Blob WHERE Filename = ? AND BlobTypeCD = 110",
+        (filename,)
+    )
+    row = cursor.fetchone()
+    return (row[0], row[1]) if row else None
+
+
+def update_blob_extn(cursor, conn, schema, blob_id, new_ext, user_id):
+    """Update an existing Blob's FileTypeExtn (e.g. svg -> webp) after re-uploading
+    the file to blob storage. Keeps the same BlobID so existing FK links are preserved."""
+    cursor.execute(
+        f"UPDATE {schema}.Blob SET FileTypeExtn = ?, LastModUserID = ?, LastModTime = GETDATE() "
+        f"WHERE BlobID = ?",
+        (new_ext, user_id, blob_id)
+    )
+    conn.commit()
 
 
 def upload_to_blob_storage(blob_service, container_name, local_path, blob_name,
@@ -233,7 +292,7 @@ def link_option_image(cursor, conn, schema, item_id, blob_id, option_num):
 
 
 def process_record(record, cursor, conn, blob_service, schema, container_name,
-                   user_id, dry_run, stats):
+                   user_id, dry_run, stats, convert_webp=False, replace_existing=False):
     """Process a single Airtable record."""
     fields = record['fields']
     item_id = str(fields.get('Which Question it refers to', '')).strip()
@@ -254,65 +313,96 @@ def process_record(record, cursor, conn, blob_service, schema, container_name,
                 stats['skipped_unsupported'] += 1
                 continue
 
-            # Build blob name: {ItemID}-{suffix}.{ext}
-            ext_no_dot = file_ext.lstrip('.')
-            blob_filename = f"{item_id}-{suffix}.{ext_no_dot}"
             blob_name_no_ext = f"{item_id}-{suffix}"
-            blob_path = f"images/{blob_filename}"
 
-            # Check for duplicate
-            if blob_exists_in_db(cursor, schema, blob_name_no_ext):
-                stats['skipped_duplicate'] += 1
-                continue
-
-            if dry_run:
-                stats['would_upload'] += 1
-                continue
+            # Check for duplicate (by base filename, image-type — collision-guarded)
+            existing = existing_image_blob(cursor, schema, blob_name_no_ext)
+            if existing:
+                existing_id, existing_ext = existing
+                # In replace mode: if the existing blob is a fake-SVG (or png/jpg) and we're
+                # converting, re-upload as WebP + update the blob's extension IN PLACE (same
+                # BlobID → existing question/option link is preserved). Otherwise skip.
+                if not (replace_existing and convert_webp and (existing_ext or '').lower() in ('svg', 'png', 'jpg', 'jpeg')):
+                    stats['skipped_duplicate'] += 1
+                    continue
+                if dry_run:
+                    stats['would_replace'] = stats.get('would_replace', 0) + 1
+                    continue
+                # fall through to download+convert; we'll update instead of insert
+            else:
+                if dry_run:
+                    stats['would_upload'] += 1
+                    continue
 
             # Download from Airtable
             with tempfile.NamedTemporaryFile(suffix=file_ext, delete=False) as tmp:
                 tmp_path = tmp.name
 
+            webp_path = None
             try:
                 if not download_attachment(url, tmp_path):
                     stats['errors'].append(f"{item_id}: Failed to download {orig_filename}")
                     continue
 
-                # Upload to Azure Blob Storage
+                upload_path = tmp_path
+                ext_no_dot = file_ext.lstrip('.')
                 content_type = CONTENT_TYPES[file_ext]
+
+                # Convert raster PNG/JPG and fake-SVG (raster-in-SVG) to WebP.
+                # Real vector SVGs and Lottie JSON are left untouched.
+                if convert_webp:
+                    out_path, converted = convert_to_webp(tmp_path, file_ext)
+                    if converted:
+                        webp_path = out_path
+                        upload_path = out_path
+                        ext_no_dot = 'webp'
+                        content_type = CONTENT_TYPES['.webp']
+                        stats['converted_webp'] = stats.get('converted_webp', 0) + 1
+
+                blob_filename = f"{blob_name_no_ext}.{ext_no_dot}"
+                blob_path = f"images/{blob_filename}"
+
+                # Upload to Azure Blob Storage (overwrite=True → replaces the old file bytes)
                 upload_to_blob_storage(
-                    blob_service, container_name, tmp_path, blob_path,
+                    blob_service, container_name, upload_path, blob_path,
                     content_type
                 )
 
-                # Insert Blob record
-                blob_id = insert_blob_record(
-                    cursor, conn, schema,
-                    name=blob_name_no_ext,
-                    filename=blob_name_no_ext,
-                    file_ext=ext_no_dot,
-                    user_id=user_id
-                )
-
-                stats['uploaded'] += 1
-
-                # Link to question or option
-                if target == 'question':
-                    if link_question_image(cursor, conn, schema, item_id, blob_id):
-                        stats['linked_questions'] += 1
-                elif target == 'option':
-                    option_num = int(suffix.replace('answer', ''))
-                    if link_option_image(cursor, conn, schema, item_id, blob_id,
-                                         option_num):
-                        stats['linked_options'] += 1
+                if existing:
+                    # REPLACE in place: same BlobID, just update the extension (svg -> webp).
+                    # Existing question/option FK link is untouched. Old .svg blob file is left
+                    # in storage (harmless, unreferenced) — nothing is deleted.
+                    existing_id, _ = existing
+                    update_blob_extn(cursor, conn, schema, existing_id, ext_no_dot, user_id)
+                    stats['replaced'] = stats.get('replaced', 0) + 1
+                else:
+                    # Insert new Blob record + link
+                    blob_id = insert_blob_record(
+                        cursor, conn, schema,
+                        name=blob_name_no_ext,
+                        filename=blob_name_no_ext,
+                        file_ext=ext_no_dot,
+                        user_id=user_id
+                    )
+                    stats['uploaded'] += 1
+                    if target == 'question':
+                        if link_question_image(cursor, conn, schema, item_id, blob_id):
+                            stats['linked_questions'] += 1
+                    elif target == 'option':
+                        option_num = int(suffix.replace('answer', ''))
+                        if link_option_image(cursor, conn, schema, item_id, blob_id,
+                                             option_num):
+                            stats['linked_options'] += 1
 
             except Exception as e:
                 stats['errors'].append(f"{item_id}: {str(e)[:100]}")
             finally:
-                try:
-                    os.unlink(tmp_path)
-                except:
-                    pass
+                for p in (tmp_path, webp_path):
+                    if p:
+                        try:
+                            os.unlink(p)
+                        except OSError:
+                            pass
 
 
 def main():
@@ -334,6 +424,18 @@ def main():
         "--table", "-t",
         default=None,
         help="Only process a specific Airtable table"
+    )
+    parser.add_argument(
+        "--webp",
+        action="store_true",
+        help="Convert raster PNG/JPG and fake-SVG (raster-in-SVG) to WebP before upload "
+             "(matches Victor's converted library; real vector SVGs + Lottie left untouched)"
+    )
+    parser.add_argument(
+        "--replace-existing",
+        action="store_true",
+        help="With --webp: also re-convert images already in the DB as svg/png/jpg to WebP "
+             "in place (same BlobID, link preserved). Without this, existing images are skipped."
     )
 
     args = parser.parse_args()
@@ -390,7 +492,8 @@ def main():
 
         for rec in records:
             process_record(rec, cursor, conn, blob_service, schema,
-                          container_name, user_id, args.dry_run, stats)
+                          container_name, user_id, args.dry_run, stats,
+                          convert_webp=args.webp, replace_existing=args.replace_existing)
 
         # Small delay between tables
         time.sleep(0.5)
@@ -402,8 +505,12 @@ def main():
 
     if args.dry_run:
         print(f"\n[DRY RUN] Would upload: {stats['would_upload']}")
+        if stats.get('would_replace'):
+            print(f"[DRY RUN] Would replace existing with WebP: {stats['would_replace']}")
     else:
         print(f"\nUploaded: {stats['uploaded']}")
+        print(f"Replaced existing with WebP: {stats.get('replaced', 0)}")
+        print(f"Converted to WebP: {stats.get('converted_webp', 0)}")
         print(f"Linked to questions: {stats['linked_questions']}")
         print(f"Linked to options: {stats['linked_options']}")
 
