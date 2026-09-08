@@ -85,6 +85,27 @@ Written doesn't require an Answer cell.
   "Server was busy — please click again" for 5xx.
 - **Airtable cache** kept image URLs + auto-refreshes on boot and every 6h (previews stay fresh).
 
+## Added since (8 Sep, evening)
+
+- **Voiced options** get play + Regenerate + revert (were controls-less). **Audio version
+  history** on question/hint/option VOs. **ElevenLabs 502 fix** (timeout + retry).
+- **"Tweak image"** works on Airtable-only raster images (downloads first). Old SVG/Lottie
+  images are NOT tweakable (would lose the cutout) — they show "Make new image" instead
+  (`q_image_tweakable` flag). Genuine raster images tweak/revert fine.
+- **Hint image generation**: per-hint optional image (`{item_id}-hint{n}.png` → DB element
+  `hint-graphic`), with version history. "Approve & send to Airtable" pushes WebP to the
+  existing **`Hint 1/2/3 Image`** Airtable columns (verified they exist). Endpoints
+  `/api/images/generate-hint/<id>/<n>`; approve via `image_type:"hint"` + `hint_num`.
+- **"Change how it's read aloud"** editor per question / hint / option: a speech-override
+  (SSML) that changes the AUDIO only, never the real text — add pauses `<break time="0.5s"/>`,
+  reword for clearer speech. Stored as `speech_override` (already honored by the generators).
+  Endpoints: `/api/update-speech`, `/api/update-hint-speech`, `/api/update-option-speech`,
+  `/api/speech-text` (returns current override + default to pre-fill + Reset).
+
+## Airtable image columns (verified 8 Sep)
+Question → "Question Image SVG"; Options → "Answer A/B/C/D Image"; Hints → "Hint 1/2/3 Image".
+(`review_app/airtable_push.py` IMAGE_COLUMN_MAP.)
+
 ## Known issues / feedback logged
 
 - **WebP alpha corruption (Victor's side):** after Victor converted the image library to WebP,
