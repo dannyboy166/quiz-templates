@@ -37,19 +37,45 @@
         {% block content %}{% endblock %}
     </main>
     <script>
-    // Data-source banner: loud warning if we're NOT serving live Google Sheets.
+    // Data-source banner: loud RED warning if NOT serving live Google Sheets;
+    // amber notice if live but some worksheets were skipped. Uses textContent for any
+    // server-provided strings (no innerHTML injection of error text).
     (function () {
         fetch('/api/data-source').then(r => r.json()).then(d => {
             var el = document.getElementById('data-source-banner');
             if (!el) return;
-            if (d.mode === 'live') return;  // all good, no banner
+            if (d.mode === 'live' && (!d.warnings || d.warnings.length === 0)) return;  // all good
+
             el.style.display = 'block';
-            el.style.cssText = 'display:block;background:#c0392b;color:#fff;padding:10px 16px;'
-                + 'font-size:0.9rem;font-weight:700;text-align:center;';
-            el.innerHTML = '⚠️ Using STALE offline data — live Google Sheets unreachable'
-                + (d.error ? ' (' + d.error + ')' : '')
-                + '. <a href="#" style="color:#fff;text-decoration:underline;" '
-                + 'onclick="reloadFromSheets(event)">Retry live reload</a>';
+            var stale = d.mode !== 'live';
+            el.style.cssText = 'display:block;padding:10px 16px;font-size:0.9rem;font-weight:700;'
+                + 'text-align:center;' + (stale
+                    ? 'background:#c0392b;color:#fff;'
+                    : 'background:#fff3cd;color:#7a5c00;border-bottom:1px solid #e0a800;');
+
+            var msg = document.createElement('span');
+            if (stale) {
+                msg.textContent = '⚠️ Using STALE offline data — live Google Sheets unreachable'
+                    + (d.error ? ' (' + d.error + ')' : '') + '. ';
+            } else {
+                msg.textContent = '⚠️ Live, but ' + d.warnings.length
+                    + ' worksheet(s) were skipped — some questions may be missing. ';
+            }
+            el.appendChild(msg);
+
+            var link = document.createElement('a');
+            link.href = '#';
+            link.textContent = 'Retry live reload';
+            link.style.cssText = 'color:' + (stale ? '#fff' : '#7a5c00') + ';text-decoration:underline;';
+            link.onclick = reloadFromSheets;
+            el.appendChild(link);
+
+            if (d.warnings && d.warnings.length) {
+                var det = document.createElement('div');
+                det.style.cssText = 'font-weight:400;font-size:0.8rem;margin-top:4px;';
+                det.textContent = d.warnings.join(' | ');
+                el.appendChild(det);
+            }
         }).catch(function () {});
     })();
     function reloadFromSheets(ev) {

@@ -43,7 +43,7 @@ _SCOPES = [
 
 # In-process cache of the last successful load (the 5-tuple + a timestamp string).
 _cache = None
-_cache_meta = {"loaded_at": None, "source": "google-sheets-live"}
+_cache_meta = {"loaded_at": None, "source": "google-sheets-live", "warnings": []}
 
 
 def _normalize(val):
@@ -154,11 +154,28 @@ def load_all_questions_live(force=False):
     topics_by_subject = defaultdict(set)
     sheets = []
 
+    warnings = []
     for short_name, sheet_id in LIVE_SHEETS:
-        sh = gc.open_by_key(sheet_id)
-        for ws in sh.worksheets():
+        try:
+            sh = gc.open_by_key(sheet_id)
+            worksheets = sh.worksheets()
+        except Exception as e:
+            msg = f"could not open sheet '{short_name}' ({sheet_id}): {e}"
+            print(f"  [gsheets] WARNING — {msg}")
+            warnings.append(msg)
+            continue
+        for ws in worksheets:
             sheets.append((short_name, ws.title))
-            for row in ws.get_all_records():  # first row = header, same as pandas header=0
+            try:
+                # get_all_records() raises on duplicate/blank header cells; don't let one
+                # bad worksheet abort the whole live load — skip it and keep going.
+                records = ws.get_all_records()
+            except Exception as e:
+                msg = f"worksheet '{short_name}/{ws.title}' unreadable, skipped: {e}"
+                print(f"  [gsheets] WARNING — {msg}")
+                warnings.append(msg)
+                continue
+            for row in records:  # first row = header, same as pandas header=0
                 q = _row_to_question(row, short_name, ws.title)
                 if not q:
                     continue
@@ -170,8 +187,18 @@ def load_all_questions_live(force=False):
                 if q["subject"] and q["topic"]:
                     topics_by_subject[q["subject"]].add(q["topic"])
 
+    if not questions:
+        # A totally empty live load is almost certainly a real failure (auth/network/all
+        # worksheets bad). Raise so the app falls back to the xlsx snapshot + red banner,
+        # rather than silently serving an empty app.
+        raise RuntimeError(
+            "Live Google Sheets returned 0 questions" +
+            (f" — {'; '.join(warnings)}" if warnings else "")
+        )
+
     subjects = sorted(subjects_set)
     topics_by_subject = {s: sorted(t) for s, t in topics_by_subject.items()}
+    _cache_meta["warnings"] = warnings
 
     _cache = (questions, questions_list, subjects, topics_by_subject, sheets)
     try:

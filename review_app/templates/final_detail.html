@@ -45,12 +45,14 @@
                         {{ 'present' if a.has_q_image else 'missing' }}
                     </span>
                 </h3>
-                {% if a.has_q_image %}
-                    <img src="/generated-images/{{ a.item_id }}-question.png?t={{ range(1,99999)|random }}"
+                {% if a.has_q_image and a.q_image_url %}
+                    <img src="{{ a.q_image_url }}{{ '?t=' ~ range(1,99999)|random if '/generated-images/' in a.q_image_url else '' }}"
                          alt="question image"
                          style="max-width:280px;border:1px solid #ddd;border-radius:6px;"
                          onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
-                    <div style="display:none;color:var(--text-muted);">(in Airtable — not stored locally)</div>
+                    <div style="display:none;color:var(--text-muted);">(image present but could not load)</div>
+                {% elif a.has_q_image %}
+                    <div style="color:var(--text-muted);">(image in Airtable — no preview URL cached)</div>
                 {% else %}
                     <div style="color:var(--text-muted);">No question image yet.</div>
                 {% endif %}
@@ -78,11 +80,17 @@
                     <tbody>
                     {% for opt in a.options %}
                         <tr>
-                            <td>{{ opt.num }}{% if a.answer and (opt.num|string) in a.answer %} ✓{% endif %}</td>
+                            <td>{{ opt.num }}{% if opt.is_correct %} <span title="correct answer" style="color:#2e7d32;">✓</span>{% endif %}</td>
                             <td>{{ opt.text }}</td>
-                            <td>{% if a.is_select_all %}
-                                <span class="status-badge {{ 'status-approved' if opt.has_image else '' }}">
-                                    {{ 'yes' if opt.has_image else 'missing' }}</span>
+                            <td>
+                                {% if opt.has_image and opt.image_url %}
+                                    <img src="{{ opt.image_url }}" alt="option {{ opt.num }}"
+                                         style="max-width:60px;max-height:60px;border:1px solid #ddd;border-radius:4px;vertical-align:middle;"
+                                         onerror="this.style.display='none';">
+                                {% endif %}
+                                {% if a.is_select_all %}
+                                    <span class="status-badge {{ 'status-approved' if opt.has_image else '' }}">
+                                        {{ 'yes' if opt.has_image else 'missing' }}</span>
                                 {% else %}<span style="color:var(--text-muted);">{{ 'yes' if opt.has_image else '—' }}</span>{% endif %}
                             </td>
                             <td>

@@ -233,6 +233,7 @@ def create_app():
             "error": data_source_status["error"],
             "question_count": len(questions),
             "live_available": gsheets_loader.is_available(),
+            "warnings": gsheets_loader.cache_meta().get("warnings", []),
         })
 
     @app.route("/api/reload-questions", methods=["POST"])
@@ -249,17 +250,23 @@ def create_app():
             data_source_status["error"] = str(e)
             return jsonify({"ok": False, "error": str(e)}), 502
         # Update shared containers in place so existing route closures see the new data.
+        # (questions_list is aliased by image_questions_list; mutating in place keeps both fresh.)
         questions.clear()
         questions.update(new_q)
         questions_list[:] = new_list
+        subjects[:] = new_subs
+        topics_by_subject.clear()
+        topics_by_subject.update(new_tbs)
         data_source_status["mode"] = "live"
         data_source_status["loaded_at"] = gsheets_loader.cache_meta().get("loaded_at")
         data_source_status["error"] = None
+        print(f"  [reload] Live reload OK — {len(questions)} questions")
         return jsonify({
             "ok": True,
             "mode": "live",
             "question_count": len(questions),
             "loaded_at": data_source_status["loaded_at"],
+            "warnings": gsheets_loader.cache_meta().get("warnings", []),
         })
 
     # --- Static file routes for project assets ---

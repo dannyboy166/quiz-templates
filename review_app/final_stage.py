@@ -37,6 +37,19 @@ def _hint_levels(q):
     return [n for n in (1, 2, 3) if q.get(f"hint{n}", "")]
 
 
+def _correct_option_nums(answer):
+    """Parse an Answer cell into the set of correct option numbers.
+
+    Handles "1", "1 and 3", "1,2,3,4", "2 and 3" etc. Returns a set of ints.
+    Whole-number match only (regex \\d+) so "10" != option 1 and "1" != option 10.
+    True/False answers ("True"/"False") yield an empty set (no option numbers).
+    """
+    import re
+    if not answer:
+        return set()
+    return {int(m) for m in re.findall(r"\d+", str(answer))}
+
+
 def assemble(q, image_state, review_state, airtable_images):
     """Build the full assembled view of one question + its completeness gates.
 
@@ -54,17 +67,34 @@ def assemble(q, image_state, review_state, airtable_images):
 
     # --- media/state lookups (app-side) ---
     at = airtable_images.get(item_id) or {}
-    has_q_image = has_question_image(item_id) or bool(at.get("question_image"))
+    at_q_image = at.get("question_image") or {}
+    has_local_q_image = has_question_image(item_id)
+    has_q_image = has_local_q_image or bool(at_q_image)
+    # URL for display: prefer the local generated PNG, else the Airtable URL if present.
+    if has_local_q_image:
+        q_image_url = f"/generated-images/{item_id}-question.png"
+    else:
+        q_image_url = at_q_image.get("url", "")
     at_answer_images = at.get("answer_images") or {}
+
+    correct_nums = _correct_option_nums(q.get("answer", ""))
 
     # per-option image presence (generated locally OR in Airtable)
     option_rows = []
     for num, text in options:
-        opt_img = has_answer_image(item_id, num) or bool(at_answer_images.get(str(num)))
+        has_local_opt = has_answer_image(item_id, num)
+        at_opt = at_answer_images.get(str(num)) or {}
+        opt_img = has_local_opt or bool(at_opt)
+        if has_local_opt:
+            opt_img_url = f"/generated-images/{item_id}-answer{num}.png"
+        else:
+            opt_img_url = at_opt.get("url", "") if isinstance(at_opt, dict) else ""
         option_rows.append({
             "num": num,
             "text": text,
             "has_image": opt_img,
+            "image_url": opt_img_url,
+            "is_correct": num in correct_nums,
             # per-option VO (Phase 3) — file naming {item_id}-option{n}.mp3
             "has_vo": has_option_audio(item_id, num),
         })
@@ -121,6 +151,7 @@ def assemble(q, image_state, review_state, airtable_images):
         "is_select_all": is_select_all,
         "is_written": is_written,
         "has_q_image": has_q_image,
+        "q_image_url": q_image_url,
         "q_vo": q_vo,
         "options": option_rows,
         "hints": hint_rows,
