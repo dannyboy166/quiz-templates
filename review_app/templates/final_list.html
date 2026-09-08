@@ -5,7 +5,11 @@
     <div class="list-header">
         <h1>Final Stage</h1>
         <div class="list-actions">
-            <span class="filter-count" id="complete-count">{{ complete_n }} / {{ total }} complete</span>
+            <span class="filter-count">{{ complete_n }} / {{ total }} complete</span>
+            &nbsp;·&nbsp;
+            <span class="filter-count" style="color:#2e7d32;">{{ approved_n }} approved for upload</span>
+            &nbsp;·&nbsp;
+            <a class="btn btn-secondary btn-sm" href="/api/final/manifest" target="_blank">View manifest</a>
         </div>
     </div>
 
@@ -26,6 +30,8 @@
             <option value="">All</option>
             <option value="complete">Complete</option>
             <option value="incomplete">Incomplete</option>
+            <option value="approved">Approved for upload</option>
+            <option value="not-approved">Not approved</option>
         </select>
     </div>
 
@@ -61,6 +67,8 @@ function applyFilters() {
         if (subj && r.subject !== subj) return false;
         if (status === 'complete' && !r.complete) return false;
         if (status === 'incomplete' && r.complete) return false;
+        if (status === 'approved' && !r.approved) return false;
+        if (status === 'not-approved' && r.approved) return false;
         if (txt && !(r.text.toLowerCase().includes(txt) || r.id.toLowerCase().includes(txt))) return false;
         return true;
     });
@@ -73,7 +81,9 @@ function render() {
     const start = (page - 1) * PAGE_SIZE;
     const rows = filtered.slice(start, start + PAGE_SIZE);
     tbody.innerHTML = rows.map(r => {
-        const badge = r.complete
+        const badge = r.approved
+            ? '<span class="status-badge status-approved">✓ Approved</span>'
+            : r.complete
             ? '<span class="status-badge status-approved">Complete</span>'
             : '<span class="status-badge">' + r.passed + '/' + r.total + '</span>';
         const bar = r.complete ? '#2e7d32' : (r.passed === 0 ? '#c0392b' : '#e0a800');

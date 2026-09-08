@@ -23,6 +23,7 @@ from flask import (
 from .spreadsheet_loader import load_all_questions, TEMPLATE_NAMES
 from . import gsheets_loader
 from . import final_stage
+from . import final_state as final_state_mod
 from .state import (
     load_state, save_state, get_item_state, update_item_state,
     has_audio, now_iso, VOICEOVER_DIR, DATA_DIR,
@@ -742,6 +743,10 @@ def create_app():
     print("Loading image state...")
     image_state = load_image_state()
 
+    print("Loading final-approval ledger...")
+    final_ledger = final_state_mod.load_final_state()
+    print(f"  {len(final_state_mod.approved_ids(final_ledger))} question(s) already Final Approved")
+
     # Load Airtable data — use local cache if available (instant),
     # otherwise fetch from API in background (~60s)
     print("Loading Airtable images...")
@@ -824,14 +829,19 @@ def create_app():
 
     @app.route("/final")
     def final_list():
-        rows = [final_stage.summary_row(q, image_state, state, airtable_images)
-                for q in questions_list]
+        rows = []
+        for q in questions_list:
+            row = final_stage.summary_row(q, image_state, state, airtable_images)
+            row["approved"] = bool(final_state_mod.get_final_item(final_ledger, row["id"]).get("approved"))
+            rows.append(row)
         complete_n = sum(1 for r in rows if r["complete"])
+        approved_n = sum(1 for r in rows if r["approved"])
         return render_template("final_list.html",
                                rows_json=json.dumps(rows, ensure_ascii=False),
                                subjects=subjects,
                                total=len(rows),
-                               complete_n=complete_n)
+                               complete_n=complete_n,
+                               approved_n=approved_n)
 
     @app.route("/final/<item_id>")
     def final_detail(item_id):
@@ -844,8 +854,10 @@ def create_app():
         prev_id = questions_list[idx - 1]["item_id"] if idx and idx > 0 else None
         next_id = questions_list[idx + 1]["item_id"] if idx is not None and idx < len(questions_list) - 1 else None
 
+        approval = final_state_mod.get_final_item(final_ledger, item_id)
         return render_template("final_detail.html",
-                               a=assembled, prev_id=prev_id, next_id=next_id)
+                               a=assembled, prev_id=prev_id, next_id=next_id,
+                               approval=approval)
 
     @app.route("/api/final/generate-all/<item_id>", methods=["POST"])
     def api_final_generate_all(item_id):
@@ -913,6 +925,64 @@ def create_app():
             "generated": generated,
             "results": results,
         })
+
+    @app.route("/api/final/approve/<item_id>", methods=["POST"])
+    def api_final_approve(item_id):
+        """Mark a question Final Approved — ONLY if it passes all completeness gates.
+
+        Server re-checks completeness (never trusts the client). Approved questions
+        become the upload manifest; the terminal uploader inserts them into the DB.
+        """
+        q = questions.get(item_id)
+        if not q:
+            return jsonify({"error": "Question not found"}), 404
+        assembled = final_stage.assemble(q, image_state, state, airtable_images)
+        if not assembled["complete"]:
+            failed = [g["label"] for g in assembled["gates"] if not g["ok"]]
+            return jsonify({"ok": False,
+                            "error": "Not complete — cannot approve",
+                            "failed_gates": failed}), 400
+        data = request.get_json(silent=True) or {}
+        by = data.get("by")
+        item = final_state_mod.set_approved(final_ledger, item_id, True, by=by)
+        print(f"  [final] Approved {item_id} for upload")
+        return jsonify({"ok": True, "approved": True, "approved_at": item["approved_at"]})
+
+    @app.route("/api/final/unapprove/<item_id>", methods=["POST"])
+    def api_final_unapprove(item_id):
+        """Undo a Final Approval (e.g. reviewer changed their mind)."""
+        if item_id not in questions:
+            return jsonify({"error": "Question not found"}), 404
+        final_state_mod.set_approved(final_ledger, item_id, False)
+        print(f"  [final] Unapproved {item_id}")
+        return jsonify({"ok": True, "approved": False})
+
+    @app.route("/api/final/manifest")
+    def api_final_manifest():
+        """Export the upload manifest: all Final Approved questions + their assets.
+
+        This is what the terminal uploader will read. Read-only; no DB access.
+        """
+        out = []
+        for item_id in final_state_mod.approved_ids(final_ledger):
+            q = questions.get(item_id)
+            if not q:
+                continue  # question no longer in the sheet — skip, don't guess
+            assembled = final_stage.assemble(q, image_state, state, airtable_images)
+            ledger = final_state_mod.get_final_item(final_ledger, item_id)
+            out.append({
+                "item_id": item_id,
+                "subject": assembled["subject"],
+                "topic": assembled["topic"],
+                "question_type": assembled["question_type"],
+                "template_id": assembled["template_id"],
+                "answer": assembled["answer"],
+                "still_complete": assembled["complete"],
+                "approved_at": ledger.get("approved_at"),
+                "approved_by": ledger.get("approved_by"),
+                "uploaded_at": ledger.get("uploaded_at"),
+            })
+        return jsonify({"count": len(out), "questions": out})
 
     @app.route("/api/final/stats")
     def api_final_stats():

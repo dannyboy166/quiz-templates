@@ -190,6 +190,34 @@
                 </label>
                 <div id="gen-all-results" style="margin-top:0.5rem;font-size:0.85rem;"></div>
             </div>
+
+            <hr style="margin:1rem 0;border:none;border-top:1px solid #eee;">
+
+            <!-- Final Approve gate (Phase 5) -->
+            <div id="approve-block">
+                {% if approval.approved %}
+                    <div style="background:#eafaf0;border:1px solid #2e7d32;border-radius:6px;padding:0.6rem;">
+                        <strong style="color:#2e7d32;">✓ Approved for upload</strong>
+                        <div style="font-size:0.8rem;color:var(--text-muted);">
+                            {{ approval.approved_at }}{% if approval.approved_by %} by {{ approval.approved_by }}{% endif %}
+                            {% if approval.uploaded_at %}<br>Uploaded: {{ approval.uploaded_at }}{% endif %}
+                        </div>
+                        <button class="btn btn-secondary btn-sm" style="margin-top:0.4rem;"
+                                onclick="unapprove('{{ a.item_id }}')">Undo approval</button>
+                    </div>
+                {% elif a.complete %}
+                    <button class="btn btn-success" id="approve-btn" style="width:100%;"
+                            onclick="approveForUpload('{{ a.item_id }}')">
+                        ✓ Approve for upload
+                    </button>
+                {% else %}
+                    <button class="btn" style="width:100%;opacity:0.5;cursor:not-allowed;" disabled
+                            title="All completeness gates must pass first">
+                        Approve for upload (locked — not complete)
+                    </button>
+                {% endif %}
+                <div id="approve-status" class="fs-status"></div>
+            </div>
             <p style="color:var(--text-muted);font-size:0.8rem;margin-top:1rem;">
                 Fills every missing image + voice-over (question, options, hints) in one click.
                 Existing parts are skipped unless you tick the box.
@@ -278,6 +306,28 @@ async function genOptionVO(itemId, n) {
     } catch (e) {
         _setStatus('opt-vo-status-' + n, 'Failed: ' + e.message, false);
         _busy('opt-vo-btn-' + n, false);
+    }
+}
+
+async function approveForUpload(itemId) {
+    _busy('approve-btn', true, 'Approving…');
+    _setStatus('approve-status', '', null);
+    try {
+        await _post(`/api/final/approve/${itemId}`);
+        location.reload();
+    } catch (e) {
+        _setStatus('approve-status', 'Cannot approve: ' + e.message, false);
+        _busy('approve-btn', false);
+    }
+}
+
+async function unapprove(itemId) {
+    if (!confirm('Undo the approval for this question?')) return;
+    try {
+        await _post(`/api/final/unapprove/${itemId}`);
+        location.reload();
+    } catch (e) {
+        alert('Failed: ' + e.message);
     }
 }
 
