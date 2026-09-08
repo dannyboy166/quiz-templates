@@ -1238,15 +1238,27 @@ def create_app():
         itype = (qi.get("type") or "").lower()
         if not url:
             return False, "No image to edit — generate one first."
-        if "svg" in itype or "json" in itype:
-            return False, "This image is an SVG/Lottie and can't be tweaked — use 'Make new image' instead."
+        if "json" in itype:
+            return False, "This is a Lottie animation and can't be tweaked — use 'Make new image' instead."
         try:
             import requests as _rq
             from PIL import Image as _Img
             import io as _io
             r = _rq.get(url, timeout=30)
             r.raise_for_status()
-            im = _Img.open(_io.BytesIO(r.content))
+            content = r.content
+
+            if "svg" in itype or content[:100].lstrip().startswith(b"<svg") or b"<svg" in content[:300]:
+                # "Fake SVG": a raster (PNG/JPEG) base64-embedded in an SVG wrapper (Canva export).
+                # Extract the embedded raster so OpenAI can edit the real photo. If it's a genuine
+                # vector SVG with no embedded raster, we can't raster-edit it.
+                raster = _extract_raster_from_svg(content)
+                if raster is None:
+                    return False, "This is a vector SVG with no photo inside — use 'Make new image' instead."
+                im = _Img.open(_io.BytesIO(raster))
+            else:
+                im = _Img.open(_io.BytesIO(content))
+
             im = im.convert("RGBA") if "A" in im.getbands() else im.convert("RGB")
             local.parent.mkdir(parents=True, exist_ok=True)
             im.save(local, format="PNG")
@@ -1833,6 +1845,36 @@ def _questions_for_client(questions_list, state):
             "hints": hints,
         })
     return result
+
+
+def _extract_raster_from_svg(svg_bytes):
+    """Pull the real photo out of a 'fake SVG' (base64 raster embedded in an SVG wrapper).
+
+    Canva exports wrap the image in an SVG and often embed TWO rasters: a small grayscale
+    ALPHA MASK plus the full-colour photo. We must return the PHOTO, not the mask — so pick
+    the LARGEST embedded raster (by decoded byte size). Returns raster bytes, or None if the
+    SVG has no embedded raster (a genuine vector SVG).
+    """
+    import re
+    import base64
+    try:
+        text = svg_bytes.decode("utf-8", errors="ignore")
+    except Exception:
+        return None
+    matches = re.findall(r'data:image/(?:png|jpeg|jpg|webp);base64,([A-Za-z0-9+/=\s]+?)["\')]', text)
+    if not matches:
+        # fall back to a looser match (no trailing delimiter captured)
+        m = re.search(r'data:image/(?:png|jpeg|jpg|webp);base64,([A-Za-z0-9+/=\s]+)', text)
+        matches = [m.group(1)] if m else []
+    best = None
+    for b64 in matches:
+        try:
+            raw = base64.b64decode(re.sub(r"\s+", "", b64))
+        except Exception:
+            continue
+        if best is None or len(raw) > len(best):
+            best = raw
+    return best
 
 
 def _log_edit(item_id, field, old_value, new_value, by):
