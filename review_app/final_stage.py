@@ -123,6 +123,13 @@ def assemble(q, image_state, review_state, airtable_images):
         all_opt_imgs = all(r["has_image"] for r in option_rows) and bool(option_rows)
         gates.append(_gate("Every option has an image (Select All)", all_opt_imgs))
     gates.append(_gate("Question voice-over", q_vo))
+    # Every answer option must have its own voice-over (Select One + Select All).
+    # True/False and Written have no options list, so this gate doesn't apply to them.
+    if not is_true_false and not is_written and option_rows:
+        all_opts_voiced = all(r["has_vo"] for r in option_rows)
+        voiced_n = sum(1 for r in option_rows if r["has_vo"])
+        gates.append(_gate(f"All {len(option_rows)} option(s) voiced", all_opts_voiced,
+                           detail=f"{voiced_n}/{len(option_rows)} voiced"))
     if hint_levels:
         all_hints_voiced = all(r["has_vo"] for r in hint_rows)
         gates.append(_gate(f"All {len(hint_levels)} hint(s) voiced", all_hints_voiced))
