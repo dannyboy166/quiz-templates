@@ -5,7 +5,9 @@ question **fully assembled and 100% complete** (exactly as it will appear in the
 portal), and lets Zoe/Georgia **generate or regenerate any missing piece inline** before it
 ships to Victor's database as approved.
 
-Status: PROPOSAL (Dan's idea, 1 Sep 2026). Not built yet.
+Status: **BUILT & DEPLOYED (in-app, Phases 1-5), 8 Sep 2026.** Originally Dan's idea (1 Sep).
+Live at /final. Remaining: the terminal uploader (manifest → Victor's DB), to be built manually
+with Dan (never automatic). See memory project_final_review_tab + docs/FINAL-STAGE-DB-FIELD-MAP.md.
 
 > **UPDATE 8 Sep 2026** — two things changed since this was written:
 > 1. **Canva is gone.** The image path is now OpenAI → WebP → Airtable directly (no manual Canva
