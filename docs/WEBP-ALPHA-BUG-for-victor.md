@@ -10,7 +10,22 @@ images render broken in the student portal:
 Examples seen: PDHPE questions — ItemID **141001** ("Why do we wash our hands?") and
 **141004** ("How long should we brush our teeth?") — both show the white-silhouette artifact.
 
-## Root cause: transparency (alpha channel) mishandled during PNG/SVG → WebP conversion
+## MOST LIKELY root cause: the "fake SVGs" (PNG embedded inside an SVG) didn't convert
+
+~85% of the old library were **"fake SVGs"**: a full-resolution PNG base64-embedded inside an SVG
+wrapper (the Canva export format, ~2 MB each). A WebP converter does **not** render an SVG unless it
+has a proper SVG rasterizer that also decodes the embedded base64 PNG. If Victor's conversion ran a
+straight image→WebP on these files:
+- it likely rendered only the SVG's **structure/mask/clip-path** (not the embedded photo) → the
+  **white silhouette** or **black box**, OR
+- rasterized onto a transparent canvas and flattened alpha to black (below).
+
+**The images that render fine are the REAL images (not fake-SVG-wrapped).** The broken ones are the
+SVG-wrapped-PNG ones. This is the same fake-SVG liability that motivated bypassing Canva
+(see docs — image approve now pushes real WebP directly). Best fix: re-convert from the **real
+underlying image** (the OpenAI PNG / Airtable original), not the SVG wrapper.
+
+## Secondary mechanism: transparency (alpha channel) mishandled during conversion
 
 The affected images had a **transparent background** (alpha channel). The conversion dropped or
 misused the alpha. Reproduced both failure modes locally with Pillow:
