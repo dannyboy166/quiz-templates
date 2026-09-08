@@ -760,18 +760,30 @@ def create_app():
     cached = load_cached_airtable_images()
     airtable_images = cached if cached else {}
     if airtable_images:
-        print(f"  Loaded {len(airtable_images)} images from cache")
-    else:
-        print("  No cache — Airtable data will load in background. Use /api/images/refresh-airtable to fetch.")
-        def _load_airtable_bg():
-            try:
-                fresh = load_airtable_images()
-                airtable_images.update(fresh)
-                save_airtable_cache(airtable_images)
-                print(f"  Airtable background load complete: {len(fresh)} images")
-            except Exception as e:
-                print(f"  Airtable background load failed: {e}")
-        threading.Thread(target=_load_airtable_bg, daemon=True).start()
+        print(f"  Loaded {len(airtable_images)} images from cache (refreshing in background)")
+
+    # ALWAYS refresh Airtable in the background on startup, then periodically. This keeps
+    # image-preview URLs fresh (Airtable attachment URLs expire after a few hours) so
+    # reviewers never see blank previews and nobody has to click Sync.
+    _AIRTABLE_REFRESH_SECONDS = 6 * 3600  # every 6 hours
+
+    def _refresh_airtable_once():
+        try:
+            fresh = load_airtable_images()
+            airtable_images.clear()
+            airtable_images.update(fresh)
+            save_airtable_cache(airtable_images)
+            print(f"  Airtable refresh complete: {len(fresh)} images (urls updated)")
+        except Exception as e:
+            print(f"  Airtable refresh failed (keeping previous cache): {e}")
+
+    def _airtable_refresh_loop():
+        import time as _t
+        _refresh_airtable_once()  # once at startup
+        while True:
+            _t.sleep(_AIRTABLE_REFRESH_SECONDS)
+            _refresh_airtable_once()
+    threading.Thread(target=_airtable_refresh_loop, daemon=True).start()
 
     # ALL questions get images eventually — show them all on the image page
     image_questions_list = questions_list
