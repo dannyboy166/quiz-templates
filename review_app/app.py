@@ -39,6 +39,7 @@ from .image_engine import (
     build_question_prompt, build_answer_prompt,
     generate_question_image, generate_answer_image,
     edit_question_image, get_version_files, restore_version,
+    png_to_webp,
     IMAGE_DATA_DIR as IMG_ENGINE_DIR,
 )
 from .airtable_loader import (
@@ -758,7 +759,10 @@ def create_app():
 
     @app.route("/api/images/approve/<item_id>", methods=["POST"])
     def api_approve_image(item_id):
-        """Approve an image AND push it to Canva in one step."""
+        """Approve an image: convert PNG -> WebP and push straight to Airtable.
+
+        (Canva staging step removed — the app now pushes clean WebP directly.)
+        """
         q = questions.get(item_id)
         if not q:
             return jsonify({"error": "Question not found"}), 404
@@ -778,49 +782,43 @@ def create_app():
         img_st["flag_note"] = ""
         update_image_item_state(image_state, item_id, **img_st)
 
-        # Build public URL for the image
+        # Build public URL base for the image (Airtable downloads it server-side)
         domain = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "localhost:5050")
         scheme = "https" if "railway" in domain else "http"
 
-        canva_error = None
-        canva_uploaded = False
+        airtable_error = None
+        pushed = False
 
-        # Push to Canva if connected
-        if canva_uploader.is_connected():
-            try:
-                # Add timestamp to URL so Canva treats regenerated images as new
-                ts = int(time.time())
-                if image_type == "question":
-                    filename = f"{item_id}-question.png"
-                    image_url = f"{scheme}://{domain}/generated-images/{filename}?v={ts}"
-                    prompt = img_st["question_image"].get("prompt", q.get("question_text", ""))
-                    asset_name = canva_uploader.build_asset_name(item_id, prompt)
-                    job_id, status = canva_uploader.upload_image_from_url(image_url, asset_name)
-                    img_st["question_image"]["canva_pushed_at"] = img_now_iso()
-                    canva_uploaded = True
-                elif image_type == "answer" and option_num:
-                    filename = f"{item_id}-answer{option_num}.png"
-                    image_url = f"{scheme}://{domain}/generated-images/{filename}?v={ts}"
-                    ans_state = img_st["answer_images"].get(str(option_num), {})
-                    prompt = ans_state.get("prompt", q.get(f"option{option_num}", f"Answer {option_num}"))
-                    asset_name = canva_uploader.build_asset_name(f"{item_id}-answer{option_num}", prompt)
-                    job_id, status = canva_uploader.upload_image_from_url(image_url, asset_name)
-                    ans = img_st["answer_images"].setdefault(str(option_num), {})
-                    ans["canva_pushed_at"] = img_now_iso()
-                    canva_uploaded = True
+        try:
+            # Cache-buster so Airtable treats a regenerated image as new
+            ts = int(time.time())
+            if image_type == "question":
+                png_path = IMG_ENGINE_DIR / f"{item_id}-question.png"
+                webp_path = png_to_webp(png_path)
+                image_url = f"{scheme}://{domain}/generated-images/{webp_path.name}?v={ts}"
+                table_name, record_id, msg = at_push_question(q, image_url, airtable_images)
+                img_st["question_image"]["pushed_at"] = img_now_iso()
+                pushed = True
+            elif image_type == "answer" and option_num:
+                png_path = IMG_ENGINE_DIR / f"{item_id}-answer{option_num}.png"
+                webp_path = png_to_webp(png_path)
+                image_url = f"{scheme}://{domain}/generated-images/{webp_path.name}?v={ts}"
+                table_name, record_id, msg = at_push_answer(q, int(option_num), image_url, airtable_images)
+                ans = img_st["answer_images"].setdefault(str(option_num), {})
+                ans["pushed_at"] = img_now_iso()
+                pushed = True
 
-                update_image_item_state(image_state, item_id, **img_st)
-                print(f"  Canva upload for {item_id}: job={job_id} status={status}")
-            except Exception as e:
-                canva_error = str(e)
-                print(f"  Canva upload error for {item_id}: {e}")
-        else:
-            canva_error = "Not connected to Canva — visit /canva/auth to connect"
+            update_image_item_state(image_state, item_id, **img_st)
+            if pushed:
+                print(f"  Airtable push for {item_id} ({image_type}): {table_name} — {msg}")
+        except Exception as e:
+            airtable_error = str(e)
+            print(f"  Airtable push error for {item_id}: {e}")
 
         return jsonify({
             "ok": True,
-            "canva_uploaded": canva_uploaded,
-            "canva_error": canva_error,
+            "pushed": pushed,
+            "airtable_error": airtable_error,
         })
 
     @app.route("/api/images/flag/<item_id>", methods=["POST"])
@@ -959,9 +957,9 @@ def create_app():
         scheme = "https" if "railway" in domain else "http"
 
         if image_type == "question":
-            filename = f"{item_id}-question.png"
-            image_url = f"{scheme}://{domain}/generated-images/{filename}"
             try:
+                webp_path = png_to_webp(IMG_ENGINE_DIR / f"{item_id}-question.png")
+                image_url = f"{scheme}://{domain}/generated-images/{webp_path.name}"
                 table_name, record_id, msg = at_push_question(q, image_url, airtable_images)
                 img_st = get_image_item_state(image_state, item_id)
                 img_st["question_image"]["pushed_at"] = img_now_iso()
@@ -970,9 +968,9 @@ def create_app():
             except Exception as e:
                 return jsonify({"error": str(e)}), 500
         elif image_type == "answer" and option_num:
-            filename = f"{item_id}-answer{option_num}.png"
-            image_url = f"{scheme}://{domain}/generated-images/{filename}"
             try:
+                webp_path = png_to_webp(IMG_ENGINE_DIR / f"{item_id}-answer{option_num}.png")
+                image_url = f"{scheme}://{domain}/generated-images/{webp_path.name}"
                 table_name, record_id, msg = at_push_answer(q, int(option_num), image_url, airtable_images)
                 img_st = get_image_item_state(image_state, item_id)
                 ans = img_st["answer_images"].setdefault(str(option_num), {})

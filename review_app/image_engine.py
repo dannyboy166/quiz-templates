@@ -107,6 +107,37 @@ def restore_version(item_id, version_num, image_type="question", option_num=None
 
 
 # ---------------------------------------------------------------------------
+# WebP conversion
+# ---------------------------------------------------------------------------
+
+def png_to_webp(png_path, quality=85):
+    """Convert a PNG to a sibling WebP at native resolution (lossy, quality 85).
+
+    Matches the format Victor used converting his DB image library (served as
+    image/webp from the CDN). Overwrites any existing .webp for that image.
+    Returns the Path to the written .webp file.
+
+    Requires Pillow. Does not touch or delete the source PNG.
+    """
+    from PIL import Image  # imported lazily so the app boots even if Pillow is missing
+
+    png_path = Path(png_path)
+    if not png_path.exists():
+        raise FileNotFoundError(f"No PNG to convert: {png_path}")
+
+    webp_path = png_path.with_suffix(".webp")
+    with Image.open(png_path) as im:
+        # Keep alpha if present; WebP supports RGBA. Native resolution — no downscale.
+        if im.mode not in ("RGB", "RGBA"):
+            im = im.convert("RGBA" if "A" in im.getbands() else "RGB")
+        im.save(webp_path, format="WEBP", quality=quality, method=6)
+
+    print(f"  [WebP] {png_path.name} ({png_path.stat().st_size} B) -> "
+          f"{webp_path.name} ({webp_path.stat().st_size} B)")
+    return webp_path
+
+
+# ---------------------------------------------------------------------------
 # Prompt building
 # ---------------------------------------------------------------------------
 

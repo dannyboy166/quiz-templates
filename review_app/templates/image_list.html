@@ -43,7 +43,6 @@
         <span class="filter-count" id="filter-count"></span>
     </div>
 
-    <div id="canva-status-banner"></div>
     <div class="progress-summary" id="progress-summary" style="margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-muted);"></div>
 
     <div class="detail-card" style="margin-bottom: 1rem; padding: 1rem;">
@@ -104,7 +103,7 @@
             </div>
 
             <div class="modal-actions" style="justify-content:center;gap:0.75rem;">
-                <button class="btn btn-success" id="preview-approve-btn" onclick="previewApprove()">Approve &amp; Send to Canva</button>
+                <button class="btn btn-success" id="preview-approve-btn" onclick="previewApprove()">Approve &rarr; Airtable</button>
                 <button class="btn btn-secondary" onclick="hidePreview()">Close</button>
             </div>
         </div>
@@ -167,16 +166,6 @@
     if (params.get('size')) document.getElementById('image-size').value = params.get('size');
 
     applyFilters();
-
-    // Check Canva connection status
-    fetch('/api/canva/status').then(r => r.json()).then(data => {
-        const banner = document.getElementById('canva-status-banner');
-        if (data.connected) {
-            banner.innerHTML = '<div style="background:#efe;border:1px solid #cfc;padding:8px 14px;border-radius:6px;margin-bottom:1rem;font-size:0.9rem;">Canva connected — approved images auto-upload to Canva</div>';
-        } else {
-            banner.innerHTML = '<div style="background:#fff3cd;border:1px solid #ffc107;padding:8px 14px;border-radius:6px;margin-bottom:1rem;font-size:0.9rem;">Canva not connected — <a href="/canva/auth">click here to connect</a> so approved images upload automatically</div>';
-        }
-    }).catch(() => {});
 
     function applyFilters() {
         const subject = document.getElementById('filter-subject').value;
@@ -278,11 +267,11 @@
                 </td>
                 <td class="col-actions" style="white-space:nowrap;">
                     ${q.has_gen_image && !q.has_at_image && q.img_status !== 'approved' ? `
-                        <button class="action-btn approve-btn" onclick="quickApproveImage('${q.id}')" title="Approve & send to Canva">&#10003;</button>
+                        <button class="action-btn approve-btn" onclick="quickApproveImage('${q.id}')" title="Approve &amp; push to Airtable">&#10003;</button>
                         <button class="action-btn" onclick="regenerateImage('${q.id}')" title="Regenerate with prompt" style="font-size:0.8rem;">&#8635;</button>
                     ` : q.img_status === 'approved' && q.has_gen_image ? `
-                        <span class="done-label">Sent</span>
-                        <button class="action-btn" onclick="resendToCanva('${q.id}')" title="Resend to Canva" style="font-size:0.7rem;">&#8635;</button>
+                        <span class="done-label">In Airtable</span>
+                        <button class="action-btn" onclick="repushToAirtable('${q.id}')" title="Re-push to Airtable" style="font-size:0.7rem;">&#8635;</button>
                     ` : q.has_at_image ? '<span class="done-label">Done</span>'
                       : !q.has_gen_image && !editingItems.has(q.id) ? `
                         <button class="action-btn" onclick="regenerateImage('${q.id}')" title="Generate image" style="font-size:0.8rem;">&#9654;</button>
@@ -365,7 +354,7 @@
 
         // Reset approve button
         const approveBtn = document.getElementById('preview-approve-btn');
-        if (approveBtn) { approveBtn.textContent = 'Approve & Send to Canva'; approveBtn.disabled = false; }
+        if (approveBtn) { approveBtn.textContent = 'Approve → Airtable'; approveBtn.disabled = false; }
 
         overlay.style.display = 'flex';
     }
@@ -427,11 +416,11 @@
                 const q = ALL_QUESTIONS.find(q => q.id === itemId);
                 if (q) {
                     q.img_status = 'approved';
-                    q.has_at_image = true;
+                    if (data.pushed) q.has_at_image = true;
                 }
-                if (data.canva_error) {
-                    alert('Approved but Canva upload failed: ' + data.canva_error);
-                } else if (data.canva_uploaded) {
+                if (data.airtable_error) {
+                    alert('Approved but Airtable push failed: ' + data.airtable_error);
+                } else if (data.pushed) {
                     if (btn) { btn.textContent = 'Sent!'; btn.style.background = '#4CAF50'; btn.style.color = 'white'; }
                     setTimeout(() => renderTable(), 800);
                     return;
@@ -526,7 +515,7 @@
         hidePreview();
     }
 
-    async function resendToCanva(itemId) {
+    async function repushToAirtable(itemId) {
         const btn = event && event.target ? event.target : null;
         if (btn) { btn.disabled = true; btn.textContent = '...'; }
         try {
@@ -536,14 +525,14 @@
                 body: JSON.stringify({image_type: 'question'})
             });
             const data = await res.json();
-            if (data.canva_error) {
-                alert('Resend failed: ' + data.canva_error);
+            if (data.airtable_error) {
+                alert('Re-push failed: ' + data.airtable_error);
             } else if (btn) {
                 btn.textContent = '✓';
                 btn.style.color = '#4CAF50';
             }
         } catch (e) {
-            alert('Resend failed: ' + e.message);
+            alert('Re-push failed: ' + e.message);
         }
         if (btn) { btn.disabled = false; }
     }
