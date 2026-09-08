@@ -31,9 +31,34 @@
             <span id="image-bulk-indicator-text">Generating images...</span>
         </div>
     </nav>
+    <div id="data-source-banner" style="display:none;"></div>
     <main class="review-main">
         {% block content %}{% endblock %}
     </main>
+    <script>
+    // Data-source banner: loud warning if we're NOT serving live Google Sheets.
+    (function () {
+        fetch('/api/data-source').then(r => r.json()).then(d => {
+            var el = document.getElementById('data-source-banner');
+            if (!el) return;
+            if (d.mode === 'live') return;  // all good, no banner
+            el.style.display = 'block';
+            el.style.cssText = 'display:block;background:#c0392b;color:#fff;padding:10px 16px;'
+                + 'font-size:0.9rem;font-weight:700;text-align:center;';
+            el.innerHTML = '⚠️ Using STALE offline data — live Google Sheets unreachable'
+                + (d.error ? ' (' + d.error + ')' : '')
+                + '. <a href="#" style="color:#fff;text-decoration:underline;" '
+                + 'onclick="reloadFromSheets(event)">Retry live reload</a>';
+        }).catch(function () {});
+    })();
+    function reloadFromSheets(ev) {
+        if (ev) ev.preventDefault();
+        fetch('/api/reload-questions', {method: 'POST'}).then(r => r.json()).then(d => {
+            if (d.ok) { location.reload(); }
+            else { alert('Live reload failed: ' + (d.error || 'unknown')); }
+        }).catch(e => alert('Live reload failed: ' + e.message));
+    }
+    </script>
     <script src="{{ url_for('static', filename='review.js') }}"></script>
     {% block scripts %}{% endblock %}
 </body>

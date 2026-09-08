@@ -7,7 +7,47 @@ ships to Victor's database as approved.
 
 Status: PROPOSAL (Dan's idea, 1 Sep 2026). Not built yet.
 
+> **UPDATE 8 Sep 2026** — two things changed since this was written:
+> 1. **Canva is gone.** The image path is now OpenAI → WebP → Airtable directly (no manual Canva
+>    export). The "image round-trip is the hard part" caveat in §5 is largely obsolete — image
+>    delivery is now near-instant. See `docs/BULK-UPLOAD-FINDINGS` and the images.js/app.py approve flow.
+> 2. **Two new requirements from Dan:** (a) **per-option voice-over** — generate a separate ElevenLabs
+>    VO for each selection option (verified target column exists: `SelectionOption.ReaderBlobID`);
+>    (b) a **"Generate Complete Question" / "Generate All Remaining"** button that fills every missing
+>    image + VO (question, options, hints) in one click, with inline text editing.
+> Verified DB/field map for the whole build: **`docs/FINAL-STAGE-DB-FIELD-MAP.md`**.
+> Confirmed: DB writes stay terminal-only (deployed app has no azure/pyodbc), so "Approve" here is a
+> staging/approved-state action; Dan runs the verified bulk upload from the terminal.
+
 ---
+
+## 0. PREREQUISITE (do this FIRST) — prove a perfect upload of EACH question type
+
+Before building the Final Review tab, we must be able to upload ONE fully-complete question of
+**every question type** that our content uses, end-to-end, verified perfect — because we hit real
+problems this cycle (image/answer mismatch, blob-collision bug, missing images, forgotten audio-only
+hints). The Final Review tab is only worth building on top of a bulletproof upload foundation.
+
+**Content uses only 4 types** (verified 1 Sep 2026 across all 7,903 questions):
+Select One 5,836 · True/False 1,183 · Select All 560 · Written 324. **Sort & Link: 0** — not used
+(only relevant if the tab must *support* them for future authoring).
+
+**Per-type readiness to test a perfect upload (verified against app-audio ∩ DB-image):**
+| Type | Complete candidates (VO+all hints+question image) | Status |
+|------|------|--------|
+| Select One | 156 | ✅ READY — upload one, verify perfect |
+| True/False | 34 | ✅ DONE — 110039 loaded + verified |
+| Select All | 12 have Q-image but **0 have all OPTION images** | ⚠️ BLOCKED — template needs option images (Georgia) |
+| Written | 5 have audio, **0 have an image** | ⚠️ BLOCKED — needs a complete example (image) |
+
+**Action list to close the prerequisite:**
+1. Select One — pick one clean complete example, run the full sequence, verify with `verify_complete.py`. (Confirm 10014001's pictograph answer first, or pick another.)
+2. True/False — DONE (110039); keep as the reference example.
+3. Select All — get Georgia to deliver **option images** for at least one; then it needs the load to link `SelectionOption.ImageBlobID` (via `import_from_airtable`), and verify the option grid renders.
+4. Written — needs one example with an image (+ confirm Written's answer/CompareText loads right). Written has no options list — verify the Written Answer Options path.
+5. For EACH: capture the exact working recipe + a passing `verify_complete` run as the "golden path" per type. Log any new bug in `BULK-UPLOAD-FINDINGS-2026-08.md`.
+
+Only after all 4 types have a proven-perfect upload do we build the tab.
 
 ## 1. The problem it solves
 

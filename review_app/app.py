@@ -21,6 +21,7 @@ from flask import (
 )
 
 from .spreadsheet_loader import load_all_questions, TEMPLATE_NAMES
+from . import gsheets_loader
 from .state import (
     load_state, save_state, get_item_state, update_item_state,
     has_audio, now_iso, VOICEOVER_DIR, DATA_DIR,
@@ -102,7 +103,7 @@ def create_app():
     # Exact paths + asset prefixes that never require auth. Audio and generated
     # images must be reachable so the library can play/download files; static
     # assets (css/fonts/js) too. Everything else is gated.
-    _OPEN_EXACT = {"/login", "/logout", "/favicon.ico", "/healthz", "/api/pipeline-stats"}
+    _OPEN_EXACT = {"/login", "/logout", "/favicon.ico", "/healthz", "/api/pipeline-stats", "/api/data-source"}
     _OPEN_PREFIXES = ("/assets/", "/static/", "/audio/", "/generated-images/")
 
     def _is_open_path(path):
@@ -161,9 +162,40 @@ def create_app():
         # data endpoint can never take the deploy down. Must stay in _OPEN_EXACT.
         return "ok", 200
 
+    # --- Question data source: LIVE Google Sheets are the source of truth. ---
+    # Prefer live; if live fails, fall back to the xlsx snapshot BUT surface it loudly
+    # (data_source_status drives a red banner + /healthz-adjacent status) so we never
+    # serve stale data silently. Dan's rule (8 Sep 2026).
+    data_source_status = {
+        "mode": "unknown",        # "live" | "stale-fallback"
+        "loaded_at": None,
+        "error": None,
+    }
+
+    def _load_questions():
+        if gsheets_loader.is_available():
+            try:
+                result = gsheets_loader.load_all_questions_live(force=True)
+                data_source_status["mode"] = "live"
+                data_source_status["loaded_at"] = gsheets_loader.cache_meta().get("loaded_at")
+                data_source_status["error"] = None
+                print(f"  DATA SOURCE: LIVE Google Sheets ({len(result[0])} questions)")
+                return result
+            except Exception as e:
+                data_source_status["mode"] = "stale-fallback"
+                data_source_status["error"] = str(e)
+                print(f"  !!! LIVE Google Sheets FAILED: {e}\n  !!! Falling back to STALE xlsx snapshot.")
+        else:
+            data_source_status["mode"] = "stale-fallback"
+            data_source_status["error"] = "Google Sheets credentials/gspread unavailable"
+            print("  !!! Live Google Sheets not available — using STALE xlsx snapshot.")
+        result = load_all_questions()
+        data_source_status["loaded_at"] = None
+        return result
+
     # Load data on startup
-    print("Loading spreadsheets...")
-    questions, questions_list, subjects, topics_by_subject, sheets = load_all_questions()
+    print("Loading questions...")
+    questions, questions_list, subjects, topics_by_subject, sheets = _load_questions()
     state = load_state()
 
     # Detect existing audio files from previous batches
@@ -182,6 +214,50 @@ def create_app():
     if existing_audio:
         save_state(state)
         print(f"  Found {existing_audio} existing audio files from previous batches")
+
+    # --- Data-source status + live reload ---
+
+    @app.route("/api/data-source")
+    def api_data_source():
+        """Report whether the app is serving LIVE Google Sheets or a stale fallback.
+
+        Auth-exempt + trivial so the UI banner can always read it. Drives the red
+        'STALE DATA' banner when mode != 'live'.
+        """
+        return jsonify({
+            "mode": data_source_status["mode"],
+            "loaded_at": data_source_status["loaded_at"],
+            "error": data_source_status["error"],
+            "question_count": len(questions),
+            "live_available": gsheets_loader.is_available(),
+        })
+
+    @app.route("/api/reload-questions", methods=["POST"])
+    def api_reload_questions():
+        """Re-fetch questions from LIVE Google Sheets and update in place.
+
+        Refuses to silently replace live data with stale on failure — reports the error.
+        """
+        if not gsheets_loader.is_available():
+            return jsonify({"ok": False, "error": "Live Google Sheets not available"}), 503
+        try:
+            new_q, new_list, new_subs, new_tbs, new_sheets = gsheets_loader.refresh()
+        except Exception as e:
+            data_source_status["error"] = str(e)
+            return jsonify({"ok": False, "error": str(e)}), 502
+        # Update shared containers in place so existing route closures see the new data.
+        questions.clear()
+        questions.update(new_q)
+        questions_list[:] = new_list
+        data_source_status["mode"] = "live"
+        data_source_status["loaded_at"] = gsheets_loader.cache_meta().get("loaded_at")
+        data_source_status["error"] = None
+        return jsonify({
+            "ok": True,
+            "mode": "live",
+            "question_count": len(questions),
+            "loaded_at": data_source_status["loaded_at"],
+        })
 
     # --- Static file routes for project assets ---
 

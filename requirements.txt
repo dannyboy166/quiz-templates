@@ -6,3 +6,5 @@ requests==2.33.1
 python-dotenv==1.2.2
 openai>=1.82.0
 Pillow>=10.0.0
+gspread>=6.0.0
+google-auth>=2.0.0
