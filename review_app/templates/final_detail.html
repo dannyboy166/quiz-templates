@@ -330,7 +330,11 @@ async function _post(url, body){
   let res; try { res = await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined,signal:ctrl.signal}); }
   finally { clearTimeout(to); }
   let d={}; try{ d=await res.json(); }catch(e){}
-  if(!res.ok || d.error) throw new Error(d.error || ('HTTP '+res.status));
+  if(!res.ok || d.error){
+    // Friendlier message for transient server hiccups (502/503/504 = busy/slow upstream).
+    if([502,503,504].includes(res.status)) throw new Error('Server was busy — please click again.');
+    throw new Error(d.error || ('HTTP '+res.status));
+  }
   return d;
 }
 

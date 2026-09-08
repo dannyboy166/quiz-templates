@@ -131,10 +131,31 @@ def generate_audio(ssml_text, output_path, speed=None):
         "speed": speed or API_SETTINGS["speed"],
     }
 
-    response = requests.post(url, json=payload, headers=headers)
+    # Retry transient ElevenLabs failures (502/503/504/429/timeout) with short backoff.
+    # A hung request previously bubbled up as a gunicorn 502 to the browser; now we time
+    # out per-attempt and retry, so a blip self-heals instead of failing the reviewer.
+    import time
+    _TRANSIENT = (429, 500, 502, 503, 504)
+    last_err = None
+    response = None
+    for attempt in range(3):
+        try:
+            response = requests.post(url, json=payload, headers=headers, timeout=90)
+        except requests.exceptions.RequestException as e:
+            last_err = f"network/timeout: {e}"
+            time.sleep(1.5 * (attempt + 1))
+            continue
+        if response.status_code == 200:
+            break
+        if response.status_code in _TRANSIENT and attempt < 2:
+            last_err = f"ElevenLabs {response.status_code}"
+            time.sleep(1.5 * (attempt + 1))
+            continue
+        # non-transient error, or out of retries
+        raise Exception(f"ElevenLabs API error {response.status_code}: {response.text[:200]}")
 
-    if response.status_code != 200:
-        raise Exception(f"ElevenLabs API error {response.status_code}: {response.text}")
+    if response is None or response.status_code != 200:
+        raise Exception(f"ElevenLabs failed after retries ({last_err})")
 
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
