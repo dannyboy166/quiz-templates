@@ -37,12 +37,12 @@ from .voiceover_engine import (
 )
 from .image_state import (
     load_image_state, save_image_state, get_image_item_state,
-    update_image_item_state, has_question_image, has_answer_image,
+    update_image_item_state, has_question_image, has_answer_image, has_hint_image,
     IMAGE_DATA_DIR, now_iso as img_now_iso,
 )
 from .image_engine import (
     build_question_prompt, build_answer_prompt,
-    generate_question_image, generate_answer_image,
+    generate_question_image, generate_answer_image, generate_hint_image,
     edit_question_image, get_version_files, restore_version,
     png_to_webp,
     IMAGE_DATA_DIR as IMG_ENGINE_DIR,
@@ -1128,6 +1128,20 @@ def create_app():
             ans["prompt"] = prompt
             ans["generated_at"] = img_now_iso()
             update_image_item_state(image_state, item_id, **img_state)
+            return jsonify({"ok": True, "prompt": prompt, "size": file_size})
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+    @app.route("/api/images/generate-hint/<item_id>/<int:hint_num>", methods=["POST"])
+    def api_generate_hint_image(item_id, hint_num):
+        """Generate a HINT image (for the occasional hint that shows a picture)."""
+        q = questions.get(item_id)
+        if not q or hint_num not in (1, 2, 3):
+            return jsonify({"error": "Not found"}), 404
+        data = request.get_json(silent=True) or {}
+        prompt_override = data.get("prompt")
+        try:
+            prompt, file_size = generate_hint_image(q, hint_num, prompt_override)
             return jsonify({"ok": True, "prompt": prompt, "size": file_size})
         except Exception as e:
             return jsonify({"error": str(e)}), 500

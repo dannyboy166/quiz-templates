@@ -84,6 +84,11 @@ def has_answer_image(item_id, option_num):
     return (IMAGE_DATA_DIR / f"{item_id}-answer{option_num}.png").exists()
 
 
+def has_hint_image(item_id, hint_num):
+    """Check if a hint image PNG exists for this item+hint level."""
+    return (IMAGE_DATA_DIR / f"{item_id}-hint{hint_num}.png").exists()
+
+
 def now_iso():
     """Current time as ISO string."""
     return datetime.now().isoformat(timespec="seconds")

@@ -20,7 +20,8 @@ from .state import (
     get_item_state, get_hint_state, VOICEOVER_DIR,
 )
 from .image_state import (
-    has_question_image, has_answer_image, get_image_item_state, IMAGE_DATA_DIR,
+    has_question_image, has_answer_image, has_hint_image,
+    get_image_item_state, IMAGE_DATA_DIR,
 )
 
 
@@ -58,6 +59,9 @@ class Presence:
 
     def answer_image(self, iid, n):
         return f"{iid}-answer{n}.png" in self.images
+
+    def hint_image(self, iid, n):
+        return f"{iid}-hint{n}.png" in self.images
 
 
 def build_presence():
@@ -112,6 +116,7 @@ def assemble(q, image_state, review_state, airtable_images, presence=None):
     _q_audio = presence.q_audio if presence else has_audio
     _hint_audio = presence.hint_audio if presence else has_hint_audio
     _option_audio = presence.option_audio if presence else has_option_audio
+    _hint_image = presence.hint_image if presence else has_hint_image
 
     options = _options(q)
     hint_levels = _hint_levels(q)
@@ -162,10 +167,13 @@ def assemble(q, image_state, review_state, airtable_images, presence=None):
     q_vo = _q_audio(item_id)
     hint_rows = []
     for n in hint_levels:
+        has_hint_img = _hint_image(item_id, n)
         hint_rows.append({
             "num": n,
             "text": q.get(f"hint{n}", ""),
             "has_vo": _hint_audio(item_id, n),
+            "has_image": has_hint_img,
+            "image_url": f"/generated-images/{item_id}-hint{n}.png" if has_hint_img else "",
         })
 
     # --- the gates ---

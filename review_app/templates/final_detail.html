@@ -266,6 +266,27 @@
                 <span class="fs-status" id="hintvo-s-{{ h.num }}"></span>
               </div>
               <div id="av-h{{ h.num }}" class="av-box"></div>
+
+              <!-- Optional hint image (only some hints need a picture) -->
+              <div style="margin-top:.5rem;">
+                {% if h.has_image %}
+                  <img src="{{ h.image_url }}?t={{ range(1,99999)|random }}" alt="hint {{ h.num }} image"
+                       style="max-width:120px;max-height:120px;border:1px solid #ddd;border-radius:8px;display:block;margin-bottom:.3rem;"
+                       onerror="this.style.display='none'">
+                {% endif %}
+                <details>
+                  <summary class="fs-muted" style="cursor:pointer;">🖼 {{ 'Hint image' if h.has_image else 'Add a hint image (optional)' }}</summary>
+                  <div style="margin-top:.4rem;">
+                    <textarea id="hintimg-p-{{ h.num }}" class="edit-box" placeholder="Describe the picture for this hint"></textarea>
+                    <div class="edit-row">
+                      <button class="btn btn-secondary btn-small" id="hintimg-{{ h.num }}" onclick="genHintImage('{{ a.item_id }}', {{ h.num }})">
+                        {{ 'Regenerate hint image' if h.has_image else 'Generate hint image' }}
+                      </button>
+                      <span class="fs-status" id="hintimg-s-{{ h.num }}"></span>
+                    </div>
+                  </div>
+                </details>
+              </div>
             </div>
           {% endfor %}
         {% else %}<div class="fs-muted">No hints written for this question.</div>{% endif %}
@@ -457,6 +478,13 @@ async function genHintVO(itemId,n){
   _busy('hintvo-'+n,true,'Generating…'); _setStatus('hintvo-s-'+n,'Calling ElevenLabs…',null);
   try{ await _post(`/api/generate-hint/${itemId}/${n}`); _setStatus('hintvo-s-'+n,'Done',true); setTimeout(()=>location.reload(),600); }
   catch(e){ _setStatus('hintvo-s-'+n,'Failed: '+e.message,false); _busy('hintvo-'+n,false); }
+}
+async function genHintImage(itemId,n){
+  const prompt=(document.getElementById('hintimg-p-'+n)||{}).value.trim();
+  if(!prompt){ _setStatus('hintimg-s-'+n,'Describe the picture first',false); return; }
+  _busy('hintimg-'+n,true,'Generating…'); _setStatus('hintimg-s-'+n,'Calling OpenAI (~30s)…',null);
+  try{ await _post(`/api/images/generate-hint/${itemId}/${n}`,{prompt}); _setStatus('hintimg-s-'+n,'Done',true); setTimeout(()=>location.reload(),600); }
+  catch(e){ _setStatus('hintimg-s-'+n,'Failed: '+e.message,false); _busy('hintimg-'+n,false); }
 }
 async function genOptionVO(itemId,n){
   _busy('optvo-'+n,true,'…'); _setStatus('optvo-s-'+n,'Calling ElevenLabs…',null);

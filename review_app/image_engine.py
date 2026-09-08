@@ -38,12 +38,19 @@ def _get_client():
 # Version management
 # ---------------------------------------------------------------------------
 
+def _img_stem(item_id, image_type="question", option_num=None):
+    """File stem for an image: question / answer{n} / hint{n}."""
+    if image_type == "answer":
+        return f"{item_id}-answer{option_num}"
+    if image_type == "hint":
+        return f"{item_id}-hint{option_num}"   # option_num carries the hint level here
+    return f"{item_id}-question"
+
+
 def _archive_current_image(item_id, image_type="question", option_num=None):
     """Archive current image before overwriting. Returns version info or None."""
-    if image_type == "question":
-        current = IMAGE_DATA_DIR / f"{item_id}-question.png"
-    else:
-        current = IMAGE_DATA_DIR / f"{item_id}-answer{option_num}.png"
+    stem = _img_stem(item_id, image_type, option_num)
+    current = IMAGE_DATA_DIR / f"{stem}.png"
 
     if not current.exists():
         return None
@@ -63,12 +70,7 @@ def _archive_current_image(item_id, image_type="question", option_num=None):
                 vfile.rename(new_name)
         next_num = MAX_VERSIONS
 
-    # Copy current to version
-    if image_type == "question":
-        version_path = IMAGE_DATA_DIR / f"{item_id}-question-v{next_num}.png"
-    else:
-        version_path = IMAGE_DATA_DIR / f"{item_id}-answer{option_num}-v{next_num}.png"
-
+    version_path = IMAGE_DATA_DIR / f"{stem}-v{next_num}.png"
     shutil.copy2(current, version_path)
     print(f"  [History] Archived {current.name} -> {version_path.name}")
     return {"version": next_num, "filename": version_path.name}
@@ -76,23 +78,15 @@ def _archive_current_image(item_id, image_type="question", option_num=None):
 
 def get_version_files(item_id, image_type="question", option_num=None):
     """Get list of version files sorted by version number."""
-    if image_type == "question":
-        pattern = f"{item_id}-question-v*.png"
-    else:
-        pattern = f"{item_id}-answer{option_num}-v*.png"
-
-    files = sorted(IMAGE_DATA_DIR.glob(pattern))
-    return files
+    pattern = f"{_img_stem(item_id, image_type, option_num)}-v*.png"
+    return sorted(IMAGE_DATA_DIR.glob(pattern))
 
 
 def restore_version(item_id, version_num, image_type="question", option_num=None):
     """Restore a previous version as the current image. Archives current first."""
-    if image_type == "question":
-        version_path = IMAGE_DATA_DIR / f"{item_id}-question-v{version_num}.png"
-        current_path = IMAGE_DATA_DIR / f"{item_id}-question.png"
-    else:
-        version_path = IMAGE_DATA_DIR / f"{item_id}-answer{option_num}-v{version_num}.png"
-        current_path = IMAGE_DATA_DIR / f"{item_id}-answer{option_num}.png"
+    stem = _img_stem(item_id, image_type, option_num)
+    version_path = IMAGE_DATA_DIR / f"{stem}-v{version_num}.png"
+    current_path = IMAGE_DATA_DIR / f"{stem}.png"
 
     if not version_path.exists():
         raise FileNotFoundError(f"Version {version_num} not found")
@@ -207,6 +201,22 @@ def generate_answer_image(q, option_num, prompt_override=None):
     _archive_current_image(q["item_id"], "answer", option_num)
     output_path = IMAGE_DATA_DIR / f"{q['item_id']}-answer{option_num}.png"
     file_size = generate_image(prompt, output_path)
+    return prompt, file_size
+
+
+def generate_hint_image(q, hint_num, prompt_override=None, size="1024x1024"):
+    """Generate and save a HINT image (for hints that show a picture). Archives prev version.
+
+    Saved as {item_id}-hint{n}.png. Target DB element: hint-graphic (HintReplacement.BlobID).
+    prompt_override is required in practice — a hint image needs an explicit brief since the
+    hint text alone rarely describes a good picture.
+    """
+    prompt = (prompt_override or q.get(f"hint{hint_num}", "") or "").strip()
+    if not prompt:
+        raise Exception("A prompt is required to generate a hint image")
+    _archive_current_image(q["item_id"], "hint", hint_num)
+    output_path = IMAGE_DATA_DIR / f"{q['item_id']}-hint{hint_num}.png"
+    file_size = generate_image(prompt, output_path, size=size)
     return prompt, file_size
 
 
