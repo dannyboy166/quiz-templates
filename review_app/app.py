@@ -287,6 +287,10 @@ def create_app():
     def serve_fonts(filename):
         return send_from_directory(project_root / "fonts", filename)
 
+    @app.route("/assets/js/<path:filename>")
+    def serve_js(filename):
+        return send_from_directory(project_root / "js", filename)
+
     @app.route("/audio/<path:filename>")
     def serve_audio(filename):
         return send_from_directory(VOICEOVER_DIR, filename)

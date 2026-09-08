@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ a.item_id }} — Final Stage{% endblock %}
 {% block content %}
+{% if a.q_image_is_lottie %}<script src="/assets/js/lottie-player.js"></script>{% endif %}
 <style>
   .fs-wrap { max-width: 1120px; margin: 0 auto; }
   .fs-topbar { display:flex; justify-content:space-between; align-items:center; gap:1rem; margin-bottom:1rem; flex-wrap:wrap; }
@@ -88,8 +89,11 @@
                     onclick="playAudio('/audio/{{ a.item_id }}-question.mp3')" {{ '' if a.q_vo else 'disabled' }}>🔊</button>
             <span>{{ a.question_text }}</span>
           </div>
-          {% if a.q_image_is_lottie %}
-            <div class="demo-img" style="display:flex;align-items:center;justify-content:center;background:#f0f4fa;color:#5a6b85;font-size:.85rem;text-align:center;padding:.6rem;">🎞 Lottie animation{% if a.q_image_url %}<br><a href="{{ a.q_image_url }}" target="_blank">open</a>{% endif %}</div>
+          {% if a.q_image_is_lottie and a.q_image_url %}
+            <lottie-player class="demo-img" src="{{ a.q_image_url }}" background="transparent" speed="1" loop autoplay
+                           style="width:220px;height:220px;"></lottie-player>
+          {% elif a.q_image_is_lottie %}
+            <div class="demo-img" style="display:flex;align-items:center;justify-content:center;background:#f0f4fa;color:#5a6b85;font-size:.8rem;text-align:center;padding:.6rem;">🎞 Lottie — hit “Sync” on the Images tab to load it</div>
           {% elif a.has_q_image and a.q_image_url %}
             <img class="demo-img" src="{{ a.q_image_url }}{{ '?t=' ~ range(1,99999)|random if '/generated-images/' in a.q_image_url else '' }}"
                  alt="question image" onerror="this.style.display='none'">
@@ -166,8 +170,12 @@
         <h3>🖼 Question image
           {% if a.has_q_image %}<span class="chk ok">✓ present</span>{% else %}<span class="chk no">missing</span>{% endif %}
         </h3>
-        {% if a.q_image_is_lottie %}
-          <div class="fs-muted">🎞 This is a Lottie animation ({{ a.q_image_type }}) — it plays in the student app. {% if a.q_image_url %}<a href="{{ a.q_image_url }}" target="_blank">Open the file</a>.{% endif %}</div>
+        {% if a.q_image_is_lottie and a.q_image_url %}
+          <lottie-player src="{{ a.q_image_url }}" background="transparent" speed="1" loop autoplay
+                         style="width:220px;height:220px;border:1px solid #dfe3ea;border-radius:10px;"></lottie-player>
+          <div class="fs-muted">🎞 Lottie animation ({{ a.q_image_type }}) — plays here and in the student app.</div>
+        {% elif a.q_image_is_lottie %}
+          <div class="fs-muted" style="color:#a67c00;">🎞 Lottie animation — no preview loaded. Click “Sync” on the Images tab.</div>
         {% elif a.has_q_image and a.q_image_url %}
           <img class="demo-img" src="{{ a.q_image_url }}{{ '?t=' ~ range(1,99999)|random if '/generated-images/' in a.q_image_url else '' }}" alt="question image" onerror="this.style.display='none';">
         {% elif a.q_image_missing_url %}
