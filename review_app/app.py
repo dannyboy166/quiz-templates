@@ -107,7 +107,9 @@ def create_app():
     # Exact paths + asset prefixes that never require auth. Audio and generated
     # images must be reachable so the library can play/download files; static
     # assets (css/fonts/js) too. Everything else is gated.
-    _OPEN_EXACT = {"/login", "/logout", "/favicon.ico", "/healthz", "/api/pipeline-stats", "/api/data-source"}
+    # Only truly-trivial, non-sensitive paths are auth-exempt. pipeline-stats leaks
+    # all question content, so it stays gated. data-source only reports live/stale + counts.
+    _OPEN_EXACT = {"/login", "/logout", "/favicon.ico", "/healthz", "/api/data-source"}
     _OPEN_PREFIXES = ("/assets/", "/static/", "/audio/", "/generated-images/")
 
     def _is_open_path(path):
@@ -131,6 +133,11 @@ def create_app():
         if _is_open_path(request.path):
             return
         if session.get("authed"):
+            return
+        # Programmatic callers (e.g. completeness_report.py) may pass the password as a
+        # header instead of a browser session — lets gated API endpoints stay non-public.
+        token = request.headers.get("X-Access-Token", "")
+        if token and hmac.compare_digest(token, ACCESS_PASSWORD):
             return
         # Preserve the full original URL (path + query) so filtered/deep links
         # survive the login round-trip.
@@ -829,9 +836,10 @@ def create_app():
 
     @app.route("/final")
     def final_list():
+        presence = final_stage.build_presence()  # one dir listing, not 100k stat() calls
         rows = []
         for q in questions_list:
-            row = final_stage.summary_row(q, image_state, state, airtable_images)
+            row = final_stage.summary_row(q, image_state, state, airtable_images, presence=presence)
             row["approved"] = bool(final_state_mod.get_final_item(final_ledger, row["id"]).get("approved"))
             rows.append(row)
         complete_n = sum(1 for r in rows if r["complete"])
@@ -873,6 +881,8 @@ def create_app():
             return jsonify({"error": "Question not found"}), 404
         data = request.get_json(silent=True) or {}
         force = bool(data.get("force"))
+        # Optional image prompt typed by the reviewer (same box as the single-image button).
+        typed_prompt = (data.get("image_prompt") or "").strip()
         results = []
 
         def _do(part, exists, fn):
@@ -889,9 +899,23 @@ def create_app():
         is_tf = qtype == "True/False"
         is_written = qtype == "Written"
 
-        # Question image (every question needs one)
-        _do("question-image", has_question_image(item_id),
-            lambda: generate_question_image(q, None))
+        # Question image — NEVER send an empty prompt to OpenAI (wastes money on a blank
+        # image). Use the reviewer's typed prompt, else the saved brief (Airtable desc /
+        # image_description / notes). If there's genuinely no brief, skip and say so.
+        at_desc = (airtable_images.get(item_id, {}) or {}).get("description", "")
+        img_prompt = typed_prompt or build_question_prompt(q, airtable_desc=at_desc) or q.get("image_description", "")
+        img_prompt = (img_prompt or "").strip()
+        if has_question_image(item_id) and not force:
+            results.append({"part": "question-image", "status": "skipped", "reason": "already present"})
+        elif not img_prompt:
+            results.append({"part": "question-image", "status": "skipped",
+                            "reason": "no image brief — add one, then generate the image"})
+        else:
+            try:
+                generate_question_image(q, img_prompt)
+                results.append({"part": "question-image", "status": "generated"})
+            except Exception as e:
+                results.append({"part": "question-image", "status": "error", "error": str(e)})
 
         # Question voice-over
         def _gen_q_vo():
@@ -925,6 +949,36 @@ def create_app():
             "generated": generated,
             "results": results,
         })
+
+    @app.route("/api/final/edit/<item_id>", methods=["POST"])
+    def api_final_edit(item_id):
+        """Edit ONE field of a question and write it straight to the live Google Sheet.
+
+        Body: {"field": "question_text"|"option1".."option4"|"answer"|"hint1..3"|..., "value": "..."}
+        Writes to the master sheet (source of truth), logs the change, and updates the
+        in-memory question so the UI reflects it immediately. Requires live Sheets mode.
+        """
+        q = questions.get(item_id)
+        if not q:
+            return jsonify({"error": "Question not found"}), 404
+        if data_source_status["mode"] != "live":
+            return jsonify({"error": "Editing requires live Google Sheets (currently on stale fallback)"}), 409
+        data = request.get_json(silent=True) or {}
+        field = data.get("field", "")
+        new_value = data.get("value", "")
+        if field not in gsheets_loader.FIELD_TO_HEADER:
+            return jsonify({"error": f"Field '{field}' is not editable"}), 400
+        new_value = "" if new_value is None else str(new_value)
+        try:
+            old_value, cell = gsheets_loader.update_field(q, field, new_value)
+        except Exception as e:
+            print(f"  [edit] FAILED {item_id}.{field}: {e}")
+            return jsonify({"error": str(e)}), 502
+        # Update in-memory so the app shows the new value right away.
+        q[field] = new_value
+        # Log the change (append-only trail on the volume).
+        _log_edit(item_id, field, old_value, new_value, data.get("by"))
+        return jsonify({"ok": True, "field": field, "old": old_value, "new": new_value, "cell": cell})
 
     @app.route("/api/final/approve/<item_id>", methods=["POST"])
     def api_final_approve(item_id):
@@ -986,11 +1040,15 @@ def create_app():
 
     @app.route("/api/final/stats")
     def api_final_stats():
-        rows = [final_stage.summary_row(q, image_state, state, airtable_images)
+        presence = final_stage.build_presence()
+        rows = [final_stage.summary_row(q, image_state, state, airtable_images, presence=presence)
                 for q in questions_list]
+        approved = sum(1 for q in questions_list
+                       if final_state_mod.get_final_item(final_ledger, q["item_id"]).get("approved"))
         return jsonify({
             "total": len(rows),
             "complete": sum(1 for r in rows if r["complete"]),
+            "approved": approved,
         })
 
     @app.route("/api/images/generate/<item_id>", methods=["POST"])
@@ -1698,6 +1756,22 @@ def _questions_for_client(questions_list, state):
             "hints": hints,
         })
     return result
+
+
+def _log_edit(item_id, field, old_value, new_value, by):
+    """Append an edit to a change log on the volume (audit trail for sheet writes)."""
+    import json as _json
+    log_path = DATA_DIR / "final_edit_log.jsonl"
+    entry = {
+        "at": now_iso(), "item_id": item_id, "field": field,
+        "old": old_value, "new": new_value, "by": by,
+    }
+    try:
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(log_path, "a") as f:
+            f.write(_json.dumps(entry, ensure_ascii=False) + "\n")
+    except Exception as e:
+        print(f"  [edit-log] could not write log: {e}")
 
 
 def _questions_for_image_client(questions_list, image_state, at_images):

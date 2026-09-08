@@ -24,11 +24,17 @@ def load_state():
 
 
 def save_state(state):
-    """Write state to JSON file."""
+    """Write state to JSON file atomically (temp file + replace).
+
+    Atomic so a concurrent reader/writer never sees a half-written file and a
+    crash mid-write can't corrupt the ledger (two reviewers using the app at once).
+    """
     with _lock:
         STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
-        with open(STATE_FILE, "w") as f:
+        tmp = STATE_FILE.with_suffix(".json.tmp")
+        with open(tmp, "w") as f:
             json.dump(state, f, indent=2)
+        tmp.replace(STATE_FILE)
 
 
 def get_item_state(state, item_id):

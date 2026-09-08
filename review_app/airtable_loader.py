@@ -73,17 +73,23 @@ def save_airtable_cache(images):
     """Save Airtable data to local cache."""
     import json
     CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
-    # Strip the full URL data (expires anyway) — just keep metadata
+    # Keep url alongside metadata so the app can PREVIEW images from the cache.
+    # (Airtable URLs can expire; a stale preview just fails to load and is refreshed
+    #  on the next Airtable sync — acceptable for a preview thumbnail.)
+    def _slot(v):
+        if not v:
+            return None
+        return {"url": v.get("url", ""), "filename": v.get("filename", ""), "type": v.get("type", "")}
+
     stripped = {}
     for item_id, entry in images.items():
         stripped[item_id] = {
             "item_id": entry["item_id"],
             "table": entry["table"],
             "description": entry["description"],
-            "question_image": {"filename": entry["question_image"]["filename"], "type": entry["question_image"]["type"]} if entry.get("question_image") else None,
+            "question_image": _slot(entry.get("question_image")),
             "answer_images": {
-                k: {"filename": v["filename"], "type": v["type"]} if v else None
-                for k, v in entry.get("answer_images", {}).items()
+                k: _slot(v) for k, v in entry.get("answer_images", {}).items()
             } if entry.get("answer_images") else {},
             "graphic_type": entry.get("graphic_type", []),
             "record_id": entry.get("record_id", ""),

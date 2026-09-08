@@ -91,7 +91,13 @@ def load_spreadsheet():
 
 
 def load_app():
-    r = requests.get(f"{APP_BASE}/api/pipeline-stats", timeout=120)
+    # /api/pipeline-stats is auth-gated (it exposes all content). Pass the app password
+    # via header when set, so this terminal report keeps working.
+    headers = {}
+    pw = os.environ.get("ACCESS_PASSWORD", "")
+    if pw:
+        headers["X-Access-Token"] = pw
+    r = requests.get(f"{APP_BASE}/api/pipeline-stats", timeout=120, headers=headers)
     r.raise_for_status()
     return r.json()["items"]
 

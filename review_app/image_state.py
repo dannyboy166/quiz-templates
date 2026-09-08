@@ -47,11 +47,16 @@ def load_image_state():
 
 
 def save_image_state(state):
-    """Write state to JSON file."""
+    """Write state to JSON file atomically (temp file + replace).
+
+    Atomic so concurrent reviewers can't corrupt or lose each other's approvals.
+    """
     with _lock:
         IMAGE_STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
-        with open(IMAGE_STATE_FILE, "w") as f:
+        tmp = IMAGE_STATE_FILE.with_suffix(".json.tmp")
+        with open(tmp, "w") as f:
             json.dump(state, f, indent=2)
+        tmp.replace(IMAGE_STATE_FILE)
 
 
 def get_image_item_state(state, item_id):

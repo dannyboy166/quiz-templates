@@ -36,10 +36,25 @@ LIVE_SHEETS = [
     ("Kristie Stage One Other Subjects Questions WORLD WISE", "1ma2CqwygiP1-mW9C1478ZihH4o902ftEy1pUUbHZ4lU"),
 ]
 
+# Full read+write — the Final Stage tab edits cells back to the master sheet.
 _SCOPES = [
-    "https://www.googleapis.com/auth/spreadsheets.readonly",
-    "https://www.googleapis.com/auth/drive.readonly",
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive",
 ]
+
+# Map the short "file" label (stored on each question as q["file"]) back to its sheet id,
+# so write-back knows which spreadsheet to edit.
+_FILE_TO_ID = {name: sid for name, sid in LIVE_SHEETS}
+
+# The spreadsheet column header each editable question field lives under.
+FIELD_TO_HEADER = {
+    "question_text": "QuestionText",
+    "option1": "Option1", "option2": "Option2", "option3": "Option3", "option4": "Option4",
+    "answer": "Answer",
+    "hint1": "Hint1", "hint2": "Hint2", "hint3": "Hint3",
+    "topic": "Topic", "category": "Category", "grade": "Grade", "level": "Level",
+    "media_type": "MediaType", "image_description": "ImageDescription", "get_help": "GetHelp",
+}
 
 # In-process cache of the last successful load (the 5-tuple + a timestamp string).
 _cache = None
@@ -250,3 +265,74 @@ def refresh():
 
 def cache_meta():
     return dict(_cache_meta)
+
+
+# ---------------------------------------------------------------------------
+# Write-back — edit a question's field in the live master sheet
+# ---------------------------------------------------------------------------
+
+def update_field(q, field, new_value):
+    """Update ONE field of a question in its live Google Sheet.
+
+    q is the question dict (needs 'file', 'sheet', 'item_id'). field is a key from
+    FIELD_TO_HEADER. Finds the question's row by ItemID in the correct worksheet and
+    writes new_value into the mapped column's cell.
+
+    Returns (old_value, cell_a1). Raises with a clear message if it can't locate the cell.
+    The caller is responsible for updating the in-memory cache after a successful write.
+    """
+    header = FIELD_TO_HEADER.get(field)
+    if not header:
+        raise ValueError(f"Field '{field}' is not editable")
+
+    sheet_id = _FILE_TO_ID.get(q.get("file"))
+    if not sheet_id:
+        raise RuntimeError(f"Unknown sheet for file '{q.get('file')}'")
+
+    gc = _client()
+    sh = _with_retry(lambda: gc.open_by_key(sheet_id), "open for edit")
+    ws = _with_retry(lambda: sh.worksheet(q["sheet"]), f"open worksheet '{q['sheet']}'")
+
+    all_values = _with_retry(ws.get_all_values, "read for edit")
+    if not all_values:
+        raise RuntimeError("Worksheet is empty")
+
+    headers = all_values[0]
+    # locate columns (case/space-insensitive match on header name)
+    def _norm_h(h):
+        return str(h).strip().lower().replace(" ", "")
+    header_idx = {_norm_h(h): i for i, h in enumerate(headers)}
+    col = header_idx.get(_norm_h(header))
+    id_col = header_idx.get("itemid")
+    if col is None:
+        raise RuntimeError(f"Column '{header}' not found in worksheet")
+    if id_col is None:
+        raise RuntimeError("ItemID column not found in worksheet")
+
+    target_id = str(q["item_id"]).strip()
+    for r_i in range(1, len(all_values)):
+        row = all_values[r_i]
+        if id_col >= len(row):
+            continue
+        rid = str(row[id_col]).strip()
+        if rid == target_id or (rid.lstrip("0") or rid) == target_id:
+            old_value = row[col] if col < len(row) else ""
+            # gspread is 1-indexed; row header is row 1, so data row r_i -> sheet row r_i+1
+            cell_row = r_i + 1
+            cell_col = col + 1
+            cell_a1 = _rowcol_to_a1(cell_row, cell_col)
+            _with_retry(lambda: ws.update_acell(cell_a1, new_value), f"write {cell_a1}")
+            print(f"  [gsheets] wrote {q['item_id']}.{field} ({cell_a1}): {old_value!r} -> {new_value!r}")
+            return old_value, cell_a1
+
+    raise RuntimeError(f"ItemID {target_id} not found in worksheet '{q['sheet']}'")
+
+
+def _rowcol_to_a1(row, col):
+    """1-indexed (row, col) -> A1 like 'C5'. Small local impl (avoids gspread version drift)."""
+    letters = ""
+    c = col
+    while c > 0:
+        c, rem = divmod(c - 1, 26)
+        letters = chr(65 + rem) + letters
+    return f"{letters}{row}"

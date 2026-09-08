@@ -17,9 +17,52 @@ The 7 gates (per proposal §3):
 
 from .state import (
     has_audio, has_hint_audio, has_option_audio,
-    get_item_state, get_hint_state,
+    get_item_state, get_hint_state, VOICEOVER_DIR,
 )
-from .image_state import has_question_image, has_answer_image, get_image_item_state
+from .image_state import (
+    has_question_image, has_answer_image, get_image_item_state, IMAGE_DATA_DIR,
+)
+
+
+class Presence:
+    """Fast in-memory presence check built from ONE directory listing per dir.
+
+    Building the Final Stage list called ~13 os.path.exists() per question × 7,900 ≈
+    100k syscalls. Instead list each dir once into a set and do membership tests.
+    Pass an instance into assemble()/summary_row(); if None, they fall back to the
+    per-file helpers (still correct, just slower).
+    """
+    def __init__(self):
+        self.audio = self._listing(VOICEOVER_DIR, ".mp3")
+        self.images = self._listing(IMAGE_DATA_DIR, ".png")
+
+    @staticmethod
+    def _listing(directory, ext):
+        import os
+        try:
+            return {f for f in os.listdir(directory) if f.endswith(ext)}
+        except OSError:
+            return set()
+
+    def q_audio(self, iid):
+        return f"{iid}-question.mp3" in self.audio
+
+    def hint_audio(self, iid, n):
+        return f"{iid}-hint{n}.mp3" in self.audio
+
+    def option_audio(self, iid, n):
+        return f"{iid}-option{n}.mp3" in self.audio
+
+    def q_image(self, iid):
+        return f"{iid}-question.png" in self.images
+
+    def answer_image(self, iid, n):
+        return f"{iid}-answer{n}.png" in self.images
+
+
+def build_presence():
+    """Build a fresh Presence snapshot (call once per list render)."""
+    return Presence()
 
 
 def _options(q):
@@ -50,10 +93,11 @@ def _correct_option_nums(answer):
     return {int(m) for m in re.findall(r"\d+", str(answer))}
 
 
-def assemble(q, image_state, review_state, airtable_images):
+def assemble(q, image_state, review_state, airtable_images, presence=None):
     """Build the full assembled view of one question + its completeness gates.
 
-    Returns a dict the template renders directly.
+    Returns a dict the template renders directly. Pass a Presence snapshot to avoid
+    per-file filesystem checks (used by the list); falls back to per-file helpers if None.
     """
     item_id = q["item_id"]
     qtype = q.get("question_type", "")
@@ -62,13 +106,20 @@ def assemble(q, image_state, review_state, airtable_images):
     is_select_all = (qtype == "Select All")
     is_written = (qtype == "Written")
 
+    # presence checks (in-memory snapshot or per-file fallback)
+    _q_image = presence.q_image if presence else has_question_image
+    _answer_image = presence.answer_image if presence else has_answer_image
+    _q_audio = presence.q_audio if presence else has_audio
+    _hint_audio = presence.hint_audio if presence else has_hint_audio
+    _option_audio = presence.option_audio if presence else has_option_audio
+
     options = _options(q)
     hint_levels = _hint_levels(q)
 
     # --- media/state lookups (app-side) ---
     at = airtable_images.get(item_id) or {}
     at_q_image = at.get("question_image") or {}
-    has_local_q_image = has_question_image(item_id)
+    has_local_q_image = _q_image(item_id)
     has_q_image = has_local_q_image or bool(at_q_image)
     # URL for display: prefer the local generated PNG, else the Airtable URL if present.
     if has_local_q_image:
@@ -82,7 +133,7 @@ def assemble(q, image_state, review_state, airtable_images):
     # per-option image presence (generated locally OR in Airtable)
     option_rows = []
     for num, text in options:
-        has_local_opt = has_answer_image(item_id, num)
+        has_local_opt = _answer_image(item_id, num)
         at_opt = at_answer_images.get(str(num)) or {}
         opt_img = has_local_opt or bool(at_opt)
         if has_local_opt:
@@ -95,44 +146,58 @@ def assemble(q, image_state, review_state, airtable_images):
             "has_image": opt_img,
             "image_url": opt_img_url,
             "is_correct": num in correct_nums,
-            # per-option VO (Phase 3) — file naming {item_id}-option{n}.mp3
-            "has_vo": has_option_audio(item_id, num),
+            "has_vo": _option_audio(item_id, num),
         })
 
-    q_vo = has_audio(item_id)
+    q_vo = _q_audio(item_id)
     hint_rows = []
     for n in hint_levels:
         hint_rows.append({
             "num": n,
             "text": q.get(f"hint{n}", ""),
-            "has_vo": has_hint_audio(item_id, n),
+            "has_vo": _hint_audio(item_id, n),
         })
 
     # --- the gates ---
-    answer_set = bool(q.get("answer", "")) or is_true_false
+    # Written questions are free-text: no options list, and an Answer cell is optional
+    # (acceptable answers are configured elsewhere), so don't block on it.
+    answer_set = is_true_false or is_written or bool(q.get("answer", ""))
     enough_options = is_true_false or is_written or len(options) >= 2
+    option_num_set = {n for n, _ in options}
+    # Answer must reference real option numbers (catches typos like "5" on a 4-option Q).
+    answer_in_range = (is_true_false or is_written
+                       or (bool(correct_nums) and correct_nums <= option_num_set))
     gates = []
 
     gates.append(_gate("Question text", bool(q.get("question_text"))))
-    gates.append(_gate("Template type set", bool(template_id), detail=qtype or "unknown"))
-    gates.append(_gate("Correct answer set", answer_set, detail=q.get("answer", "") or ("True/False" if is_true_false else "")))
-    gates.append(_gate("Options present (≥2)", enough_options,
-                       detail=("n/a" if (is_true_false or is_written) else f"{len(options)} options")))
+    gates.append(_gate("Question type", bool(template_id), detail=qtype or "unknown — check the sheet"))
+    gates.append(_gate("Correct answer", answer_set,
+                       detail=q.get("answer", "") or ("True/False" if is_true_false
+                                                      else "free text" if is_written else "missing")))
+    if not is_true_false and not is_written:
+        gates.append(_gate("Answer matches an option", answer_in_range,
+                           detail="ok" if answer_in_range else f"answer '{q.get('answer','')}' not in options 1-{len(options)}"))
+    gates.append(_gate("At least 2 options", enough_options,
+                       detail=("not needed" if (is_true_false or is_written) else f"{len(options)} options")))
     gates.append(_gate("Question image", has_q_image))
     if is_select_all:
         all_opt_imgs = all(r["has_image"] for r in option_rows) and bool(option_rows)
-        gates.append(_gate("Every option has an image (Select All)", all_opt_imgs))
+        gates.append(_gate("Image on every option", all_opt_imgs))
     gates.append(_gate("Question voice-over", q_vo))
-    # Every answer option must have its own voice-over (Select One + Select All).
-    # True/False and Written have no options list, so this gate doesn't apply to them.
+    # Per-option voice-over: required for each option THAT HAS TEXT to read aloud.
+    # Image-only options (Select All grid) have nothing to read, so they're exempt.
     if not is_true_false and not is_written and option_rows:
-        all_opts_voiced = all(r["has_vo"] for r in option_rows)
-        voiced_n = sum(1 for r in option_rows if r["has_vo"])
-        gates.append(_gate(f"All {len(option_rows)} option(s) voiced", all_opts_voiced,
-                           detail=f"{voiced_n}/{len(option_rows)} voiced"))
+        need_vo = [r for r in option_rows if (r["text"] or "").strip()]
+        if need_vo:
+            voiced_n = sum(1 for r in need_vo if r["has_vo"])
+            all_opts_voiced = voiced_n == len(need_vo)
+            gates.append(_gate(f"Each option voiced", all_opts_voiced,
+                               detail=f"{voiced_n}/{len(need_vo)} voiced"))
     if hint_levels:
         all_hints_voiced = all(r["has_vo"] for r in hint_rows)
-        gates.append(_gate(f"All {len(hint_levels)} hint(s) voiced", all_hints_voiced))
+        voiced_h = sum(1 for r in hint_rows if r["has_vo"])
+        gates.append(_gate(f"Each hint voiced", all_hints_voiced,
+                           detail=f"{voiced_h}/{len(hint_levels)} voiced"))
     else:
         gates.append(_gate("Hints voiced", True, detail="no hints"))
 
@@ -167,9 +232,9 @@ def assemble(q, image_state, review_state, airtable_images):
     }
 
 
-def summary_row(q, image_state, review_state, airtable_images):
+def summary_row(q, image_state, review_state, airtable_images, presence=None):
     """Lightweight per-question row for the Final Stage list (counts only)."""
-    a = assemble(q, image_state, review_state, airtable_images)
+    a = assemble(q, image_state, review_state, airtable_images, presence=presence)
     passed = sum(1 for g in a["gates"] if g["ok"])
     total = len(a["gates"])
     return {
