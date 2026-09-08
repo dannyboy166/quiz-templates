@@ -97,6 +97,37 @@ def _client():
     return gspread.authorize(_credentials())
 
 
+# Transient Google API statuses that are worth retrying (server-side / rate limit).
+_TRANSIENT_CODES = (429, 500, 502, 503, 504)
+
+
+def _is_transient(exc):
+    """True if the exception looks like a transient Google API error."""
+    import time as _t  # noqa
+    code = getattr(getattr(exc, "response", None), "status_code", None)
+    if code in _TRANSIENT_CODES:
+        return True
+    txt = str(exc)
+    return any(str(c) in txt for c in _TRANSIENT_CODES) or "unavailable" in txt.lower()
+
+
+def _with_retry(fn, what, attempts=4, base_delay=1.0):
+    """Call fn(), retrying transient failures with linear backoff. Raises the last error."""
+    import time
+    last = None
+    for i in range(attempts):
+        try:
+            return fn()
+        except Exception as e:
+            last = e
+            if not _is_transient(e) or i == attempts - 1:
+                raise
+            delay = base_delay * (i + 1)
+            print(f"  [gsheets] transient error on {what} (attempt {i+1}/{attempts}): {e} — retrying in {delay:.0f}s")
+            time.sleep(delay)
+    raise last
+
+
 def _row_to_question(row, short_name, sheet_name):
     """Build the question dict with the SAME keys spreadsheet_loader produces."""
     item_id = _normalize(row.get("ItemID", ""))
@@ -157,8 +188,10 @@ def load_all_questions_live(force=False):
     warnings = []
     for short_name, sheet_id in LIVE_SHEETS:
         try:
-            sh = gc.open_by_key(sheet_id)
-            worksheets = sh.worksheets()
+            # Retry transient Google API errors (503/429/timeout) before giving up —
+            # a single blip shouldn't drop a whole subject's questions from the app.
+            sh = _with_retry(lambda: gc.open_by_key(sheet_id), f"open '{short_name}'")
+            worksheets = _with_retry(sh.worksheets, f"list worksheets '{short_name}'")
         except Exception as e:
             msg = f"could not open sheet '{short_name}' ({sheet_id}): {e}"
             print(f"  [gsheets] WARNING — {msg}")
@@ -169,7 +202,7 @@ def load_all_questions_live(force=False):
             try:
                 # get_all_records() raises on duplicate/blank header cells; don't let one
                 # bad worksheet abort the whole live load — skip it and keep going.
-                records = ws.get_all_records()
+                records = _with_retry(ws.get_all_records, f"read '{short_name}/{ws.title}'")
             except Exception as e:
                 msg = f"worksheet '{short_name}/{ws.title}' unreadable, skipped: {e}"
                 print(f"  [gsheets] WARNING — {msg}")
