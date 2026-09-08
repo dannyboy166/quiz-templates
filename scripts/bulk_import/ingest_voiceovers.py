@@ -151,15 +151,20 @@ def insert_blob(conn, filename_no_ext):
 
 
 def link_question(conn, qid, blob_id):
-    """Upsert per Victor: point the question at its audio blob (update if already set).
-    Business key = QuestionID. Idempotent: re-running with the same blob is a no-op."""
+    """Point the question at its voice-over blob via ReaderBlobID only.
+
+    ReaderBlobID = the speaker on the question TEXT that reads the question aloud (what we
+    want). We deliberately DON'T set AudioBlobID: that maps to the `question-audio` element
+    which makes hovering the IMAGE replay the same question audio — Zoe/Dan decided the
+    question audio should play from one place only (8 Sep 2026). Business key = QuestionID;
+    idempotent."""
     cur = conn.cursor()
     cur.execute(f"""
         UPDATE {SCHEMA}.Question
-           SET ReaderBlobID = ?, AudioBlobID = ?, PlayAudioOnRenderFlag = ?,
+           SET ReaderBlobID = ?, PlayAudioOnRenderFlag = ?,
                LastModTime = GETDATE(), LastModUserID = ?
          WHERE QuestionID = ?
-    """, (blob_id, blob_id, PLAY_ON_RENDER, USER_ID, qid))
+    """, (blob_id, PLAY_ON_RENDER, USER_ID, qid))
     n = cur.rowcount
     conn.commit()
     return n
