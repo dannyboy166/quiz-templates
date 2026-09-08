@@ -207,7 +207,7 @@
             <span class="fs-status" id="q-image-status"></span>
           </div>
 
-          {% if a.has_q_image and not a.q_image_is_lottie %}
+          {% if a.q_image_tweakable %}
           <div style="margin-top:.9rem; padding-top:.7rem; border-top:1px dashed var(--border-light,#eee);">
             <label class="fs-muted" style="font-weight:600;">Tweak the current image <span style="font-weight:400;">(keeps it, changes only what you say)</span></label>
             <textarea id="q-image-edit" class="edit-box" placeholder="e.g. make the background white · remove the text · add a smiling sun"></textarea>
@@ -216,6 +216,12 @@
               <span class="fs-status" id="q-image-edit-status"></span>
             </div>
           </div>
+          {% elif a.has_q_image and (a.q_image_is_svg or a.q_image_is_lottie) %}
+          <div style="margin-top:.9rem; padding-top:.7rem; border-top:1px dashed var(--border-light,#eee);" class="fs-muted">
+            This image is an older {{ 'animation' if a.q_image_is_lottie else 'SVG' }} and can't be tweaked directly — click <strong>Make new image</strong> above to generate a fresh one.
+          </div>
+          {% endif %}
+          {% if a.q_image_tweakable %}
 
           <div style="margin-top:.9rem; padding-top:.7rem; border-top:1px dashed var(--border-light,#eee);">
             <button class="btn btn-secondary btn-small" id="q-versions-btn" onclick="loadVersions('{{ a.item_id }}')">↩ Previous versions</button>

@@ -130,6 +130,11 @@ def assemble(q, image_state, review_state, airtable_images, presence=None):
         q_image_type = at_q_image.get("type", "")
     # is this a Lottie/JSON animation? (can't render in an <img>)
     q_image_is_lottie = "json" in (q_image_type or "").lower()
+    q_image_is_svg = "svg" in (q_image_type or "").lower()
+    # A tweak (OpenAI edit) needs a real raster we can safely edit. SVG/Lottie route to
+    # "Make new image" instead (avoids losing the cutout/transparency). A locally-generated
+    # PNG is always tweakable.
+    q_image_tweakable = has_local_q_image or (has_q_image and not q_image_is_lottie and not q_image_is_svg)
     q_image_missing_url = bool(has_q_image) and not q_image_url
     at_answer_images = at.get("answer_images") or {}
 
@@ -231,6 +236,8 @@ def assemble(q, image_state, review_state, airtable_images, presence=None):
         "q_image_url": q_image_url,
         "q_image_type": q_image_type,
         "q_image_is_lottie": q_image_is_lottie,
+        "q_image_is_svg": q_image_is_svg,
+        "q_image_tweakable": q_image_tweakable,
         "q_image_missing_url": q_image_missing_url,
         "q_vo": q_vo,
         "options": option_rows,

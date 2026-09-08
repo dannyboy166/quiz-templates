@@ -1238,27 +1238,18 @@ def create_app():
         itype = (qi.get("type") or "").lower()
         if not url:
             return False, "No image to edit — generate one first."
-        if "json" in itype:
-            return False, "This is a Lottie animation and can't be tweaked — use 'Make new image' instead."
+        # SVG (incl. Canva "fake SVGs" with an embedded photo + cutout mask) and Lottie can't
+        # be safely raster-edited without risking the transparency/cutout — the reviewer should
+        # just generate a fresh one (Dan's call). Only tweak genuine raster images.
+        if "svg" in itype or "json" in itype:
+            return False, "This image can't be tweaked — click 'Make new image' to generate a fresh one."
         try:
             import requests as _rq
             from PIL import Image as _Img
             import io as _io
             r = _rq.get(url, timeout=30)
             r.raise_for_status()
-            content = r.content
-
-            if "svg" in itype or content[:100].lstrip().startswith(b"<svg") or b"<svg" in content[:300]:
-                # "Fake SVG": a raster (PNG/JPEG) base64-embedded in an SVG wrapper (Canva export).
-                # Extract the embedded raster so OpenAI can edit the real photo. If it's a genuine
-                # vector SVG with no embedded raster, we can't raster-edit it.
-                raster = _extract_raster_from_svg(content)
-                if raster is None:
-                    return False, "This is a vector SVG with no photo inside — use 'Make new image' instead."
-                im = _Img.open(_io.BytesIO(raster))
-            else:
-                im = _Img.open(_io.BytesIO(content))
-
+            im = _Img.open(_io.BytesIO(r.content))
             im = im.convert("RGBA") if "A" in im.getbands() else im.convert("RGB")
             local.parent.mkdir(parents=True, exist_ok=True)
             im.save(local, format="PNG")
