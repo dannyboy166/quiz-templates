@@ -70,17 +70,45 @@ Written doesn't require an Answer cell.
 - State files write atomically (safe for concurrent Georgia + Zoe).
 - Google service account: `GOOGLE_SA_JSON` (Railway) or `GOOGLE_SA_KEY` (local). Has read+write.
 
-## STILL TO DO (the last big piece)
+## Added since first status save (8 Sep, later)
 
-**Terminal uploader** — reads `/api/final/manifest` (approved questions) and inserts each into
-Victor's DB via `scripts/bulk_import/*`. Includes a NEW ingest step to link
-`SelectionOption.ReaderBlobID` for per-option voice-overs (nothing does this yet). Build WITH Dan,
-DevTest dry-run first, `verify_complete` after, never automatic, never prod first.
+- **Lottie animations PLAY** in the preview (`<lottie-player>`, served at `/assets/js/lottie-player.js`).
+  Fixed a bug where that JS file was untracked in git → 404 on deploy.
+- **Image "Tweak"** (edit existing image, keep it/change X, via `/api/images/edit`) + **"Previous
+  versions" revert** (keeps last 5) — on BOTH Final Stage and Images tabs.
+- **Audio version history**: every VO regenerate archives the previous take (`{stem}-v{N}.mp3`,
+  keeps 5). "↩ Previous takes" on question VO / each hint / each option → listen + revert
+  (non-destructive). Endpoints `/api/audio-versions/<stem>`, `/api/restore-audio/<stem>/<n>`.
+- **Voiced options** now have 🔊 play + Regenerate (was showing only "✓ voiced", no controls).
+- **ElevenLabs 502 fix**: `generate_audio` now has a 90s timeout + retry on transient
+  (429/500/502/503/504/network). A hung call previously bubbled up as a gunicorn 502. UI shows
+  "Server was busy — please click again" for 5xx.
+- **Airtable cache** kept image URLs + auto-refreshes on boot and every 6h (previews stay fresh).
 
-### Optional polish noticed
+## Known issues / feedback logged
+
+- **WebP alpha corruption (Victor's side):** after Victor converted the image library to WebP,
+  transparent / fake-SVG-wrapped-PNG images render broken (black box / white silhouette) in the
+  student portal. Full report: `docs/WEBP-ALPHA-BUG-for-victor.md`. Fix = re-convert from the REAL
+  image, preserve alpha. Not our app. SEND TO VICTOR.
+- **AudioBlobID on questions (fixed our side):** our ingest set the question VO on BOTH
+  ReaderBlobID and AudioBlobID; AudioBlobID makes hovering the student image replay the question
+  audio (audio from two places). Decision: Reader only. `ingest_voiceovers.link_question` fixed
+  going forward; `scripts/bulk_import/clear_question_audioblob.py` nulls AudioBlobID on
+  already-loaded questions (dry-run default, --apply, --revert). RUN MANUALLY on DevTest.
+
+## STILL TO DO
+
+1. **Terminal uploader** (the last big piece) — reads `/api/final/manifest` (approved questions)
+   and inserts each into Victor's DB via `scripts/bulk_import/*`. Includes a NEW ingest step to
+   link `SelectionOption.ReaderBlobID` for per-option voice-overs (nothing does this yet). Build
+   WITH Dan, DevTest dry-run first, `verify_complete` after, never automatic, never prod first.
+2. **Run `clear_question_audioblob.py`** on DevTest (manual, dry-run first) to fix already-loaded Qs.
+3. **Send Victor** `docs/WEBP-ALPHA-BUG-for-victor.md`.
+
+### Optional polish
 - Tidy the preview layout (smaller Lottie box, hide empty option-image circles when no image).
-- Deeper version history (currently 5) if wanted.
 - Rotate the SASCO service-account key (it appeared in chat during setup).
 
-## Session commit range
-`d9b9613` (WebP→Airtable, bypass Canva) … `10f7d39` (lottie-player.js). ~19 commits.
+## Deploy health (verified 8 Sep, later)
+`/healthz` 200 · `/api/data-source` mode=live 7456 · `/final` 302 · lottie-player.js 200 · audio-versions route live.
