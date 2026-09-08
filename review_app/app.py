@@ -1222,6 +1222,38 @@ def create_app():
         update_image_item_state(image_state, item_id, **img_st)
         return jsonify({"ok": True})
 
+    def _ensure_local_png_from_airtable(item_id):
+        """If there's no local PNG but Airtable has a raster image, download+convert it to
+        a local PNG so it can be edited. Returns (ok, error_message).
+
+        OpenAI images.edit needs a raster PNG. SVG/Lottie(JSON) can't be edited that way —
+        the reviewer should use "Make new image" instead.
+        """
+        local = IMG_ENGINE_DIR / f"{item_id}-question.png"
+        if local.exists():
+            return True, None
+        at = airtable_images.get(item_id) or {}
+        qi = at.get("question_image") or {}
+        url = qi.get("url", "")
+        itype = (qi.get("type") or "").lower()
+        if not url:
+            return False, "No image to edit — generate one first."
+        if "svg" in itype or "json" in itype:
+            return False, "This image is an SVG/Lottie and can't be tweaked — use 'Make new image' instead."
+        try:
+            import requests as _rq
+            from PIL import Image as _Img
+            import io as _io
+            r = _rq.get(url, timeout=30)
+            r.raise_for_status()
+            im = _Img.open(_io.BytesIO(r.content))
+            im = im.convert("RGBA") if "A" in im.getbands() else im.convert("RGB")
+            local.parent.mkdir(parents=True, exist_ok=True)
+            im.save(local, format="PNG")
+            return True, None
+        except Exception as e:
+            return False, f"Couldn't load the current image to edit: {e}"
+
     @app.route("/api/images/edit/<item_id>", methods=["POST"])
     def api_edit_image(item_id):
         """Edit an existing image with an instruction (e.g. 'remove the text')."""
@@ -1233,6 +1265,10 @@ def create_app():
         size = data.get("size", "1024x1024")
         if not edit_prompt:
             return jsonify({"error": "Edit instruction required"}), 400
+        # If the shown image is Airtable-only (no local PNG), pull it down first so it's editable.
+        ok, err = _ensure_local_png_from_airtable(item_id)
+        if not ok:
+            return jsonify({"error": err}), 400
         try:
             prompt, file_size = edit_question_image(q, edit_prompt, size=size)
             img_st = get_image_item_state(image_state, item_id)
