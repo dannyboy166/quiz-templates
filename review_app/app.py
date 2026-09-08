@@ -619,6 +619,31 @@ def create_app():
         except Exception as e:
             return jsonify({"error": str(e)}), 500
 
+    # --- Audio version history / revert (question, hint, option) ---
+
+    @app.route("/api/audio-versions/<stem>")
+    def api_audio_versions(stem):
+        """List previous takes of an audio file. stem e.g. '20012002-option3'."""
+        from .voiceover_engine import get_audio_versions
+        vers = []
+        for vf in get_audio_versions(stem):
+            m = re.search(r"-v(\d+)\.mp3$", vf.name)
+            if m:
+                vers.append({"version": int(m.group(1)), "url": f"/audio/{vf.name}"})
+        return jsonify({"stem": stem, "versions": vers})
+
+    @app.route("/api/restore-audio/<stem>/<int:version_num>", methods=["POST"])
+    def api_restore_audio(stem, version_num):
+        """Revert an audio file to a previous take."""
+        from .voiceover_engine import restore_audio_version
+        try:
+            restore_audio_version(stem, version_num)
+            return jsonify({"ok": True})
+        except FileNotFoundError as e:
+            return jsonify({"error": str(e)}), 404
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
     @app.route("/api/approve-hint/<item_id>/<int:hint_num>", methods=["POST"])
     def api_approve_hint(item_id, hint_num):
         if item_id not in questions or hint_num not in (1, 2, 3):

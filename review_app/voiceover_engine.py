@@ -63,8 +63,56 @@ def get_ssml_for_question(question, speech_override=None, no_answers=False):
     return build_ssml(question["question_text"], template_id, options)
 
 
+MAX_AUDIO_VERSIONS = 5  # keep the last 5 previous takes of each audio file for revert
+
+
+def _archive_audio(output_path):
+    """Before overwriting an MP3, copy the current one to a versioned backup.
+
+    Keeps the last MAX_AUDIO_VERSIONS as {stem}-v{N}.mp3 (v1 = oldest kept). Lets a
+    reviewer revert to a previous take if they don't like a regeneration.
+    """
+    import shutil
+    output_path = Path(output_path)
+    if not output_path.exists():
+        return
+    stem = output_path.stem  # e.g. "20012002-option3"
+    parent = output_path.parent
+    existing = sorted(parent.glob(f"{stem}-v*.mp3"))
+    next_num = len(existing) + 1
+    if next_num > MAX_AUDIO_VERSIONS:
+        # rotate: drop oldest, shift the rest down
+        for i, vf in enumerate(existing):
+            if i == 0:
+                vf.unlink()
+            else:
+                vf.rename(parent / vf.name.replace(f"-v{i+1}.", f"-v{i}."))
+        next_num = MAX_AUDIO_VERSIONS
+    shutil.copy2(output_path, parent / f"{stem}-v{next_num}.mp3")
+
+
+def get_audio_versions(stem):
+    """List version files for an audio stem (e.g. '20012002-option3'), oldest→newest."""
+    return sorted(OUTPUT_DIR.glob(f"{stem}-v*.mp3"))
+
+
+def restore_audio_version(stem, version_num):
+    """Restore {stem}-v{N}.mp3 as the current {stem}.mp3 (archives current first)."""
+    import shutil
+    current = OUTPUT_DIR / f"{stem}.mp3"
+    version = OUTPUT_DIR / f"{stem}-v{version_num}.mp3"
+    if not version.exists():
+        raise FileNotFoundError(f"Version {version_num} not found for {stem}")
+    _archive_audio(current)  # keep the current take too
+    shutil.copy2(version, current)
+    return current
+
+
 def generate_audio(ssml_text, output_path, speed=None):
-    """Generate MP3 from text using ElevenLabs API. Returns file size in bytes."""
+    """Generate MP3 from text using ElevenLabs API. Returns file size in bytes.
+
+    Archives the previous take (if any) before overwriting, so it can be reverted.
+    """
     if not ELEVENLABS_API_KEY:
         raise Exception("ELEVENLABS_API_KEY not set in .env")
 
@@ -90,6 +138,7 @@ def generate_audio(ssml_text, output_path, speed=None):
 
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
+    _archive_audio(output_path)  # keep the old take before overwriting
     with open(output_path, "wb") as f:
         f.write(response.content)
 

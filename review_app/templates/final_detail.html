@@ -41,6 +41,9 @@
   .opt-table th, .opt-table td { text-align:left; padding:.45rem .4rem; border-bottom:1px solid var(--border-light,#eee); vertical-align:middle; }
   .opt-table tr.correct-row td { background: var(--correct-bg,#e6f7ec); }
   .fs-status { font-size:.82rem; margin-left:.4rem; }
+  .av-box { margin-top:.4rem; display:flex; flex-direction:column; gap:.35rem; }
+  .av-row { display:flex; align-items:center; gap:.5rem; font-size:.82rem; }
+  .av-row audio { height:30px; }
   .who-tag { font-size:.8rem; color:var(--text-muted,#777); }
 </style>
 
@@ -152,7 +155,15 @@
                 {% else %}<span class="fs-muted">—</span>{% endif %}
               </td>
               <td>
-                {% if opt.has_vo %}<span class="chk"><span class="ok">✓ voiced</span></span>
+                {% if opt.has_vo %}
+                  <div style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;">
+                    <span class="chk ok" style="font-size:.8rem;">✓ voiced</span>
+                    <button class="mic" title="Play this option" onclick="playAudio('/audio/{{ a.item_id }}-option{{ opt.num }}.mp3')" style="width:28px;height:28px;font-size:.85rem;">🔊</button>
+                    <button class="btn btn-secondary btn-small" id="optvo-{{ opt.num }}" onclick="genOptionVO('{{ a.item_id }}', {{ opt.num }})">Regenerate</button>
+                    <button class="btn btn-secondary btn-small" onclick="loadAudioVersions('{{ a.item_id }}-option{{ opt.num }}','av-o{{ opt.num }}')">↩</button>
+                  </div>
+                  <span class="fs-status" id="optvo-s-{{ opt.num }}"></span>
+                  <div id="av-o{{ opt.num }}" class="av-box"></div>
                 {% elif opt.text %}
                   <button class="btn btn-secondary btn-small" id="optvo-{{ opt.num }}" onclick="genOptionVO('{{ a.item_id }}', {{ opt.num }})">Generate VO</button>
                   <span class="fs-status" id="optvo-s-{{ opt.num }}"></span>
@@ -225,8 +236,10 @@
           <button class="btn btn-primary" id="q-vo-btn" onclick="genQuestionVO('{{ a.item_id }}')">
             {{ 'Regenerate voice-over' if a.q_vo else 'Generate voice-over' }}
           </button>
+          {% if a.q_vo %}<button class="btn btn-secondary btn-small" onclick="loadAudioVersions('{{ a.item_id }}-question','av-q')">↩ Previous takes</button>{% endif %}
           <span class="fs-status" id="q-vo-status"></span>
         </div>
+        <div id="av-q" class="av-box"></div>
       </div>
 
       <!-- HINTS -->
@@ -243,8 +256,10 @@
                 <button class="btn btn-secondary btn-small" id="hintvo-{{ h.num }}" onclick="genHintVO('{{ a.item_id }}', {{ h.num }})">
                   {{ 'Regenerate hint audio' if h.has_vo else 'Generate hint audio' }}
                 </button>
+                {% if h.has_vo %}<button class="btn btn-secondary btn-small" onclick="loadAudioVersions('{{ a.item_id }}-hint{{ h.num }}','av-h{{ h.num }}')">↩ Previous takes</button>{% endif %}
                 <span class="fs-status" id="hintvo-s-{{ h.num }}"></span>
               </div>
+              <div id="av-h{{ h.num }}" class="av-box"></div>
             </div>
           {% endfor %}
         {% else %}<div class="fs-muted">No hints written for this question.</div>{% endif %}
@@ -375,6 +390,27 @@ async function editQuestionImage(itemId){
   try{ await _post(`/api/images/edit/${itemId}`,{prompt:instr}); _setStatus('q-image-edit-status','Done',true); setTimeout(()=>location.reload(),600); }
   catch(e){ _setStatus('q-image-edit-status','Failed: '+e.message,false); _busy('q-image-edit-btn',false); }
 }
+// Audio version history (question / hint / option). stem e.g. "20012002-option3".
+async function loadAudioVersions(stem, boxId){
+  const box=document.getElementById(boxId);
+  box.innerHTML='<span class="fs-muted">Loading…</span>';
+  try{
+    const res=await fetch(`/api/audio-versions/${stem}`); const d=await res.json();
+    if(!d.versions || !d.versions.length){ box.innerHTML='<span class="fs-muted">No earlier takes saved yet. (A backup is kept each time you regenerate.)</span>'; return; }
+    box.innerHTML = d.versions.slice().reverse().map(v=>`
+      <div class="av-row">
+        <span class="fs-muted">take ${v.version}</span>
+        <audio controls src="${v.url}?t=${Date.now()}"></audio>
+        <button class="btn btn-secondary btn-small" onclick="revertAudio('${stem}', ${v.version})">Use this one</button>
+      </div>`).join('');
+  }catch(e){ box.innerHTML='<span style="color:var(--danger,#c0392b)">Failed: '+e.message+'</span>'; }
+}
+async function revertAudio(stem, version){
+  if(!confirm('Revert to this earlier take? (Your current take is kept in history too.)'))return;
+  try{ await _post(`/api/restore-audio/${stem}/${version}`); location.reload(); }
+  catch(e){ alert('Revert failed: '+e.message); }
+}
+
 async function loadVersions(itemId){
   const box=document.getElementById('q-versions');
   box.innerHTML='<span class="fs-muted">Loading…</span>';
