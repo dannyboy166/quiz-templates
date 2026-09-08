@@ -46,7 +46,8 @@
                     </span>
                 </h3>
                 {% if a.has_q_image %}
-                    <img src="/generated-images/{{ a.item_id }}-question.png" alt="question image"
+                    <img src="/generated-images/{{ a.item_id }}-question.png?t={{ range(1,99999)|random }}"
+                         alt="question image"
                          style="max-width:280px;border:1px solid #ddd;border-radius:6px;"
                          onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
                     <div style="display:none;color:var(--text-muted);">(in Airtable — not stored locally)</div>
@@ -58,6 +59,15 @@
                         Brief: {{ a.image_description }}
                     </div>
                 {% endif %}
+                <div style="margin-top:0.75rem;">
+                    <textarea id="q-image-prompt" placeholder="Image prompt (blank = use brief/notes)"
+                              style="width:100%;min-height:52px;">{{ a.image_description }}</textarea>
+                    <button class="btn btn-primary" id="q-image-btn"
+                            onclick="genQuestionImage('{{ a.item_id }}')">
+                        {{ 'Regenerate image' if a.has_q_image else 'Generate image' }}
+                    </button>
+                    <span class="fs-status" id="q-image-status"></span>
+                </div>
             </div>
 
             {% if not a.is_true_false and not a.is_written %}
@@ -93,10 +103,16 @@
                         {{ 'present' if a.q_vo else 'missing' }}</span>
                 </h3>
                 {% if a.q_vo %}
-                    <audio controls src="/audio/{{ a.item_id }}-question.mp3" style="width:100%;"></audio>
+                    <audio controls src="/audio/{{ a.item_id }}-question.mp3?t={{ range(1,99999)|random }}" style="width:100%;"></audio>
                 {% else %}
                     <div style="color:var(--text-muted);">No question voice-over yet.</div>
                 {% endif %}
+                <div style="margin-top:0.5rem;">
+                    <button class="btn btn-primary" id="q-vo-btn" onclick="genQuestionVO('{{ a.item_id }}')">
+                        {{ 'Regenerate voice-over' if a.q_vo else 'Generate voice-over' }}
+                    </button>
+                    <span class="fs-status" id="q-vo-status"></span>
+                </div>
             </div>
 
             <div class="detail-card">
@@ -109,8 +125,14 @@
                                 {{ 'voiced' if h.has_vo else 'no VO' }}</span>
                             <div style="color:var(--text);">{{ h.text }}</div>
                             {% if h.has_vo %}
-                                <audio controls src="/audio/{{ a.item_id }}-hint{{ h.num }}.mp3" style="width:100%;margin-top:0.25rem;"></audio>
+                                <audio controls src="/audio/{{ a.item_id }}-hint{{ h.num }}.mp3?t={{ range(1,99999)|random }}" style="width:100%;margin-top:0.25rem;"></audio>
                             {% endif %}
+                            <button class="btn btn-primary btn-sm" id="hint-vo-btn-{{ h.num }}"
+                                    onclick="genHintVO('{{ a.item_id }}', {{ h.num }})"
+                                    style="margin-top:0.25rem;">
+                                {{ 'Regenerate hint VO' if h.has_vo else 'Generate hint VO' }}
+                            </button>
+                            <span class="fs-status" id="hint-vo-status-{{ h.num }}"></span>
                         </div>
                     {% endfor %}
                 {% else %}
@@ -142,10 +164,81 @@
                 {% endfor %}
             </ul>
             <p style="color:var(--text-muted);font-size:0.8rem;margin-top:1rem;">
-                Phase 1 is read-only. Inline generate/regenerate, per-option voice-over, and
+                Generate any missing part inline. Per-option voice-over and
                 "Generate Complete Question" come in later phases.
             </p>
         </div>
     </div>
 </div>
+
+<script>
+// Phase 2 — inline generate/regenerate. Reuses the SAME endpoints the other tabs use.
+// Nothing new is written or deleted; on success we reload to show refreshed state + gates.
+
+function _setStatus(id, text, ok) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = text;
+    el.style.color = ok === true ? '#2e7d32' : (ok === false ? '#c0392b' : 'var(--text-muted)');
+}
+function _busy(btnId, on, label) {
+    const b = document.getElementById(btnId);
+    if (!b) return;
+    b.disabled = on;
+    if (on) { b.dataset._t = b.textContent; b.textContent = label || 'Working…'; }
+    else if (b.dataset._t) { b.textContent = b.dataset._t; }
+}
+
+async function _post(url, body) {
+    const res = await fetch(url, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: body ? JSON.stringify(body) : undefined
+    });
+    let data = {};
+    try { data = await res.json(); } catch (e) {}
+    if (!res.ok || data.error) throw new Error(data.error || ('HTTP ' + res.status));
+    return data;
+}
+
+async function genQuestionImage(itemId) {
+    const prompt = (document.getElementById('q-image-prompt') || {}).value || '';
+    _busy('q-image-btn', true, 'Generating image…');
+    _setStatus('q-image-status', 'Calling OpenAI… (can take ~30s)', null);
+    try {
+        await _post(`/api/images/generate/${itemId}`, {prompt: prompt});
+        _setStatus('q-image-status', 'Done — reloading…', true);
+        setTimeout(() => location.reload(), 600);
+    } catch (e) {
+        _setStatus('q-image-status', 'Failed: ' + e.message, false);
+        _busy('q-image-btn', false);
+    }
+}
+
+async function genQuestionVO(itemId) {
+    _busy('q-vo-btn', true, 'Generating VO…');
+    _setStatus('q-vo-status', 'Calling ElevenLabs…', null);
+    try {
+        await _post(`/api/generate/${itemId}`);
+        _setStatus('q-vo-status', 'Done — reloading…', true);
+        setTimeout(() => location.reload(), 600);
+    } catch (e) {
+        _setStatus('q-vo-status', 'Failed: ' + e.message, false);
+        _busy('q-vo-btn', false);
+    }
+}
+
+async function genHintVO(itemId, n) {
+    _busy('hint-vo-btn-' + n, true, 'Generating…');
+    _setStatus('hint-vo-status-' + n, 'Calling ElevenLabs…', null);
+    try {
+        await _post(`/api/generate-hint/${itemId}/${n}`);
+        _setStatus('hint-vo-status-' + n, 'Done — reloading…', true);
+        setTimeout(() => location.reload(), 600);
+    } catch (e) {
+        _setStatus('hint-vo-status-' + n, 'Failed: ' + e.message, false);
+        _busy('hint-vo-btn-' + n, false);
+    }
+}
+</script>
 {% endblock %}
