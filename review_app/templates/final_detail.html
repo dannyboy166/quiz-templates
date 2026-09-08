@@ -1,357 +1,368 @@
 {% extends "base.html" %}
 {% block title %}{{ a.item_id }} — Final Stage{% endblock %}
 {% block content %}
-<div class="final-detail-page" style="max-width:1100px;margin:0 auto;">
+<style>
+  .fs-wrap { max-width: 1120px; margin: 0 auto; }
+  .fs-topbar { display:flex; justify-content:space-between; align-items:center; gap:1rem; margin-bottom:1rem; flex-wrap:wrap; }
+  .fs-grid { display:grid; grid-template-columns: 1fr 330px; gap:1.5rem; align-items:start; }
+  @media (max-width: 880px) { .fs-grid { grid-template-columns: 1fr; } }
+  .fs-card { background: var(--card-bg,#fff); border:1px solid var(--card-border,#e3e3e3); border-radius:12px; padding:1.1rem 1.25rem; margin-bottom:1.1rem; }
+  .fs-card h3 { margin:0 0 .6rem; font-size:1rem; display:flex; align-items:center; gap:.5rem; }
+  .fs-muted { color: var(--text-muted,#777); font-size:.85rem; }
 
-    <div class="list-header" style="display:flex;justify-content:space-between;align-items:center;">
-        <h1>Final Stage — {{ a.item_id }}</h1>
-        <div>
-            {% if prev_id %}<a class="btn btn-secondary" href="/final/{{ prev_id }}">← Prev</a>{% endif %}
-            <a class="btn btn-secondary" href="/final">Back to list</a>
-            {% if next_id %}<a class="btn btn-secondary" href="/final/{{ next_id }}">Next →</a>{% endif %}
-        </div>
+  /* Student-style preview */
+  .demo { background: var(--bg-blue,#eaf2ff); border-radius:14px; padding:1.4rem; }
+  .demo-q { display:flex; align-items:center; gap:.6rem; font-size:1.3rem; font-weight:600; margin-bottom:1rem; text-wrap:balance; }
+  .demo-opts { display:grid; grid-template-columns:1fr 1fr; gap:.7rem; }
+  @media (max-width:620px){ .demo-opts{ grid-template-columns:1fr; } }
+  .demo-opt { display:flex; align-items:center; gap:.6rem; background:#fff; border:2px solid #dfe3ea; border-radius:10px; padding:.7rem .9rem; font-size:1.05rem; }
+  .demo-opt.correct { background: var(--correct-bg,#e6f7ec); border-color: var(--correct-border,#41b06a); }
+  .demo-opt .badge-correct { margin-left:auto; color: var(--correct-text,#1c7a41); font-weight:700; font-size:.8rem; }
+  .demo-img { max-width:220px; max-height:220px; border-radius:10px; border:1px solid #dfe3ea; display:block; margin:.4rem 0 1rem; }
+  .mic { border:none; background:#fff; border:1px solid #cfd6e0; border-radius:50%; width:34px; height:34px; cursor:pointer; font-size:1rem; line-height:1; display:inline-flex; align-items:center; justify-content:center; flex:0 0 auto; }
+  .mic:hover { background:#f0f4fa; }
+  .mic.off { opacity:.35; cursor:default; }
+
+  /* Editable fields */
+  .editable { border:1px dashed transparent; border-radius:6px; padding:.15rem .35rem; cursor:text; transition:background .1s; }
+  .editable:hover { background: var(--bg-yellow,#fff8e1); border-color:#e6c34a; }
+  .edit-box { width:100%; font:inherit; padding:.4rem .5rem; border:1px solid #b9c2cf; border-radius:6px; }
+  .edit-row { display:flex; gap:.4rem; align-items:center; margin-top:.3rem; }
+  .save-flash { color: var(--correct-text,#1c7a41); font-size:.8rem; }
+
+  /* Checklist */
+  .chk { list-style:none; padding:0; margin:0; }
+  .chk li { display:flex; gap:.55rem; align-items:flex-start; padding:.45rem 0; border-bottom:1px solid var(--border-light,#eee); }
+  .chk .mark { font-weight:700; }
+  .chk .ok { color: var(--correct-text,#1c7a41); }
+  .chk .no { color: var(--danger,#c0392b); }
+  .opt-table { width:100%; border-collapse:collapse; }
+  .opt-table th, .opt-table td { text-align:left; padding:.45rem .4rem; border-bottom:1px solid var(--border-light,#eee); vertical-align:middle; }
+  .opt-table tr.correct-row td { background: var(--correct-bg,#e6f7ec); }
+  .fs-status { font-size:.82rem; margin-left:.4rem; }
+  .who-tag { font-size:.8rem; color:var(--text-muted,#777); }
+</style>
+
+<div class="fs-wrap">
+  <div class="fs-topbar">
+    <div>
+      <h1 style="margin:0;">Question {{ a.item_id }}</h1>
+      <div class="fs-muted">{{ a.subject }} › {{ a.topic }} · {{ a.question_type or "type?" }}</div>
     </div>
+    <div style="display:flex; gap:.4rem; align-items:center;">
+      {% if prev_id %}<a class="btn btn-secondary" href="/final/{{ prev_id }}">← Prev</a>{% endif %}
+      <a class="btn btn-secondary" href="/final">All questions</a>
+      {% if next_id %}<a class="btn btn-secondary" href="/final/{{ next_id }}">Next →</a>{% endif %}
+    </div>
+  </div>
 
-    {% if a.complete %}
-        <div class="detail-card" style="background:var(--approved-bg,#eafaf0);border-color:#2e7d32;">
-            <strong style="color:#2e7d32;">✓ Complete</strong> — all assets present. Ready to approve. (Upload to the database is a separate manual step, run by Dan after a DevTest check.)
-        </div>
-    {% else %}
-        <div class="detail-card" style="background:#fff8e1;border-color:#e0a800;">
-            <strong style="color:#a67c00;">Incomplete</strong> — some gates are not yet met (see checklist).
-        </div>
-    {% endif %}
+  <!-- STATUS BANNER -->
+  {% if approval.approved %}
+    <div class="fs-card" style="background:var(--correct-bg,#e6f7ec); border-color:var(--correct-border,#41b06a);">
+      <strong style="color:var(--correct-text,#1c7a41);">✓ Approved for upload</strong>
+      <span class="fs-muted">{{ approval.approved_at }}{% if approval.approved_by %} · {{ approval.approved_by }}{% endif %}</span>
+      {% if not a.complete %}<div class="no" style="color:var(--danger,#c0392b); margin-top:.3rem;">⚠ Was approved but is no longer complete — re-check below.</div>{% endif %}
+    </div>
+  {% elif a.complete %}
+    <div class="fs-card" style="background:var(--correct-bg,#e6f7ec); border-color:var(--correct-border,#41b06a);">
+      <strong style="color:var(--correct-text,#1c7a41);">Ready ✓</strong>
+      <span class="fs-muted">Everything's here. You can approve it for upload (bottom right).</span>
+    </div>
+  {% else %}
+    <div class="fs-card" style="background:var(--bg-yellow,#fff8e1); border-color:#e6c34a;">
+      <strong style="color:#a67c00;">Not ready yet</strong>
+      <span class="fs-muted">Fill in what's missing (see the checklist on the right), then approve.</span>
+    </div>
+  {% endif %}
 
-    <div style="display:grid;grid-template-columns:1fr 320px;gap:1.5rem;align-items:start;">
-
-        <!-- LEFT: assembled question -->
-        <div>
-            <div class="detail-card">
-                <h3>Question</h3>
-                <p style="font-size:1.1rem;">{{ a.question_text }}</p>
-                <div style="color:var(--text-muted);font-size:0.85rem;">
-                    {{ a.subject }} › {{ a.category }} › {{ a.topic }}
-                    &nbsp;•&nbsp; Type: <strong>{{ a.question_type or "—" }}</strong>
-                    (TemplateID {{ a.template_id or "—" }})
-                    &nbsp;•&nbsp; Grade {{ a.grade or "—" }} / Level {{ a.level or "—" }}
-                    &nbsp;•&nbsp; Answer: <strong>{{ a.answer or "—" }}</strong>
-                    &nbsp;•&nbsp; MediaType: {{ a.media_type or "—" }}
+  <div class="fs-grid">
+    <!-- LEFT COLUMN -->
+    <div>
+      <!-- STUDENT PREVIEW -->
+      <div class="fs-card">
+        <h3>👁 How the student sees it</h3>
+        <div class="demo">
+          <div class="demo-q">
+            <button class="mic {{ '' if a.q_vo else 'off' }}"
+                    title="{{ 'Play question audio' if a.q_vo else 'No question audio yet' }}"
+                    onclick="playAudio('/audio/{{ a.item_id }}-question.mp3')" {{ '' if a.q_vo else 'disabled' }}>🔊</button>
+            <span>{{ a.question_text }}</span>
+          </div>
+          {% if a.has_q_image and a.q_image_url %}
+            <img class="demo-img" src="{{ a.q_image_url }}{{ '?t=' ~ range(1,99999)|random if '/generated-images/' in a.q_image_url else '' }}"
+                 alt="question image" onerror="this.style.display='none'">
+          {% endif %}
+          {% if a.is_true_false %}
+            <div class="demo-opts">
+              <div class="demo-opt {{ 'correct' if a.answer|lower == 'true' else '' }}">True {% if a.answer|lower=='true' %}<span class="badge-correct">✓ correct</span>{% endif %}</div>
+              <div class="demo-opt {{ 'correct' if a.answer|lower == 'false' else '' }}">False {% if a.answer|lower=='false' %}<span class="badge-correct">✓ correct</span>{% endif %}</div>
+            </div>
+          {% elif a.options %}
+            <div class="demo-opts">
+              {% for opt in a.options %}
+                <div class="demo-opt {{ 'correct' if opt.is_correct else '' }}">
+                  <button class="mic {{ '' if opt.has_vo else 'off' }}"
+                          title="{{ 'Play option audio' if opt.has_vo else 'No audio for this option yet' }}"
+                          onclick="playAudio('/audio/{{ a.item_id }}-option{{ opt.num }}.mp3')" {{ '' if opt.has_vo else 'disabled' }}>🔊</button>
+                  {% if opt.has_image and opt.image_url %}<img src="{{ opt.image_url }}" alt="" style="width:34px;height:34px;object-fit:cover;border-radius:6px;">{% endif %}
+                  <span>{{ opt.text }}</span>
+                  {% if opt.is_correct %}<span class="badge-correct">✓ correct</span>{% endif %}
                 </div>
+              {% endfor %}
             </div>
+          {% elif a.is_written %}
+            <div class="fs-muted">Written answer — student types a response.</div>
+          {% endif %}
+        </div>
+      </div>
 
-            <div class="detail-card">
-                <h3>Question image
-                    <span class="status-badge {{ 'status-approved' if a.has_q_image else '' }}">
-                        {{ 'present' if a.has_q_image else 'missing' }}
-                    </span>
-                </h3>
-                {% if a.has_q_image and a.q_image_url %}
-                    <img src="{{ a.q_image_url }}{{ '?t=' ~ range(1,99999)|random if '/generated-images/' in a.q_image_url else '' }}"
-                         alt="question image"
-                         style="max-width:280px;border:1px solid #ddd;border-radius:6px;"
-                         onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
-                    <div style="display:none;color:var(--text-muted);">(image present but could not load)</div>
-                {% elif a.has_q_image %}
-                    <div style="color:var(--text-muted);">(image in Airtable — no preview URL cached)</div>
-                {% else %}
-                    <div style="color:var(--text-muted);">No question image yet.</div>
-                {% endif %}
-                {% if a.image_description %}
-                    <div style="color:var(--text-muted);font-size:0.85rem;margin-top:0.5rem;">
-                        Brief: {{ a.image_description }}
-                    </div>
-                {% endif %}
-                <div style="margin-top:0.75rem;">
-                    <textarea id="q-image-prompt" placeholder="Image prompt (blank = use brief/notes)"
-                              style="width:100%;min-height:52px;">{{ a.image_description }}</textarea>
-                    <button class="btn btn-primary" id="q-image-btn"
-                            onclick="genQuestionImage('{{ a.item_id }}')">
-                        {{ 'Regenerate image' if a.has_q_image else 'Generate image' }}
-                    </button>
-                    <span class="fs-status" id="q-image-status"></span>
-                </div>
-            </div>
+      <!-- EDIT: QUESTION TEXT -->
+      <div class="fs-card">
+        <h3>✏️ Question text</h3>
+        <div data-edit-field="question_text" data-item="{{ a.item_id }}">
+          <span class="editable" onclick="startEdit(this)">{{ a.question_text }}</span>
+        </div>
+        <div class="fs-muted" style="margin-top:.4rem;">Grade {{ a.grade or "—" }} · Answer:
+          <span class="editable" data-edit-field="answer" data-item="{{ a.item_id }}" onclick="startEdit(this)">{{ a.answer or "—" }}</span>
+        </div>
+      </div>
 
-            {% if not a.is_true_false and not a.is_written %}
-            <div class="detail-card">
-                <h3>Options</h3>
-                <table style="width:100%;">
-                    <thead><tr><th>#</th><th>Text</th><th>Image</th><th>Voice-over</th></tr></thead>
-                    <tbody>
-                    {% for opt in a.options %}
-                        <tr>
-                            <td>{{ opt.num }}{% if opt.is_correct %} <span title="correct answer" style="color:#2e7d32;">✓</span>{% endif %}</td>
-                            <td>{{ opt.text }}</td>
-                            <td>
-                                {% if opt.has_image and opt.image_url %}
-                                    <img src="{{ opt.image_url }}" alt="option {{ opt.num }}"
-                                         style="max-width:60px;max-height:60px;border:1px solid #ddd;border-radius:4px;vertical-align:middle;"
-                                         onerror="this.style.display='none';">
-                                {% endif %}
-                                {% if a.is_select_all %}
-                                    <span class="status-badge {{ 'status-approved' if opt.has_image else '' }}">
-                                        {{ 'yes' if opt.has_image else 'missing' }}</span>
-                                {% else %}<span style="color:var(--text-muted);">{{ 'yes' if opt.has_image else '—' }}</span>{% endif %}
-                            </td>
-                            <td>
-                                <span class="status-badge {{ 'status-approved' if opt.has_vo else '' }}">
-                                    {{ 'yes' if opt.has_vo else 'none' }}</span>
-                                {% if opt.has_vo %}
-                                    <audio controls src="/audio/{{ a.item_id }}-option{{ opt.num }}.mp3?t={{ range(1,99999)|random }}"
-                                           style="display:block;width:180px;margin-top:0.25rem;"></audio>
-                                {% endif %}
-                                <button class="btn btn-primary btn-sm" id="opt-vo-btn-{{ opt.num }}"
-                                        onclick="genOptionVO('{{ a.item_id }}', {{ opt.num }})"
-                                        style="margin-top:0.25rem;">
-                                    {{ 'Regenerate' if opt.has_vo else 'Generate VO' }}
-                                </button>
-                                <span class="fs-status" id="opt-vo-status-{{ opt.num }}"></span>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+      <!-- EDIT: OPTIONS -->
+      {% if not a.is_true_false and not a.is_written %}
+      <div class="fs-card">
+        <h3>Options <span class="fs-muted">(green = correct answer)</span></h3>
+        <table class="opt-table">
+          <thead><tr><th>#</th><th>Text</th><th>Image</th><th>Voice-over</th></tr></thead>
+          <tbody>
+          {% for opt in a.options %}
+            <tr class="{{ 'correct-row' if opt.is_correct else '' }}">
+              <td>{{ opt.num }}{% if opt.is_correct %} ✓{% endif %}</td>
+              <td><span class="editable" data-edit-field="option{{ opt.num }}" data-item="{{ a.item_id }}" onclick="startEdit(this)">{{ opt.text }}</span></td>
+              <td>
+                {% if opt.has_image and opt.image_url %}
+                  <img src="{{ opt.image_url }}" alt="opt {{ opt.num }}" style="width:44px;height:44px;object-fit:cover;border-radius:6px;" onerror="this.replaceWith(document.createTextNode('—'))">
+                {% else %}<span class="fs-muted">—</span>{% endif %}
+              </td>
+              <td>
+                {% if opt.has_vo %}<span class="chk"><span class="ok">✓ voiced</span></span>
+                {% elif opt.text %}
+                  <button class="btn btn-secondary btn-small" id="optvo-{{ opt.num }}" onclick="genOptionVO('{{ a.item_id }}', {{ opt.num }})">Generate VO</button>
+                  <span class="fs-status" id="optvo-s-{{ opt.num }}"></span>
+                {% else %}<span class="fs-muted">image only</span>{% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endif %}
+
+      <!-- IMAGE -->
+      <div class="fs-card">
+        <h3>🖼 Question image
+          {% if a.has_q_image %}<span class="chk ok">✓ present</span>{% else %}<span class="chk no">missing</span>{% endif %}
+        </h3>
+        {% if a.has_q_image and a.q_image_url %}
+          <img class="demo-img" src="{{ a.q_image_url }}{{ '?t=' ~ range(1,99999)|random if '/generated-images/' in a.q_image_url else '' }}" alt="question image" onerror="this.style.display='none';">
+        {% endif %}
+        <div class="edit-row" style="flex-direction:column; align-items:stretch;">
+          <textarea id="q-image-prompt" class="edit-box" placeholder="Describe the image you want (leave blank to use the brief below)">{{ a.image_description }}</textarea>
+          <div style="display:flex; gap:.4rem; flex-wrap:wrap; margin-top:.4rem;">
+            <button class="btn btn-primary" id="q-image-btn" onclick="genQuestionImage('{{ a.item_id }}')">
+              {{ 'Regenerate image' if a.has_q_image else 'Generate image' }}
+            </button>
+            {% if a.has_q_image %}
+              <button class="btn btn-success" id="q-image-airtable-btn" onclick="sendImageToAirtable('{{ a.item_id }}')">
+                Approve &amp; send to Airtable
+              </button>
             {% endif %}
-
-            <div class="detail-card">
-                <h3>Question voice-over
-                    <span class="status-badge {{ 'status-approved' if a.q_vo else '' }}">
-                        {{ 'present' if a.q_vo else 'missing' }}</span>
-                </h3>
-                {% if a.q_vo %}
-                    <audio controls src="/audio/{{ a.item_id }}-question.mp3?t={{ range(1,99999)|random }}" style="width:100%;"></audio>
-                {% else %}
-                    <div style="color:var(--text-muted);">No question voice-over yet.</div>
-                {% endif %}
-                <div style="margin-top:0.5rem;">
-                    <button class="btn btn-primary" id="q-vo-btn" onclick="genQuestionVO('{{ a.item_id }}')">
-                        {{ 'Regenerate voice-over' if a.q_vo else 'Generate voice-over' }}
-                    </button>
-                    <span class="fs-status" id="q-vo-status"></span>
-                </div>
-            </div>
-
-            <div class="detail-card">
-                <h3>Hints</h3>
-                {% if a.hints %}
-                    {% for h in a.hints %}
-                        <div style="margin-bottom:0.75rem;">
-                            <strong>Hint {{ h.num }}</strong>
-                            <span class="status-badge {{ 'status-approved' if h.has_vo else '' }}">
-                                {{ 'voiced' if h.has_vo else 'no VO' }}</span>
-                            <div style="color:var(--text);">{{ h.text }}</div>
-                            {% if h.has_vo %}
-                                <audio controls src="/audio/{{ a.item_id }}-hint{{ h.num }}.mp3?t={{ range(1,99999)|random }}" style="width:100%;margin-top:0.25rem;"></audio>
-                            {% endif %}
-                            <button class="btn btn-primary btn-sm" id="hint-vo-btn-{{ h.num }}"
-                                    onclick="genHintVO('{{ a.item_id }}', {{ h.num }})"
-                                    style="margin-top:0.25rem;">
-                                {{ 'Regenerate hint VO' if h.has_vo else 'Generate hint VO' }}
-                            </button>
-                            <span class="fs-status" id="hint-vo-status-{{ h.num }}"></span>
-                        </div>
-                    {% endfor %}
-                {% else %}
-                    <div style="color:var(--text-muted);">No hints in the sheet.</div>
-                {% endif %}
-            </div>
-
-            {% if a.get_help %}
-            <div class="detail-card">
-                <h3>Get Help</h3>
-                <div style="color:var(--text);">{{ a.get_help }}</div>
-            </div>
-            {% endif %}
+            <span class="fs-status" id="q-image-status"></span>
+          </div>
         </div>
+      </div>
 
-        <!-- RIGHT: completeness checklist -->
-        <div class="detail-card" style="position:sticky;top:1rem;">
-            <h3>Completeness</h3>
-            <ul style="list-style:none;padding:0;margin:0;">
-                {% for g in a.gates %}
-                    <li style="padding:0.4rem 0;border-bottom:1px solid #eee;display:flex;gap:0.5rem;align-items:flex-start;">
-                        <span style="color:{{ '#2e7d32' if g.ok else '#c0392b' }};font-weight:700;">
-                            {{ '✓' if g.ok else '✗' }}</span>
-                        <span>
-                            {{ g.label }}
-                            {% if g.detail %}<br><span style="color:var(--text-muted);font-size:0.8rem;">{{ g.detail }}</span>{% endif %}
-                        </span>
-                    </li>
-                {% endfor %}
-            </ul>
-            <div style="margin-top:1rem;">
-                <button class="btn btn-primary" id="gen-all-btn" style="width:100%;"
-                        onclick="generateComplete('{{ a.item_id }}')">
-                    ⚡ Generate everything missing
+      <!-- QUESTION VOICE-OVER -->
+      <div class="fs-card">
+        <h3>🔊 Question voice-over
+          {% if a.q_vo %}<span class="chk ok">✓ present</span>{% else %}<span class="chk no">missing</span>{% endif %}
+        </h3>
+        {% if a.q_vo %}<audio controls src="/audio/{{ a.item_id }}-question.mp3?t={{ range(1,99999)|random }}" style="width:100%;"></audio>{% endif %}
+        <div class="edit-row">
+          <button class="btn btn-primary" id="q-vo-btn" onclick="genQuestionVO('{{ a.item_id }}')">
+            {{ 'Regenerate voice-over' if a.q_vo else 'Generate voice-over' }}
+          </button>
+          <span class="fs-status" id="q-vo-status"></span>
+        </div>
+      </div>
+
+      <!-- HINTS -->
+      <div class="fs-card">
+        <h3>💡 Hints</h3>
+        {% if a.hints %}
+          {% for h in a.hints %}
+            <div style="margin-bottom:.8rem;">
+              <strong>Hint {{ h.num }}</strong>
+              {% if h.has_vo %}<span class="chk ok">✓ voiced</span>{% else %}<span class="chk no">no audio</span>{% endif %}
+              <div><span class="editable" data-edit-field="hint{{ h.num }}" data-item="{{ a.item_id }}" onclick="startEdit(this)">{{ h.text }}</span></div>
+              {% if h.has_vo %}<audio controls src="/audio/{{ a.item_id }}-hint{{ h.num }}.mp3?t={{ range(1,99999)|random }}" style="width:100%;margin-top:.3rem;"></audio>{% endif %}
+              <div class="edit-row">
+                <button class="btn btn-secondary btn-small" id="hintvo-{{ h.num }}" onclick="genHintVO('{{ a.item_id }}', {{ h.num }})">
+                  {{ 'Regenerate hint audio' if h.has_vo else 'Generate hint audio' }}
                 </button>
-                <label style="display:block;margin-top:0.4rem;font-size:0.8rem;color:var(--text-muted);">
-                    <input type="checkbox" id="gen-all-force"> also regenerate parts that already exist
-                </label>
-                <div id="gen-all-results" style="margin-top:0.5rem;font-size:0.85rem;"></div>
+                <span class="fs-status" id="hintvo-s-{{ h.num }}"></span>
+              </div>
             </div>
-
-            <hr style="margin:1rem 0;border:none;border-top:1px solid #eee;">
-
-            <!-- Final Approve gate (Phase 5) -->
-            <div id="approve-block">
-                {% if approval.approved %}
-                    <div style="background:#eafaf0;border:1px solid #2e7d32;border-radius:6px;padding:0.6rem;">
-                        <strong style="color:#2e7d32;">✓ Approved for upload</strong>
-                        <div style="font-size:0.8rem;color:var(--text-muted);">
-                            {{ approval.approved_at }}{% if approval.approved_by %} by {{ approval.approved_by }}{% endif %}
-                            {% if approval.uploaded_at %}<br>Uploaded: {{ approval.uploaded_at }}{% endif %}
-                        </div>
-                        <button class="btn btn-secondary btn-sm" style="margin-top:0.4rem;"
-                                onclick="unapprove('{{ a.item_id }}')">Undo approval</button>
-                    </div>
-                {% elif a.complete %}
-                    <button class="btn btn-success" id="approve-btn" style="width:100%;"
-                            onclick="approveForUpload('{{ a.item_id }}')">
-                        ✓ Approve for upload
-                    </button>
-                {% else %}
-                    <button class="btn" style="width:100%;opacity:0.5;cursor:not-allowed;" disabled
-                            title="All completeness gates must pass first">
-                        Approve for upload (locked — not complete)
-                    </button>
-                {% endif %}
-                <div id="approve-status" class="fs-status"></div>
-            </div>
-            <p style="color:var(--text-muted);font-size:0.8rem;margin-top:1rem;">
-                Fills every missing image + voice-over (question, options, hints) in one click.
-                Existing parts are skipped unless you tick the box.
-            </p>
-        </div>
+          {% endfor %}
+        {% else %}<div class="fs-muted">No hints written for this question.</div>{% endif %}
+      </div>
     </div>
+
+    <!-- RIGHT: CHECKLIST + ACTIONS -->
+    <div>
+      <div class="fs-card" style="position:sticky; top:1rem;">
+        <h3>✅ Checklist</h3>
+        <ul class="chk">
+          {% for g in a.gates %}
+            <li>
+              <span class="mark {{ 'ok' if g.ok else 'no' }}">{{ '✓' if g.ok else '✗' }}</span>
+              <span>{{ g.label }}{% if g.detail %}<br><span class="fs-muted">{{ g.detail }}</span>{% endif %}</span>
+            </li>
+          {% endfor %}
+        </ul>
+
+        <div style="margin-top:1rem; display:flex; flex-direction:column; gap:.5rem;">
+          <button class="btn btn-primary" id="gen-all-btn" onclick="generateComplete('{{ a.item_id }}')">
+            ⚡ Generate everything missing
+          </button>
+          <label class="fs-muted"><input type="checkbox" id="gen-all-force"> also redo parts that already exist</label>
+          <div id="gen-all-results" style="font-size:.82rem;"></div>
+        </div>
+
+        <hr style="margin:1rem 0; border:none; border-top:1px solid var(--border-light,#eee);">
+
+        <div id="approve-block">
+          {% if approval.approved %}
+            <button class="btn btn-secondary" style="width:100%;" onclick="unapprove('{{ a.item_id }}')">Undo approval</button>
+          {% elif a.complete %}
+            <button class="btn btn-success" id="approve-btn" style="width:100%;" onclick="approveForUpload('{{ a.item_id }}')">✓ Approve for upload</button>
+          {% else %}
+            <button class="btn" style="width:100%; opacity:.5; cursor:not-allowed;" disabled title="Finish the checklist first">Approve (finish checklist first)</button>
+          {% endif %}
+          <div id="approve-status" class="fs-status"></div>
+        </div>
+        <div class="who-tag" id="who-tag" style="margin-top:.5rem;"></div>
+      </div>
+    </div>
+  </div>
 </div>
 
+<audio id="fs-audio-player" style="display:none;"></audio>
+
 <script>
-// Phase 2 — inline generate/regenerate. Reuses the SAME endpoints the other tabs use.
-// Nothing new is written or deleted; on success we reload to show refreshed state + gates.
-
-function _setStatus(id, text, ok) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.textContent = text;
-    el.style.color = ok === true ? '#2e7d32' : (ok === false ? '#c0392b' : 'var(--text-muted)');
+// ---- reviewer identity (simple, for the approval trail) ----
+function reviewerName() {
+  let n = localStorage.getItem('fs_reviewer');
+  if (!n) { n = (prompt('Your name? (so approvals are logged to you)') || '').trim(); if (n) localStorage.setItem('fs_reviewer', n); }
+  return n || null;
 }
-function _busy(btnId, on, label) {
-    const b = document.getElementById(btnId);
-    if (!b) return;
-    b.disabled = on;
-    if (on) { b.dataset._t = b.textContent; b.textContent = label || 'Working…'; }
-    else if (b.dataset._t) { b.textContent = b.dataset._t; }
+document.getElementById('who-tag').textContent = localStorage.getItem('fs_reviewer') ? ('You: ' + localStorage.getItem('fs_reviewer')) : '';
+
+// ---- audio preview ----
+function playAudio(url) {
+  const p = document.getElementById('fs-audio-player');
+  p.src = url + '?t=' + Date.now(); p.play().catch(()=>{});
 }
 
-async function _post(url, body) {
-    const res = await fetch(url, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: body ? JSON.stringify(body) : undefined
-    });
-    let data = {};
-    try { data = await res.json(); } catch (e) {}
-    if (!res.ok || data.error) throw new Error(data.error || ('HTTP ' + res.status));
-    return data;
+// ---- helpers ----
+function _setStatus(id, text, ok){ const e=document.getElementById(id); if(!e)return; e.textContent=text; e.style.color= ok===true?'var(--correct-text,#1c7a41)':ok===false?'var(--danger,#c0392b)':'var(--text-muted,#777)'; }
+function _busy(id,on,label){ const b=document.getElementById(id); if(!b)return; b.disabled=on; if(on){b.dataset._t=b.textContent;b.textContent=label||'Working…';}else if(b.dataset._t){b.textContent=b.dataset._t;} }
+async function _post(url, body){
+  const ctrl = new AbortController(); const to = setTimeout(()=>ctrl.abort(), 300000);
+  let res; try { res = await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined,signal:ctrl.signal}); }
+  finally { clearTimeout(to); }
+  let d={}; try{ d=await res.json(); }catch(e){}
+  if(!res.ok || d.error) throw new Error(d.error || ('HTTP '+res.status));
+  return d;
 }
 
-async function genQuestionImage(itemId) {
-    const prompt = (document.getElementById('q-image-prompt') || {}).value || '';
-    _busy('q-image-btn', true, 'Generating image…');
-    _setStatus('q-image-status', 'Calling OpenAI… (can take ~30s)', null);
+// ---- inline editing -> Google Sheets ----
+function startEdit(span){
+  if (span.querySelector('textarea')) return;
+  const holder = span.closest('[data-edit-field]') || span;
+  const field = (span.dataset.editField || holder.dataset.editField);
+  const item = (span.dataset.item || holder.dataset.item);
+  const current = span.textContent.trim() === '—' ? '' : span.textContent.trim();
+  span.innerHTML = '';
+  const ta = document.createElement('textarea'); ta.className='edit-box'; ta.value=current; ta.rows= current.length>60?3:1;
+  const row = document.createElement('div'); row.className='edit-row';
+  const save = document.createElement('button'); save.className='btn btn-primary btn-small'; save.textContent='Save to sheet';
+  const cancel = document.createElement('button'); cancel.className='btn btn-secondary btn-small'; cancel.textContent='Cancel';
+  const stat = document.createElement('span'); stat.className='fs-status';
+  span.appendChild(ta); row.appendChild(save); row.appendChild(cancel); row.appendChild(stat); span.appendChild(row); ta.focus();
+  cancel.onclick = ()=> location.reload();
+  save.onclick = async ()=>{
+    save.disabled=true; stat.textContent='Saving…';
     try {
-        await _post(`/api/images/generate/${itemId}`, {prompt: prompt});
-        _setStatus('q-image-status', 'Done — reloading…', true);
-        setTimeout(() => location.reload(), 600);
-    } catch (e) {
-        _setStatus('q-image-status', 'Failed: ' + e.message, false);
-        _busy('q-image-btn', false);
-    }
+      await _post(`/api/final/edit/${item}`, {field, value: ta.value, by: reviewerName()});
+      stat.textContent='Saved ✓'; setTimeout(()=>location.reload(), 500);
+    } catch(e){ stat.textContent='Failed: '+e.message; stat.style.color='var(--danger,#c0392b)'; save.disabled=false; }
+  };
 }
 
-async function genQuestionVO(itemId) {
-    _busy('q-vo-btn', true, 'Generating VO…');
-    _setStatus('q-vo-status', 'Calling ElevenLabs…', null);
-    try {
-        await _post(`/api/generate/${itemId}`);
-        _setStatus('q-vo-status', 'Done — reloading…', true);
-        setTimeout(() => location.reload(), 600);
-    } catch (e) {
-        _setStatus('q-vo-status', 'Failed: ' + e.message, false);
-        _busy('q-vo-btn', false);
-    }
+// ---- generation ----
+async function genQuestionImage(itemId){
+  const prompt=(document.getElementById('q-image-prompt')||{}).value||'';
+  _busy('q-image-btn',true,'Generating image…'); _setStatus('q-image-status','Calling OpenAI (~30s)…',null);
+  try{ await _post(`/api/images/generate/${itemId}`,{prompt}); _setStatus('q-image-status','Done',true); setTimeout(()=>location.reload(),600); }
+  catch(e){ _setStatus('q-image-status','Failed: '+e.message,false); _busy('q-image-btn',false); }
+}
+async function sendImageToAirtable(itemId){
+  _busy('q-image-airtable-btn',true,'Sending…'); _setStatus('q-image-status','Saving to Airtable library…',null);
+  try{ const d=await _post(`/api/images/approve/${itemId}`,{image_type:'question'});
+    _setStatus('q-image-status', d.pushed?'Sent to Airtable ✓':('Approved — '+(d.airtable_error||'not sent')), d.pushed===true);
+    _busy('q-image-airtable-btn',false);
+  } catch(e){ _setStatus('q-image-status','Failed: '+e.message,false); _busy('q-image-airtable-btn',false); }
+}
+async function genQuestionVO(itemId){
+  _busy('q-vo-btn',true,'Generating…'); _setStatus('q-vo-status','Calling ElevenLabs…',null);
+  try{ await _post(`/api/generate/${itemId}`); _setStatus('q-vo-status','Done',true); setTimeout(()=>location.reload(),600); }
+  catch(e){ _setStatus('q-vo-status','Failed: '+e.message,false); _busy('q-vo-btn',false); }
+}
+async function genHintVO(itemId,n){
+  _busy('hintvo-'+n,true,'Generating…'); _setStatus('hintvo-s-'+n,'Calling ElevenLabs…',null);
+  try{ await _post(`/api/generate-hint/${itemId}/${n}`); _setStatus('hintvo-s-'+n,'Done',true); setTimeout(()=>location.reload(),600); }
+  catch(e){ _setStatus('hintvo-s-'+n,'Failed: '+e.message,false); _busy('hintvo-'+n,false); }
+}
+async function genOptionVO(itemId,n){
+  _busy('optvo-'+n,true,'…'); _setStatus('optvo-s-'+n,'Calling ElevenLabs…',null);
+  try{ await _post(`/api/generate-option/${itemId}/${n}`); _setStatus('optvo-s-'+n,'Done',true); setTimeout(()=>location.reload(),600); }
+  catch(e){ _setStatus('optvo-s-'+n,'Failed: '+e.message,false); _busy('optvo-'+n,false); }
+}
+async function generateComplete(itemId){
+  const force=(document.getElementById('gen-all-force')||{}).checked||false;
+  const prompt=(document.getElementById('q-image-prompt')||{}).value||'';
+  const out=document.getElementById('gen-all-results');
+  _busy('gen-all-btn',true,'Generating… (up to a minute)');
+  out.innerHTML='<span class="fs-muted">Working through images + voice-overs… please wait.</span>';
+  try{
+    const d=await _post(`/api/final/generate-all/${itemId}`,{force, image_prompt: prompt});
+    out.innerHTML='<strong>Done — '+d.generated+' generated.</strong>'+(d.results||[]).map(r=>{
+      const c=r.status==='generated'?'var(--correct-text,#1c7a41)':r.status==='skipped'?'var(--text-muted,#777)':'var(--danger,#c0392b)';
+      return '<div style="color:'+c+'">'+r.part+': '+(r.status==='error'?('error '+r.error):(r.reason||r.status))+'</div>';
+    }).join('')+'<div class="fs-muted">Reloading…</div>';
+    setTimeout(()=>location.reload(),1400);
+  } catch(e){ out.innerHTML='<span style="color:var(--danger,#c0392b)">Failed: '+e.message+'</span>'; _busy('gen-all-btn',false); }
 }
 
-async function genHintVO(itemId, n) {
-    _busy('hint-vo-btn-' + n, true, 'Generating…');
-    _setStatus('hint-vo-status-' + n, 'Calling ElevenLabs…', null);
-    try {
-        await _post(`/api/generate-hint/${itemId}/${n}`);
-        _setStatus('hint-vo-status-' + n, 'Done — reloading…', true);
-        setTimeout(() => location.reload(), 600);
-    } catch (e) {
-        _setStatus('hint-vo-status-' + n, 'Failed: ' + e.message, false);
-        _busy('hint-vo-btn-' + n, false);
-    }
+// ---- approve ----
+async function approveForUpload(itemId){
+  _busy('approve-btn',true,'Approving…'); _setStatus('approve-status','',null);
+  try{ await _post(`/api/final/approve/${itemId}`,{by:reviewerName()}); location.reload(); }
+  catch(e){ _setStatus('approve-status','Can’t approve: '+e.message,false); _busy('approve-btn',false); }
 }
-
-async function genOptionVO(itemId, n) {
-    _busy('opt-vo-btn-' + n, true, 'Generating…');
-    _setStatus('opt-vo-status-' + n, 'Calling ElevenLabs…', null);
-    try {
-        await _post(`/api/generate-option/${itemId}/${n}`);
-        _setStatus('opt-vo-status-' + n, 'Done — reloading…', true);
-        setTimeout(() => location.reload(), 600);
-    } catch (e) {
-        _setStatus('opt-vo-status-' + n, 'Failed: ' + e.message, false);
-        _busy('opt-vo-btn-' + n, false);
-    }
-}
-
-async function approveForUpload(itemId) {
-    _busy('approve-btn', true, 'Approving…');
-    _setStatus('approve-status', '', null);
-    try {
-        await _post(`/api/final/approve/${itemId}`);
-        location.reload();
-    } catch (e) {
-        _setStatus('approve-status', 'Cannot approve: ' + e.message, false);
-        _busy('approve-btn', false);
-    }
-}
-
-async function unapprove(itemId) {
-    if (!confirm('Undo the approval for this question?')) return;
-    try {
-        await _post(`/api/final/unapprove/${itemId}`);
-        location.reload();
-    } catch (e) {
-        alert('Failed: ' + e.message);
-    }
-}
-
-async function generateComplete(itemId) {
-    const force = (document.getElementById('gen-all-force') || {}).checked || false;
-    const out = document.getElementById('gen-all-results');
-    _busy('gen-all-btn', true, 'Generating… (this can take a minute)');
-    out.innerHTML = '<span style="color:var(--text-muted);">Generating all missing parts… '
-        + 'images ~30s each, voice-overs a few seconds each. Please wait.</span>';
-    try {
-        const data = await _post(`/api/final/generate-all/${itemId}`, {force: force});
-        const rows = (data.results || []).map(r => {
-            const color = r.status === 'generated' ? '#2e7d32'
-                : r.status === 'skipped' ? 'var(--text-muted)' : '#c0392b';
-            const label = r.status === 'error' ? ('error: ' + r.error) : r.status;
-            return `<div style="color:${color};">${r.part}: ${label}</div>`;
-        }).join('');
-        out.innerHTML = `<strong>Generated ${data.generated} part(s).</strong>` + rows
-            + '<div style="margin-top:0.4rem;">Reloading…</div>';
-        setTimeout(() => location.reload(), 1200);
-    } catch (e) {
-        out.innerHTML = '<span style="color:#c0392b;">Failed: ' + e.message + '</span>';
-        _busy('gen-all-btn', false);
-    }
+async function unapprove(itemId){
+  if(!confirm('Undo the approval for this question?'))return;
+  try{ await _post(`/api/final/unapprove/${itemId}`); location.reload(); }catch(e){ alert('Failed: '+e.message); }
 }
 </script>
 {% endblock %}
