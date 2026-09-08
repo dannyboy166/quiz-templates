@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}{{ a.item_id }} — Final Stage{% endblock %}
+{% block content %}
+<div class="final-detail-page" style="max-width:1100px;margin:0 auto;">
+
+    <div class="list-header" style="display:flex;justify-content:space-between;align-items:center;">
+        <h1>Final Stage — {{ a.item_id }}</h1>
+        <div>
+            {% if prev_id %}<a class="btn btn-secondary" href="/final/{{ prev_id }}">← Prev</a>{% endif %}
+            <a class="btn btn-secondary" href="/final">Back to list</a>
+            {% if next_id %}<a class="btn btn-secondary" href="/final/{{ next_id }}">Next →</a>{% endif %}
+        </div>
+    </div>
+
+    {% if a.complete %}
+        <div class="detail-card" style="background:var(--approved-bg,#eafaf0);border-color:#2e7d32;">
+            <strong style="color:#2e7d32;">✓ Complete</strong> — all gates pass. Ready for upload.
+        </div>
+    {% else %}
+        <div class="detail-card" style="background:#fff8e1;border-color:#e0a800;">
+            <strong style="color:#a67c00;">Incomplete</strong> — some gates are not yet met (see checklist).
+        </div>
+    {% endif %}
+
+    <div style="display:grid;grid-template-columns:1fr 320px;gap:1.5rem;align-items:start;">
+
+        <!-- LEFT: assembled question -->
+        <div>
+            <div class="detail-card">
+                <h3>Question</h3>
+                <p style="font-size:1.1rem;">{{ a.question_text }}</p>
+                <div style="color:var(--text-muted);font-size:0.85rem;">
+                    {{ a.subject }} › {{ a.category }} › {{ a.topic }}
+                    &nbsp;•&nbsp; Type: <strong>{{ a.question_type or "—" }}</strong>
+                    (TemplateID {{ a.template_id or "—" }})
+                    &nbsp;•&nbsp; Grade {{ a.grade or "—" }} / Level {{ a.level or "—" }}
+                    &nbsp;•&nbsp; Answer: <strong>{{ a.answer or "—" }}</strong>
+                    &nbsp;•&nbsp; MediaType: {{ a.media_type or "—" }}
+                </div>
+            </div>
+
+            <div class="detail-card">
+                <h3>Question image
+                    <span class="status-badge {{ 'status-approved' if a.has_q_image else '' }}">
+                        {{ 'present' if a.has_q_image else 'missing' }}
+                    </span>
+                </h3>
+                {% if a.has_q_image %}
+                    <img src="/generated-images/{{ a.item_id }}-question.png" alt="question image"
+                         style="max-width:280px;border:1px solid #ddd;border-radius:6px;"
+                         onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+                    <div style="display:none;color:var(--text-muted);">(in Airtable — not stored locally)</div>
+                {% else %}
+                    <div style="color:var(--text-muted);">No question image yet.</div>
+                {% endif %}
+                {% if a.image_description %}
+                    <div style="color:var(--text-muted);font-size:0.85rem;margin-top:0.5rem;">
+                        Brief: {{ a.image_description }}
+                    </div>
+                {% endif %}
+            </div>
+
+            {% if not a.is_true_false and not a.is_written %}
+            <div class="detail-card">
+                <h3>Options</h3>
+                <table style="width:100%;">
+                    <thead><tr><th>#</th><th>Text</th><th>Image</th><th>Voice-over</th></tr></thead>
+                    <tbody>
+                    {% for opt in a.options %}
+                        <tr>
+                            <td>{{ opt.num }}{% if a.answer and (opt.num|string) in a.answer %} ✓{% endif %}</td>
+                            <td>{{ opt.text }}</td>
+                            <td>{% if a.is_select_all %}
+                                <span class="status-badge {{ 'status-approved' if opt.has_image else '' }}">
+                                    {{ 'yes' if opt.has_image else 'missing' }}</span>
+                                {% else %}<span style="color:var(--text-muted);">{{ 'yes' if opt.has_image else '—' }}</span>{% endif %}
+                            </td>
+                            <td>
+                                <span class="status-badge {{ 'status-approved' if opt.has_vo else '' }}">
+                                    {{ 'yes' if opt.has_vo else 'none' }}</span>
+                                <span style="color:var(--text-muted);font-size:0.75rem;">(per-option VO: Phase 3)</span>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+            <div class="detail-card">
+                <h3>Question voice-over
+                    <span class="status-badge {{ 'status-approved' if a.q_vo else '' }}">
+                        {{ 'present' if a.q_vo else 'missing' }}</span>
+                </h3>
+                {% if a.q_vo %}
+                    <audio controls src="/audio/{{ a.item_id }}-question.mp3" style="width:100%;"></audio>
+                {% else %}
+                    <div style="color:var(--text-muted);">No question voice-over yet.</div>
+                {% endif %}
+            </div>
+
+            <div class="detail-card">
+                <h3>Hints</h3>
+                {% if a.hints %}
+                    {% for h in a.hints %}
+                        <div style="margin-bottom:0.75rem;">
+                            <strong>Hint {{ h.num }}</strong>
+                            <span class="status-badge {{ 'status-approved' if h.has_vo else '' }}">
+                                {{ 'voiced' if h.has_vo else 'no VO' }}</span>
+                            <div style="color:var(--text);">{{ h.text }}</div>
+                            {% if h.has_vo %}
+                                <audio controls src="/audio/{{ a.item_id }}-hint{{ h.num }}.mp3" style="width:100%;margin-top:0.25rem;"></audio>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div style="color:var(--text-muted);">No hints in the sheet.</div>
+                {% endif %}
+            </div>
+
+            {% if a.get_help %}
+            <div class="detail-card">
+                <h3>Get Help</h3>
+                <div style="color:var(--text);">{{ a.get_help }}</div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- RIGHT: completeness checklist -->
+        <div class="detail-card" style="position:sticky;top:1rem;">
+            <h3>Completeness</h3>
+            <ul style="list-style:none;padding:0;margin:0;">
+                {% for g in a.gates %}
+                    <li style="padding:0.4rem 0;border-bottom:1px solid #eee;display:flex;gap:0.5rem;align-items:flex-start;">
+                        <span style="color:{{ '#2e7d32' if g.ok else '#c0392b' }};font-weight:700;">
+                            {{ '✓' if g.ok else '✗' }}</span>
+                        <span>
+                            {{ g.label }}
+                            {% if g.detail %}<br><span style="color:var(--text-muted);font-size:0.8rem;">{{ g.detail }}</span>{% endif %}
+                        </span>
+                    </li>
+                {% endfor %}
+            </ul>
+            <p style="color:var(--text-muted);font-size:0.8rem;margin-top:1rem;">
+                Phase 1 is read-only. Inline generate/regenerate, per-option voice-over, and
+                "Generate Complete Question" come in later phases.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Final Stage — QuestionReview{% endblock %}
+{% block content %}
+<div class="question-list-page final-list-page">
+    <div class="list-header">
+        <h1>Final Stage</h1>
+        <div class="list-actions">
+            <span class="filter-count" id="complete-count">{{ complete_n }} / {{ total }} complete</span>
+        </div>
+    </div>
+
+    <p style="color:var(--text-muted);font-size:0.9rem;margin:0 0 1rem;">
+        Read-only assembly view (Phase 1). Each question checked against the completeness gates
+        (text, type, answer, options, image, voice-over, hints). Green = ready for upload.
+        Content comes from the live Google Sheets.
+    </p>
+
+    <div class="filter-bar" style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:1rem;">
+        <input type="text" id="filter-text" placeholder="Search text / ItemID…" oninput="applyFilters()"
+               style="flex:1;min-width:200px;">
+        <select id="filter-subject" onchange="applyFilters()">
+            <option value="">All subjects</option>
+            {% for s in subjects %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
+        </select>
+        <select id="filter-status" onchange="applyFilters()">
+            <option value="">All</option>
+            <option value="complete">Complete</option>
+            <option value="incomplete">Incomplete</option>
+        </select>
+    </div>
+
+    <div style="overflow-x:auto;">
+        <table class="review-table" id="final-table" style="width:100%;">
+            <thead>
+                <tr>
+                    <th>ItemID</th>
+                    <th>Question</th>
+                    <th>Subject</th>
+                    <th>Type</th>
+                    <th>Gates</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="final-tbody"></tbody>
+        </table>
+    </div>
+    <div id="pager" style="margin-top:1rem;text-align:center;"></div>
+</div>
+
+<script>
+const ALL_ROWS = {{ rows_json|safe }};
+let filtered = ALL_ROWS;
+let page = 1;
+const PAGE_SIZE = 100;
+
+function applyFilters() {
+    const txt = document.getElementById('filter-text').value.toLowerCase();
+    const subj = document.getElementById('filter-subject').value;
+    const status = document.getElementById('filter-status').value;
+    filtered = ALL_ROWS.filter(r => {
+        if (subj && r.subject !== subj) return false;
+        if (status === 'complete' && !r.complete) return false;
+        if (status === 'incomplete' && r.complete) return false;
+        if (txt && !(r.text.toLowerCase().includes(txt) || r.id.toLowerCase().includes(txt))) return false;
+        return true;
+    });
+    page = 1;
+    render();
+}
+
+function render() {
+    const tbody = document.getElementById('final-tbody');
+    const start = (page - 1) * PAGE_SIZE;
+    const rows = filtered.slice(start, start + PAGE_SIZE);
+    tbody.innerHTML = rows.map(r => {
+        const badge = r.complete
+            ? '<span class="status-badge status-approved">Complete</span>'
+            : '<span class="status-badge">' + r.passed + '/' + r.total + '</span>';
+        const bar = r.complete ? '#2e7d32' : (r.passed === 0 ? '#c0392b' : '#e0a800');
+        return `<tr>
+            <td><a href="/final/${r.id}">${r.id}</a></td>
+            <td>${escapeHtml(r.text)}</td>
+            <td>${escapeHtml(r.subject)}</td>
+            <td>${escapeHtml(r.type)}</td>
+            <td><span style="color:${bar};font-weight:700;">${r.passed}/${r.total}</span></td>
+            <td>${badge}</td>
+        </tr>`;
+    }).join('');
+    const pages = Math.ceil(filtered.length / PAGE_SIZE) || 1;
+    document.getElementById('pager').innerHTML =
+        `Page ${page} / ${pages} &nbsp; (${filtered.length} questions) ` +
+        (page > 1 ? `<button class="btn btn-secondary" onclick="page--;render()">Prev</button> ` : '') +
+        (page < pages ? `<button class="btn btn-secondary" onclick="page++;render()">Next</button>` : '');
+}
+
+function escapeHtml(s) {
+    return (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+render();
+</script>
+{% endblock %}

@@ -22,6 +22,7 @@ from flask import (
 
 from .spreadsheet_loader import load_all_questions, TEMPLATE_NAMES
 from . import gsheets_loader
+from . import final_stage
 from .state import (
     load_state, save_state, get_item_state, update_item_state,
     has_audio, now_iso, VOICEOVER_DIR, DATA_DIR,
@@ -792,6 +793,42 @@ def create_app():
                                answer_prompts=answer_prompts,
                                answer_has_generated=answer_has_generated,
                                prev_id=prev_id, next_id=next_id)
+
+    # --- Final Stage tab (Phase 1: read-only assembly + completeness) ---
+
+    @app.route("/final")
+    def final_list():
+        rows = [final_stage.summary_row(q, image_state, state, airtable_images)
+                for q in questions_list]
+        complete_n = sum(1 for r in rows if r["complete"])
+        return render_template("final_list.html",
+                               rows_json=json.dumps(rows, ensure_ascii=False),
+                               subjects=subjects,
+                               total=len(rows),
+                               complete_n=complete_n)
+
+    @app.route("/final/<item_id>")
+    def final_detail(item_id):
+        q = questions.get(item_id)
+        if not q:
+            abort(404)
+        assembled = final_stage.assemble(q, image_state, state, airtable_images)
+
+        idx = next((i for i, qq in enumerate(questions_list) if qq["item_id"] == item_id), None)
+        prev_id = questions_list[idx - 1]["item_id"] if idx and idx > 0 else None
+        next_id = questions_list[idx + 1]["item_id"] if idx is not None and idx < len(questions_list) - 1 else None
+
+        return render_template("final_detail.html",
+                               a=assembled, prev_id=prev_id, next_id=next_id)
+
+    @app.route("/api/final/stats")
+    def api_final_stats():
+        rows = [final_stage.summary_row(q, image_state, state, airtable_images)
+                for q in questions_list]
+        return jsonify({
+            "total": len(rows),
+            "complete": sum(1 for r in rows if r["complete"]),
+        })
 
     @app.route("/api/images/generate/<item_id>", methods=["POST"])
     def api_generate_image(item_id):
