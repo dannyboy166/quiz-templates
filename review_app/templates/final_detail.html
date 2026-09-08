@@ -88,9 +88,13 @@
                     onclick="playAudio('/audio/{{ a.item_id }}-question.mp3')" {{ '' if a.q_vo else 'disabled' }}>🔊</button>
             <span>{{ a.question_text }}</span>
           </div>
-          {% if a.has_q_image and a.q_image_url %}
+          {% if a.q_image_is_lottie %}
+            <div class="demo-img" style="display:flex;align-items:center;justify-content:center;background:#f0f4fa;color:#5a6b85;font-size:.85rem;text-align:center;padding:.6rem;">🎞 Lottie animation{% if a.q_image_url %}<br><a href="{{ a.q_image_url }}" target="_blank">open</a>{% endif %}</div>
+          {% elif a.has_q_image and a.q_image_url %}
             <img class="demo-img" src="{{ a.q_image_url }}{{ '?t=' ~ range(1,99999)|random if '/generated-images/' in a.q_image_url else '' }}"
                  alt="question image" onerror="this.style.display='none'">
+          {% elif a.q_image_missing_url %}
+            <div class="demo-img" style="display:flex;align-items:center;justify-content:center;background:#fff3cd;color:#a67c00;font-size:.8rem;text-align:center;padding:.6rem;">Image in Airtable — hit “Sync” on the Images tab to load the preview</div>
           {% endif %}
           {% if a.is_true_false %}
             <div class="demo-opts">
@@ -162,8 +166,12 @@
         <h3>🖼 Question image
           {% if a.has_q_image %}<span class="chk ok">✓ present</span>{% else %}<span class="chk no">missing</span>{% endif %}
         </h3>
-        {% if a.has_q_image and a.q_image_url %}
+        {% if a.q_image_is_lottie %}
+          <div class="fs-muted">🎞 This is a Lottie animation ({{ a.q_image_type }}) — it plays in the student app. {% if a.q_image_url %}<a href="{{ a.q_image_url }}" target="_blank">Open the file</a>.{% endif %}</div>
+        {% elif a.has_q_image and a.q_image_url %}
           <img class="demo-img" src="{{ a.q_image_url }}{{ '?t=' ~ range(1,99999)|random if '/generated-images/' in a.q_image_url else '' }}" alt="question image" onerror="this.style.display='none';">
+        {% elif a.q_image_missing_url %}
+          <div class="fs-muted" style="color:#a67c00;">Image exists in Airtable but no preview is loaded — click “Sync” on the Images tab to refresh previews.</div>
         {% endif %}
         <div class="edit-row" style="flex-direction:column; align-items:stretch;">
           <textarea id="q-image-prompt" class="edit-box" placeholder="Describe the image you want (leave blank to use the brief below)">{{ a.image_description }}</textarea>
@@ -286,6 +294,13 @@ async function _post(url, body){
 }
 
 // ---- inline editing -> Google Sheets ----
+// Editing is ONE action: "Save to sheet" writes to the live Google Sheet and only then
+// updates the app. There is no app-only save. If they type but don't save, we warn before
+// they can lose it — so an edit can never be silently stuck in the app but not the sheet.
+let _dirtyEditor = null;  // the open editor with unsaved text, if any
+
+function _hasUnsaved(ta, original){ return ta && ta.value.trim() !== (original||'').trim(); }
+
 function startEdit(span){
   if (span.querySelector('textarea')) return;
   const holder = span.closest('[data-edit-field]') || span;
@@ -299,15 +314,26 @@ function startEdit(span){
   const cancel = document.createElement('button'); cancel.className='btn btn-secondary btn-small'; cancel.textContent='Cancel';
   const stat = document.createElement('span'); stat.className='fs-status';
   span.appendChild(ta); row.appendChild(save); row.appendChild(cancel); row.appendChild(stat); span.appendChild(row); ta.focus();
-  cancel.onclick = ()=> location.reload();
+
+  // Track unsaved state so navigating away warns the reviewer.
+  const track = ()=>{ _dirtyEditor = _hasUnsaved(ta, current) ? {field, save} : null; };
+  ta.addEventListener('input', track);
+
+  cancel.onclick = ()=>{ _dirtyEditor=null; location.reload(); };
   save.onclick = async ()=>{
-    save.disabled=true; stat.textContent='Saving…';
+    save.disabled=true; stat.textContent='Saving to Google Sheet…';
     try {
       await _post(`/api/final/edit/${item}`, {field, value: ta.value, by: reviewerName()});
-      stat.textContent='Saved ✓'; setTimeout(()=>location.reload(), 500);
-    } catch(e){ stat.textContent='Failed: '+e.message; stat.style.color='var(--danger,#c0392b)'; save.disabled=false; }
+      _dirtyEditor=null;
+      stat.textContent='Saved to sheet ✓'; setTimeout(()=>location.reload(), 500);
+    } catch(e){ stat.textContent='Not saved — '+e.message; stat.style.color='var(--danger,#c0392b)'; save.disabled=false; }
   };
 }
+
+// Warn before leaving/reloading with an unsaved edit open.
+window.addEventListener('beforeunload', function(e){
+  if (_dirtyEditor){ e.preventDefault(); e.returnValue=''; return ''; }
+});
 
 // ---- generation ----
 async function genQuestionImage(itemId){

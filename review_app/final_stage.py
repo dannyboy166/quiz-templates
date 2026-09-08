@@ -124,8 +124,13 @@ def assemble(q, image_state, review_state, airtable_images, presence=None):
     # URL for display: prefer the local generated PNG, else the Airtable URL if present.
     if has_local_q_image:
         q_image_url = f"/generated-images/{item_id}-question.png"
+        q_image_type = "image/png"
     else:
         q_image_url = at_q_image.get("url", "")
+        q_image_type = at_q_image.get("type", "")
+    # is this a Lottie/JSON animation? (can't render in an <img>)
+    q_image_is_lottie = "json" in (q_image_type or "").lower()
+    q_image_missing_url = bool(has_q_image) and not q_image_url
     at_answer_images = at.get("answer_images") or {}
 
     correct_nums = _correct_option_nums(q.get("answer", ""))
@@ -224,6 +229,9 @@ def assemble(q, image_state, review_state, airtable_images, presence=None):
         "is_written": is_written,
         "has_q_image": has_q_image,
         "q_image_url": q_image_url,
+        "q_image_type": q_image_type,
+        "q_image_is_lottie": q_image_is_lottie,
+        "q_image_missing_url": q_image_missing_url,
         "q_vo": q_vo,
         "options": option_rows,
         "hints": hint_rows,
