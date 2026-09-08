@@ -50,13 +50,16 @@ ENGLISH_CATEGORY_TO_TABLE = {
     "Reading Comprehension": None,
 }
 
-# Image type → Airtable column name
+# Image type → Airtable column name (verified against live tables 8 Sep 2026)
 IMAGE_COLUMN_MAP = {
     "question": "Question Image SVG",
     "answer1": "Answer A Image",
     "answer2": "Answer B Image",
     "answer3": "Answer C Image",
     "answer4": "Answer D Image",
+    "hint1": "Hint 1 Image",
+    "hint2": "Hint 2 Image",
+    "hint3": "Hint 3 Image",
 }
 
 
@@ -232,4 +235,33 @@ def push_answer_image(q, option_num, image_url, airtable_cache=None):
     record_id = record["id"]
     push_image(table_id, record_id, column, image_url)
 
+    return table_name, record_id, "Pushed successfully"
+
+
+def push_hint_image(q, hint_num, image_url, airtable_cache=None):
+    """Full workflow: find/create record, push a hint image to 'Hint {n} Image'.
+
+    Returns (table_name, record_id, status_message).
+    """
+    table_name, table_id = get_table_for_question(q)
+    if not table_id:
+        raise Exception(f"No Airtable table for subject={q.get('subject')}, category={q.get('category')}")
+
+    column = IMAGE_COLUMN_MAP.get(f"hint{hint_num}")
+    if not column:
+        raise Exception(f"Invalid hint_num: {hint_num}")
+
+    item_id = q["item_id"]
+    record = None
+    if airtable_cache and item_id in airtable_cache:
+        rid = airtable_cache[item_id].get("record_id")
+        if rid:
+            record = {"id": rid}
+    if not record:
+        record = find_record(table_id, item_id)
+    if not record:
+        record = create_record(table_id, item_id, q.get("question_text", ""))
+
+    record_id = record["id"]
+    push_image(table_id, record_id, column, image_url)
     return table_name, record_id, "Pushed successfully"

@@ -54,6 +54,7 @@ from .airtable_loader import (
 from .airtable_push import (
     push_question_image as at_push_question,
     push_answer_image as at_push_answer,
+    push_hint_image as at_push_hint,
 )
 from . import canva_uploader
 
@@ -1158,6 +1159,7 @@ def create_app():
         data = request.get_json(silent=True) or {}
         image_type = data.get("image_type", "question")
         option_num = data.get("option_num")
+        hint_num = data.get("hint_num")
 
         # Update local state
         img_st = get_image_item_state(image_state, item_id)
@@ -1195,6 +1197,12 @@ def create_app():
                 table_name, record_id, msg = at_push_answer(q, int(option_num), image_url, airtable_images)
                 ans = img_st["answer_images"].setdefault(str(option_num), {})
                 ans["pushed_at"] = img_now_iso()
+                pushed = True
+            elif image_type == "hint" and hint_num:
+                png_path = IMG_ENGINE_DIR / f"{item_id}-hint{hint_num}.png"
+                webp_path = png_to_webp(png_path)
+                image_url = f"{scheme}://{domain}/generated-images/{webp_path.name}?v={ts}"
+                table_name, record_id, msg = at_push_hint(q, int(hint_num), image_url, airtable_images)
                 pushed = True
 
             update_image_item_state(image_state, item_id, **img_st)

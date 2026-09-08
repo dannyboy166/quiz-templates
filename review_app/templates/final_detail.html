@@ -282,6 +282,9 @@
                       <button class="btn btn-secondary btn-small" id="hintimg-{{ h.num }}" onclick="genHintImage('{{ a.item_id }}', {{ h.num }})">
                         {{ 'Regenerate hint image' if h.has_image else 'Generate hint image' }}
                       </button>
+                      {% if h.has_image %}
+                        <button class="btn btn-success btn-small" id="hintimg-at-{{ h.num }}" onclick="sendHintImageToAirtable('{{ a.item_id }}', {{ h.num }})">Approve &amp; send to Airtable</button>
+                      {% endif %}
                       <span class="fs-status" id="hintimg-s-{{ h.num }}"></span>
                     </div>
                   </div>
@@ -485,6 +488,13 @@ async function genHintImage(itemId,n){
   _busy('hintimg-'+n,true,'Generating…'); _setStatus('hintimg-s-'+n,'Calling OpenAI (~30s)…',null);
   try{ await _post(`/api/images/generate-hint/${itemId}/${n}`,{prompt}); _setStatus('hintimg-s-'+n,'Done',true); setTimeout(()=>location.reload(),600); }
   catch(e){ _setStatus('hintimg-s-'+n,'Failed: '+e.message,false); _busy('hintimg-'+n,false); }
+}
+async function sendHintImageToAirtable(itemId,n){
+  _busy('hintimg-at-'+n,true,'Sending…'); _setStatus('hintimg-s-'+n,'Saving to Airtable (Hint '+n+' Image)…',null);
+  try{ const d=await _post(`/api/images/approve/${itemId}`,{image_type:'hint',hint_num:n});
+    _setStatus('hintimg-s-'+n, d.pushed?'Sent to Airtable ✓':('Approved — '+(d.airtable_error||'not sent')), d.pushed===true);
+    _busy('hintimg-at-'+n,false);
+  } catch(e){ _setStatus('hintimg-s-'+n,'Failed: '+e.message,false); _busy('hintimg-at-'+n,false); }
 }
 async function genOptionVO(itemId,n){
   _busy('optvo-'+n,true,'…'); _setStatus('optvo-s-'+n,'Calling ElevenLabs…',null);
