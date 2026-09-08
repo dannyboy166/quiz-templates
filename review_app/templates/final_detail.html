@@ -88,7 +88,16 @@
                             <td>
                                 <span class="status-badge {{ 'status-approved' if opt.has_vo else '' }}">
                                     {{ 'yes' if opt.has_vo else 'none' }}</span>
-                                <span style="color:var(--text-muted);font-size:0.75rem;">(per-option VO: Phase 3)</span>
+                                {% if opt.has_vo %}
+                                    <audio controls src="/audio/{{ a.item_id }}-option{{ opt.num }}.mp3?t={{ range(1,99999)|random }}"
+                                           style="display:block;width:180px;margin-top:0.25rem;"></audio>
+                                {% endif %}
+                                <button class="btn btn-primary btn-sm" id="opt-vo-btn-{{ opt.num }}"
+                                        onclick="genOptionVO('{{ a.item_id }}', {{ opt.num }})"
+                                        style="margin-top:0.25rem;">
+                                    {{ 'Regenerate' if opt.has_vo else 'Generate VO' }}
+                                </button>
+                                <span class="fs-status" id="opt-vo-status-{{ opt.num }}"></span>
                             </td>
                         </tr>
                     {% endfor %}
@@ -238,6 +247,19 @@ async function genHintVO(itemId, n) {
     } catch (e) {
         _setStatus('hint-vo-status-' + n, 'Failed: ' + e.message, false);
         _busy('hint-vo-btn-' + n, false);
+    }
+}
+
+async function genOptionVO(itemId, n) {
+    _busy('opt-vo-btn-' + n, true, 'Generating…');
+    _setStatus('opt-vo-status-' + n, 'Calling ElevenLabs…', null);
+    try {
+        await _post(`/api/generate-option/${itemId}/${n}`);
+        _setStatus('opt-vo-status-' + n, 'Done — reloading…', true);
+        setTimeout(() => location.reload(), 600);
+    } catch (e) {
+        _setStatus('opt-vo-status-' + n, 'Failed: ' + e.message, false);
+        _busy('opt-vo-btn-' + n, false);
     }
 }
 </script>

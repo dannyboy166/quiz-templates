@@ -15,7 +15,10 @@ The 7 gates (per proposal §3):
   7. Template type set and known
 """
 
-from .state import has_audio, has_hint_audio, get_item_state, get_hint_state
+from .state import (
+    has_audio, has_hint_audio, has_option_audio,
+    get_item_state, get_hint_state,
+)
 from .image_state import has_question_image, has_answer_image, get_image_item_state
 
 
@@ -62,8 +65,8 @@ def assemble(q, image_state, review_state, airtable_images):
             "num": num,
             "text": text,
             "has_image": opt_img,
-            # per-option VO (Phase 3) — file naming {item_id}-option{n}.mp3 (not built yet)
-            "has_vo": _has_option_vo(item_id, num),
+            # per-option VO (Phase 3) — file naming {item_id}-option{n}.mp3
+            "has_vo": has_option_audio(item_id, num),
         })
 
     q_vo = has_audio(item_id)
@@ -145,9 +148,3 @@ def summary_row(q, image_state, review_state, airtable_images):
 
 def _gate(label, ok, detail=""):
     return {"label": label, "ok": bool(ok), "detail": detail}
-
-
-def _has_option_vo(item_id, num):
-    """Per-option voice-over presence — Phase 3 feature. Naming: {item_id}-option{n}.mp3."""
-    from .state import VOICEOVER_DIR
-    return (VOICEOVER_DIR / f"{item_id}-option{num}.mp3").exists()

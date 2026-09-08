@@ -17,7 +17,7 @@ load_dotenv(project_root / ".env")
 # Import the text transformation and SSML functions
 from scripts.bulk_import.generate_voiceovers import (
     clean_text_for_speech,
-    clean_option_for_speech,
+    clean_option_for_speech,  # noqa: F401 (used by generate_for_option)
     build_ssml,
     should_read_options,
     is_yes_no,
@@ -136,6 +136,40 @@ def generate_for_hint(question, hint_num, hint_state=None):
 
     ssml = get_ssml_for_hint(hint_text, speech_override)
     output_path = OUTPUT_DIR / f"{question['item_id']}-hint{hint_num}.mp3"
+    file_size = generate_audio(ssml, output_path, speed)
+
+    return ssml, file_size
+
+
+# --- Per-option audio (Phase 3: reads a single answer option aloud) ---
+# Target DB column: SelectionOption.ReaderBlobID (verified in Victor's schema).
+# Naming: {item_id}-option{n}.mp3 (distinct from -question / -hint files).
+
+def get_ssml_for_option(option_text, speech_override=None):
+    """SSML for reading a single answer option aloud."""
+    if speech_override:
+        return speech_override
+    cleaned = clean_option_for_speech(str(option_text))
+    return f'<break time="0.3s" /> {cleaned}'
+
+
+def generate_for_option(question, option_num, option_state=None):
+    """Generate audio that reads one answer option aloud. Returns (ssml, file_size).
+
+    option_num is 1..4. Raises if that option has no text.
+    """
+    option_text = question.get(f"option{option_num}", "")
+    if not option_text:
+        raise Exception(f"No option{option_num} text for {question['item_id']}")
+
+    speech_override = None
+    speed = None
+    if option_state:
+        speech_override = option_state.get("speech_override")
+        speed = option_state.get("speed_override")
+
+    ssml = get_ssml_for_option(option_text, speech_override)
+    output_path = OUTPUT_DIR / f"{question['item_id']}-option{option_num}.mp3"
     file_size = generate_audio(ssml, output_path, speed)
 
     return ssml, file_size

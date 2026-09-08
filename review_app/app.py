@@ -27,10 +27,12 @@ from .state import (
     load_state, save_state, get_item_state, update_item_state,
     has_audio, now_iso, VOICEOVER_DIR, DATA_DIR,
     get_hint_state, update_hint_state, has_hint_audio,
+    get_option_state, update_option_state, has_option_audio,
 )
 from .voiceover_engine import (
     get_ssml_for_question, generate_for_question,
     get_ssml_for_hint, generate_for_hint,
+    generate_for_option,
 )
 from .image_state import (
     load_image_state, save_image_state, get_image_item_state,
@@ -577,6 +579,23 @@ def create_app():
         try:
             ssml, file_size = generate_for_hint(q, hint_num, hs)
             update_hint_state(state, item_id, hint_num, generated_at=now_iso())
+            return jsonify({"ok": True, "ssml": ssml, "size": file_size})
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+    # --- Per-option voice-over (Phase 3) ---
+
+    @app.route("/api/generate-option/<item_id>/<int:option_num>", methods=["POST"])
+    def api_generate_option(item_id, option_num):
+        q = questions.get(item_id)
+        if not q or option_num not in (1, 2, 3, 4):
+            return jsonify({"error": "Not found"}), 404
+        if not q.get(f"option{option_num}"):
+            return jsonify({"error": f"No option{option_num} text"}), 400
+        os_state = get_option_state(state, item_id, option_num)
+        try:
+            ssml, file_size = generate_for_option(q, option_num, os_state)
+            update_option_state(state, item_id, option_num, generated_at=now_iso())
             return jsonify({"ok": True, "ssml": ssml, "size": file_size})
         except Exception as e:
             return jsonify({"error": str(e)}), 500

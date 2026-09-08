@@ -108,6 +108,50 @@ def has_hint_audio(item_id, hint_num):
     return (VOICEOVER_DIR / f"{item_id}-hint{hint_num}.mp3").exists()
 
 
+# --- Per-option audio state (Phase 3) ---
+
+DEFAULT_OPTION_STATE = {
+    "status": "pending",
+    "speech_override": None,
+    "speed_override": None,
+    "flag_note": "",
+    "generated_at": None,
+    "approved_at": None,
+}
+
+
+def get_option_state(state, item_id, option_num):
+    """Get state for one option's voice-over, with defaults."""
+    item = state.get(item_id, {})
+    opts = item.get("options", {})
+    return opts.get(f"option{option_num}", dict(DEFAULT_OPTION_STATE))
+
+
+def update_option_state(state, item_id, option_num, **kwargs):
+    """Update fields on one option's VO state and save."""
+    if item_id not in state:
+        state[item_id] = {
+            "status": "pending",
+            "speech_override": None,
+            "speed_override": None,
+            "flag_note": "",
+            "generated_at": None,
+            "approved_at": None,
+        }
+    if "options" not in state[item_id]:
+        state[item_id]["options"] = {}
+    key = f"option{option_num}"
+    if key not in state[item_id]["options"]:
+        state[item_id]["options"][key] = dict(DEFAULT_OPTION_STATE)
+    state[item_id]["options"][key].update(kwargs)
+    save_state(state)
+
+
+def has_option_audio(item_id, option_num):
+    """Check if a per-option MP3 file exists."""
+    return (VOICEOVER_DIR / f"{item_id}-option{option_num}.mp3").exists()
+
+
 def now_iso():
     """Current time as ISO string."""
     return datetime.now().isoformat(timespec="seconds")
