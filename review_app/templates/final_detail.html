@@ -485,8 +485,9 @@ async function sendImageToAirtable(itemId){
   } catch(e){ _setStatus('q-image-status','Failed: '+e.message,false); _busy('q-image-airtable-btn',false); }
 }
 async function genQuestionVO(itemId){
+  // no_answers=1: read the QUESTION TEXT only (options have their own per-option VOs now)
   _busy('q-vo-btn',true,'Generating…'); _setStatus('q-vo-status','Calling ElevenLabs…',null);
-  try{ await _post(`/api/generate/${itemId}`); _setStatus('q-vo-status','Done',true); setTimeout(()=>location.reload(),600); }
+  try{ await _post(`/api/generate/${itemId}?no_answers=1`); _setStatus('q-vo-status','Done',true); setTimeout(()=>location.reload(),600); }
   catch(e){ _setStatus('q-vo-status','Failed: '+e.message,false); _busy('q-vo-btn',false); }
 }
 async function genHintVO(itemId,n){

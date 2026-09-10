@@ -56,11 +56,21 @@ def get_ssml_for_question(question, speech_override=None, no_answers=False):
         template_id = TEMPLATE_SELECT_ONE
 
     if no_answers:
-        cleaned = clean_text_for_speech(question["question_text"])
-        return f'<break time="0.3s" /> {cleaned}'
+        return _tidy_ssml(clean_text_for_speech(question["question_text"]))
 
     options = build_options_for_ssml(question)
     return build_ssml(question["question_text"], template_id, options)
+
+
+def _tidy_ssml(text):
+    """Georgia's rules: no leading pause, and end on a period (not a question mark)
+    unless it already ends in ! — reads more naturally for the per-part voice-overs."""
+    t = (text or "").strip()
+    if t.endswith("?"):
+        t = t[:-1] + "."
+    elif not t.endswith((".", "!")):
+        t = t + "."
+    return t
 
 
 MAX_AUDIO_VERSIONS = 5  # keep the last 5 previous takes of each audio file for revert
@@ -188,8 +198,7 @@ def get_ssml_for_hint(hint_text, speech_override=None):
     """Generate SSML for a hint. Simpler than questions — no options or T/F."""
     if speech_override:
         return speech_override
-    cleaned = clean_text_for_speech(hint_text)
-    return f'<break time="0.3s" /> {cleaned}'
+    return _tidy_ssml(clean_text_for_speech(hint_text))
 
 
 def generate_for_hint(question, hint_num, hint_state=None):
@@ -219,8 +228,7 @@ def get_ssml_for_option(option_text, speech_override=None):
     """SSML for reading a single answer option aloud."""
     if speech_override:
         return speech_override
-    cleaned = clean_option_for_speech(str(option_text))
-    return f'<break time="0.3s" /> {cleaned}'
+    return _tidy_ssml(clean_option_for_speech(str(option_text)))
 
 
 def generate_for_option(question, option_num, option_state=None):

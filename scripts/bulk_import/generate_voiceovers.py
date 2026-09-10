@@ -273,11 +273,19 @@ def fix_counting_options(text):
 
 
 def uppercase_single_letters(text):
-    """Uppercase standalone single letters in text (Vonnie drops lowercase ones)."""
+    """Uppercase standalone single letters (the voice drops lowercase ones) — EXCEPT the
+    word 'a' mid-sentence, which is a normal word and should stay lowercase (Georgia's
+    request 8 Sep). 'a' is still capitalised when it starts a sentence."""
     def upper_letter(m):
-        return m.group(1) + m.group(2).upper() + m.group(3)
-    # Match single letter surrounded by word boundaries, but not inside tags
-    return re.sub(r'(^|[\s,])\b([a-z])\b([\s,?.!]|$)', upper_letter, text)
+        before, letter, after = m.group(1), m.group(2), m.group(3)
+        # Leave a mid-sentence 'a'/'A' lowercase — it's the article, not a spelled letter.
+        # Sentence-start (nothing before, or after . ! ?) is handled by normal capitalisation.
+        if letter.lower() == 'a' and before not in ('',):
+            # keep as-is unless the char before signals a sentence start
+            if before.strip() not in ('.', '!', '?'):
+                return before + 'a' + after
+        return before + letter.upper() + after
+    return re.sub(r'(^|[\s,.!?])\b([a-z])\b([\s,?.!]|$)', upper_letter, text)
 
 
 def clean_text_for_speech(text):
