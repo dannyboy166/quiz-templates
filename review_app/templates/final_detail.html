@@ -54,9 +54,10 @@
       <div class="fs-muted">{{ a.subject }} › {{ a.topic }} · {{ a.question_type or "type?" }}</div>
     </div>
     <div style="display:flex; gap:.4rem; align-items:center;">
-      {% if prev_id %}<a class="btn btn-secondary" href="/final/{{ prev_id }}">← Prev</a>{% endif %}
-      <a class="btn btn-secondary" href="/final">All questions</a>
-      {% if next_id %}<a class="btn btn-secondary" href="/final/{{ next_id }}">Next →</a>{% endif %}
+      {% set fq = ('?' ~ filter_qs) if filter_qs else '' %}
+      {% if prev_id %}<a class="btn btn-secondary" href="/final/{{ prev_id }}{{ fq }}">← Prev</a>{% endif %}
+      <a class="btn btn-secondary" href="/final{{ fq }}">All questions</a>
+      {% if next_id %}<a class="btn btn-secondary" href="/final/{{ next_id }}{{ fq }}">Next →</a>{% endif %}
     </div>
   </div>
 

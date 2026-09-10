@@ -980,6 +980,37 @@ def create_app():
                                complete_n=complete_n,
                                approved_n=approved_n)
 
+    def _final_filtered_ids(args):
+        """The ordered list of item_ids matching the current list filters+sort, so the
+        detail page's Prev/Next walk the SAME view the reviewer filtered (Georgia)."""
+        subj = args.get("subject", "")
+        topic = args.get("topic", "")
+        status = args.get("status", "")
+        txt = (args.get("q", "") or "").lower()
+        sort_by = args.get("sort", "id")
+        presence = final_stage.build_presence()
+        rows = []
+        for q in questions_list:
+            r = final_stage.summary_row(q, image_state, state, airtable_images, presence=presence)
+            led = final_state_mod.get_final_item(final_ledger, r["id"])
+            r["approved"] = bool(led.get("approved")); r["flagged"] = bool(led.get("flagged"))
+            if subj and r["subject"] != subj: continue
+            if topic and r["topic"] != topic: continue
+            if status == "complete" and (not r["complete"] or r["approved"]): continue
+            if status == "incomplete" and r["complete"]: continue
+            if status == "approved" and not r["approved"]: continue
+            if status == "flagged" and not r["flagged"]: continue
+            if txt and txt not in r["text"].lower() and txt not in r["id"].lower(): continue
+            rows.append(r)
+        keymap = {
+            "topic": lambda r: (r["topic"] or "", r["id"]),
+            "subject": lambda r: (r["subject"] or "", r["id"]),
+            "progress": lambda r: (r["passed"] / r["total"] if r["total"] else 0, r["id"]),
+            "id": lambda r: r["id"],
+        }
+        rows.sort(key=keymap.get(sort_by, keymap["id"]))
+        return [r["id"] for r in rows]
+
     @app.route("/final/<item_id>")
     def final_detail(item_id):
         q = questions.get(item_id)
@@ -987,13 +1018,22 @@ def create_app():
             abort(404)
         assembled = final_stage.assemble(q, image_state, state, airtable_images)
 
-        idx = next((i for i, qq in enumerate(questions_list) if qq["item_id"] == item_id), None)
-        prev_id = questions_list[idx - 1]["item_id"] if idx and idx > 0 else None
-        next_id = questions_list[idx + 1]["item_id"] if idx is not None and idx < len(questions_list) - 1 else None
+        # Prev/Next respect the list filters passed in the query string; fall back to full order.
+        has_filter = any(request.args.get(k) for k in ("subject", "topic", "status", "q", "sort"))
+        order = _final_filtered_ids(request.args) if has_filter else [qq["item_id"] for qq in questions_list]
+        if item_id in order:
+            i = order.index(item_id)
+            prev_id = order[i - 1] if i > 0 else None
+            next_id = order[i + 1] if i < len(order) - 1 else None
+        else:
+            prev_id = next_id = None
+        # Preserve the filter on the prev/next links.
+        from urllib.parse import urlencode
+        fq = urlencode({k: v for k, v in request.args.items() if k in ("subject", "topic", "status", "q", "sort") and v})
 
         approval = final_state_mod.get_final_item(final_ledger, item_id)
         return render_template("final_detail.html",
-                               a=assembled, prev_id=prev_id, next_id=next_id,
+                               a=assembled, prev_id=prev_id, next_id=next_id, filter_qs=fq,
                                approval=approval)
 
     @app.route("/api/final/generate-all/<item_id>", methods=["POST"])

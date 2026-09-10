@@ -94,6 +94,27 @@ let filtered = ALL_ROWS;
 let page = 1;
 const PAGE_SIZE = 100;
 
+// Build the current filter as a query string (so opening a question keeps the filtered
+// order for Prev/Next), and restore filters from the URL on load.
+function currentFilterQS(){
+  const p = new URLSearchParams();
+  const subj=document.getElementById('filter-subject').value; if(subj) p.set('subject',subj);
+  const topic=document.getElementById('filter-topic').value; if(topic) p.set('topic',topic);
+  const status=document.getElementById('filter-status').value; if(status) p.set('status',status);
+  const sort=document.getElementById('sort-by').value; if(sort && sort!=='id') p.set('sort',sort);
+  const txt=document.getElementById('filter-text').value.trim(); if(txt) p.set('q',txt);
+  const s=p.toString(); return s ? ('?'+s) : '';
+}
+(function restoreFromURL(){
+  const p=new URLSearchParams(location.search);
+  if(p.get('subject')) document.getElementById('filter-subject').value=p.get('subject');
+  if(p.get('status')) document.getElementById('filter-status').value=p.get('status');
+  if(p.get('sort')) document.getElementById('sort-by').value=p.get('sort');
+  if(p.get('q')) document.getElementById('filter-text').value=p.get('q');
+  // topic depends on subject — set after options are refreshed (see bottom)
+  window._pendingTopic = p.get('topic') || '';
+})();
+
 // Populate the topic dropdown (all topics, or those under the chosen subject).
 function refreshTopicOptions() {
   const subj = document.getElementById('filter-subject').value;
@@ -149,7 +170,7 @@ function render() {
   tbody.innerHTML = rows.map(r => {
     const pct = Math.round(100 * r.passed / r.total);
     const barColor = r.complete ? '#2e8b57' : (r.passed === 0 ? '#d38b8b' : '#e0a800');
-    return `<tr onclick="location.href='/final/${r.id}'">
+    return `<tr onclick="location.href='/final/${r.id}${currentFilterQS()}'">
       <td class="fl-id">${r.id}</td>
       <td class="fl-qtext">${escapeHtml(r.text)}</td>
       <td>${escapeHtml(r.subject)}</td>
@@ -170,6 +191,7 @@ function escapeHtml(s) {
   return (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 refreshTopicOptions();
-render();
+if (window._pendingTopic) { document.getElementById('filter-topic').value = window._pendingTopic; }
+applyFilters();
 </script>
 {% endblock %}
