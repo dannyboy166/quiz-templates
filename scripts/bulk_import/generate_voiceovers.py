@@ -353,8 +353,8 @@ def build_ssml(question_text, template_id, options):
     """Build the full SSML text to send to ElevenLabs."""
     cleaned = clean_text_for_speech(question_text)
 
-    # Lead-in pause
-    ssml = f'<break time="0.3s" /> {cleaned}'
+    # No lead-in pause (Georgia) — start on the question. Pauses stay BETWEEN the answers.
+    ssml = cleaned
 
     if template_id == TEMPLATE_TRUE_FALSE:
         # True/False format

@@ -245,6 +245,14 @@
             {% endif %}
             <span class="fs-status" id="q-image-status"></span>
           </div>
+          {% if not a.has_q_image %}
+          <label class="fs-muted" style="display:block;font-size:.82rem;margin-top:.5rem;">
+            <input type="checkbox" id="q-no-image" {{ 'checked' if a.no_question_image_needed else '' }}
+                   onchange="setNoQuestionImage('{{ a.item_id }}', this.checked)">
+            This question doesn't need a question graphic (answers have images, or none needed)
+            <span class="fs-status" id="q-no-image-status"></span>
+          </label>
+          {% endif %}
 
           {% if a.q_image_tweakable %}
           <div style="margin-top:.9rem; padding-top:.7rem; border-top:1px dashed var(--border-light,#eee);">
@@ -277,6 +285,13 @@
           {% if a.q_vo %}<span class="chk ok">✓ present</span>{% else %}<span class="chk no">missing</span>{% endif %}
         </h3>
         {% if a.q_vo %}<audio controls src="/audio/{{ a.item_id }}-question.mp3?t={{ range(1,99999)|random }}" style="width:100%;"></audio>{% endif %}
+        {% if not a.is_true_false and not a.is_written and a.options %}
+        <label class="fs-muted" style="display:block;font-size:.82rem;margin:.3rem 0;">
+          <input type="checkbox" id="q-vo-read-options" {{ '' if a.skip_options_in_vo else 'checked' }}>
+          read the answer options aloud in this voice-over
+          <span style="opacity:.7;">(untick for e.g. spelling questions where reading the options sounds odd)</span>
+        </label>
+        {% endif %}
         <div class="edit-row">
           <button class="btn btn-primary" id="q-vo-btn" onclick="genQuestionVO('{{ a.item_id }}')">
             {{ 'Regenerate voice-over' if a.q_vo else 'Generate voice-over' }}
@@ -544,11 +559,26 @@ async function sendImageToAirtable(itemId){
     _busy('q-image-airtable-btn',false);
   } catch(e){ _setStatus('q-image-status','Failed: '+e.message,false); _busy('q-image-airtable-btn',false); }
 }
+async function setNoQuestionImage(itemId, val){
+  _setStatus('q-no-image-status', 'Saving…', null);
+  try{ await _post(`/api/final/set-no-question-image/${itemId}`,{value:val});
+    _setStatus('q-no-image-status','Saved ✓ — reloading…',true); setTimeout(()=>location.reload(),500);
+  }catch(e){ _setStatus('q-no-image-status','Failed: '+e.message,false); }
+}
+function readOptionsChecked(){
+  const el=document.getElementById('q-vo-read-options');
+  return el ? el.checked : true;  // default: read options (bundled)
+}
 async function genQuestionVO(itemId){
-  // no_answers=1: read the QUESTION TEXT only (options have their own per-option VOs now)
+  // By default the question VO reads the options too (with pauses). Untick to skip them.
+  const na = readOptionsChecked() ? '' : '?no_answers=1';
   _busy('q-vo-btn',true,'Generating…'); _setStatus('q-vo-status','Calling ElevenLabs…',null);
-  try{ await _post(`/api/generate/${itemId}?no_answers=1`); _setStatus('q-vo-status','Done',true); setTimeout(()=>location.reload(),600); }
-  catch(e){ _setStatus('q-vo-status','Failed: '+e.message,false); _busy('q-vo-btn',false); }
+  try{
+    // persist the choice so the checklist/editor stay consistent
+    await _post(`/api/final/set-read-options/${itemId}`,{read_options: readOptionsChecked()});
+    await _post(`/api/generate/${itemId}${na}`);
+    _setStatus('q-vo-status','Done',true); setTimeout(()=>location.reload(),600);
+  }catch(e){ _setStatus('q-vo-status','Failed: '+e.message,false); _busy('q-vo-btn',false); }
 }
 async function genHintVO(itemId,n){
   _busy('hintvo-'+n,true,'Generating…'); _setStatus('hintvo-s-'+n,'Calling ElevenLabs…',null);
@@ -618,7 +648,8 @@ async function initSpeechEditor(box){
     try{
       await saveOverride(ta.value);
       stat.textContent='Generating audio…';
-      const gen = kind==='question' ? `/api/generate/${item}?no_answers=1`
+      const qna = (kind==='question' && !readOptionsChecked()) ? '?no_answers=1' : '';
+      const gen = kind==='question' ? `/api/generate/${item}${qna}`
                 : kind==='hint' ? `/api/generate-hint/${item}/${num}`
                 : `/api/generate-option/${item}/${num}`;
       await _post(gen);

@@ -742,9 +742,9 @@ def create_app():
         try:
             if kind == "question":
                 st = get_item_state(state, item_id)
-                # Final Stage reads the QUESTION TEXT ONLY (options have their own VOs), so
-                # the editor default must match that — not the bundled build_ssml.
-                default = get_ssml_for_question(q, no_answers=True)
+                # Default matches what will actually be generated: bundled (question + options)
+                # unless the reviewer chose to skip options for this question.
+                default = get_ssml_for_question(q, no_answers=bool(st.get("skip_options_in_vo")))
             elif kind == "hint" and num:
                 st = get_hint_state(state, item_id, int(num))
                 default = get_ssml_for_hint(q.get(f"hint{num}", ""))
@@ -1122,6 +1122,26 @@ def create_app():
         final_state_mod.set_approved(final_ledger, item_id, False)
         print(f"  [final] Unapproved {item_id}")
         return jsonify({"ok": True, "approved": False})
+
+    @app.route("/api/final/set-read-options/<item_id>", methods=["POST"])
+    def api_set_read_options(item_id):
+        """Persist whether the question VO reads the options aloud (default True)."""
+        if item_id not in questions:
+            return jsonify({"error": "Question not found"}), 404
+        data = request.get_json(silent=True) or {}
+        read = bool(data.get("read_options", True))
+        # store the inverse ('skip') so default (absent) = read options
+        update_item_state(state, item_id, skip_options_in_vo=(not read))
+        return jsonify({"ok": True, "read_options": read})
+
+    @app.route("/api/final/set-no-question-image/<item_id>", methods=["POST"])
+    def api_set_no_question_image(item_id):
+        """Confirm (or unconfirm) that this question doesn't need a question graphic."""
+        if item_id not in questions:
+            return jsonify({"error": "Question not found"}), 404
+        data = request.get_json(silent=True) or {}
+        update_item_state(state, item_id, no_question_image_needed=bool(data.get("value")))
+        return jsonify({"ok": True})
 
     @app.route("/api/final/flag/<item_id>", methods=["POST"])
     def api_final_flag(item_id):

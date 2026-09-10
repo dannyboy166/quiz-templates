@@ -202,17 +202,19 @@ def assemble(q, image_state, review_state, airtable_images, presence=None):
                            detail="ok" if answer_in_range else f"answer '{q.get('answer','')}' not in options 1-{len(options)}"))
     gates.append(_gate("At least 2 options", enough_options,
                        detail=("not needed" if (is_true_false or is_written) else f"{len(options)} options")))
-    # Image gate (#15): a question needs SOME image — either the question image, or an
-    # image on every option (some questions only need answer images, or only a question
-    # image). Select All specifically renders an option-image grid, so it still needs one
-    # per option; that stays a separate hard gate below.
+    # Question image gate (Georgia #3): a question image is REQUIRED, UNLESS the reviewer
+    # has explicitly ticked "this question doesn't need a question graphic" — so it's a
+    # deliberate confirmation, never silently skipped.
+    no_q_img_needed = bool(get_item_state(review_state, item_id).get("no_question_image_needed"))
     all_opt_imgs = bool(option_rows) and all(r["has_image"] for r in option_rows)
-    has_any_image = has_q_image or all_opt_imgs
-    gates.append(_gate("Image (question or every option)", has_any_image,
-                       detail="question image" if has_q_image else
-                              "all options have images" if all_opt_imgs else "none yet"))
+    q_img_ok = has_q_image or no_q_img_needed
+    gates.append(_gate("Question image", q_img_ok,
+                       detail="present" if has_q_image else
+                              "confirmed not needed" if no_q_img_needed else "missing"))
     if is_select_all:
-        gates.append(_gate("Image on every option (Select All)", all_opt_imgs))
+        gates.append(_gate("Image on every option (Select All)", all_opt_imgs,
+                           detail="Select All shows an image for each answer — every option needs one"
+                                  if not all_opt_imgs else "all present"))
     gates.append(_gate("Question voice-over", q_vo))
     # Per-option voice-over: required for each option THAT HAS TEXT to read aloud.
     # Image-only options (Select All grid) have nothing to read, so they're exempt.
@@ -254,6 +256,8 @@ def assemble(q, image_state, review_state, airtable_images, presence=None):
         "is_written": is_written,
         "tf_true_vo": _tf_a(item_id, "true") if is_true_false else False,
         "tf_false_vo": _tf_a(item_id, "false") if is_true_false else False,
+        "skip_options_in_vo": bool(get_item_state(review_state, item_id).get("skip_options_in_vo")),
+        "no_question_image_needed": no_q_img_needed,
         "has_q_image": has_q_image,
         "q_image_url": q_image_url,
         "q_image_type": q_image_type,
