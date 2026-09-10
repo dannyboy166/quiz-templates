@@ -382,6 +382,10 @@ def build_ssml(question_text, template_id, options):
                 else:
                     ssml += opt
 
+    # End on a full stop (Georgia): a trailing question mark on the last option -> period.
+    ssml = ssml.rstrip()
+    if ssml.endswith("?"):
+        ssml = ssml[:-1] + "."
     return ssml
 
 

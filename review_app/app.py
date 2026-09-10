@@ -1160,6 +1160,15 @@ def create_app():
         update_item_state(state, item_id, no_question_image_needed=bool(data.get("value")))
         return jsonify({"ok": True})
 
+    @app.route("/api/final/set-no-option-images/<item_id>", methods=["POST"])
+    def api_set_no_option_images(item_id):
+        """Confirm this Select All uses text options (no per-option image needed)."""
+        if item_id not in questions:
+            return jsonify({"error": "Question not found"}), 404
+        data = request.get_json(silent=True) or {}
+        update_item_state(state, item_id, no_option_images_needed=bool(data.get("value")))
+        return jsonify({"ok": True})
+
     @app.route("/api/final/flag/<item_id>", methods=["POST"])
     def api_final_flag(item_id):
         """Flag a question with a note (why it's not being approved), or clear the flag."""

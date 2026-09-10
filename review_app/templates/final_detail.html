@@ -393,6 +393,22 @@
           {% endfor %}
         </ul>
 
+        <!-- Quick confirm toggles right here in the checklist (Georgia) -->
+        {% if not a.has_q_image %}
+        <label class="fs-muted" style="display:block;font-size:.8rem;margin-top:.5rem;">
+          <input type="checkbox" {{ 'checked' if a.no_question_image_needed else '' }}
+                 onchange="setNoQuestionImage('{{ a.item_id }}', this.checked)">
+          This question doesn't need a question graphic
+        </label>
+        {% endif %}
+        {% if a.is_select_all %}
+        <label class="fs-muted" style="display:block;font-size:.8rem;margin-top:.3rem;">
+          <input type="checkbox" {{ 'checked' if a.no_option_images_needed else '' }}
+                 onchange="setNoOptionImages('{{ a.item_id }}', this.checked)">
+          This Select All uses text options (no image needed on each answer)
+        </label>
+        {% endif %}
+
         <div style="margin-top:1rem; display:flex; flex-direction:column; gap:.5rem;">
           <button class="btn btn-primary" id="gen-all-btn" onclick="generateComplete('{{ a.item_id }}')">
             ⚡ Generate everything missing
@@ -574,10 +590,12 @@ async function sendImageToAirtable(itemId){
   } catch(e){ _setStatus('q-image-status','Failed: '+e.message,false); _busy('q-image-airtable-btn',false); }
 }
 async function setNoQuestionImage(itemId, val){
-  _setStatus('q-no-image-status', 'Saving…', null);
-  try{ await _post(`/api/final/set-no-question-image/${itemId}`,{value:val});
-    _setStatus('q-no-image-status','Saved ✓ — reloading…',true); setTimeout(()=>location.reload(),500);
-  }catch(e){ _setStatus('q-no-image-status','Failed: '+e.message,false); }
+  try{ await _post(`/api/final/set-no-question-image/${itemId}`,{value:val}); location.reload(); }
+  catch(e){ alert('Failed: '+e.message); }
+}
+async function setNoOptionImages(itemId, val){
+  try{ await _post(`/api/final/set-no-option-images/${itemId}`,{value:val}); location.reload(); }
+  catch(e){ alert('Failed: '+e.message); }
 }
 function readOptionsChecked(){
   const el=document.getElementById('q-vo-read-options');

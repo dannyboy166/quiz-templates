@@ -212,9 +212,15 @@ def assemble(q, image_state, review_state, airtable_images, presence=None):
                        detail="present" if has_q_image else
                               "confirmed not needed" if no_q_img_needed else "missing"))
     if is_select_all:
-        gates.append(_gate("Image on every option (Select All)", all_opt_imgs,
-                           detail="Select All shows an image for each answer — every option needs one"
-                                  if not all_opt_imgs else "all present"))
+        # Only Select All questions DESIGNED with image-options need one per option. Text-based
+        # Select All (plain checkboxes) don't — so the reviewer can tick "this one uses text
+        # options" to opt out. (Georgia: not every option needs an image.)
+        no_opt_imgs_needed = bool(get_item_state(review_state, item_id).get("no_option_images_needed"))
+        sa_ok = all_opt_imgs or no_opt_imgs_needed
+        gates.append(_gate("Image on every option (Select All)", sa_ok,
+                           detail="confirmed: text options, no images needed" if (no_opt_imgs_needed and not all_opt_imgs)
+                                  else "all present" if all_opt_imgs
+                                  else "this Select All shows an image per answer — add one to each, or tick 'text options'"))
     gates.append(_gate("Question voice-over", q_vo))
     # Per-option voice-over: required for each option THAT HAS TEXT to read aloud.
     # Image-only options (Select All grid) have nothing to read, so they're exempt.
@@ -258,6 +264,7 @@ def assemble(q, image_state, review_state, airtable_images, presence=None):
         "tf_false_vo": _tf_a(item_id, "false") if is_true_false else False,
         "skip_options_in_vo": bool(get_item_state(review_state, item_id).get("skip_options_in_vo")),
         "no_question_image_needed": no_q_img_needed,
+        "no_option_images_needed": bool(get_item_state(review_state, item_id).get("no_option_images_needed")),
         "has_q_image": has_q_image,
         "q_image_url": q_image_url,
         "q_image_type": q_image_type,
