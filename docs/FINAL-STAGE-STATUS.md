@@ -106,6 +106,19 @@ Written doesn't require an Answer cell.
 Question → "Question Image SVG"; Options → "Answer A/B/C/D Image"; Hints → "Hint 1/2/3 Image".
 (`review_app/airtable_push.py` IMAGE_COLUMN_MAP.)
 
+## Georgia's feedback round (8 Sep) — 11 items shipped
+
+Fixed/added: VO no leading break + ends on period (#9); mid-sentence 'a' lowercase (#11);
+VO speed control (#8); speech editor available pre-VO (#1,#7); True/False answer VOs (#10);
+per-option image generation (#6); image gate = question image OR all-option images (#15);
+upload-image button (ChatGPT etc → PNG→WebP→Airtable, #16); hint image can use the question
+graphic (#2); flag + notes per question (#12); topic filter+sort + flagged filter (#5).
+
+Investigated (answers, no build): transparent=checkered IS real transparency (#3); 20012115
+image IS in Airtable, app auto-refreshes now (#4); multiple question images = only ~5 of 5353
+questions have >1 attachment, app shows first (#13, edge case). DEFERRED: "Uploaded" tab (#14)
+until the terminal uploader exists.
+
 ## Known issues / feedback logged
 
 - **WebP alpha corruption (Victor's side):** after Victor converted the image library to WebP,
