@@ -119,6 +119,25 @@ image IS in Airtable, app auto-refreshes now (#4); multiple question images = on
 questions have >1 attachment, app shows first (#13, edge case). DEFERRED: "Uploaded" tab (#14)
 until the terminal uploader exists.
 
+## Georgia round 2+3 (8-10 Sep) — shipped
+
+- Question VO reads options again by default (question + pauses BETWEEN answers), no leading
+  break, ends on a period; per-question "read options aloud" toggle (off = text-only, e.g.
+  spelling). Per-option VOs still exist.
+- Question image REQUIRED again, with a "this question doesn't need a question graphic" tick
+  (in both the image card AND the checklist).
+- Select All option-image gate now has an override: "this Select All uses text options (no
+  image needed)" — not every Select All needs option images.
+- True/False VOs: full layout (play in preview, change-how-it's-read editor, speed, revert).
+- Prev/Next now respect the list filter+sort (carried in the URL) — no more jumping to the
+  next global ItemID when filtered.
+
+DEFERRED (Georgia said don't worry for now, 10 Sep): "up to 5 images per question" — ambiguous
+(multiple main question graphics? vs 1 question + 4 answer images which already works?) AND
+Victor's DB has a single Question.ImageBlobID, so multiple *question* graphics may not be
+renderable his side. Revisit with a concrete example + a Victor check if it comes back.
+Also still deferred: "Uploaded" tab (needs the terminal uploader).
+
 ## Known issues / feedback logged
 
 - **WebP alpha corruption (Victor's side):** after Victor converted the image library to WebP,
