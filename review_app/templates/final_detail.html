@@ -158,6 +158,9 @@
                   <button class="btn btn-secondary btn-small" id="optimg-{{ opt.num }}" onclick="genOptionImage('{{ a.item_id }}', {{ opt.num }})">
                     {{ 'Regenerate' if opt.has_image else 'Generate image' }}
                   </button>
+                  <label class="btn btn-secondary btn-small" style="cursor:pointer;">Upload
+                    <input type="file" accept="image/*" style="display:none;" onchange="uploadImage('{{ a.item_id }}','answer',{{ opt.num }},this)">
+                  </label>
                   {% if opt.has_image %}<button class="btn btn-success btn-small" id="optimg-at-{{ opt.num }}" onclick="sendOptionImageToAirtable('{{ a.item_id }}', {{ opt.num }})">→ Airtable</button>{% endif %}
                   <span class="fs-status" id="optimg-s-{{ opt.num }}"></span>
                 </div>
@@ -232,6 +235,9 @@
             <button class="btn btn-primary" id="q-image-btn" onclick="genQuestionImage('{{ a.item_id }}')">
               {{ 'Make new image' if a.has_q_image else 'Generate image' }}
             </button>
+            <label class="btn btn-secondary" style="cursor:pointer;">Upload image
+              <input type="file" accept="image/*" style="display:none;" onchange="uploadImage('{{ a.item_id }}','question',null,this)">
+            </label>
             {% if a.has_q_image %}
               <button class="btn btn-success" id="q-image-airtable-btn" onclick="sendImageToAirtable('{{ a.item_id }}')">
                 Approve &amp; send to Airtable
@@ -319,10 +325,18 @@
                   <summary class="fs-muted" style="cursor:pointer;">🖼 {{ 'Hint image' if h.has_image else 'Add a hint image (optional)' }}</summary>
                   <div style="margin-top:.4rem;">
                     <textarea id="hintimg-p-{{ h.num }}" class="edit-box" placeholder="Describe the picture for this hint"></textarea>
+                    {% if a.has_q_image %}
+                    <label class="fs-muted" style="display:block;font-size:.8rem;margin:.3rem 0;">
+                      <input type="checkbox" id="hintimg-useq-{{ h.num }}"> base it on the question image (keep the same style)
+                    </label>
+                    {% endif %}
                     <div class="edit-row">
                       <button class="btn btn-secondary btn-small" id="hintimg-{{ h.num }}" onclick="genHintImage('{{ a.item_id }}', {{ h.num }})">
                         {{ 'Regenerate hint image' if h.has_image else 'Generate hint image' }}
                       </button>
+                      <label class="btn btn-secondary btn-small" style="cursor:pointer;">Upload
+                        <input type="file" accept="image/*" style="display:none;" onchange="uploadImage('{{ a.item_id }}','hint',{{ h.num }},this)">
+                      </label>
                       {% if h.has_image %}
                         <button class="btn btn-success btn-small" id="hintimg-at-{{ h.num }}" onclick="sendHintImageToAirtable('{{ a.item_id }}', {{ h.num }})">Approve &amp; send to Airtable</button>
                       {% endif %}
@@ -617,9 +631,28 @@ async function genTfVO(itemId, which){
 async function genHintImage(itemId,n){
   const prompt=(document.getElementById('hintimg-p-'+n)||{}).value.trim();
   if(!prompt){ _setStatus('hintimg-s-'+n,'Describe the picture first',false); return; }
+  const useq=(document.getElementById('hintimg-useq-'+n)||{}).checked||false;
   _busy('hintimg-'+n,true,'Generating…'); _setStatus('hintimg-s-'+n,'Calling OpenAI (~30s)…',null);
-  try{ await _post(`/api/images/generate-hint/${itemId}/${n}`,{prompt}); _setStatus('hintimg-s-'+n,'Done',true); setTimeout(()=>location.reload(),600); }
+  try{ await _post(`/api/images/generate-hint/${itemId}/${n}`,{prompt, use_question_image:useq}); _setStatus('hintimg-s-'+n,'Done',true); setTimeout(()=>location.reload(),600); }
   catch(e){ _setStatus('hintimg-s-'+n,'Failed: '+e.message,false); _busy('hintimg-'+n,false); }
+}
+
+// Upload a hand-made image (e.g. from ChatGPT). Multipart -> server converts to PNG/WebP.
+async function uploadImage(itemId, imageType, num, input){
+  const file = input.files && input.files[0];
+  if(!file) return;
+  const statusId = imageType==='question' ? 'q-image-status'
+                 : imageType==='answer' ? 'optimg-s-'+num : 'hintimg-s-'+num;
+  _setStatus(statusId,'Uploading…',null);
+  const fd = new FormData();
+  fd.append('file', file); fd.append('image_type', imageType);
+  if(num!=null) fd.append('num', num);
+  try{
+    const res = await fetch(`/api/images/upload/${itemId}`, {method:'POST', body:fd});
+    const d = await res.json();
+    if(!res.ok || d.error) throw new Error(d.error || ('HTTP '+res.status));
+    _setStatus(statusId,'Uploaded ✓ — reloading…',true); setTimeout(()=>location.reload(),700);
+  }catch(e){ _setStatus(statusId,'Upload failed: '+e.message,false); }
 }
 async function sendHintImageToAirtable(itemId,n){
   _busy('hintimg-at-'+n,true,'Sending…'); _setStatus('hintimg-s-'+n,'Saving to Airtable (Hint '+n+' Image)…',null);

@@ -204,19 +204,25 @@ def generate_answer_image(q, option_num, prompt_override=None):
     return prompt, file_size
 
 
-def generate_hint_image(q, hint_num, prompt_override=None, size="1024x1024"):
+def generate_hint_image(q, hint_num, prompt_override=None, size="1024x1024", use_question_image=False):
     """Generate and save a HINT image (for hints that show a picture). Archives prev version.
 
     Saved as {item_id}-hint{n}.png. Target DB element: hint-graphic (HintReplacement.BlobID).
-    prompt_override is required in practice — a hint image needs an explicit brief since the
-    hint text alone rarely describes a good picture.
+    If use_question_image is True AND a question image exists, the hint image is built FROM
+    the question image (OpenAI edit) so it matches the question's style/subject — Georgia's
+    request that hint generation "see the question graphic".
     """
     prompt = (prompt_override or q.get(f"hint{hint_num}", "") or "").strip()
     if not prompt:
         raise Exception("A prompt is required to generate a hint image")
     _archive_current_image(q["item_id"], "hint", hint_num)
     output_path = IMAGE_DATA_DIR / f"{q['item_id']}-hint{hint_num}.png"
-    file_size = generate_image(prompt, output_path, size=size)
+    q_image = IMAGE_DATA_DIR / f"{q['item_id']}-question.png"
+    if use_question_image and q_image.exists():
+        # Build the hint image FROM the question image so it matches.
+        file_size = edit_image(q_image, prompt, output_path, size=size)
+    else:
+        file_size = generate_image(prompt, output_path, size=size)
     return prompt, file_size
 
 

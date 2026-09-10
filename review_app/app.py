@@ -1151,6 +1151,49 @@ def create_app():
             "approved": approved,
         })
 
+    @app.route("/api/images/upload/<item_id>", methods=["POST"])
+    def api_upload_image(item_id):
+        """Upload a hand-made image (e.g. from ChatGPT) for question/option/hint.
+
+        Accepts any raster (PNG/JPG/WebP) or a fake-SVG (raster extracted); saves it as the
+        local PNG so it flows through the normal approve->WebP->Airtable path. Format is
+        handled here, so it doesn't matter what Georgia downloads.
+        """
+        q = questions.get(item_id)
+        if not q:
+            return jsonify({"error": "Question not found"}), 404
+        f = request.files.get("file")
+        if not f:
+            return jsonify({"error": "No file uploaded"}), 400
+        image_type = request.form.get("image_type", "question")
+        num = request.form.get("num")
+        # target local PNG path (same names the rest of the app uses)
+        if image_type == "answer" and num:
+            stem = f"{item_id}-answer{num}"; itype, onum = "answer", int(num)
+        elif image_type == "hint" and num:
+            stem = f"{item_id}-hint{num}"; itype, onum = "hint", int(num)
+        else:
+            stem = f"{item_id}-question"; itype, onum = "question", None
+        try:
+            from PIL import Image as _Img
+            import io as _io
+            content = f.read()
+            if content[:300].lstrip().startswith(b"<svg") or b"<svg" in content[:300]:
+                raster = _extract_raster_from_svg(content)
+                if raster is None:
+                    return jsonify({"error": "That SVG has no embedded photo — upload a PNG/JPG."}), 400
+                content = raster
+            im = _Img.open(_io.BytesIO(content))
+            im = im.convert("RGBA") if "A" in im.getbands() else im.convert("RGB")
+            from .image_engine import _archive_current_image
+            _archive_current_image(item_id, itype, onum)  # keep prior version
+            out = IMG_ENGINE_DIR / f"{stem}.png"
+            out.parent.mkdir(parents=True, exist_ok=True)
+            im.save(out, format="PNG")
+            return jsonify({"ok": True, "size": out.stat().st_size})
+        except Exception as e:
+            return jsonify({"error": f"Could not read that image: {e}"}), 400
+
     @app.route("/api/images/generate/<item_id>", methods=["POST"])
     def api_generate_image(item_id):
         q = questions.get(item_id)
@@ -1199,8 +1242,10 @@ def create_app():
             return jsonify({"error": "Not found"}), 404
         data = request.get_json(silent=True) or {}
         prompt_override = data.get("prompt")
+        use_q_img = bool(data.get("use_question_image"))
         try:
-            prompt, file_size = generate_hint_image(q, hint_num, prompt_override)
+            prompt, file_size = generate_hint_image(q, hint_num, prompt_override,
+                                                    use_question_image=use_q_img)
             return jsonify({"ok": True, "prompt": prompt, "size": file_size})
         except Exception as e:
             return jsonify({"error": str(e)}), 500
