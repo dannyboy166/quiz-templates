@@ -180,6 +180,27 @@
       </div>
       {% endif %}
 
+      {% if a.is_true_false %}
+      <!-- TRUE/FALSE ANSWER VOICE-OVERS -->
+      <div class="fs-card">
+        <h3>True / False answer voice-overs</h3>
+        <div class="fs-muted" style="font-size:.85rem;margin-bottom:.5rem;">Reads the word "True" / "False" aloud (played when the student hovers the answer button).</div>
+        {% for w in ['true','false'] %}
+          <div class="edit-row" style="margin-bottom:.4rem;">
+            <strong style="width:60px;display:inline-block;text-transform:capitalize;">{{ w }}</strong>
+            {% set has = a.tf_true_vo if w=='true' else a.tf_false_vo %}
+            {% if has %}
+              <button class="mic" title="Play" onclick="playAudio('/audio/{{ a.item_id }}-{{ w }}.mp3')" style="width:28px;height:28px;font-size:.85rem;">🔊</button>
+            {% endif %}
+            <button class="btn btn-secondary btn-small" id="tfvo-{{ w }}" onclick="genTfVO('{{ a.item_id }}','{{ w }}')">
+              {{ 'Regenerate' if has else 'Generate VO' }}
+            </button>
+            <span class="fs-status" id="tfvo-s-{{ w }}"></span>
+          </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
       <!-- IMAGE -->
       <div class="fs-card">
         <h3>🖼 Question image
@@ -526,21 +547,33 @@ async function initSpeechEditor(box){
     + 'Add a pause with <code>&lt;break time="0.5s"/&gt;</code>, or reword for clearer speech.';
   const ta = document.createElement('textarea');
   ta.className = 'edit-box'; ta.rows = 3; ta.value = current;
+
+  // Speed control (#8) — ElevenLabs speed: 1.0 normal, lower = slower.
+  const speedWrap = document.createElement('div');
+  speedWrap.style.cssText = 'margin:.35rem 0;font-size:.82rem;';
+  speedWrap.innerHTML = 'Speed: ';
+  const speedSel = document.createElement('select');
+  [['','Normal'],['0.9','A bit slower'],['0.8','Slower'],['0.7','Slowest']].forEach(([v,l])=>{
+    const o=document.createElement('option'); o.value=v; o.textContent=l;
+    if(String(data.speed||'')===v) o.selected=true; speedSel.appendChild(o);
+  });
+  speedWrap.appendChild(speedSel);
+
   const row = document.createElement('div'); row.className = 'edit-row';
   const save = document.createElement('button'); save.className='btn btn-primary btn-small'; save.textContent='Save';
   const reset = document.createElement('button'); reset.className='btn btn-secondary btn-small'; reset.textContent='Reset to default';
   const regen = document.createElement('button'); regen.className='btn btn-secondary btn-small'; regen.textContent='Save + regenerate audio';
   const stat = document.createElement('span'); stat.className='fs-status';
-  box.append(help, ta, row); row.append(save, reset, regen, stat);
+  box.append(help, ta, speedWrap, row); row.append(save, reset, regen, stat);
 
   const saveOverride = async (val) => {
     const url = kind==='question' ? `/api/update-speech/${item}`
               : kind==='hint' ? `/api/update-hint-speech/${item}/${num}`
               : `/api/update-option-speech/${item}/${num}`;
-    await _post(url, {ssml: val});
+    await _post(url, {ssml: val, speed: speedSel.value});
   };
   save.onclick = async () => { stat.textContent='Saving…'; try{ await saveOverride(ta.value); stat.textContent='Saved ✓ (applies next time you generate)'; }catch(e){ stat.textContent='Failed: '+e.message; } };
-  reset.onclick = async () => { stat.textContent='Resetting…'; try{ await saveOverride(''); ta.value=data.default||''; stat.textContent='Reset to default ✓'; }catch(e){ stat.textContent='Failed: '+e.message; } };
+  reset.onclick = async () => { stat.textContent='Resetting…'; try{ speedSel.value=''; await saveOverride(''); ta.value=data.default||''; stat.textContent='Reset to default ✓'; }catch(e){ stat.textContent='Failed: '+e.message; } };
   regen.onclick = async () => {
     stat.textContent='Saving…';
     try{
@@ -555,6 +588,11 @@ async function initSpeechEditor(box){
   };
 }
 
+async function genTfVO(itemId, which){
+  _busy('tfvo-'+which,true,'…'); _setStatus('tfvo-s-'+which,'Calling ElevenLabs…',null);
+  try{ await _post(`/api/generate-tf/${itemId}/${which}`); _setStatus('tfvo-s-'+which,'Done',true); setTimeout(()=>location.reload(),600); }
+  catch(e){ _setStatus('tfvo-s-'+which,'Failed: '+e.message,false); _busy('tfvo-'+which,false); }
+}
 async function genHintImage(itemId,n){
   const prompt=(document.getElementById('hintimg-p-'+n)||{}).value.trim();
   if(!prompt){ _setStatus('hintimg-s-'+n,'Describe the picture first',false); return; }

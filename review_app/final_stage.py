@@ -19,6 +19,7 @@ from .state import (
     has_audio, has_hint_audio, has_option_audio,
     get_item_state, get_hint_state, VOICEOVER_DIR,
 )
+from .voiceover_engine import has_tf_audio as _tf_audio
 from .image_state import (
     has_question_image, has_answer_image, has_hint_image,
     get_image_item_state, IMAGE_DATA_DIR,
@@ -240,6 +241,8 @@ def assemble(q, image_state, review_state, airtable_images, presence=None):
         "is_true_false": is_true_false,
         "is_select_all": is_select_all,
         "is_written": is_written,
+        "tf_true_vo": _tf_audio(item_id, "true") if is_true_false else False,
+        "tf_false_vo": _tf_audio(item_id, "false") if is_true_false else False,
         "has_q_image": has_q_image,
         "q_image_url": q_image_url,
         "q_image_type": q_image_type,

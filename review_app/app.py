@@ -34,6 +34,7 @@ from .voiceover_engine import (
     get_ssml_for_question, generate_for_question,
     get_ssml_for_hint, generate_for_hint,
     generate_for_option, get_ssml_for_option,
+    generate_for_tf, has_tf_audio,
 )
 from .image_state import (
     load_image_state, save_image_state, get_image_item_state,
@@ -620,6 +621,20 @@ def create_app():
         except Exception as e:
             return jsonify({"error": str(e)}), 500
 
+    @app.route("/api/generate-tf/<item_id>/<which>", methods=["POST"])
+    def api_generate_tf(item_id, which):
+        """Generate a voice-over for a True/False answer word ('true' or 'false')."""
+        q = questions.get(item_id)
+        if not q or which.lower() not in ("true", "false"):
+            return jsonify({"error": "Not found"}), 404
+        tf_state = get_option_state(state, item_id, f"tf_{which.lower()}")
+        try:
+            ssml, file_size = generate_for_tf(q, which, tf_state)
+            update_option_state(state, item_id, f"tf_{which.lower()}", generated_at=now_iso())
+            return jsonify({"ok": True, "ssml": ssml, "size": file_size})
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
     # --- Audio version history / revert (question, hint, option) ---
 
     @app.route("/api/audio-versions/<stem>")
@@ -730,7 +745,8 @@ def create_app():
                 return jsonify({"error": "bad kind/num"}), 400
         except Exception as e:
             return jsonify({"error": str(e)}), 400
-        return jsonify({"override": st.get("speech_override") or "", "default": default})
+        return jsonify({"override": st.get("speech_override") or "", "default": default,
+                        "speed": st.get("speed_override") or ""})
 
     @app.route("/api/stats")
     def api_stats():

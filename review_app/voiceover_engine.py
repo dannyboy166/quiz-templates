@@ -251,3 +251,29 @@ def generate_for_option(question, option_num, option_state=None):
     file_size = generate_audio(ssml, output_path, speed)
 
     return ssml, file_size
+
+
+def generate_for_tf(question, which, tf_state=None):
+    """Generate a voice-over for a True/False answer word ('true' or 'false').
+
+    Saved as {item_id}-true.mp3 / {item_id}-false.mp3. Target: the True/False option's
+    ReaderBlobID at upload time. (True/False questions have no SelectionOptions rows, so
+    these are keyed by the word.)
+    """
+    which = which.lower()
+    if which not in ("true", "false"):
+        raise Exception("which must be 'true' or 'false'")
+    speech_override = None
+    speed = None
+    if tf_state:
+        speech_override = tf_state.get("speech_override")
+        speed = tf_state.get("speed_override")
+    word = "True" if which == "true" else "False"
+    ssml = speech_override or _tidy_ssml(word)
+    output_path = OUTPUT_DIR / f"{question['item_id']}-{which}.mp3"
+    file_size = generate_audio(ssml, output_path, speed)
+    return ssml, file_size
+
+
+def has_tf_audio(item_id, which):
+    return (OUTPUT_DIR / f"{item_id}-{which.lower()}.mp3").exists()
