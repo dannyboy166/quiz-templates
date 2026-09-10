@@ -618,7 +618,7 @@ async function initSpeechEditor(box){
     try{
       await saveOverride(ta.value);
       stat.textContent='Generating audio…';
-      const gen = kind==='question' ? `/api/generate/${item}`
+      const gen = kind==='question' ? `/api/generate/${item}?no_answers=1`
                 : kind==='hint' ? `/api/generate-hint/${item}/${num}`
                 : `/api/generate-option/${item}/${num}`;
       await _post(gen);

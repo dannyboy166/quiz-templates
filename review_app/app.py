@@ -84,6 +84,8 @@ img_bulk_queue = queue.Queue()
 
 def create_app():
     app = Flask(__name__)
+    # Cap uploads (Georgia's "upload image" button) so a huge/bad file can't OOM the worker.
+    app.config["MAX_CONTENT_LENGTH"] = 25 * 1024 * 1024  # 25 MB
 
     # --- Simple shared-password gate ------------------------------------
     # The app has no user accounts. If ACCESS_PASSWORD is set, every page
@@ -637,9 +639,13 @@ def create_app():
 
     # --- Audio version history / revert (question, hint, option) ---
 
+    _STEM_RE = re.compile(r"^[0-9A-Za-z_-]+$")  # allowlist — stem goes into a filesystem glob
+
     @app.route("/api/audio-versions/<stem>")
     def api_audio_versions(stem):
         """List previous takes of an audio file. stem e.g. '20012002-option3'."""
+        if not _STEM_RE.match(stem):
+            return jsonify({"error": "bad stem"}), 400
         from .voiceover_engine import get_audio_versions
         vers = []
         for vf in get_audio_versions(stem):
@@ -651,6 +657,8 @@ def create_app():
     @app.route("/api/restore-audio/<stem>/<int:version_num>", methods=["POST"])
     def api_restore_audio(stem, version_num):
         """Revert an audio file to a previous take."""
+        if not _STEM_RE.match(stem):
+            return jsonify({"error": "bad stem"}), 400
         from .voiceover_engine import restore_audio_version
         try:
             restore_audio_version(stem, version_num)
@@ -734,7 +742,9 @@ def create_app():
         try:
             if kind == "question":
                 st = get_item_state(state, item_id)
-                default = get_ssml_for_question(q)
+                # Final Stage reads the QUESTION TEXT ONLY (options have their own VOs), so
+                # the editor default must match that — not the bundled build_ssml.
+                default = get_ssml_for_question(q, no_answers=True)
             elif kind == "hint" and num:
                 st = get_hint_state(state, item_id, int(num))
                 default = get_ssml_for_hint(q.get(f"hint{num}", ""))
@@ -1203,6 +1213,16 @@ def create_app():
             out = IMG_ENGINE_DIR / f"{stem}.png"
             out.parent.mkdir(parents=True, exist_ok=True)
             im.save(out, format="PNG")
+            # Reset approval/push state for this slot — the image changed (mirror generate).
+            img_st = get_image_item_state(image_state, item_id)
+            if itype == "question":
+                img_st["question_image"]["approved_at"] = None
+                img_st["question_image"]["pushed_at"] = None
+            elif itype == "answer":
+                ans = img_st["answer_images"].setdefault(str(onum), {})
+                ans["approved_at"] = None; ans["pushed_at"] = None
+            img_st["status"] = "pending"
+            update_image_item_state(image_state, item_id, **img_st)
             return jsonify({"ok": True, "size": out.stat().st_size})
         except Exception as e:
             return jsonify({"error": f"Could not read that image: {e}"}), 400

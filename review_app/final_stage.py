@@ -64,6 +64,9 @@ class Presence:
     def hint_image(self, iid, n):
         return f"{iid}-hint{n}.png" in self.images
 
+    def tf_audio(self, iid, which):
+        return f"{iid}-{which}.mp3" in self.audio
+
 
 def build_presence():
     """Build a fresh Presence snapshot (call once per list render)."""
@@ -118,6 +121,7 @@ def assemble(q, image_state, review_state, airtable_images, presence=None):
     _hint_audio = presence.hint_audio if presence else has_hint_audio
     _option_audio = presence.option_audio if presence else has_option_audio
     _hint_image = presence.hint_image if presence else has_hint_image
+    _tf_a = presence.tf_audio if presence else _tf_audio
 
     options = _options(q)
     hint_levels = _hint_levels(q)
@@ -248,8 +252,8 @@ def assemble(q, image_state, review_state, airtable_images, presence=None):
         "is_true_false": is_true_false,
         "is_select_all": is_select_all,
         "is_written": is_written,
-        "tf_true_vo": _tf_audio(item_id, "true") if is_true_false else False,
-        "tf_false_vo": _tf_audio(item_id, "false") if is_true_false else False,
+        "tf_true_vo": _tf_a(item_id, "true") if is_true_false else False,
+        "tf_false_vo": _tf_a(item_id, "false") if is_true_false else False,
         "has_q_image": has_q_image,
         "q_image_url": q_image_url,
         "q_image_type": q_image_type,
