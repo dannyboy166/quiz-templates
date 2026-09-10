@@ -151,8 +151,16 @@
               <td><span class="editable" data-edit-field="option{{ opt.num }}" data-item="{{ a.item_id }}" onclick="startEdit(this)">{{ opt.text }}</span></td>
               <td>
                 {% if opt.has_image and opt.image_url %}
-                  <img src="{{ opt.image_url }}" alt="opt {{ opt.num }}" style="width:44px;height:44px;object-fit:cover;border-radius:6px;" onerror="this.replaceWith(document.createTextNode('—'))">
-                {% else %}<span class="fs-muted">—</span>{% endif %}
+                  <img src="{{ opt.image_url }}?t={{ range(1,99999)|random }}" alt="opt {{ opt.num }}" style="width:44px;height:44px;object-fit:cover;border-radius:6px;display:block;margin-bottom:.25rem;" onerror="this.style.display='none'">
+                {% endif %}
+                <textarea id="optimg-p-{{ opt.num }}" class="edit-box" rows="1" placeholder="image prompt (blank = use option text)" style="font-size:.78rem;">{{ opt.text }}</textarea>
+                <div class="edit-row">
+                  <button class="btn btn-secondary btn-small" id="optimg-{{ opt.num }}" onclick="genOptionImage('{{ a.item_id }}', {{ opt.num }})">
+                    {{ 'Regenerate' if opt.has_image else 'Generate image' }}
+                  </button>
+                  {% if opt.has_image %}<button class="btn btn-success btn-small" id="optimg-at-{{ opt.num }}" onclick="sendOptionImageToAirtable('{{ a.item_id }}', {{ opt.num }})">→ Airtable</button>{% endif %}
+                  <span class="fs-status" id="optimg-s-{{ opt.num }}"></span>
+                </div>
               </td>
               <td>
                 {% if opt.has_vo %}
@@ -588,6 +596,19 @@ async function initSpeechEditor(box){
   };
 }
 
+async function genOptionImage(itemId, n){
+  const prompt=(document.getElementById('optimg-p-'+n)||{}).value.trim();
+  _busy('optimg-'+n,true,'…'); _setStatus('optimg-s-'+n,'Calling OpenAI (~30s)…',null);
+  try{ await _post(`/api/images/generate-answer/${itemId}/${n}`,{prompt}); _setStatus('optimg-s-'+n,'Done',true); setTimeout(()=>location.reload(),600); }
+  catch(e){ _setStatus('optimg-s-'+n,'Failed: '+e.message,false); _busy('optimg-'+n,false); }
+}
+async function sendOptionImageToAirtable(itemId, n){
+  _busy('optimg-at-'+n,true,'…'); _setStatus('optimg-s-'+n,'Saving to Airtable…',null);
+  try{ const d=await _post(`/api/images/approve/${itemId}`,{image_type:'answer',option_num:n});
+    _setStatus('optimg-s-'+n, d.pushed?'Sent to Airtable ✓':('Approved — '+(d.airtable_error||'not sent')), d.pushed===true);
+    _busy('optimg-at-'+n,false);
+  }catch(e){ _setStatus('optimg-s-'+n,'Failed: '+e.message,false); _busy('optimg-at-'+n,false); }
+}
 async function genTfVO(itemId, which){
   _busy('tfvo-'+which,true,'…'); _setStatus('tfvo-s-'+which,'Calling ElevenLabs…',null);
   try{ await _post(`/api/generate-tf/${itemId}/${which}`); _setStatus('tfvo-s-'+which,'Done',true); setTimeout(()=>location.reload(),600); }

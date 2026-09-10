@@ -198,10 +198,17 @@ def assemble(q, image_state, review_state, airtable_images, presence=None):
                            detail="ok" if answer_in_range else f"answer '{q.get('answer','')}' not in options 1-{len(options)}"))
     gates.append(_gate("At least 2 options", enough_options,
                        detail=("not needed" if (is_true_false or is_written) else f"{len(options)} options")))
-    gates.append(_gate("Question image", has_q_image))
+    # Image gate (#15): a question needs SOME image — either the question image, or an
+    # image on every option (some questions only need answer images, or only a question
+    # image). Select All specifically renders an option-image grid, so it still needs one
+    # per option; that stays a separate hard gate below.
+    all_opt_imgs = bool(option_rows) and all(r["has_image"] for r in option_rows)
+    has_any_image = has_q_image or all_opt_imgs
+    gates.append(_gate("Image (question or every option)", has_any_image,
+                       detail="question image" if has_q_image else
+                              "all options have images" if all_opt_imgs else "none yet"))
     if is_select_all:
-        all_opt_imgs = all(r["has_image"] for r in option_rows) and bool(option_rows)
-        gates.append(_gate("Image on every option", all_opt_imgs))
+        gates.append(_gate("Image on every option (Select All)", all_opt_imgs))
     gates.append(_gate("Question voice-over", q_vo))
     # Per-option voice-over: required for each option THAT HAS TEXT to read aloud.
     # Image-only options (Select All grid) have nothing to read, so they're exempt.
