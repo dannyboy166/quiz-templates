@@ -726,6 +726,19 @@ def create_app():
         update_option_state(state, item_id, option_num, **updates)
         return jsonify({"ok": True})
 
+    @app.route("/api/update-tf-speech/<item_id>/<which>", methods=["POST"])
+    def api_update_tf_speech(item_id, which):
+        if item_id not in questions or which not in ("true", "false"):
+            return jsonify({"error": "Not found"}), 404
+        data = request.get_json(silent=True) or {}
+        updates = {}
+        if "ssml" in data:
+            updates["speech_override"] = data["ssml"] or None
+        if "speed" in data:
+            updates["speed_override"] = data["speed"] or None
+        update_option_state(state, item_id, f"tf_{which}", **updates)
+        return jsonify({"ok": True})
+
     @app.route("/api/speech-text/<item_id>")
     def api_speech_text(item_id):
         """Return the current 'how it's read' text for question / a hint / an option.
@@ -751,6 +764,10 @@ def create_app():
             elif kind == "option" and num:
                 st = get_option_state(state, item_id, int(num))
                 default = get_ssml_for_option(q.get(f"option{num}", ""))
+            elif kind == "tf" and num in ("true", "false"):
+                st = get_option_state(state, item_id, f"tf_{num}")
+                from .voiceover_engine import _tidy_ssml
+                default = _tidy_ssml("True" if num == "true" else "False")
             else:
                 return jsonify({"error": "bad kind/num"}), 400
         except Exception as e:

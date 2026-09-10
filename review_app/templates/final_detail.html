@@ -105,8 +105,16 @@
           {% endif %}
           {% if a.is_true_false %}
             <div class="demo-opts">
-              <div class="demo-opt {{ 'correct' if a.answer|lower == 'true' else '' }}">True {% if a.answer|lower=='true' %}<span class="badge-correct">✓ correct</span>{% endif %}</div>
-              <div class="demo-opt {{ 'correct' if a.answer|lower == 'false' else '' }}">False {% if a.answer|lower=='false' %}<span class="badge-correct">✓ correct</span>{% endif %}</div>
+              <div class="demo-opt {{ 'correct' if a.answer|lower == 'true' else '' }}">
+                <button class="mic {{ '' if a.tf_true_vo else 'off' }}" title="{{ 'Play True audio' if a.tf_true_vo else 'No audio yet' }}"
+                        onclick="playAudio('/audio/{{ a.item_id }}-true.mp3')" {{ '' if a.tf_true_vo else 'disabled' }}>🔊</button>
+                <span>True</span>{% if a.answer|lower=='true' %}<span class="badge-correct">✓ correct</span>{% endif %}
+              </div>
+              <div class="demo-opt {{ 'correct' if a.answer|lower == 'false' else '' }}">
+                <button class="mic {{ '' if a.tf_false_vo else 'off' }}" title="{{ 'Play False audio' if a.tf_false_vo else 'No audio yet' }}"
+                        onclick="playAudio('/audio/{{ a.item_id }}-false.mp3')" {{ '' if a.tf_false_vo else 'disabled' }}>🔊</button>
+                <span>False</span>{% if a.answer|lower=='false' %}<span class="badge-correct">✓ correct</span>{% endif %}
+              </div>
             </div>
           {% elif a.options %}
             <div class="demo-opts">
@@ -197,16 +205,22 @@
         <h3>True / False answer voice-overs</h3>
         <div class="fs-muted" style="font-size:.85rem;margin-bottom:.5rem;">Reads the word "True" / "False" aloud (played when the student hovers the answer button).</div>
         {% for w in ['true','false'] %}
-          <div class="edit-row" style="margin-bottom:.4rem;">
-            <strong style="width:60px;display:inline-block;text-transform:capitalize;">{{ w }}</strong>
-            {% set has = a.tf_true_vo if w=='true' else a.tf_false_vo %}
-            {% if has %}
-              <button class="mic" title="Play" onclick="playAudio('/audio/{{ a.item_id }}-{{ w }}.mp3')" style="width:28px;height:28px;font-size:.85rem;">🔊</button>
-            {% endif %}
-            <button class="btn btn-secondary btn-small" id="tfvo-{{ w }}" onclick="genTfVO('{{ a.item_id }}','{{ w }}')">
-              {{ 'Regenerate' if has else 'Generate VO' }}
-            </button>
-            <span class="fs-status" id="tfvo-s-{{ w }}"></span>
+          {% set has = a.tf_true_vo if w=='true' else a.tf_false_vo %}
+          <div style="margin-bottom:.7rem;">
+            <div class="edit-row">
+              <strong style="width:60px;display:inline-block;text-transform:capitalize;">{{ w }}</strong>
+              {% if has %}<button class="mic" title="Play" onclick="playAudio('/audio/{{ a.item_id }}-{{ w }}.mp3')" style="width:28px;height:28px;font-size:.85rem;">🔊</button>{% endif %}
+              <button class="btn btn-secondary btn-small" id="tfvo-{{ w }}" onclick="genTfVO('{{ a.item_id }}','{{ w }}')">
+                {{ 'Regenerate' if has else 'Generate VO' }}
+              </button>
+              {% if has %}<button class="btn btn-secondary btn-small" onclick="loadAudioVersions('{{ a.item_id }}-{{ w }}','av-tf-{{ w }}')">↩ Previous takes</button>{% endif %}
+              <span class="fs-status" id="tfvo-s-{{ w }}"></span>
+            </div>
+            <div id="av-tf-{{ w }}" class="av-box"></div>
+            <details class="speech-details" style="margin-top:.3rem;">
+              <summary class="fs-muted" style="cursor:pointer;font-size:.82rem;">✏️ Change how it's read</summary>
+              <div class="speech-editor" data-kind="tf" data-item="{{ a.item_id }}" data-num="{{ w }}"></div>
+            </details>
           </div>
         {% endfor %}
       </div>
@@ -638,6 +652,7 @@ async function initSpeechEditor(box){
   const saveOverride = async (val) => {
     const url = kind==='question' ? `/api/update-speech/${item}`
               : kind==='hint' ? `/api/update-hint-speech/${item}/${num}`
+              : kind==='tf' ? `/api/update-tf-speech/${item}/${num}`
               : `/api/update-option-speech/${item}/${num}`;
     await _post(url, {ssml: val, speed: speedSel.value});
   };
@@ -651,6 +666,7 @@ async function initSpeechEditor(box){
       const qna = (kind==='question' && !readOptionsChecked()) ? '?no_answers=1' : '';
       const gen = kind==='question' ? `/api/generate/${item}${qna}`
                 : kind==='hint' ? `/api/generate-hint/${item}/${num}`
+                : kind==='tf' ? `/api/generate-tf/${item}/${num}`
                 : `/api/generate-option/${item}/${num}`;
       await _post(gen);
       stat.textContent='Done — reloading…'; setTimeout(()=>location.reload(), 600);
