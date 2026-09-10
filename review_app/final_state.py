@@ -44,7 +44,26 @@ def get_final_item(state, item_id):
         "approved_at": None,
         "approved_by": None,
         "uploaded_at": None,
+        "flagged": False,
+        "flag_note": "",
     })
+
+
+def set_flag(state, item_id, flagged, note="", by=None):
+    """Flag a question with a note (why it's not being approved). Returns the ledger item."""
+    with _lock:
+        item = state.get(item_id, {})
+        item["flagged"] = bool(flagged)
+        item["flag_note"] = note if flagged else ""
+        item["flag_by"] = by if flagged else None
+        item["flag_at"] = _now() if flagged else None
+        state[item_id] = item
+        _save(state)
+    return item
+
+
+def flagged_ids(state):
+    return [iid for iid, v in state.items() if v.get("flagged")]
 
 
 def set_approved(state, item_id, approved, by=None):

@@ -940,7 +940,9 @@ def create_app():
         rows = []
         for q in questions_list:
             row = final_stage.summary_row(q, image_state, state, airtable_images, presence=presence)
-            row["approved"] = bool(final_state_mod.get_final_item(final_ledger, row["id"]).get("approved"))
+            led = final_state_mod.get_final_item(final_ledger, row["id"])
+            row["approved"] = bool(led.get("approved"))
+            row["flagged"] = bool(led.get("flagged"))
             rows.append(row)
         complete_n = sum(1 for r in rows if r["complete"])
         approved_n = sum(1 for r in rows if r["approved"])
@@ -1110,6 +1112,17 @@ def create_app():
         final_state_mod.set_approved(final_ledger, item_id, False)
         print(f"  [final] Unapproved {item_id}")
         return jsonify({"ok": True, "approved": False})
+
+    @app.route("/api/final/flag/<item_id>", methods=["POST"])
+    def api_final_flag(item_id):
+        """Flag a question with a note (why it's not being approved), or clear the flag."""
+        if item_id not in questions:
+            return jsonify({"error": "Question not found"}), 404
+        data = request.get_json(silent=True) or {}
+        flagged = bool(data.get("flagged", True))
+        note = (data.get("note") or "").strip()
+        final_state_mod.set_flag(final_ledger, item_id, flagged, note, by=data.get("by"))
+        return jsonify({"ok": True, "flagged": flagged, "note": note})
 
     @app.route("/api/final/manifest")
     def api_final_manifest():

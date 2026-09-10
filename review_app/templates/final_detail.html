@@ -384,6 +384,23 @@
           {% endif %}
           <div id="approve-status" class="fs-status"></div>
         </div>
+
+        <!-- Flag / notes (why it's not approved) -->
+        <div style="margin-top:.9rem; padding-top:.7rem; border-top:1px solid var(--border-light,#eee);">
+          {% if approval.flagged %}
+            <div style="background:#fdeaea;border:1px solid #e0a0a0;border-radius:6px;padding:.5rem;font-size:.85rem;">
+              🚩 <strong>Flagged</strong>{% if approval.flag_by %} by {{ approval.flag_by }}{% endif %}
+              <div style="margin:.2rem 0;">{{ approval.flag_note }}</div>
+            </div>
+          {% endif %}
+          <textarea id="flag-note" class="edit-box" rows="2" placeholder="Note: why isn't this ready? (e.g. wrong answer, image unclear)">{{ approval.flag_note or '' }}</textarea>
+          <div class="edit-row">
+            <button class="btn btn-secondary btn-small" onclick="flagQuestion('{{ a.item_id }}', true)">🚩 Flag with note</button>
+            {% if approval.flagged %}<button class="btn btn-secondary btn-small" onclick="flagQuestion('{{ a.item_id }}', false)">Clear flag</button>{% endif %}
+            <span class="fs-status" id="flag-status"></span>
+          </div>
+        </div>
+
         <div class="who-tag" id="who-tag" style="margin-top:.5rem;"></div>
       </div>
     </div>
@@ -687,6 +704,13 @@ async function approveForUpload(itemId){
   _busy('approve-btn',true,'Approving…'); _setStatus('approve-status','',null);
   try{ await _post(`/api/final/approve/${itemId}`,{by:reviewerName()}); location.reload(); }
   catch(e){ _setStatus('approve-status','Can’t approve: '+e.message,false); _busy('approve-btn',false); }
+}
+async function flagQuestion(itemId, flagged){
+  const note=(document.getElementById('flag-note')||{}).value.trim();
+  if(flagged && !note){ _setStatus('flag-status','Write a note first',false); return; }
+  _setStatus('flag-status', flagged?'Flagging…':'Clearing…', null);
+  try{ await _post(`/api/final/flag/${itemId}`,{flagged, note, by:reviewerName()}); location.reload(); }
+  catch(e){ _setStatus('flag-status','Failed: '+e.message,false); }
 }
 async function unapprove(itemId){
   if(!confirm('Undo the approval for this question?'))return;
