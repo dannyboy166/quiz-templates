@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Help Lesson - Homophones</title>
+  <style>
+    @font-face {
+      font-family: 'Apfel Grotezk';
+      src: url('../../fonts/ApfelGrotezk-Regular.woff2') format('woff2');
+      font-weight: 400; font-style: normal; font-display: swap;
+    }
+    @font-face {
+      font-family: 'Apfel Grotezk';
+      src: url('../../fonts/ApfelGrotezk-Mittel.woff2') format('woff2');
+      font-weight: 500; font-style: normal; font-display: swap;
+    }
+    @font-face {
+      font-family: 'Apfel Grotezk';
+      src: url('../../fonts/ApfelGrotezk-Fett.woff2') format('woff2');
+      font-weight: 700; font-style: normal; font-display: swap;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Apfel Grotezk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #FAE38E;
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .back-btn {
+      position: fixed; top: 20px; left: 20px;
+      background: white; color: #333; border: none;
+      padding: 10px 20px; border-radius: 25px;
+      font-size: 16px; font-weight: 600; cursor: pointer;
+      text-decoration: none; box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+      transition: transform 0.2s; z-index: 100;
+    }
+    .back-btn:hover { transform: scale(1.05); }
+
+    .trigger-btn {
+      background: #667eea; color: white; border: none;
+      padding: 20px 40px; border-radius: 16px;
+      font-size: 24px; font-weight: 600; cursor: pointer;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+      transition: transform 0.2s;
+    }
+    .trigger-btn:hover { transform: scale(1.05); }
+
+    /* ============ OVERLAY ============ */
+    .help-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1000; opacity: 0; visibility: hidden;
+      transition: opacity 0.3s, visibility 0.3s;
+    }
+    .help-overlay.active { opacity: 1; visibility: visible; }
+
+    .help-container {
+      width: 94%; max-width: 900px;
+      background: white; border-radius: 24px;
+      padding: 30px 30px 20px; position: relative;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      max-height: 95vh; overflow-y: auto;
+    }
+
+    .help-close {
+      position: absolute; top: 12px; right: 12px;
+      width: 36px; height: 36px; border-radius: 50%; border: none;
+      background: #f0f0f0; font-size: 20px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: #666; z-index: 10;
+    }
+
+    .help-title { text-align: center; font-size: 24px; margin-bottom: 12px; color: #333; }
+
+    /* ============ SCENE NAV ============ */
+    .scene-nav {
+      display: flex; gap: 4px; margin-bottom: 12px;
+      overflow-x: auto; scrollbar-width: thin; padding: 2px 0;
+    }
+    .scene-tab {
+      flex-shrink: 0; padding: 5px 10px; border-radius: 16px;
+      border: 2px solid #ddd; background: #f5f5f5;
+      font-size: 11px; font-weight: 600; cursor: pointer;
+      transition: all 0.2s; white-space: nowrap; color: #666;
+    }
+    .scene-tab:hover { border-color: #667eea; color: #667eea; }
+    .scene-tab.active { background: #667eea; color: white; border-color: #667eea; }
+    .scene-tab.completed { background: #E8F5E9; border-color: #66BB6A; color: #2E7D32; }
+
+    /* ============ STAGE ============ */
+    .stage {
+      height: 380px;
+      background: linear-gradient(180deg, #FFF3E0 0%, #FFE0B2 100%);
+      border-radius: 16px; position: relative; overflow: hidden; margin-bottom: 12px;
+    }
+    .scene {
+      position: absolute; width: 100%; height: 100%;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity 0.4s;
+      padding: 20px;
+    }
+    .scene.active { opacity: 1; pointer-events: auto; }
+
+    /* ============ TEACHER ============ */
+    .teacher-panel {
+      position: absolute; bottom: 10px; right: 12px;
+      width: 100px; height: 140px; z-index: 8;
+      opacity: 0; transition: opacity 0.5s; pointer-events: none;
+    }
+    .teacher-panel.visible { opacity: 1; }
+    .teacher-panel video { width: 100%; height: 100%; object-fit: contain; }
+
+    /* ============ CALLOUT ============ */
+    .callout {
+      background: #f8f8f8; border: 2px solid #e0e0e0;
+      padding: 10px 20px; border-radius: 12px;
+      font-size: 15px; font-weight: 500; color: #333;
+      text-align: center; min-height: 42px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 10px; opacity: 0; transition: opacity 0.3s; line-height: 1.4;
+    }
+    .callout.visible { opacity: 1; }
+
+    /* ============ SHARED ============ */
+    .scene-title {
+      font-size: 22px; font-weight: 700; color: #333; margin-bottom: 20px;
+      opacity: 0; transform: scale(0.8);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .scene-title.visible { opacity: 1; transform: scale(1); }
+
+    .intro-title {
+      font-size: 36px; font-weight: 700; color: #333; text-align: center;
+      opacity: 0; transform: scale(0);
+      transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .intro-title.visible { opacity: 1; transform: scale(1); }
+    .intro-title .emoji { font-size: 50px; display: block; margin-bottom: 8px; }
+
+    .info-cards { display: flex; gap: 12px; margin-top: 15px; flex-wrap: wrap; justify-content: center; }
+    .info-card {
+      background: white; border: 3px solid #333; border-radius: 12px;
+      padding: 10px 18px; font-size: 14px; font-weight: 600; color: #333;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+      opacity: 0; transform: translateY(10px);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .info-card.visible { opacity: 1; transform: translateY(0); }
+
+    /* ============ WORD CARDS ============ */
+    .word-pair {
+      display: flex; gap: 30px; align-items: center; margin-bottom: 12px;
+      opacity: 0; transform: translateY(10px);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .word-pair.visible { opacity: 1; transform: translateY(0); }
+
+    .word-card {
+      background: white; border: 3px solid #667eea; border-radius: 16px;
+      padding: 12px 24px; min-width: 120px; text-align: center;
+    }
+    .word-card .word { font-size: 28px; font-weight: 700; color: #667eea; }
+    .word-card .meaning { font-size: 12px; color: #666; margin-top: 4px; }
+
+    .vs-text { font-size: 18px; font-weight: 700; color: #999; }
+
+    /* ============ SENTENCE CARD ============ */
+    .sentence-card {
+      background: white; border: 3px solid #333; border-radius: 16px;
+      padding: 16px 28px; font-size: 20px; font-weight: 600; color: #333;
+      text-align: center; margin-bottom: 12px;
+      opacity: 0; transform: translateY(10px);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .sentence-card.visible { opacity: 1; transform: translateY(0); }
+    .sentence-card .blank {
+      display: inline-block; min-width: 80px; border-bottom: 3px dashed #667eea;
+      color: #667eea; margin: 0 4px;
+    }
+    .sentence-card .correct { color: #4CAF50; font-weight: 700; }
+    .sentence-card .wrong { color: #E53935; text-decoration: line-through; }
+
+    /* ============ TRIPLE CARD ============ */
+    .triple-row {
+      display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .triple-card {
+      background: white; border: 3px solid #667eea; border-radius: 16px;
+      padding: 14px 20px; text-align: center; min-width: 140px;
+      opacity: 0; transform: scale(0.8);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .triple-card.visible { opacity: 1; transform: scale(1); }
+    .triple-card .tc-word { font-size: 24px; font-weight: 700; color: #667eea; }
+    .triple-card .tc-rule { font-size: 11px; color: #999; margin-top: 2px; }
+    .triple-card .tc-example { font-size: 13px; color: #333; margin-top: 6px; font-style: italic; }
+
+    .tick-cross {
+      font-size: 28px; opacity: 0; transition: opacity 0.3s;
+    }
+    .tick-cross.visible { opacity: 1; }
+
+    /* ============ OUTRO ============ */
+    .outro-title {
+      font-size: 32px; font-weight: 700; color: #333; text-align: center;
+      opacity: 0; transform: scale(0);
+      transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .outro-title.visible { opacity: 1; transform: scale(1); }
+
+    .try-btn {
+      background: #667eea; color: white; border: none;
+      padding: 14px 32px; border-radius: 12px;
+      font-size: 18px; font-weight: 600; cursor: pointer;
+      margin-top: 20px; opacity: 0; transition: opacity 0.3s, transform 0.2s;
+    }
+    .try-btn.visible { opacity: 1; }
+    .try-btn:hover { transform: scale(1.05); }
+
+    /* ============ CONTROLS ============ */
+    .controls {
+      display: flex; align-items: center; justify-content: center; gap: 12px;
+    }
+    .ctrl-btn {
+      background: #333; color: white; border: none;
+      width: 44px; height: 44px; border-radius: 50%;
+      font-size: 20px; cursor: pointer; display: flex;
+      align-items: center; justify-content: center;
+      transition: transform 0.2s, background 0.2s;
+    }
+    .ctrl-btn:hover { transform: scale(1.1); }
+    .ctrl-btn:disabled { background: #ccc; cursor: default; transform: none; }
+    .ctrl-btn.play { background: #667eea; width: 52px; height: 52px; font-size: 24px; }
+  </style>
+</head>
+<body>
+
+<a href="../index.html" class="back-btn">&larr; Back</a>
+<button class="trigger-btn" onclick="openHelp()">&#128172; Homophones</button>
+
+<div class="help-overlay" id="overlay">
+  <div class="help-container">
+    <button class="help-close" onclick="closeHelp()">&times;</button>
+    <div class="help-title">Homophones</div>
+
+    <div class="scene-nav" id="scene-nav">
+      <button class="scene-tab active" onclick="goToScene(0)">Intro</button>
+      <button class="scene-tab" onclick="goToScene(1)">To, Too, Two</button>
+      <button class="scene-tab" onclick="goToScene(2)">There, Their, They're</button>
+      <button class="scene-tab" onclick="goToScene(3)">Common Pairs</button>
+      <button class="scene-tab" onclick="goToScene(4)">Fill the Blank</button>
+      <button class="scene-tab" onclick="goToScene(5)">Correct Sentence</button>
+      <button class="scene-tab" onclick="goToScene(6)">Your Turn!</button>
+    </div>
+
+    <div class="stage">
+      <!-- SCENE 0: INTRO -->
+      <div class="scene active" id="scene-0">
+        <div class="intro-title" id="intro-title">
+          <span class="emoji">🔤</span>
+          Homophones
+        </div>
+        <div class="word-pair" id="intro-pair">
+          <div class="word-card"><div class="word">blue</div><div class="meaning">a colour</div></div>
+          <div class="vs-text">sounds like</div>
+          <div class="word-card"><div class="word">blew</div><div class="meaning">wind blew</div></div>
+        </div>
+      </div>
+
+      <!-- SCENE 1: TO, TOO, TWO -->
+      <div class="scene" id="scene-1">
+        <div class="scene-title" id="s1-title">To, Too, and Two</div>
+        <div class="triple-row">
+          <div class="triple-card" id="tc-two">
+            <div class="tc-word">two</div>
+            <div class="tc-rule">the number</div>
+            <div class="tc-example">"I have two cats."</div>
+          </div>
+          <div class="triple-card" id="tc-too">
+            <div class="tc-word">too</div>
+            <div class="tc-rule">also / too much</div>
+            <div class="tc-example">"I want to come too!"</div>
+          </div>
+          <div class="triple-card" id="tc-to">
+            <div class="tc-word">to</div>
+            <div class="tc-rule">everything else</div>
+            <div class="tc-example">"Going to the shops."</div>
+          </div>
+        </div>
+        <div class="info-cards">
+          <div class="info-card" id="card-two">Two = number 🔢</div>
+          <div class="info-card" id="card-too">Too = also / too much</div>
+          <div class="info-card" id="card-to">To = everything else</div>
+        </div>
+      </div>
+
+      <!-- SCENE 2: THERE, THEIR, THEY'RE -->
+      <div class="scene" id="scene-2">
+        <div class="scene-title" id="s2-title">There, Their, and They're</div>
+        <div class="triple-row">
+          <div class="triple-card" id="tc-there">
+            <div class="tc-word">there</div>
+            <div class="tc-rule">a place</div>
+            <div class="tc-example">"The ball is over there."</div>
+          </div>
+          <div class="triple-card" id="tc-their">
+            <div class="tc-word">their</div>
+            <div class="tc-rule">belongs to them</div>
+            <div class="tc-example">"That is their house."</div>
+          </div>
+          <div class="triple-card" id="tc-theyre">
+            <div class="tc-word">they're</div>
+            <div class="tc-rule">they are</div>
+            <div class="tc-example">"They're playing outside."</div>
+          </div>
+        </div>
+        <div class="info-cards">
+          <div class="info-card" id="card-trick">Trick: can you say "they are"? → they're</div>
+          <div class="info-card" id="card-place">A place? → there</div>
+          <div class="info-card" id="card-belong">Belongs to them? → their</div>
+        </div>
+      </div>
+
+      <!-- SCENE 3: COMMON PAIRS -->
+      <div class="scene" id="scene-3">
+        <div class="scene-title" id="s3-title">Common Homophone Pairs</div>
+        <div class="word-pair" id="pair-buy"><div class="word-card"><div class="word">buy</div><div class="meaning">to purchase</div></div><div class="vs-text">/</div><div class="word-card"><div class="word">bye</div><div class="meaning">goodbye</div></div></div>
+        <div class="word-pair" id="pair-sun"><div class="word-card"><div class="word">sun</div><div class="meaning">star in the sky</div></div><div class="vs-text">/</div><div class="word-card"><div class="word">son</div><div class="meaning">male child</div></div></div>
+        <div class="word-pair" id="pair-sea"><div class="word-card"><div class="word">sea</div><div class="meaning">the ocean</div></div><div class="vs-text">/</div><div class="word-card"><div class="word">see</div><div class="meaning">with your eyes</div></div></div>
+        <div class="word-pair" id="pair-hair"><div class="word-card"><div class="word">hair</div><div class="meaning">on your head</div></div><div class="vs-text">/</div><div class="word-card"><div class="word">hare</div><div class="meaning">a fast rabbit</div></div></div>
+        <div class="word-pair" id="pair-no"><div class="word-card"><div class="word">no</div><div class="meaning">opposite of yes</div></div><div class="vs-text">/</div><div class="word-card"><div class="word">know</div><div class="meaning">to understand</div></div></div>
+      </div>
+
+      <!-- SCENE 4: FILL THE BLANK -->
+      <div class="scene" id="scene-4">
+        <div class="scene-title" id="s4-title">Filling in the Blank</div>
+        <div class="sentence-card" id="sent-1">Her dress is <span class="blank" id="blank-1">____</span>.</div>
+        <div class="word-pair" id="opts-1">
+          <div class="word-card" style="border-color:#E53935"><div class="word" style="color:#E53935">blew</div><div class="meaning">wind blew ✗</div></div>
+          <div class="word-card" style="border-color:#4CAF50"><div class="word" style="color:#4CAF50">blue</div><div class="meaning">colour ✓</div></div>
+        </div>
+        <div class="sentence-card" id="sent-2">The <span class="blank" id="blank-2">____</span> ran very fast.</div>
+        <div class="word-pair" id="opts-2">
+          <div class="word-card" style="border-color:#E53935"><div class="word" style="color:#E53935">hair</div><div class="meaning">on your head ✗</div></div>
+          <div class="word-card" style="border-color:#4CAF50"><div class="word" style="color:#4CAF50">hare</div><div class="meaning">fast rabbit ✓</div></div>
+        </div>
+        <div class="info-card" id="card-meaning" style="margin-top:12px">Think about the meaning, not just the sound!</div>
+      </div>
+
+      <!-- SCENE 5: CORRECT SENTENCE -->
+      <div class="scene" id="scene-5">
+        <div class="scene-title" id="s5-title">Which Sentence Is Correct?</div>
+        <div class="sentence-card" id="sent-correct">I have <span class="correct">two</span> cats. <span class="tick-cross" id="tick-1">✅</span></div>
+        <div class="sentence-card" id="sent-wrong">I like going <span class="wrong">two</span> the shops. <span class="tick-cross" id="cross-1">❌</span></div>
+        <div class="sentence-card" id="sent-know1" style="margin-top:8px">I <span class="wrong">no</span> how to spell. <span class="tick-cross" id="cross-2">❌</span></div>
+        <div class="sentence-card" id="sent-know2">I <span class="correct">know</span> how to spell. <span class="tick-cross" id="tick-2">✅</span></div>
+        <div class="info-card" id="card-check">Does the meaning match the spelling?</div>
+      </div>
+
+      <!-- SCENE 6: OUTRO -->
+      <div class="scene" id="scene-6">
+        <div class="outro-title" id="outro-title">
+          🎉 Now it's your turn!
+        </div>
+        <button class="try-btn" id="try-btn">Try some questions →</button>
+      </div>
+
+      <!-- TEACHER -->
+      <div class="teacher-panel" id="teacher">
+        <video src="../../assets/videos/teacher-transparent.webm" autoplay loop muted playsinline></video>
+      </div>
+    </div>
+
+    <div class="callout" id="callout"></div>
+
+    <div class="controls">
+      <button class="ctrl-btn" id="btn-prev" onclick="prevScene()" disabled>◀</button>
+      <button class="ctrl-btn play" id="btn-play" onclick="playScene()">▶</button>
+      <button class="ctrl-btn" id="btn-next" onclick="nextScene()">▶</button>
+    </div>
+  </div>
+</div>
+
+<!-- AUDIO -->
+<audio id="audio-0" src="../../audio/help-homophones/scene-0-intro.mp3" preload="auto"></audio>
+<audio id="audio-1" src="../../audio/help-homophones/scene-1-to-too-two.mp3" preload="auto"></audio>
+<audio id="audio-2" src="../../audio/help-homophones/scene-2-there-their-theyre.mp3" preload="auto"></audio>
+<audio id="audio-3" src="../../audio/help-homophones/scene-3-common-pairs.mp3" preload="auto"></audio>
+<audio id="audio-4" src="../../audio/help-homophones/scene-4-fill-blank.mp3" preload="auto"></audio>
+<audio id="audio-5" src="../../audio/help-homophones/scene-5-correct-sentence.mp3" preload="auto"></audio>
+<audio id="audio-6" src="../../audio/help-homophones/scene-6-outro.mp3" preload="auto"></audio>
+
+<script>
+  // ============ STATE ============
+  let currentScene = 0;
+  const TOTAL_SCENES = 7;
+  let isPlaying = false;
+  let timeouts = [];
+
+  const callout = document.getElementById('callout');
+
+  // ============ HELPERS ============
+  function show(id) { document.getElementById(id).classList.add('visible'); }
+  function hide(id) { document.getElementById(id).classList.remove('visible'); }
+  function setCallout(text) { callout.textContent = text; callout.classList.add('visible'); }
+  function showTeacher() { show('teacher'); }
+
+  function resetScene(idx) {
+    const scene = document.getElementById(`scene-${idx}`);
+    if (!scene) return;
+    scene.querySelectorAll('.visible').forEach(el => el.classList.remove('visible'));
+    // Reset tick/cross
+    scene.querySelectorAll('.tick-cross').forEach(el => el.classList.remove('visible'));
+  }
+
+  // ============ TIMELINES ============
+  const TIMELINES = {
+    0: [ // INTRO
+      { time: 0.0, action: () => { show('intro-title'); showTeacher(); } },
+      { time: 0.1, action: () => setCallout("Hello! Today we're learning about homophones.") },
+      { time: 4.0, action: () => setCallout("Homophones are words that sound the same but have different spellings and different meanings.") },
+      { time: 9.5, action: () => { setCallout("Like blue and blew — they sound the same, but one is a colour and the other means the wind blew."); show('intro-pair'); } },
+      { time: 15.5, action: () => setCallout("Let's learn how to pick the right one.") },
+    ],
+
+    1: [ // TO, TOO, TWO
+      { time: 0.0, action: () => show('s1-title') },
+      { time: 0.1, action: () => setCallout("These three words all sound the same but mean different things.") },
+      { time: 3.5, action: () => { setCallout("Two is the number 2. I have two cats."); show('tc-two'); } },
+      { time: 7.5, action: () => { setCallout("Too means also, or too much. I want to come too! It's too hot!"); show('tc-too'); } },
+      { time: 13.0, action: () => { setCallout("To is used for everything else — going to the shops, to run, to play."); show('tc-to'); } },
+      { time: 18.0, action: () => { setCallout("If you're talking about the number, use two."); show('card-two'); } },
+      { time: 21.0, action: () => { setCallout("If you mean also or too much, use too."); show('card-too'); } },
+      { time: 24.5, action: () => { setCallout("For everything else, use to."); show('card-to'); } },
+    ],
+
+    2: [ // THERE, THEIR, THEY'RE
+      { time: 0.0, action: () => show('s2-title') },
+      { time: 0.1, action: () => setCallout("These three sound the same too.") },
+      { time: 2.5, action: () => { setCallout("There is a place. The ball is over there."); show('tc-there'); } },
+      { time: 6.5, action: () => { setCallout("Their means belonging to them. That is their house."); show('tc-their'); } },
+      { time: 10.5, action: () => { setCallout("They're is short for they are. They're playing outside."); show('tc-theyre'); } },
+      { time: 15.0, action: () => { setCallout("A good trick: if you can replace the word with they are and it still makes sense, use they're."); show('card-trick'); } },
+      { time: 21.0, action: () => { setCallout("If it's about a place, use there."); show('card-place'); } },
+      { time: 24.0, action: () => { setCallout("If it belongs to someone, use their."); show('card-belong'); } },
+    ],
+
+    3: [ // COMMON PAIRS
+      { time: 0.0, action: () => show('s3-title') },
+      { time: 0.1, action: () => setCallout("Let's look at some common pairs you'll see in questions.") },
+      { time: 3.5, action: () => { setCallout("Buy means to purchase something. Bye means goodbye."); show('pair-buy'); } },
+      { time: 7.5, action: () => setCallout("We are going to buy shoes — that's buy with a u-y.") },
+      { time: 11.0, action: () => { setCallout("Sun is the star in the sky. Son is a male child."); show('pair-sun'); } },
+      { time: 15.0, action: () => setCallout("Mark has a son — that's son with an o.") },
+      { time: 18.0, action: () => { setCallout("Sea is the ocean. See is what your eyes do."); show('pair-sea'); } },
+      { time: 21.5, action: () => { setCallout("Hair is on your head. Hare is a type of rabbit."); show('pair-hair'); } },
+      { time: 25.0, action: () => { setCallout("No is the opposite of yes. Know means to understand something."); show('pair-no'); } },
+    ],
+
+    4: [ // FILL THE BLANK
+      { time: 0.0, action: () => show('s4-title') },
+      { time: 0.1, action: () => setCallout("Most homophone questions give you a sentence with a blank.") },
+      { time: 3.5, action: () => { setCallout("Her dress is blank. Is it blew or blue?"); show('sent-1'); } },
+      { time: 7.5, action: () => { setCallout("Think about the meaning. The dress is a colour — blue!"); show('opts-1'); document.getElementById('blank-1').textContent = 'blue'; } },
+      { time: 12.0, action: () => setCallout("Blew means the wind blew — that doesn't make sense for a dress.") },
+      { time: 16.0, action: () => { setCallout("The blank ran very fast. Is it hair or hare?"); show('sent-2'); } },
+      { time: 20.0, action: () => { setCallout("A hare is a fast animal. Hair doesn't run. So the answer is hare."); show('opts-2'); document.getElementById('blank-2').textContent = 'hare'; } },
+      { time: 25.0, action: () => { setCallout("Always read the sentence and think about what the word means — not just how it sounds."); show('card-meaning'); } },
+    ],
+
+    5: [ // CORRECT SENTENCE
+      { time: 0.0, action: () => show('s5-title') },
+      { time: 0.1, action: () => setCallout("Some questions show you sentences and ask which one uses the homophone correctly.") },
+      { time: 4.0, action: () => setCallout("Which sentence uses two correctly?") },
+      { time: 6.5, action: () => { setCallout("I have two cats. That's right — two means the number!"); show('sent-correct'); show('tick-1'); } },
+      { time: 11.0, action: () => { setCallout("I like going two the shops. That's wrong — it should be to, not two."); show('sent-wrong'); show('cross-1'); } },
+      { time: 16.5, action: () => { setCallout("Which sentence uses the correct homophone? I no how to spell, or I know how to spell?"); show('sent-know1'); } },
+      { time: 22.5, action: () => { setCallout("I know how to spell — know means to understand. No is the opposite of yes."); show('sent-know2'); show('cross-2'); show('tick-2'); } },
+      { time: 28.5, action: () => { setCallout("Read each sentence carefully and check if the meaning matches the spelling."); show('card-check'); } },
+    ],
+
+    6: [ // OUTRO
+      { time: 0.0, action: () => { show('outro-title'); showTeacher(); setCallout("Now it's your turn!"); } },
+      { time: 1.8, action: () => { setCallout("Try picking the right homophones yourself."); show('try-btn'); } },
+    ],
+  };
+
+  // ============ PLAYBACK ============
+  function clearTimers() { timeouts.forEach(t => clearTimeout(t)); timeouts = []; }
+
+  function playScene() {
+    clearTimers();
+    resetScene(currentScene);
+    callout.classList.remove('visible');
+    isPlaying = true;
+
+    const timeline = TIMELINES[currentScene] || [];
+    const audio = document.getElementById(`audio-${currentScene}`);
+
+    timeline.forEach(({ time, action }) => {
+      timeouts.push(setTimeout(action, time * 1000));
+    });
+
+    if (audio) { audio.currentTime = 0; audio.play().catch(() => {}); }
+    updateButtons();
+  }
+
+  function goToScene(idx) {
+    clearTimers();
+    const audio = document.getElementById(`audio-${currentScene}`);
+    if (audio) audio.pause();
+
+    // Mark previous as completed
+    const tabs = document.querySelectorAll('.scene-tab');
+    if (idx > currentScene) {
+      for (let i = currentScene; i < idx; i++) tabs[i].classList.add('completed');
+    }
+
+    document.getElementById(`scene-${currentScene}`).classList.remove('active');
+    resetScene(currentScene);
+
+    currentScene = idx;
+    document.getElementById(`scene-${currentScene}`).classList.add('active');
+    callout.classList.remove('visible');
+
+    tabs.forEach((t, i) => t.classList.toggle('active', i === idx));
+    updateButtons();
+    isPlaying = false;
+  }
+
+  function nextScene() { if (currentScene < TOTAL_SCENES - 1) { goToScene(currentScene + 1); playScene(); } }
+  function prevScene() { if (currentScene > 0) goToScene(currentScene - 1); }
+
+  function updateButtons() {
+    document.getElementById('btn-prev').disabled = currentScene === 0;
+    document.getElementById('btn-next').disabled = currentScene === TOTAL_SCENES - 1;
+  }
+
+  function openHelp() {
+    document.getElementById('overlay').classList.add('active');
+    // Check URL params for scene
+    const params = new URLSearchParams(window.location.search);
+    const scene = parseInt(params.get('scene'));
+    if (!isNaN(scene) && scene >= 0 && scene < TOTAL_SCENES) goToScene(scene);
+    playScene();
+  }
+
+  function closeHelp() {
+    clearTimers();
+    const audio = document.getElementById(`audio-${currentScene}`);
+    if (audio) audio.pause();
+    document.getElementById('overlay').classList.remove('active');
+  }
+
+  // Auto-open if ?scene param
+  if (new URLSearchParams(window.location.search).has('scene')) openHelp();
+</script>
+</body>
+</html>
