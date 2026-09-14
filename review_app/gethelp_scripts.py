@@ -277,6 +277,10 @@ def load_lessons(force_refresh=False):
             warnings.append(f"{folder_name}: {e}")
             continue
         for f in files:
+            # Skip the two legacy duplicate copies of Partitioning/Addition
+            # (older filenames like HELP_LESSON_SCRIPTS_*.docx — real lessons exist already)
+            if f["name"].upper().startswith("HELP_LESSON"):
+                continue
             try:
                 buf = _download_docx_bytes(service, f["id"])
                 paras = list(_docx_paragraphs(buf))
