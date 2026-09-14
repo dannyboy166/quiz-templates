@@ -56,6 +56,7 @@
       display: flex; align-items: center; justify-content: center;
       z-index: 1000; opacity: 0; visibility: hidden;
       transition: opacity 0.3s, visibility 0.3s;
+      overflow-y: auto; padding: 12px 0;
     }
     .help-overlay.active { opacity: 1; visibility: visible; }
 
@@ -274,14 +275,6 @@
     .ctrl-btn.primary { background: #9b59b6; color: white; border-color: #9b59b6; }
     .ctrl-btn.primary:hover { background: #8e44ad; }
 
-    .debug-panel {
-      position: fixed; bottom: 8px; right: 8px;
-      background: rgba(0,0,0,0.7); color: #0f0;
-      font-family: monospace; font-size: 11px;
-      padding: 4px 8px; border-radius: 4px; z-index: 2000;
-      pointer-events: none;
-    }
-
     @media (max-width: 600px) {
       .help-container { padding: 20px 15px 15px; }
       .stage { height: min(300px, 50vh); }
@@ -298,6 +291,18 @@
       .racer-label { font-size: 12px; }
       .tf-statement { font-size: 16px; padding: 10px 18px; }
       .tf-verdict { font-size: 22px; }
+    }
+
+    /* Short viewports (phone landscape): keep controls reachable */
+    @media (max-height: 500px) {
+      .help-overlay { align-items: flex-start; padding: 6px 0; }
+      .help-container { max-height: none; padding: 14px 16px 12px; border-radius: 16px; }
+      .help-title { font-size: 18px; margin-bottom: 6px; }
+      .scene-nav { margin-bottom: 6px; }
+      .stage { height: 46vh; min-height: 150px; margin-bottom: 8px; }
+      .callout { min-height: 0; padding: 6px 14px; font-size: 13px; margin-bottom: 6px; }
+      .progress-bar { margin-bottom: 6px; }
+      .teacher-panel { width: 60px; height: 84px; }
     }
   </style>
 </head>
@@ -463,7 +468,7 @@
   <audio id="audio-5" src="../../audio/help-ordinal-numbers/scene-5-true-false.mp3" preload="auto"></audio>
   <audio id="audio-6" src="../../audio/help-ordinal-numbers/scene-6-outro.mp3" preload="auto"></audio>
 
-  <div class="debug-panel">Scene: <span id="debug-scene">0</span> | Time: <span id="debug-time">0.0s</span></div>
+  <div class="debug-panel" style="display:none">Scene: <span id="debug-scene">0</span> | Time: <span id="debug-time">0.0s</span></div>
 
   <script>
     const TOTAL_SCENES = 7;

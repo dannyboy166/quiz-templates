@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Addition</title>
+  <style>
+    @font-face {
+      font-family: 'Apfel Grotezk';
+      src: url('data:font/woff2;base64,') format('woff2');
+      font-weight: 400; font-style: normal; font-display: swap;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Apfel Grotezk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(180deg, #E8F5E9 0%, #C8E6C9 100%);
+      min-height: 100vh;
+    }
+
+    .scene { display: none; width: 100%; min-height: 380px;
+      flex-direction: column; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .scene.active { display: flex; }
+
+    /* ============ SHARED COMPONENTS ============ */
+    .scene-title {
+      font-size: 22px; font-weight: 700; color: #333; margin-bottom: 20px;
+      opacity: 0; transform: scale(0.8);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .scene-title.visible { opacity: 1; transform: scale(1); }
+
+    .info-cards { display: flex; gap: 12px; margin-top: 15px; }
+    .info-card {
+      background: white; border: 3px solid #333; border-radius: 12px;
+      padding: 10px 18px; font-size: 14px; font-weight: 600; color: #333;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+      opacity: 0; transform: translateY(10px);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .info-card.visible { opacity: 1; transform: translateY(0); }
+
+    .intro-title {
+      font-size: 36px; font-weight: 700; color: #333; text-align: center;
+      opacity: 0; transform: scale(0);
+      transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .intro-title.visible { opacity: 1; transform: scale(1); }
+    .intro-title .emoji { font-size: 50px; display: block; margin-bottom: 8px; }
+
+    /* ============ SCENE 1: APPLE GROUPS ============ */
+    .apple-area { display: flex; align-items: center; gap: 20px; margin-bottom: 15px; }
+    .apple-group {
+      display: flex; gap: 8px; opacity: 0; transform: translateY(10px);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .apple-group.visible { opacity: 1; transform: translateY(0); }
+    .apple { font-size: 40px; }
+    .plus-sign, .equals-sign {
+      font-size: 32px; font-weight: 700; color: #667eea;
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .plus-sign.visible, .equals-sign.visible { opacity: 1; }
+    .big-answer {
+      font-size: 64px; font-weight: 700; color: #667eea;
+      opacity: 0; transform: scale(0);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .big-answer.visible { opacity: 1; transform: scale(1); }
+    .equation {
+      font-size: 32px; font-weight: 700; color: #333;
+      margin-top: 15px; opacity: 0; transition: opacity 0.4s;
+    }
+    .equation.visible { opacity: 1; }
+    .equation .eq-part { display: inline-block; transition: all 0.3s; }
+    .equation .eq-part.highlight { color: #667eea; transform: scale(1.15); }
+
+    /* ============ SCENE 2: SUM CARDS ============ */
+    .target-number {
+      width: 70px; height: 70px; border-radius: 50%;
+      background: #667eea; color: white;
+      font-size: 32px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 15px;
+      opacity: 0; transform: scale(0);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .target-number.visible { opacity: 1; transform: scale(1); }
+    .sum-cards { display: flex; gap: 20px; margin-bottom: 15px; }
+    .sum-card {
+      background: white; border: 3px solid #333; border-radius: 12px;
+      padding: 12px 20px; font-size: 20px; font-weight: 600;
+      display: flex; align-items: center; gap: 8px;
+      opacity: 0; transform: translateY(10px);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .sum-card.visible { opacity: 1; transform: translateY(0); }
+    .sum-card.correct { border-color: #4CAF50; background: #E8F5E9; }
+    .sum-card.wrong { border-color: #E53935; background: #FFEBEE; }
+    .result-icon { font-size: 20px; opacity: 0; transition: opacity 0.3s; }
+    .result-icon.visible { opacity: 1; }
+    .swap-demo {
+      font-size: 20px; font-weight: 600; color: #555;
+      opacity: 0; transition: opacity 0.4s;
+    }
+    .swap-demo.visible { opacity: 1; }
+    .swap-demo .swap-highlight { color: #667eea; font-weight: 700; }
+
+    /* ============ SCENE 3: TEN-FRAME ============ */
+    .ten-frame-large {
+      display: grid; grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(2, 1fr);
+      gap: 4px; width: 220px; height: 96px;
+      border: 3px solid #333; border-radius: 10px; padding: 6px; background: white;
+      margin-bottom: 10px; opacity: 0; transition: opacity 0.4s;
+    }
+    .ten-frame-large.visible { opacity: 1; }
+    .tf-dot-lg {
+      border-radius: 50%; opacity: 0; transform: scale(0);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .tf-dot-lg.visible { opacity: 1; transform: scale(1); }
+    .tf-dot-lg.blue { background: #667eea; }
+    .tf-dot-lg.orange { background: #F5A623; }
+    .pairs-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .pair-badge {
+      background: white; border: 2px solid #333; border-radius: 20px;
+      padding: 4px 12px; font-size: 14px; font-weight: 600;
+      opacity: 0; transform: scale(0);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .pair-badge.visible { opacity: 1; transform: scale(1); }
+
+    /* ============ SCENE 4: DOUBLES ============ */
+    .doubles-display { display: flex; align-items: center; gap: 15px; margin-bottom: 10px; }
+    .dot-group {
+      display: flex; flex-wrap: wrap; gap: 5px; width: 80px;
+      opacity: 0; transition: opacity 0.4s;
+    }
+    .dot-group.visible { opacity: 1; }
+    .d-dot {
+      width: 20px; height: 20px; border-radius: 50%;
+      opacity: 0; transform: scale(0);
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .d-dot.visible { opacity: 1; transform: scale(1); }
+    .d-dot.left { background: #667eea; }
+    .d-dot.right { background: #F5A623; }
+    .doubles-equation {
+      font-size: 24px; font-weight: 700; color: #333;
+      opacity: 0; transition: opacity 0.4s;
+    }
+    .doubles-equation.visible { opacity: 1; }
+
+    /* ============ SCENE 5: WORD PROBLEM ============ */
+    .story-text {
+      background: white; border: 3px solid #333; border-radius: 12px;
+      padding: 16px 24px; font-size: 18px; line-height: 1.6; color: #333;
+      max-width: 500px; text-align: left;
+      opacity: 0; transition: opacity 0.4s;
+    }
+    .story-text.visible { opacity: 1; }
+    .story-text .keyword { color: #667eea; font-weight: 700; }
+    .story-text .number-hl { color: #E53935; font-weight: 700; }
+    .extract-equation {
+      font-size: 28px; font-weight: 700; color: #333;
+      margin-top: 15px; opacity: 0; transform: translateY(10px); transition: all 0.4s;
+    }
+    .extract-equation.visible { opacity: 1; transform: translateY(0); }
+    .extract-equation .answer { color: #4CAF50; }
+
+    /* ============ SCENE 6: MISSING NUMBER ============ */
+    .gap-equation {
+      font-size: 36px; font-weight: 700; color: #333;
+      margin-bottom: 15px; opacity: 0; transition: opacity 0.4s;
+    }
+    .gap-equation.visible { opacity: 1; }
+    .gap-box {
+      display: inline-block; width: 50px; height: 45px;
+      border: 3px dashed #667eea; border-radius: 8px;
+      text-align: center; line-height: 45px;
+      color: #667eea; vertical-align: middle;
+    }
+    .gap-box.pulse { animation: pulse 1s ease-in-out infinite; }
+    .gap-box.filled {
+      border-style: solid; background: #E8F5E9; border-color: #4CAF50;
+      color: #4CAF50; animation: none;
+    }
+    @keyframes pulse {
+      0%, 100% { border-color: #667eea; }
+      50% { border-color: #F5A623; box-shadow: 0 0 10px rgba(245,166,35,0.3); }
+    }
+    .number-line {
+      display: flex; align-items: flex-end; gap: 0;
+      margin-bottom: 15px; margin-top: 10px; opacity: 0; transition: opacity 0.4s;
+    }
+    .number-line.visible { opacity: 1; }
+    .number-line > div { position: relative; }
+    .nl-num {
+      width: 50px; text-align: center; font-size: 22px; font-weight: 700;
+      color: #333; margin-bottom: -6px;
+    }
+    .nl-tick {
+      width: 50px; height: 20px; border-bottom: 3px solid #333; position: relative;
+    }
+    .nl-tick::before {
+      content: ''; position: absolute; bottom: -5px; left: 50%;
+      transform: translateX(-50%); width: 3px; height: 10px; background: #333;
+    }
+    .nl-hop {
+      position: absolute; top: -20px; left: 50%; width: 50px; height: 24px;
+      border: 2.5px solid #667eea; border-bottom: none; border-radius: 24px 24px 0 0;
+      opacity: 0; transition: opacity 0.3s; z-index: 2;
+    }
+    .nl-hop.visible { opacity: 1; }
+
+    /* ============ SCENE 7: PLACE VALUE ============ */
+    .pv-addition {
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      opacity: 0; transition: opacity 0.4s;
+    }
+    .pv-addition.visible { opacity: 1; }
+    .pv-row {
+      font-size: 20px; font-weight: 600; color: #333;
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .pv-row.visible { opacity: 1; }
+    .pv-row .tens-part { color: #667eea; }
+    .pv-row .ones-part { color: #F5A623; }
+    .pv-row .result { color: #4CAF50; font-weight: 700; }
+    .pv-row .arrow { color: #999; }
+
+    /* ============ SCENE 8: TRUE/FALSE ============ */
+    .tf-statement {
+      background: white; border: 3px solid #333; border-radius: 12px;
+      padding: 16px 28px; font-size: 26px; font-weight: 700; color: #333;
+      opacity: 0; transition: opacity 0.4s;
+    }
+    .tf-statement.visible { opacity: 1; }
+    .tf-working {
+      display: flex; flex-direction: column; gap: 4px; align-items: center; margin-top: 12px;
+    }
+    .tf-step {
+      font-size: 18px; font-weight: 600; color: #555;
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .tf-step.visible { opacity: 1; }
+    .tf-verdict {
+      font-size: 36px; font-weight: 700; margin-top: 10px;
+      opacity: 0; transform: scale(0);
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .tf-verdict.visible { opacity: 1; transform: scale(1); }
+    .tf-verdict.false-v { color: #E53935; }
+
+    /* ============ OUTRO ============ */
+    .outro-title {
+      font-size: 36px; font-weight: 700; color: #333; text-align: center;
+      opacity: 0; transform: scale(0);
+      transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .outro-title.visible { opacity: 1; transform: scale(1); }
+    .outro-title .emoji { font-size: 50px; display: block; margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+
+  <!-- SCENE 0: INTRO -->
+  <div class="scene active" id="scene-0" data-audio="audio/scene-0-intro.mp3">
+    <div class="scene-title">Welcome to Addition</div>
+    <div class="intro-title" id="intro-title">
+      <span class="emoji">&#10133;</span>
+      Addition
+    </div>
+    <div class="apple-area" style="margin-top:20px;">
+      <div class="apple-group" id="intro-left">
+        <span class="apple">&#x1F534;</span><span class="apple">&#x1F534;</span><span class="apple">&#x1F534;</span>
+      </div>
+      <div class="plus-sign" id="intro-plus">+</div>
+      <div class="apple-group" id="intro-right">
+        <span class="apple">&#x1F534;</span><span class="apple">&#x1F534;</span>
+      </div>
+    </div>
+    <div class="info-cards">
+      <div class="info-card" id="card-together">Put groups together</div>
+      <div class="info-card" id="card-total">Find the total</div>
+    </div>
+  </div>
+
+  <!-- SCENE 1: PUTTING GROUPS TOGETHER -->
+  <div class="scene" id="scene-1" data-audio="audio/scene-1-groups.mp3">
+    <div class="scene-title" id="s1-title">Putting groups together</div>
+    <div class="apple-area">
+      <div class="apple-group" id="s1-left">
+        <span class="apple">&#x1F34E;</span><span class="apple">&#x1F34E;</span><span class="apple">&#x1F34E;</span>
+      </div>
+      <div class="plus-sign" id="s1-plus">+</div>
+      <div class="apple-group" id="s1-right">
+        <span class="apple">&#x1F34F;</span><span class="apple">&#x1F34F;</span>
+      </div>
+      <div class="equals-sign" id="s1-equals">=</div>
+      <div class="big-answer" id="s1-answer">5</div>
+    </div>
+    <div class="equation" id="s1-eq">
+      <span class="eq-part" id="eq-3">3</span>
+      <span class="eq-part" id="eq-plus"> + </span>
+      <span class="eq-part" id="eq-2">2</span>
+      <span class="eq-part" id="eq-eq"> = </span>
+      <span class="eq-part" id="eq-5">5</span>
+    </div>
+    <div class="info-cards">
+      <div class="info-card" id="card-put">Put them together</div>
+      <div class="info-card" id="card-count">Count how many altogether</div>
+    </div>
+  </div>
+
+  <!-- SCENE 2: WHICH SUM EQUALS -->
+  <div class="scene" id="scene-2" data-audio="audio/scene-2-which-sum.mp3">
+    <div class="scene-title" id="s2-title">Which sum equals?</div>
+    <div class="target-number" id="target-7">7</div>
+    <div class="sum-cards">
+      <div class="sum-card" id="sc-a">3 + 4 = <span class="result-icon" id="sc-a-res"></span></div>
+      <div class="sum-card" id="sc-b">2 + 6 = <span class="result-icon" id="sc-b-res"></span></div>
+    </div>
+    <div class="swap-demo" id="swap-demo">
+      <span class="swap-highlight">3 + 4</span> = <span class="swap-highlight">4 + 3</span> &mdash; both make 7!
+    </div>
+    <div class="info-cards">
+      <div class="info-card" id="card-check">Check each sum</div>
+      <div class="info-card" id="card-order">Order doesn't matter</div>
+    </div>
+  </div>
+
+  <!-- SCENE 3: PAIRS THAT MAKE 10 -->
+  <div class="scene" id="scene-3" data-audio="audio/scene-3-pairs-ten.mp3">
+    <div class="scene-title" id="s3-title">Pairs that make 10</div>
+    <div class="ten-frame-large" id="tf-10"></div>
+    <div class="pairs-list">
+      <div class="pair-badge" id="pair-19">1 + 9</div>
+      <div class="pair-badge" id="pair-28">2 + 8</div>
+      <div class="pair-badge" id="pair-37">3 + 7</div>
+      <div class="pair-badge" id="pair-46">4 + 6</div>
+      <div class="pair-badge" id="pair-55">5 + 5</div>
+    </div>
+    <div class="info-cards">
+      <div class="info-card" id="card-learn">Learn the pairs</div>
+      <div class="info-card" id="card-always">They always make 10</div>
+    </div>
+  </div>
+
+  <!-- SCENE 4: DOUBLES -->
+  <div class="scene" id="scene-4" data-audio="audio/scene-4-doubles.mp3">
+    <div class="scene-title" id="s4-title">Doubles</div>
+    <div class="doubles-display">
+      <div class="dot-group" id="dg-left"></div>
+      <div class="plus-sign" id="d-plus">+</div>
+      <div class="dot-group" id="dg-right"></div>
+      <div class="equals-sign" id="d-equals">=</div>
+      <div class="big-answer" id="d-answer">12</div>
+    </div>
+    <div class="doubles-equation" id="d-eq1">6 + 6 = 12</div>
+    <div class="doubles-equation" id="d-eq2" style="margin-top:8px;">8 + 8 = 16</div>
+    <div class="doubles-equation" id="d-near" style="margin-top:12px; color: #4CAF50;">
+      Near double: 6 + 7 = 13 <span style="font-size:16px;">(double 6 + 1 more)</span>
+    </div>
+    <div class="info-cards">
+      <div class="info-card" id="card-same">Same + same</div>
+      <div class="info-card" id="card-near">Near double = double + 1</div>
+    </div>
+  </div>
+
+  <!-- SCENE 5: WORD PROBLEMS -->
+  <div class="scene" id="scene-5" data-audio="audio/scene-5-word-problems.mp3">
+    <div class="scene-title" id="s5-title">Word problems</div>
+    <div class="story-text" id="story">
+      <span class="number-hl">Ben</span> has <span class="number-hl">7</span> toy cars.
+      He gets <span class="number-hl">5</span> more.
+      How many <span class="keyword">altogether</span>?
+    </div>
+    <div class="extract-equation" id="extract-eq">
+      7 + 5 = <span class="answer">12</span>
+    </div>
+    <div class="info-cards">
+      <div class="info-card" id="card-find">Find the numbers</div>
+      <div class="info-card" id="card-words">Look for add words</div>
+    </div>
+  </div>
+
+  <!-- SCENE 6: MISSING NUMBER -->
+  <div class="scene" id="scene-6" data-audio="audio/scene-6-missing-number.mp3">
+    <div class="scene-title" id="s6-title">Missing number</div>
+    <div class="gap-equation" id="gap-eq">
+      8 + <span class="gap-box" id="gap-box">?</span> = 13
+    </div>
+    <div class="number-line" id="num-line">
+      <div><div class="nl-hop" id="hop-1"></div><div class="nl-num">8</div><div class="nl-tick"></div></div>
+      <div><div class="nl-hop" id="hop-2"></div><div class="nl-num">9</div><div class="nl-tick"></div></div>
+      <div><div class="nl-hop" id="hop-3"></div><div class="nl-num">10</div><div class="nl-tick"></div></div>
+      <div><div class="nl-hop" id="hop-4"></div><div class="nl-num">11</div><div class="nl-tick"></div></div>
+      <div><div class="nl-hop" id="hop-5"></div><div class="nl-num">12</div><div class="nl-tick"></div></div>
+      <div><div class="nl-num">13</div><div class="nl-tick"></div></div>
+    </div>
+    <div class="info-cards">
+      <div class="info-card" id="card-count-on">Count on from the number</div>
+      <div class="info-card" id="card-subtract">Or subtract to find it</div>
+    </div>
+  </div>
+
+  <!-- SCENE 7: BIGGER NUMBERS -->
+  <div class="scene" id="scene-7" data-audio="audio/scene-7-bigger-numbers.mp3">
+    <div class="scene-title" id="s7-title">Adding bigger numbers</div>
+    <div class="pv-addition" id="pv-add1">
+      <div class="pv-row" id="pv-r1">29 + 10</div>
+      <div class="pv-row" id="pv-r1a"><span class="arrow">&rarr;</span> tens: 2 &rarr; <span class="tens-part">3</span></div>
+      <div class="pv-row" id="pv-r1b"><span class="result">= 39</span></div>
+    </div>
+    <div class="pv-addition" id="pv-add2" style="margin-top:4px;">
+      <div class="pv-row" id="pv-r2">28 + 30</div>
+      <div class="pv-row" id="pv-r2a"><span class="arrow">&rarr;</span> tens: 2 &rarr; <span class="tens-part">5</span></div>
+      <div class="pv-row" id="pv-r2b"><span class="result">= 58</span></div>
+    </div>
+    <div class="pv-addition" id="pv-add3" style="margin-top:4px;">
+      <div class="pv-row" id="pv-r3">36 + 25</div>
+      <div class="pv-row" id="pv-r3a"><span class="tens-part">30 + 20 = 50</span></div>
+      <div class="pv-row" id="pv-r3b"><span class="ones-part">6 + 5 = 11</span></div>
+      <div class="pv-row" id="pv-r3c"><span class="result">50 + 11 = 61</span></div>
+    </div>
+    <div class="info-cards">
+      <div class="info-card" id="card-tens-first">Add the tens first</div>
+      <div class="info-card" id="card-then-ones">Then add the ones</div>
+    </div>
+  </div>
+
+  <!-- SCENE 8: TRUE/FALSE -->
+  <div class="scene" id="scene-8" data-audio="audio/scene-8-true-false.mp3">
+    <div class="scene-title" id="s8-title">True or false?</div>
+    <div class="tf-statement" id="tf-stmt">46 + 31 = 78</div>
+    <div class="tf-working" id="tf-work">
+      <div class="tf-step" id="tf-s1">Tens: <span class="val">40 + 30 = 70</span></div>
+      <div class="tf-step" id="tf-s2">Ones: <span class="val">6 + 1 = 7</span></div>
+      <div class="tf-step" id="tf-s3">Total: <span class="val">70 + 7 = 77</span></div>
+      <div class="tf-step" id="tf-s4" style="color:#E53935;">77 &ne; 78</div>
+    </div>
+    <div class="tf-verdict false-v" id="tf-verdict">
+      <span>&times;</span> False!
+    </div>
+  </div>
+
+  <!-- SCENE 9: OUTRO -->
+  <div class="scene" id="scene-9" data-audio="audio/scene-9-outro.mp3">
+    <div class="scene-title">Your turn!</div>
+    <div class="outro-title" id="outro-title">
+      <span class="emoji">&#11088;</span>
+      Your turn!
+    </div>
+  </div>
+
+  <script>
+    const scenes = Array.from(document.querySelectorAll('.scene'));
+    let currentScene = -1;
+    let pendingTimeouts = [];
+
+    function show(id) { document.getElementById(id).classList.add('visible'); }
+
+    function clearPending() {
+      pendingTimeouts.forEach(t => clearTimeout(t));
+      pendingTimeouts = [];
+    }
+
+    function schedule(delay, fn) {
+      pendingTimeouts.push(setTimeout(fn, delay * 1000));
+    }
+
+    // ============ HELPERS ============
+    function fillTenPair(blueCount, blueClass, orangeClass) {
+      for (let i = 0; i < 10; i++) {
+        const dot = document.getElementById('tf10-' + i);
+        dot.className = 'tf-dot-lg';
+        dot.classList.add(i < blueCount ? blueClass : orangeClass);
+        schedule(i * 0.04, () => dot.classList.add('visible'));
+      }
+    }
+
+    function showDotsStaggered(groupId) {
+      const dots = document.getElementById(groupId).querySelectorAll('.d-dot');
+      dots.forEach((d, i) => schedule(i * 0.08, () => d.classList.add('visible')));
+    }
+
+    // ============ RESET ============
+    function resetScene(idx) {
+      const el = document.getElementById('scene-' + idx);
+      if (!el) return;
+      el.querySelectorAll('.visible').forEach(e => { if (e !== el) e.classList.remove('visible'); });
+
+      if (idx === 1) {
+        ['eq-3','eq-plus','eq-2','eq-eq','eq-5'].forEach(id =>
+          document.getElementById(id).classList.remove('highlight'));
+      }
+      if (idx === 2) {
+        ['sc-a','sc-b'].forEach(id => {
+          const c = document.getElementById(id);
+          c.classList.remove('correct','wrong','visible');
+        });
+        document.getElementById('sc-a-res').textContent = '';
+        document.getElementById('sc-b-res').textContent = '';
+      }
+      if (idx === 3) {
+        for (let i = 0; i < 10; i++) {
+          document.getElementById('tf10-' + i).className = 'tf-dot-lg';
+        }
+      }
+      if (idx === 4) {
+        document.querySelectorAll('.d-dot').forEach(d => d.classList.remove('visible'));
+      }
+      if (idx === 6) {
+        const gb = document.getElementById('gap-box');
+        gb.classList.remove('pulse','filled'); gb.textContent = '?';
+        ['hop-1','hop-2','hop-3','hop-4','hop-5'].forEach(id =>
+          document.getElementById(id).classList.remove('visible'));
+      }
+      if (idx === 7) {
+        ['pv-r1','pv-r1a','pv-r1b','pv-r2','pv-r2a','pv-r2b','pv-r3','pv-r3a','pv-r3b','pv-r3c'].forEach(id =>
+          document.getElementById(id).classList.remove('visible'));
+      }
+      if (idx === 8) {
+        ['tf-s1','tf-s2','tf-s3','tf-s4'].forEach(id =>
+          document.getElementById(id).classList.remove('visible'));
+      }
+    }
+
+    // ============ SCENE TIMELINES (delays from scene start) ============
+    const TIMELINES = {
+      0: [
+        { time: 0.0,  action: () => show('intro-title') },
+        { time: 4.4,  action: () => { show('intro-left'); show('intro-right'); show('intro-plus'); } },
+        { time: 9.5,  action: () => { show('card-together'); show('card-total'); } },
+      ],
+      1: [
+        { time: 0.0,  action: () => show('s1-title') },
+        { time: 2.6,  action: () => show('s1-left') },
+        { time: 4.3,  action: () => { show('s1-right'); show('s1-plus'); } },
+        { time: 7.7,  action: () => { show('s1-equals'); show('s1-answer'); } },
+        { time: 9.8,  action: () => { show('s1-eq');
+          document.getElementById('eq-3').classList.add('highlight'); } },
+        { time: 11.5, action: () => { document.getElementById('eq-3').classList.remove('highlight');
+          document.getElementById('eq-plus').classList.add('highlight'); } },
+        { time: 12.0, action: () => { document.getElementById('eq-plus').classList.remove('highlight');
+          document.getElementById('eq-2').classList.add('highlight'); } },
+        { time: 12.5, action: () => { document.getElementById('eq-2').classList.remove('highlight');
+          document.getElementById('eq-5').classList.add('highlight'); } },
+        { time: 13.9, action: () => document.getElementById('eq-5').classList.remove('highlight') },
+        { time: 18.5, action: () => { show('card-put'); show('card-count'); } },
+      ],
+      2: [
+        { time: 0.0,  action: () => show('s2-title') },
+        { time: 3.5,  action: () => show('target-7') },
+        { time: 6.4,  action: () => show('sc-a') },
+        { time: 7.9,  action: () => show('sc-b') },
+        { time: 11.5, action: () => {
+          document.getElementById('sc-a').classList.add('correct');
+          document.getElementById('sc-a-res').textContent = '7 \u2713'; show('sc-a-res');
+        }},
+        { time: 14.1, action: () => {
+          document.getElementById('sc-b').classList.add('wrong');
+          document.getElementById('sc-b-res').textContent = '8 \u2717'; show('sc-b-res');
+        }},
+        { time: 19.3, action: () => show('card-check') },
+        { time: 24.8, action: () => { show('swap-demo'); show('card-order'); } },
+      ],
+      3: [
+        { time: 0.0,  action: () => show('s3-title') },
+        { time: 4.3,  action: () => { show('tf-10'); fillTenPair(1, 'blue', 'orange'); show('pair-19'); } },
+        { time: 7.2,  action: () => { fillTenPair(2, 'blue', 'orange'); show('pair-28'); } },
+        { time: 8.7,  action: () => { fillTenPair(3, 'blue', 'orange'); show('pair-37'); } },
+        { time: 10.2, action: () => { fillTenPair(4, 'blue', 'orange'); show('pair-46'); } },
+        { time: 11.7, action: () => { fillTenPair(5, 'blue', 'orange'); show('pair-55'); } },
+        { time: 16.8, action: () => show('card-learn') },
+        { time: 22.2, action: () => show('card-always') },
+      ],
+      4: [
+        { time: 0.0,  action: () => show('s4-title') },
+        { time: 4.0,  action: () => {
+          show('dg-left'); show('dg-right'); show('d-plus');
+          showDotsStaggered('dg-left'); showDotsStaggered('dg-right');
+        }},
+        { time: 6.5,  action: () => { show('d-equals'); show('d-answer'); show('d-eq1'); } },
+        { time: 8.3,  action: () => show('d-eq2') },
+        { time: 12.2, action: () => show('card-same') },
+        { time: 17.7, action: () => { show('d-near'); show('card-near'); } },
+      ],
+      5: [
+        { time: 0.0,  action: () => show('s5-title') },
+        { time: 12.3, action: () => show('story') },
+        { time: 19.4, action: () => show('card-find') },
+        { time: 22.2, action: () => show('card-words') },
+        { time: 24.9, action: () => show('extract-eq') },
+      ],
+      6: [
+        { time: 0.0,  action: () => show('s6-title') },
+        { time: 3.1,  action: () => { show('gap-eq'); document.getElementById('gap-box').classList.add('pulse'); } },
+        { time: 11.8, action: () => show('num-line') },
+        { time: 13.3, action: () => show('hop-1') },
+        { time: 13.9, action: () => show('hop-2') },
+        { time: 14.4, action: () => show('hop-3') },
+        { time: 15.1, action: () => show('hop-4') },
+        { time: 15.7, action: () => show('hop-5') },
+        { time: 18.6, action: () => {
+          const gb = document.getElementById('gap-box');
+          gb.classList.remove('pulse'); gb.classList.add('filled'); gb.textContent = '5';
+          show('card-count-on');
+        }},
+        { time: 20.7, action: () => show('card-subtract') },
+      ],
+      7: [
+        { time: 0.0,  action: () => show('s7-title') },
+        { time: 4.0,  action: () => { show('pv-add1'); show('pv-r1'); } },
+        { time: 7.8,  action: () => show('pv-r1a') },
+        { time: 9.9,  action: () => show('pv-r1b') },
+        { time: 13.2, action: () => { show('pv-add2'); show('pv-r2'); } },
+        { time: 17.1, action: () => show('pv-r2a') },
+        { time: 19.6, action: () => show('pv-r2b') },
+        { time: 22.1, action: () => { show('pv-add3'); show('pv-r3'); } },
+        { time: 25.5, action: () => { show('pv-r3a'); show('card-tens-first'); } },
+        { time: 30.2, action: () => { show('pv-r3b'); show('card-then-ones'); } },
+        { time: 34.9, action: () => show('pv-r3c') },
+      ],
+      8: [
+        { time: 0.0,  action: () => show('s8-title') },
+        { time: 3.8,  action: () => show('tf-stmt') },
+        { time: 9.0,  action: () => show('tf-work') },
+        { time: 9.9,  action: () => show('tf-s1') },
+        { time: 13.1, action: () => show('tf-s2') },
+        { time: 16.3, action: () => show('tf-s3') },
+        { time: 18.8, action: () => show('tf-s4') },
+        { time: 20.0, action: () => show('tf-verdict') },
+      ],
+      9: [
+        { time: 0.0,  action: () => show('outro-title') },
+      ],
+    };
+
+    // ============ BUILD DYNAMIC ELEMENTS ============
+    // Ten-frame dots for scene 3
+    const tf10 = document.getElementById('tf-10');
+    for (let i = 0; i < 10; i++) {
+      const d = document.createElement('div');
+      d.className = 'tf-dot-lg';
+      d.id = 'tf10-' + i;
+      tf10.appendChild(d);
+    }
+    // Dot groups for scene 4
+    ['dg-left', 'dg-right'].forEach((gid, gi) => {
+      const g = document.getElementById(gid);
+      for (let i = 0; i < 6; i++) {
+        const d = document.createElement('div');
+        d.className = 'd-dot ' + (gi === 0 ? 'left' : 'right');
+        g.appendChild(d);
+      }
+    });
+
+    // ============ WWHelp CONTRACT ============
+    window.WWHelp = {
+      sceneCount: scenes.length,
+
+      showScene(index) {
+        // Clear any pending animations from previous scene
+        clearPending();
+
+        // Hide current, show requested
+        if (currentScene >= 0) {
+          resetScene(currentScene);
+          scenes[currentScene].classList.remove('active');
+        }
+        currentScene = index;
+        scenes[index].classList.add('active');
+
+        // Run timeline actions as setTimeout delays
+        const tl = TIMELINES[index] || [];
+        tl.forEach(entry => {
+          schedule(entry.time, entry.action);
+        });
+
+        // Check if visual animation runs longer than narration
+        // If so, call sceneComplete when the last action + its animation finishes
+        if (tl.length > 0) {
+          const lastTime = tl[tl.length - 1].time;
+          // Add 1s buffer for CSS transitions to complete
+          schedule(lastTime + 1.0, () => {
+            if (window.WWHelp.sceneComplete) {
+              window.WWHelp.sceneComplete();
+            }
+          });
+        }
+      }
+    };
+  </script>
+</body>
+</html>
