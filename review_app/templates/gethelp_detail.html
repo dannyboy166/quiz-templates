@@ -2,14 +2,28 @@
 {% block title %}{{ lesson.topic }} — Get Help Audio{% endblock %}
 {% block content %}
 <div class="gethelp-detail" data-slug="{{ lesson.slug }}">
-  <div class="list-header">
+  <a href="/gethelp" class="gh-back">← All lessons</a>
+
+  {% set pct = (100 * lesson.approved_count / lesson.scene_count) if lesson.scene_count else 0 %}
+  {% set is_draft = 'draft' in (lesson.status or '')|lower %}
+  <div class="gh-detail-hero">
     <div>
-      <a href="/gethelp" class="back-link">← All lessons</a>
       <h1>{{ lesson.topic }}</h1>
-      <div class="muted">{{ lesson.subject }} · {{ lesson.scene_count }} scenes ·
-        {{ lesson.approved_count }}/{{ lesson.scene_count }} approved</div>
+      <div class="gh-detail-sub">{{ lesson.subject }} · {{ lesson.scene_count }} scenes</div>
+    </div>
+    <div class="gh-detail-progress">
+      <div class="gh-ring-label">{{ lesson.approved_count }}/{{ lesson.scene_count }}</div>
+      <div class="gh-ring-sub">scenes approved</div>
+      <div class="gh-detail-bar"><div class="gh-detail-fill" id="lesson-progress-fill" style="width: {{ pct }}%"></div></div>
     </div>
   </div>
+
+  {% if is_draft %}
+  <div class="gh-draft-note">
+    ⚠ <strong>This script isn't teacher-approved yet</strong> ({{ lesson.status }}). The wording may still change —
+    check with the teacher before spending time perfecting the audio.
+  </div>
+  {% endif %}
 
   <div class="scene-cards">
     {% for s in lesson.scenes %}
@@ -58,8 +72,20 @@
 </div>
 
 <style>
-  .gethelp-detail .back-link { color:#667eea; font-size:13px; text-decoration:none; }
-  .gethelp-detail .muted { color:#666; }
+  .gethelp-detail { max-width:900px; margin:0 auto; }
+  .gh-back { color:#667eea; font-size:13px; text-decoration:none; display:inline-block; margin-bottom:.75rem; }
+  .gh-back:hover { text-decoration:underline; }
+  .gh-detail-hero { display:flex; align-items:center; gap:1.5rem; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+                    color:#fff; padding:1.25rem 1.5rem; border-radius:14px; }
+  .gh-detail-hero h1 { font-size:1.5rem; margin-bottom:.25rem; }
+  .gh-detail-sub { opacity:.9; font-size:.9rem; }
+  .gh-detail-progress { margin-left:auto; text-align:right; min-width:180px; }
+  .gh-ring-label { font-size:1.6rem; font-weight:700; line-height:1; }
+  .gh-ring-sub { font-size:.72rem; opacity:.85; text-transform:uppercase; letter-spacing:.03em; margin-bottom:.5rem; }
+  .gh-detail-bar { height:8px; background:rgba(255,255,255,.28); border-radius:5px; overflow:hidden; }
+  .gh-detail-fill { height:100%; background:#fff; transition:width .3s; }
+  .gh-draft-note { background:#fdecea; border:1px solid #f5c6cb; color:#a5342a; padding:.7rem 1rem; border-radius:10px;
+                   margin-top:1rem; font-size:.9rem; }
   .scene-cards { display:flex; flex-direction:column; gap:16px; margin-top:16px; }
   .scene-card { border:1px solid #e2e2e2; border-radius:12px; padding:16px; background:#fff; }
   .scene-card.is-approved { border-color:#66BB6A; background:#F6FBF6; }
@@ -122,7 +148,18 @@ async function approveScene(n, btn) {
     card.classList.toggle('is-approved', next);
     btn.textContent = next ? 'Approved ✓' : 'Approve';
     document.getElementById('flag-' + n).textContent = next ? '✅ Approved' : '🎧 Generated';
+    updateLessonProgress();
   } catch (e) { alert('Approve failed: ' + e.message); }
+}
+
+function updateLessonProgress() {
+  const cards = document.querySelectorAll('.scene-card');
+  const done = document.querySelectorAll('.scene-card.is-approved').length;
+  const total = cards.length;
+  const fill = document.getElementById('lesson-progress-fill');
+  if (fill) fill.style.width = (total ? (100 * done / total) : 0) + '%';
+  const label = document.querySelector('.gh-ring-label');
+  if (label) label.textContent = done + '/' + total;
 }
 
 async function restoreVersion(n, v, btn) {

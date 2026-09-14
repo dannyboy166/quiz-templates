@@ -1,79 +1,189 @@
 {% extends "base.html" %}
 {% block title %}Get Help Audio — QuestionReview{% endblock %}
 {% block content %}
-<div class="gethelp-page">
-  <div class="list-header">
-    <h1>Get Help Audio</h1>
-    <div class="list-actions">
-      <button class="btn btn-secondary" onclick="refreshScripts(this)">↻ Refresh scripts from Drive</button>
+<div class="gh-page">
+
+  <div class="gh-hero">
+    <div class="gh-hero-text">
+      <h1>🎧 Get Help Audio</h1>
+      <p>Generate the narration for each scene, listen, and regenerate until it's perfect.
+         Approved scenes become the audio used to build the animated lesson.
+         Scripts come live from Google&nbsp;Drive.</p>
+    </div>
+    <button class="gh-refresh" onclick="refreshScripts(this)">↻ Refresh from Drive</button>
+  </div>
+
+  {% set ns = namespace(total_scenes=0, done_scenes=0, lessons_done=0, ready=0) %}
+  {% for l in lessons %}
+    {% set ns.total_scenes = ns.total_scenes + l.scene_count %}
+    {% set ns.done_scenes = ns.done_scenes + l.approved_count %}
+    {% if l.scene_count and l.approved_count == l.scene_count %}{% set ns.lessons_done = ns.lessons_done + 1 %}{% endif %}
+    {% if 'draft' not in (l.status or '')|lower %}{% set ns.ready = ns.ready + 1 %}{% endif %}
+  {% endfor %}
+
+  <div class="gh-stats">
+    <div class="gh-stat">
+      <div class="gh-stat-num">{{ lessons|length }}</div>
+      <div class="gh-stat-label">Lessons</div>
+    </div>
+    <div class="gh-stat">
+      <div class="gh-stat-num">{{ ns.ready }}</div>
+      <div class="gh-stat-label">Scripts ready</div>
+    </div>
+    <div class="gh-stat">
+      <div class="gh-stat-num">{{ ns.done_scenes }}<span class="gh-stat-sub">/{{ ns.total_scenes }}</span></div>
+      <div class="gh-stat-label">Scenes approved</div>
+    </div>
+    <div class="gh-stat gh-stat-accent">
+      <div class="gh-stat-num">{{ ns.lessons_done }}</div>
+      <div class="gh-stat-label">Lessons complete</div>
     </div>
   </div>
 
-  <p class="muted">
-    Generate the narration for each scene of every Get Help lesson, listen, and regenerate
-    until it's perfect. Approved scenes become the audio Dan uses to build the animated lesson.
-    Scripts come live from Google Drive.
-  </p>
-
   {% if source == 'unavailable' or warnings %}
-  <div class="banner-warn">
-    {% if source == 'unavailable' %}
-      Scripts can't be loaded — the service account may not have access to the Drive folder,
-      or the deps aren't installed.
-    {% endif %}
-    {% for w in warnings %}<div class="warn-line">{{ w }}</div>{% endfor %}
+  <div class="gh-warn">
+    {% if source == 'unavailable' %}Scripts can't be loaded — the service account may not have Drive access.{% endif %}
+    {% for w in warnings %}<div class="gh-warn-line">{{ w }}</div>{% endfor %}
   </div>
   {% endif %}
 
+  <div class="gh-toolbar">
+    <input type="search" id="gh-search" placeholder="Search lessons…" oninput="filterLessons()">
+    <select id="gh-subject" onchange="filterLessons()">
+      <option value="">All subjects</option>
+      {% set seen = [] %}
+      {% for l in lessons %}{% if l.subject and l.subject not in seen %}{% if seen.append(l.subject) %}{% endif %}
+        <option value="{{ l.subject }}">{{ l.subject }}</option>
+      {% endif %}{% endfor %}
+    </select>
+    <label class="gh-check"><input type="checkbox" id="gh-hide-draft" onchange="filterLessons()"> Hide unapproved scripts</label>
+  </div>
+
   {% if not lessons %}
-    <div class="empty-state">No lesson scripts found yet. Click “Refresh scripts from Drive”.</div>
+    <div class="gh-empty">No lesson scripts found yet. Click “Refresh from Drive”.</div>
   {% else %}
-  <table class="review-table">
-    <thead>
-      <tr>
-        <th>Lesson</th><th>Subject</th><th>Scenes</th><th>Audio progress</th><th>Status</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for l in lessons %}
-      <tr onclick="location.href='/gethelp/{{ l.slug }}'" style="cursor:pointer">
-        <td><strong>{{ l.topic }}</strong></td>
-        <td>{{ l.subject }}</td>
-        <td>{{ l.scene_count }}</td>
-        <td>
-          <div class="progress-mini">
-            <div class="progress-mini-fill"
-                 style="width: {{ (100 * l.approved_count / l.scene_count) if l.scene_count else 0 }}%"></div>
-          </div>
-          <span class="progress-mini-label">{{ l.approved_count }}/{{ l.scene_count }} approved</span>
-        </td>
-        <td><span class="pill">{{ l.status or '—' }}</span></td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <div class="gh-grid" id="gh-grid">
+    {% for l in lessons %}
+    {% set pct = (100 * l.approved_count / l.scene_count) if l.scene_count else 0 %}
+    {% set is_draft = 'draft' in (l.status or '')|lower %}
+    {% set subj = (l.subject or '')|lower %}
+    {% set subj_class = 'sub-maths' if 'math' in subj else ('sub-english' if 'english' in subj else ('sub-science' if 'science' in subj else ('sub-hsie' if 'hsie' in subj or 'histor' in subj else ('sub-arts' if 'art' in subj else ('sub-pdhpe' if 'health' in subj or 'physical' in subj else 'sub-other'))))) %}
+    <a class="gh-card {{ subj_class }} {{ 'is-complete' if l.scene_count and l.approved_count == l.scene_count else '' }}"
+       href="/gethelp/{{ l.slug }}"
+       data-name="{{ l.topic|lower }}" data-subject="{{ l.subject }}" data-draft="{{ '1' if is_draft else '0' }}">
+      <div class="gh-card-top">
+        <span class="gh-subject-dot"></span>
+        <span class="gh-card-title">{{ l.topic }}</span>
+        {% if l.scene_count and l.approved_count == l.scene_count %}<span class="gh-done-badge">✓ done</span>{% endif %}
+      </div>
+      <div class="gh-card-subject">{{ l.subject }}</div>
+
+      <div class="gh-progress">
+        <div class="gh-progress-bar"><div class="gh-progress-fill" style="width: {{ pct }}%"></div></div>
+        <div class="gh-progress-label">{{ l.approved_count }}/{{ l.scene_count }} scenes</div>
+      </div>
+
+      <div class="gh-card-foot">
+        {% if is_draft %}
+          <span class="gh-badge gh-badge-draft">⚠ script not approved</span>
+        {% else %}
+          <span class="gh-badge gh-badge-ok">script approved</span>
+        {% endif %}
+      </div>
+    </a>
+    {% endfor %}
+  </div>
   {% endif %}
 </div>
 
 <style>
-  .gethelp-page .muted { color:#666; max-width:800px; margin-bottom:16px; }
-  .banner-warn { background:#FFF3CD; border:1px solid #FFE08A; padding:10px 14px; border-radius:8px; margin-bottom:16px; font-size:14px; }
-  .warn-line { color:#8a6d00; font-size:12px; }
-  .empty-state { padding:40px; text-align:center; color:#888; }
-  .progress-mini { display:inline-block; width:120px; height:8px; background:#eee; border-radius:4px; overflow:hidden; vertical-align:middle; }
-  .progress-mini-fill { height:100%; background:#4caf50; }
-  .progress-mini-label { font-size:12px; color:#666; margin-left:8px; }
-  .pill { background:#eef; color:#446; padding:2px 8px; border-radius:10px; font-size:12px; }
+  .gh-page { max-width: 1200px; margin: 0 auto; }
+
+  /* Hero */
+  .gh-hero { display:flex; align-items:flex-start; gap:1.5rem; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+             color:#fff; padding:1.5rem 1.75rem; border-radius:16px; margin-bottom:1.25rem; }
+  .gh-hero-text h1 { font-size:1.6rem; margin-bottom:.4rem; }
+  .gh-hero-text p { opacity:.92; font-size:.95rem; max-width:640px; line-height:1.5; }
+  .gh-refresh { margin-left:auto; white-space:nowrap; background:rgba(255,255,255,.18); color:#fff;
+                border:1px solid rgba(255,255,255,.35); padding:.55rem 1rem; border-radius:10px; cursor:pointer;
+                font-weight:600; font-family:inherit; transition:background .15s; }
+  .gh-refresh:hover { background:rgba(255,255,255,.30); }
+
+  /* Stats */
+  .gh-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin-bottom:1.25rem; }
+  .gh-stat { background:var(--card-bg); border:1px solid var(--card-border); border-radius:12px; padding:1rem 1.25rem; }
+  .gh-stat-num { font-size:2rem; font-weight:700; color:var(--text); line-height:1; }
+  .gh-stat-sub { font-size:1.1rem; color:var(--text-muted); font-weight:500; }
+  .gh-stat-label { font-size:.8rem; color:var(--text-muted); margin-top:.35rem; text-transform:uppercase; letter-spacing:.03em; }
+  .gh-stat-accent { background:#eef4ff; border-color:#cfe0ff; }
+  .gh-stat-accent .gh-stat-num { color:#3b5bdb; }
+
+  /* Warnings */
+  .gh-warn { background:#FFF3CD; border:1px solid #FFE08A; padding:10px 14px; border-radius:10px; margin-bottom:1rem; font-size:14px; color:#8a6d00; }
+  .gh-warn-line { font-size:12px; }
+
+  /* Toolbar */
+  .gh-toolbar { display:flex; gap:.75rem; align-items:center; margin-bottom:1rem; flex-wrap:wrap; }
+  .gh-toolbar input[type=search], .gh-toolbar select {
+    font-family:inherit; font-size:.9rem; padding:.5rem .75rem; border:1px solid var(--card-border);
+    border-radius:8px; background:#fff; }
+  .gh-toolbar input[type=search] { flex:1; min-width:200px; }
+  .gh-check { font-size:.85rem; color:var(--text-muted); display:flex; align-items:center; gap:.35rem; cursor:pointer; }
+
+  /* Cards grid */
+  .gh-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:1rem; }
+  .gh-card { display:block; background:var(--card-bg); border:1px solid var(--card-border); border-left:5px solid #bbb;
+             border-radius:12px; padding:1rem 1.1rem; text-decoration:none; color:var(--text);
+             transition:transform .12s, box-shadow .12s; }
+  .gh-card:hover { transform:translateY(-3px); box-shadow:0 8px 22px rgba(0,0,0,.10); }
+  .gh-card.is-complete { background:#f4fbf6; }
+
+  .gh-card-top { display:flex; align-items:center; gap:.5rem; margin-bottom:.15rem; }
+  .gh-subject-dot { width:9px; height:9px; border-radius:50%; background:#bbb; flex:none; }
+  .gh-card-title { font-weight:700; font-size:1.02rem; flex:1; line-height:1.2; }
+  .gh-done-badge { font-size:.72rem; background:var(--success); color:#fff; padding:2px 8px; border-radius:10px; font-weight:600; }
+  .gh-card-subject { font-size:.78rem; color:var(--text-muted); margin-bottom:.75rem; }
+
+  .gh-progress { margin-bottom:.7rem; }
+  .gh-progress-bar { height:8px; background:#ececec; border-radius:5px; overflow:hidden; }
+  .gh-progress-fill { height:100%; background:linear-gradient(90deg,var(--success),#2ecc71); transition:width .3s; }
+  .gh-progress-label { font-size:.75rem; color:var(--text-muted); margin-top:.3rem; }
+
+  .gh-card-foot { display:flex; }
+  .gh-badge { font-size:.72rem; padding:2px 8px; border-radius:8px; font-weight:600; }
+  .gh-badge-ok { background:var(--approved-bg); color:#1e7a44; }
+  .gh-badge-draft { background:#fdecea; color:#c0392b; }
+
+  /* Subject colour accents (left border + dot) */
+  .sub-maths   { border-left-color:#3498db; } .sub-maths   .gh-subject-dot{ background:#3498db; }
+  .sub-english { border-left-color:#e67e22; } .sub-english .gh-subject-dot{ background:#e67e22; }
+  .sub-science { border-left-color:#16a085; } .sub-science .gh-subject-dot{ background:#16a085; }
+  .sub-hsie    { border-left-color:#8e44ad; } .sub-hsie    .gh-subject-dot{ background:#8e44ad; }
+  .sub-arts    { border-left-color:#e84393; } .sub-arts    .gh-subject-dot{ background:#e84393; }
+  .sub-pdhpe   { border-left-color:#d35400; } .sub-pdhpe   .gh-subject-dot{ background:#d35400; }
+  .sub-other   { border-left-color:#7f8c8d; } .sub-other   .gh-subject-dot{ background:#7f8c8d; }
+
+  .gh-empty { padding:48px; text-align:center; color:#888; background:var(--card-bg); border-radius:12px; }
+
+  @media (max-width:700px){ .gh-stats{ grid-template-columns:repeat(2,1fr);} .gh-hero{ flex-direction:column;} .gh-refresh{ margin-left:0;} }
 </style>
 
 <script>
+function filterLessons() {
+  const q = (document.getElementById('gh-search').value || '').toLowerCase();
+  const subj = document.getElementById('gh-subject').value;
+  const hideDraft = document.getElementById('gh-hide-draft').checked;
+  document.querySelectorAll('.gh-card').forEach(c => {
+    const okName = !q || c.dataset.name.includes(q);
+    const okSubj = !subj || c.dataset.subject === subj;
+    const okDraft = !hideDraft || c.dataset.draft === '0';
+    c.style.display = (okName && okSubj && okDraft) ? '' : 'none';
+  });
+}
 async function refreshScripts(btn) {
   btn.disabled = true; btn.textContent = 'Refreshing…';
-  try {
-    const r = await fetch('/api/gethelp/refresh', {method:'POST'});
-    const j = await r.json();
-    location.reload();
-  } catch (e) { alert('Refresh failed: ' + e); btn.disabled = false; btn.textContent = '↻ Refresh scripts from Drive'; }
+  try { await fetch('/api/gethelp/refresh', {method:'POST'}); location.reload(); }
+  catch (e) { alert('Refresh failed: ' + e); btn.disabled = false; btn.textContent = '↻ Refresh from Drive'; }
 }
 </script>
 {% endblock %}
