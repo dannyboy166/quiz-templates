@@ -1965,11 +1965,15 @@ def create_app():
             has = gethelp_audio.has_scene_audio(slug, fn)
             if st.get("approved") and has:
                 approved += 1
+            # Original built audio for this scene (7 already-built lessons), if any —
+            # lets Zoe/Georgia LISTEN to what Dan made and only regenerate if they want.
+            existing = gethelp_audio.existing_audio_for_scene(slug, sc["n"])
             scenes.append({
                 **sc,
                 "audio_filename": fn,
                 "has_audio": has,
                 "audio_url": f"/gethelp-audio/{slug}/{fn}" if has else None,
+                "existing_audio_url": f"/existing-help-audio/{existing}" if existing else None,
                 "approved": bool(st.get("approved") and has),
                 "generated_at": st.get("generated_at"),
                 "versions": gethelp_audio.get_versions(slug, fn),
@@ -1996,6 +2000,11 @@ def create_app():
     @app.route("/gethelp-audio/<slug>/<path:filename>")
     def serve_gethelp_audio(slug, filename):
         return send_from_directory(gethelp_audio.lesson_dir(slug), filename)
+
+    @app.route("/existing-help-audio/<path:relpath>")
+    def serve_existing_help_audio(relpath):
+        # relpath is like "help-subtraction/scene-9-true-false.mp3" (repo audio/ folder)
+        return send_from_directory(gethelp_audio.EXISTING_AUDIO_ROOT, relpath)
 
     @app.route("/api/gethelp/refresh", methods=["POST"])
     def api_gethelp_refresh():
@@ -2029,15 +2038,20 @@ def create_app():
         if not sc:
             return jsonify({"error": "scene not found"}), 404
         fn = gethelp_scripts.scene_audio_filename(sc)
-        if not gethelp_audio.has_scene_audio(slug, fn):
-            return jsonify({"error": "no audio to approve"}), 400
         body = request.get_json(silent=True) or {}
         approved = bool(body.get("approved", True))
+        # If approving but no generated take exists yet, adopt Dan's original built audio.
+        if approved and not gethelp_audio.has_scene_audio(slug, fn):
+            if not gethelp_audio.adopt_existing_audio(slug, sc["n"], fn):
+                return jsonify({"error": "no audio to approve"}), 400
         astate = gethelp_audio.load_state()
         gethelp_audio.update_scene_state(astate, slug, fn,
                                          approved=approved,
                                          approved_at=gethelp_audio.now_iso() if approved else None)
-        return jsonify({"ok": True, "approved": approved})
+        # tell the client where the (now-adopted) audio lives so it can show the player
+        audio_url = (f"/gethelp-audio/{slug}/{fn}?t={int(time.time())}"
+                     if gethelp_audio.has_scene_audio(slug, fn) else None)
+        return jsonify({"ok": True, "approved": approved, "audio_url": audio_url})
 
     @app.route("/api/gethelp/restore/<slug>/<int:scene_n>/<int:version_num>", methods=["POST"])
     def api_gethelp_restore(slug, scene_n, version_num):

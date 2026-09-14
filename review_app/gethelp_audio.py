@@ -39,6 +39,40 @@ except Exception:
 AUDIO_ROOT = Path(os.environ.get("DATA_DIR", _project_root / "data" / "voiceovers")) / "help-audio"
 STATE_FILE = AUDIO_ROOT / "gethelp_audio_state.json"
 
+# The 7 already-built lessons keep their original audio here (in the repo), so Zoe/Georgia
+# can LISTEN to the existing voiceovers and only regenerate the ones they don't like.
+# Folder names differ from the lesson slug in a couple of cases, so map explicitly.
+EXISTING_AUDIO_ROOT = _project_root / "audio"
+EXISTING_AUDIO_FOLDER = {
+    "partitioning-numbers": "help-partitioning",
+    "partitioning":         "help-partitioning",
+    "addition":             "help-addition-scenes",
+    "subtraction":          "help-subtraction",
+    "counting":             "help-counting",
+    "ordinal-numbers":      "help-ordinal-numbers",
+    "telling-the-time":     "help-telling-time",
+    "telling-time":         "help-telling-time",
+    "homophones":           "help-homophones",
+}
+
+
+def existing_audio_for_scene(slug, scene_n):
+    """Return a repo-relative filename of the original built audio for this scene, or None.
+
+    Matches by SCENE NUMBER (the reliable key) since the original slugs differ from the
+    script-derived ones. e.g. scene 9 of subtraction -> audio/help-subtraction/scene-9-*.mp3
+    """
+    folder = EXISTING_AUDIO_FOLDER.get(slug)
+    if not folder:
+        return None
+    d = EXISTING_AUDIO_ROOT / folder
+    if not d.is_dir():
+        return None
+    matches = sorted(d.glob(f"scene-{scene_n}-*.mp3"))
+    # guard against scene-1 matching scene-10: require exact "scene-N-" prefix
+    matches = [m for m in matches if re.match(rf"^scene-{scene_n}-", m.name)]
+    return f"{folder}/{matches[0].name}" if matches else None
+
 
 def now_iso():
     return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
@@ -97,6 +131,22 @@ def update_scene_state(state, slug, filename, **kwargs):
 
 def has_scene_audio(slug, filename):
     return scene_audio_path(slug, filename).exists()
+
+
+def adopt_existing_audio(slug, scene_n, filename):
+    """Copy Dan's original built audio for this scene into the tab's audio store as the
+    current take, so it can be approved/versioned like any generated take. Returns True
+    if adopted, False if there was no existing audio."""
+    rel = existing_audio_for_scene(slug, scene_n)
+    if not rel:
+        return False
+    src = EXISTING_AUDIO_ROOT / rel
+    if not src.exists():
+        return False
+    lesson_dir(slug).mkdir(parents=True, exist_ok=True)
+    _snapshot_current(slug, filename)
+    scene_audio_path(slug, filename).write_bytes(src.read_bytes())
+    return True
 
 
 # ---------------------------------------------------------------------------

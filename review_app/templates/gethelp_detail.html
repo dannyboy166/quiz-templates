@@ -39,6 +39,14 @@
 
       {% if s.on_screen %}<div class="on-screen"><strong>On screen:</strong> {{ s.on_screen }}</div>{% endif %}
 
+      {% if s.existing_audio_url and not s.has_audio %}
+      <div class="existing-audio">
+        <span class="existing-tag">🎙️ Dan's current version</span>
+        <audio controls src="{{ s.existing_audio_url }}"></audio>
+        <span class="existing-hint">Listen — only regenerate if you want to change it.</span>
+      </div>
+      {% endif %}
+
       <div class="scene-controls">
         <label class="speed-label">Speed
           <select id="speed-{{ s.n }}">
@@ -48,13 +56,13 @@
           </select>
         </label>
         <button class="btn btn-primary" onclick="genScene({{ s.n }}, this)">
-          {{ 'Regenerate' if s.has_audio else 'Generate' }}
+          {{ 'Regenerate' if s.has_audio else ('Generate new version' if s.existing_audio_url else 'Generate') }}
         </button>
         <audio id="audio-{{ s.n }}" controls {{ '' if s.has_audio else 'style=display:none' }}
                src="{{ s.audio_url or '' }}"></audio>
         <button class="btn btn-approve" id="approve-{{ s.n }}"
-                onclick="approveScene({{ s.n }}, this)" {{ '' if s.has_audio else 'disabled' }}>
-          {{ 'Approved ✓' if s.approved else 'Approve' }}
+                onclick="approveScene({{ s.n }}, this)" {{ '' if (s.has_audio or s.existing_audio_url) else 'disabled' }}>
+          {{ 'Approved ✓' if s.approved else ('Approve Dan\'s version' if (s.existing_audio_url and not s.has_audio) else 'Approve') }}
         </button>
       </div>
 
@@ -96,6 +104,11 @@
   .field-label { font-size:12px; color:#888; display:block; margin-bottom:4px; }
   .narration { width:100%; border:1px solid #ddd; border-radius:8px; padding:8px; font-family:inherit; font-size:14px; resize:vertical; }
   .on-screen { font-size:12px; color:#999; margin:8px 0; }
+  .existing-audio { display:flex; align-items:center; gap:10px; flex-wrap:wrap; background:#eef4ff; border:1px solid #cfe0ff;
+                    border-radius:10px; padding:8px 12px; margin:10px 0; }
+  .existing-tag { font-size:12px; font-weight:700; color:#3b5bdb; }
+  .existing-audio audio { height:34px; }
+  .existing-hint { font-size:12px; color:#667; }
   .scene-controls { display:flex; align-items:center; gap:12px; margin-top:10px; flex-wrap:wrap; }
   .scene-controls audio { height:36px; }
   .speed-label { font-size:12px; color:#666; }
@@ -148,6 +161,12 @@ async function approveScene(n, btn) {
     card.classList.toggle('is-approved', next);
     btn.textContent = next ? 'Approved ✓' : 'Approve';
     document.getElementById('flag-' + n).textContent = next ? '✅ Approved' : '🎧 Generated';
+    // If approving adopted Dan's version, show it in the main player
+    if (next && j.audio_url) {
+      const audio = document.getElementById('audio-' + n);
+      audio.src = j.audio_url; audio.style.display = ''; audio.load();
+      const ex = card.querySelector('.existing-audio'); if (ex) ex.style.display = 'none';
+    }
     updateLessonProgress();
   } catch (e) { alert('Approve failed: ' + e.message); }
 }

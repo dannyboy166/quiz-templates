@@ -277,14 +277,19 @@ def load_lessons(force_refresh=False):
             warnings.append(f"{folder_name}: {e}")
             continue
         for f in files:
-            # Skip the two legacy duplicate copies of Partitioning/Addition
-            # (older filenames like HELP_LESSON_SCRIPTS_*.docx — real lessons exist already)
-            if f["name"].upper().startswith("HELP_LESSON"):
-                continue
             try:
                 buf = _download_docx_bytes(service, f["id"])
                 paras = list(_docx_paragraphs(buf))
                 fallback = os.path.splitext(f["name"])[0]
+                # The two legacy filenames (HELP_LESSON(S)_SCRIPTS_*.docx) have no clean
+                # "# Topic" heading — give them their real topic name so they slug correctly
+                # (Partitioning Numbers / Addition are 2 of the 7 built lessons).
+                upper = f["name"].upper()
+                if upper.startswith("HELP_LESSON"):
+                    if "PARTITION" in upper:
+                        fallback = "Partitioning Numbers"
+                    elif "ADDITION" in upper:
+                        fallback = "Addition"
                 lesson = parse_script_text(paras, fallback_topic=fallback)
                 lesson["source_folder"] = folder_name
                 lesson["drive_file_id"] = f["id"]
