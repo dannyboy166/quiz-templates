@@ -13,12 +13,13 @@
     <button class="gh-refresh" onclick="refreshScripts(this)">↻ Refresh from Drive</button>
   </div>
 
-  {% set ns = namespace(total_scenes=0, done_scenes=0, lessons_done=0, ready=0) %}
+  {% set ns = namespace(total_scenes=0, done_scenes=0, lessons_done=0, ready=0, have_audio=0) %}
   {% for l in lessons %}
     {% set ns.total_scenes = ns.total_scenes + l.scene_count %}
     {% set ns.done_scenes = ns.done_scenes + l.approved_count %}
     {% if l.scene_count and l.approved_count == l.scene_count %}{% set ns.lessons_done = ns.lessons_done + 1 %}{% endif %}
     {% if 'draft' not in (l.status or '')|lower %}{% set ns.ready = ns.ready + 1 %}{% endif %}
+    {% if l.existing_count %}{% set ns.have_audio = ns.have_audio + 1 %}{% endif %}
   {% endfor %}
 
   <div class="gh-stats">
@@ -26,9 +27,9 @@
       <div class="gh-stat-num">{{ lessons|length }}</div>
       <div class="gh-stat-label">Lessons</div>
     </div>
-    <div class="gh-stat">
-      <div class="gh-stat-num">{{ ns.ready }}</div>
-      <div class="gh-stat-label">Scripts ready</div>
+    <div class="gh-stat gh-stat-audio">
+      <div class="gh-stat-num">{{ ns.have_audio }}</div>
+      <div class="gh-stat-label">🎙️ Audio to review</div>
     </div>
     <div class="gh-stat">
       <div class="gh-stat-num">{{ ns.done_scenes }}<span class="gh-stat-sub">/{{ ns.total_scenes }}</span></div>
@@ -84,6 +85,9 @@
       </div>
 
       <div class="gh-card-foot">
+        {% if l.existing_count and l.approved_count < l.scene_count %}
+          <span class="gh-badge gh-badge-audio">🎙️ audio to review</span>
+        {% endif %}
         {% if is_draft %}
           <span class="gh-badge gh-badge-draft">⚠ script not approved</span>
         {% else %}
@@ -117,6 +121,8 @@
   .gh-stat-label { font-size:.8rem; color:var(--text-muted); margin-top:.35rem; text-transform:uppercase; letter-spacing:.03em; }
   .gh-stat-accent { background:#eef4ff; border-color:#cfe0ff; }
   .gh-stat-accent .gh-stat-num { color:#3b5bdb; }
+  .gh-stat-audio { background:#f3f0ff; border-color:#ddd4ff; }
+  .gh-stat-audio .gh-stat-num { color:#6c5ce7; }
 
   /* Warnings */
   .gh-warn { background:#FFF3CD; border:1px solid #FFE08A; padding:10px 14px; border-radius:10px; margin-bottom:1rem; font-size:14px; color:#8a6d00; }
@@ -153,6 +159,7 @@
   .gh-badge { font-size:.72rem; padding:2px 8px; border-radius:8px; font-weight:600; }
   .gh-badge-ok { background:var(--approved-bg); color:#1e7a44; }
   .gh-badge-draft { background:#fdecea; color:#c0392b; }
+  .gh-badge-audio { background:#eef4ff; color:#3b5bdb; }
 
   /* Subject colour accents (left border + dot) */
   .sub-maths   { border-left-color:#3498db; } .sub-maths   .gh-subject-dot{ background:#3498db; }

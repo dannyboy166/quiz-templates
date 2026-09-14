@@ -1959,6 +1959,7 @@ def create_app():
         slug = lesson["slug"]
         scenes = []
         approved = 0
+        existing_count = 0
         for sc in lesson["scenes"]:
             fn = gethelp_scripts.scene_audio_filename(sc)
             st = gethelp_audio.get_scene_state(astate, slug, fn)
@@ -1968,6 +1969,8 @@ def create_app():
             # Original built audio for this scene (7 already-built lessons), if any —
             # lets Zoe/Georgia LISTEN to what Dan made and only regenerate if they want.
             existing = gethelp_audio.existing_audio_for_scene(slug, sc["n"])
+            if existing:
+                existing_count += 1
             scenes.append({
                 **sc,
                 "audio_filename": fn,
@@ -1979,7 +1982,8 @@ def create_app():
                 "versions": gethelp_audio.get_versions(slug, fn),
             })
         return {**lesson, "scenes": scenes,
-                "approved_count": approved, "scene_count": len(scenes)}
+                "approved_count": approved, "scene_count": len(scenes),
+                "existing_count": existing_count}
 
     @app.route("/gethelp")
     def gethelp_list():
