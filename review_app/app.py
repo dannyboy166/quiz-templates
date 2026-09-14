@@ -22,6 +22,8 @@ from flask import (
 
 from .spreadsheet_loader import load_all_questions, TEMPLATE_NAMES
 from . import gsheets_loader
+from . import gethelp_scripts
+from . import gethelp_audio
 from . import final_stage
 from . import final_state as final_state_mod
 from .state import (
@@ -1949,6 +1951,117 @@ def create_app():
 
     worker = threading.Thread(target=bulk_worker, daemon=True)
     worker.start()
+
+    # ============ GET HELP AUDIO ============
+    def _gethelp_lesson_view(lesson):
+        """Attach per-scene audio status to a lesson dict for templates/JSON."""
+        astate = gethelp_audio.load_state()
+        slug = lesson["slug"]
+        scenes = []
+        approved = 0
+        for sc in lesson["scenes"]:
+            fn = gethelp_scripts.scene_audio_filename(sc)
+            st = gethelp_audio.get_scene_state(astate, slug, fn)
+            has = gethelp_audio.has_scene_audio(slug, fn)
+            if st.get("approved") and has:
+                approved += 1
+            scenes.append({
+                **sc,
+                "audio_filename": fn,
+                "has_audio": has,
+                "audio_url": f"/gethelp-audio/{slug}/{fn}" if has else None,
+                "approved": bool(st.get("approved") and has),
+                "generated_at": st.get("generated_at"),
+                "versions": gethelp_audio.get_versions(slug, fn),
+            })
+        return {**lesson, "scenes": scenes,
+                "approved_count": approved, "scene_count": len(scenes)}
+
+    @app.route("/gethelp")
+    def gethelp_list():
+        data = gethelp_scripts.load_lessons()
+        lessons = [_gethelp_lesson_view(l) for l in data.get("lessons", [])]
+        return render_template("gethelp_list.html",
+                               lessons=lessons,
+                               source=data.get("source"),
+                               warnings=data.get("warnings", []))
+
+    @app.route("/gethelp/<slug>")
+    def gethelp_detail(slug):
+        lesson = gethelp_scripts.get_lesson(slug)
+        if not lesson:
+            return redirect("/gethelp")
+        return render_template("gethelp_detail.html", lesson=_gethelp_lesson_view(lesson))
+
+    @app.route("/gethelp-audio/<slug>/<path:filename>")
+    def serve_gethelp_audio(slug, filename):
+        return send_from_directory(gethelp_audio.lesson_dir(slug), filename)
+
+    @app.route("/api/gethelp/refresh", methods=["POST"])
+    def api_gethelp_refresh():
+        data = gethelp_scripts.load_lessons(force_refresh=True)
+        return jsonify({"lessons": len(data.get("lessons", [])),
+                        "source": data.get("source"),
+                        "warnings": data.get("warnings", [])})
+
+    @app.route("/api/gethelp/generate/<slug>/<int:scene_n>", methods=["POST"])
+    def api_gethelp_generate(slug, scene_n):
+        lesson = gethelp_scripts.get_lesson(slug)
+        if not lesson:
+            return jsonify({"error": "lesson not found"}), 404
+        sc = next((s for s in lesson["scenes"] if s["n"] == scene_n), None)
+        if not sc:
+            return jsonify({"error": "scene not found"}), 404
+        body = request.get_json(silent=True) or {}
+        narration = body.get("narration", sc["narration"])
+        speed = float(body.get("speed", 0.9))
+        fn = gethelp_scripts.scene_audio_filename(sc)
+        size, err = gethelp_audio.generate_scene_audio(slug, fn, narration, speed=speed)
+        if err:
+            return jsonify({"error": err}), 502
+        return jsonify({"ok": True, "size": size,
+                        "audio_url": f"/gethelp-audio/{slug}/{fn}?t={int(time.time())}"})
+
+    @app.route("/api/gethelp/approve/<slug>/<int:scene_n>", methods=["POST"])
+    def api_gethelp_approve(slug, scene_n):
+        lesson = gethelp_scripts.get_lesson(slug)
+        sc = next((s for s in lesson["scenes"] if s["n"] == scene_n), None) if lesson else None
+        if not sc:
+            return jsonify({"error": "scene not found"}), 404
+        fn = gethelp_scripts.scene_audio_filename(sc)
+        if not gethelp_audio.has_scene_audio(slug, fn):
+            return jsonify({"error": "no audio to approve"}), 400
+        body = request.get_json(silent=True) or {}
+        approved = bool(body.get("approved", True))
+        astate = gethelp_audio.load_state()
+        gethelp_audio.update_scene_state(astate, slug, fn,
+                                         approved=approved,
+                                         approved_at=gethelp_audio.now_iso() if approved else None)
+        return jsonify({"ok": True, "approved": approved})
+
+    @app.route("/api/gethelp/restore/<slug>/<int:scene_n>/<int:version_num>", methods=["POST"])
+    def api_gethelp_restore(slug, scene_n, version_num):
+        lesson = gethelp_scripts.get_lesson(slug)
+        sc = next((s for s in lesson["scenes"] if s["n"] == scene_n), None) if lesson else None
+        if not sc:
+            return jsonify({"error": "scene not found"}), 404
+        fn = gethelp_scripts.scene_audio_filename(sc)
+        try:
+            gethelp_audio.restore_version(slug, fn, version_num)
+        except FileNotFoundError:
+            return jsonify({"error": "version not found"}), 404
+        return jsonify({"ok": True,
+                        "audio_url": f"/gethelp-audio/{slug}/{fn}?t={int(time.time())}"})
+
+    @app.route("/api/gethelp/stats")
+    def api_gethelp_stats():
+        data = gethelp_scripts.load_lessons()
+        lessons = [_gethelp_lesson_view(l) for l in data.get("lessons", [])]
+        total_scenes = sum(l["scene_count"] for l in lessons)
+        approved_scenes = sum(l["approved_count"] for l in lessons)
+        return jsonify({"lessons": len(lessons),
+                        "scenes": total_scenes,
+                        "approved_scenes": approved_scenes})
 
     return app
 

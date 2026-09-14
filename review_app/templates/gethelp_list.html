@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Get Help Audio — QuestionReview{% endblock %}
+{% block content %}
+<div class="gethelp-page">
+  <div class="list-header">
+    <h1>Get Help Audio</h1>
+    <div class="list-actions">
+      <button class="btn btn-secondary" onclick="refreshScripts(this)">↻ Refresh scripts from Drive</button>
+    </div>
+  </div>
+
+  <p class="muted">
+    Generate the narration for each scene of every Get Help lesson, listen, and regenerate
+    until it's perfect. Approved scenes become the audio Dan uses to build the animated lesson.
+    Scripts come live from Google Drive.
+  </p>
+
+  {% if source == 'unavailable' or warnings %}
+  <div class="banner-warn">
+    {% if source == 'unavailable' %}
+      Scripts can't be loaded — the service account may not have access to the Drive folder,
+      or the deps aren't installed.
+    {% endif %}
+    {% for w in warnings %}<div class="warn-line">{{ w }}</div>{% endfor %}
+  </div>
+  {% endif %}
+
+  {% if not lessons %}
+    <div class="empty-state">No lesson scripts found yet. Click “Refresh scripts from Drive”.</div>
+  {% else %}
+  <table class="review-table">
+    <thead>
+      <tr>
+        <th>Lesson</th><th>Subject</th><th>Scenes</th><th>Audio progress</th><th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for l in lessons %}
+      <tr onclick="location.href='/gethelp/{{ l.slug }}'" style="cursor:pointer">
+        <td><strong>{{ l.topic }}</strong></td>
+        <td>{{ l.subject }}</td>
+        <td>{{ l.scene_count }}</td>
+        <td>
+          <div class="progress-mini">
+            <div class="progress-mini-fill"
+                 style="width: {{ (100 * l.approved_count / l.scene_count) if l.scene_count else 0 }}%"></div>
+          </div>
+          <span class="progress-mini-label">{{ l.approved_count }}/{{ l.scene_count }} approved</span>
+        </td>
+        <td><span class="pill">{{ l.status or '—' }}</span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</div>
+
+<style>
+  .gethelp-page .muted { color:#666; max-width:800px; margin-bottom:16px; }
+  .banner-warn { background:#FFF3CD; border:1px solid #FFE08A; padding:10px 14px; border-radius:8px; margin-bottom:16px; font-size:14px; }
+  .warn-line { color:#8a6d00; font-size:12px; }
+  .empty-state { padding:40px; text-align:center; color:#888; }
+  .progress-mini { display:inline-block; width:120px; height:8px; background:#eee; border-radius:4px; overflow:hidden; vertical-align:middle; }
+  .progress-mini-fill { height:100%; background:#4caf50; }
+  .progress-mini-label { font-size:12px; color:#666; margin-left:8px; }
+  .pill { background:#eef; color:#446; padding:2px 8px; border-radius:10px; font-size:12px; }
+</style>
+
+<script>
+async function refreshScripts(btn) {
+  btn.disabled = true; btn.textContent = 'Refreshing…';
+  try {
+    const r = await fetch('/api/gethelp/refresh', {method:'POST'});
+    const j = await r.json();
+    location.reload();
+  } catch (e) { alert('Refresh failed: ' + e); btn.disabled = false; btn.textContent = '↻ Refresh scripts from Drive'; }
+}
+</script>
+{% endblock %}
